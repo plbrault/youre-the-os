@@ -5,12 +5,22 @@ from game_logic.process_state import ProcessState
 
 class Process:
     def __init__(self):
-        self._state = ProcessState.READY
+        self._state = ProcessState.NEW
         self._io_probability = randint(0, 50)
-        self._ending_probability = randint(0, 10)
+        self._ending_probability = randint(0, 5)
         self._total_cpu_time = 0
         self._total_idle_time = 0
         self._last_update_time = 0
+
+    def get_state(self):
+        return self._state
+
+    state = property(get_state)
+
+    def get_running_idle_ratio(self):
+        return Fraction(self._total_cpu_time, self._total_idle_time).limit_denominator()
+
+    running_idle_ratio = property(get_running_idle_ratio)
 
     def give_cpu_time(self):
         self._state = ProcessState.RUNNING
@@ -19,11 +29,6 @@ class Process:
     def yield_cpu(self):
         if self._state == ProcessState.RUNNING:
             self._state = ProcessState.READY
-
-    def get_running_idle_ratio(self):
-        return Fraction(self._total_cpu_time, self._total_idle_time).limit_denominator()
-
-    running_idle_ratio = property(get_running_idle_ratio)
 
     def update(self, current_time):
         if current_time >= self._last_update_time + 1000:

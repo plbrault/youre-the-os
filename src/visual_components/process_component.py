@@ -8,12 +8,16 @@ class ProcessComponent(Drawable):
     WIDTH = 64
     HEIGHT = 64
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, process):
         self._x = x
         self._y = y
-        self._text_surface = FONT_ARIAL_10.render('READY', False, Color.BLACK)
+        self._process = process
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.GREEN, pygame.Rect(self._x, self._y, ProcessComponent.WIDTH, ProcessComponent.HEIGHT))
-        surface.blit(self._text_surface, (self._x + 18, self._y + 27))
+
+        print("!!!!!!!!!!!!!!!!!!!!!!" + self._process.state)
+
+        text_surface = FONT_ARIAL_10.render(self._process.state, False, Color.BLACK)
+        surface.blit(text_surface, (self._x + 18, self._y + 27))
       
