@@ -1,14 +1,19 @@
 import sys, pygame
 
 from lib.ui.color import Color
-from visual_components.cpu_core_component import CpuCoreComponent
+from visual_components.cpu_component import CpuComponent
 
 pygame.init()
 pygame.font.init()
 
 size = width, height = 1024, 768
 
-cpu_core_1 = CpuCoreComponent(100, 100, 1)
+cpu_components = [
+  CpuComponent(50, 50, 1),
+  CpuComponent(55 + CpuComponent.WIDTH, 50, 2),
+  CpuComponent(60 + (2 * CpuComponent.WIDTH), 50, 3),
+  CpuComponent(65 + (3 * CpuComponent.WIDTH), 50, 4)
+]
 
 screen = pygame.display.set_mode(size)
 
@@ -18,6 +23,7 @@ while True:
 
     screen.fill(Color.BLACK)
 
-    cpu_core_1.draw(screen)
+    for cpu_component in cpu_components:
+      cpu_component.draw(screen)
 
     pygame.display.flip()
