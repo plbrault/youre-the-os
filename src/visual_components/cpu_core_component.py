@@ -1,8 +1,8 @@
 import pygame
 
-from lib.gui.drawable import Drawable
-from lib.gui.color import Color
-from lib.gui.fonts import FONT_ARIAL_10
+from lib.ui.drawable import Drawable
+from lib.ui.color import Color
+from lib.ui.fonts import FONT_ARIAL_10
 
 class CpuCoreComponent(Drawable):
     _x = 0

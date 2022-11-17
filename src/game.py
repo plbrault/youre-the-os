@@ -1,6 +1,6 @@
 import sys, pygame
 
-from lib.gui.color import Color
+from lib.ui.color import Color
 from visual_components.cpu_core_component import CpuCoreComponent
 
 pygame.init()
