@@ -1,5 +1,6 @@
 class ProcessState:
-    READY='Ready',
-    WAITING_IO='Waiting for I/O',
+    NEW='New'
     RUNNING='Running'
+    WAITING_IO='Waiting for I/O'
+    READY='Ready'
     ENDED='Ended'
