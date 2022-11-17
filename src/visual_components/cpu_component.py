@@ -12,10 +12,10 @@ class CpuComponent(Drawable):
         self._x = x
         self._y = y
         self._cpu_id = cpu_id
-        self._text_surface = FONT_ARIAL_10.render('CPU ' + str(cpu_id), False, Color.GREEN)
+        self._text_surface = FONT_ARIAL_10.render('CPU ' + str(cpu_id), False, Color.WHITE)
 
     def draw(self, surface):
-        pygame.draw.rect(surface, Color.GREEN, pygame.Rect(self._x, self._y, CpuComponent.WIDTH, CpuComponent.HEIGHT))
+        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self._x, self._y, CpuComponent.WIDTH, CpuComponent.HEIGHT))
         pygame.draw.rect(surface, Color.BLACK, pygame.Rect(self._x + 2, self._y + 2, CpuComponent.WIDTH - 4, CpuComponent.HEIGHT - 4))
         surface.blit(self._text_surface, (self._x + 18, self._y + 27))
       
