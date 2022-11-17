@@ -10,6 +10,7 @@ class Process:
         self._ending_probability = randint(0, 10)
         self._total_cpu_time = 0
         self._total_idle_time = 0
+        self._last_update_time = 0
 
     def give_cpu_time(self):
         self._state = ProcessState.RUNNING
@@ -24,12 +25,14 @@ class Process:
 
     running_idle_ratio = property(get_running_idle_ratio)
 
-    def update(self):
-        if self._state != ProcessState.RUNNING and self._state != ProcessState.ENDED:
-            self._total_idle_time += 1
-        elif self._state == ProcessState.RUNNING:
-            self._total_cpu_time += 1
-            if (randint(0, 100) <= self._io_probability):
-                self._state = ProcessState.WAITING_IO
-            elif (randint(0, 100) <= self._ending_probability):
-                self._state = ProcessState.ENDED
+    def update(self, current_time):
+        if current_time >= self._last_update_time + 1000:
+            self._last_update_time = current_time
+            if self._state != ProcessState.RUNNING and self._state != ProcessState.ENDED:
+                self._total_idle_time += 1
+            elif self._state == ProcessState.RUNNING:
+                self._total_cpu_time += 1
+                if (randint(0, 100) <= self._io_probability):
+                    self._state = ProcessState.WAITING_IO
+                elif (randint(0, 100) <= self._ending_probability):
+                    self._state = ProcessState.ENDED
