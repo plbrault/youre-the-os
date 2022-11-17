@@ -2,6 +2,7 @@ import sys, pygame
 
 from lib.ui.color import Color
 from visual_components.cpu_component import CpuComponent
+from visual_components.process_component import ProcessComponent
 
 pygame.init()
 pygame.font.init()
@@ -15,6 +16,8 @@ cpu_components = [
   CpuComponent(65 + (3 * CpuComponent.WIDTH), 50, 4)
 ]
 
+process_component = ProcessComponent(50, 200)
+
 screen = pygame.display.set_mode(size)
 
 while True:
@@ -25,5 +28,7 @@ while True:
 
     for cpu_component in cpu_components:
       cpu_component.draw(screen)
+
+    process_component.draw(screen)
 
     pygame.display.flip()
