@@ -6,7 +6,7 @@ from visual_components.cpu_core_component import CpuCoreComponent
 pygame.init()
 pygame.font.init()
 
-size = width, height = 1920, 1080
+size = width, height = 1024, 768
 
 cpu_core_1 = CpuCoreComponent(100, 100, 1)
 
