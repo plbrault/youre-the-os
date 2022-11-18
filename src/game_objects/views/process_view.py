@@ -9,13 +9,7 @@ class ProcessView(Drawable):
         self._process = process
         super().__init__()
 
-    @property
-    def width(self):
-        return 64
 
-    @property
-    def height(self):
-        return 64
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.GREEN, pygame.Rect(self._x, self._y, self.width, self.height))
