@@ -8,8 +8,9 @@
 
 ## Usage
 
-* Install dependencies: `pipenv install`
-* Run program: `python src/main.py`
+Install dependencies: `pipenv install`
+
+Run program:
 
 ```bash
 pipenv shell
