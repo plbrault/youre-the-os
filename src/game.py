@@ -3,42 +3,49 @@ import sys, pygame
 from game_objects.cpu import Cpu
 from game_objects.process import Process
 from lib.ui.color import Color
+class Game:
+    def __init__(self):
+        pygame.init()
+        pygame.font.init()
 
-pygame.init()
-pygame.font.init()
+        size = width, height = 1024, 768
 
-size = width, height = 1024, 768
+        self._cpus = [
+            Cpu(1),
+            Cpu(2),
+            Cpu(3),
+            Cpu(4),
+        ]
 
-cpus = [
-  Cpu(1),
-  Cpu(2),
-  Cpu(3),
-  Cpu(4),
-]
+        for i, cpu in enumerate(self._cpus):
+            x = 50 + i * cpu.view.width + i * 5
+            y = 50
+            cpu.view.setXY(x, y)
 
-for i, cpu in enumerate(cpus):
-    x = 50 + i * cpu.view.width + i * 5
-    y = 50
-    cpu.view.setXY(x, y)
+        self._process = Process()
+        self._process.view.setXY(50, 150)
 
-process = Process()
-process.view.setXY(50, 150)
+        self._screen = pygame.display.set_mode(size)
 
-screen = pygame.display.set_mode(size)
+        while True:
+            self.update(pygame.time.get_ticks())
+            self.render()
 
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT: sys.exit()
+    def update(self, current_time):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: sys.exit()
 
-    for cpu in cpus:
-        cpu.update(pygame.time.get_ticks())
-    process.update(pygame.time.get_ticks())
+        for cpu in self._cpus:
+            cpu.update(current_time)
 
-    screen.fill(Color.BLACK)
+        self._process.update(pygame.time.get_ticks())
 
-    for cpu in cpus:
-        cpu.render(screen)
+    def render(self):
+        self._screen.fill(Color.BLACK)
 
-    process.render(screen)
+        for cpu in self._cpus:
+            cpu.render(self._screen)
 
-    pygame.display.flip()
+        self._process.render(self._screen)
+
+        pygame.display.flip()

@@ -1,1 +1,3 @@
-import game
+from game import Game
+
+Game()
