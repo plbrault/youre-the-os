@@ -30,7 +30,7 @@ class Process(GameObject):
         if self._state == ProcessState.RUNNING:
             self._state = ProcessState.READY
 
-    def update(self, current_time):
+    def update(self, current_time, events):
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
             if self._state != ProcessState.RUNNING and self._state != ProcessState.ENDED:

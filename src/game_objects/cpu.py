@@ -11,6 +11,6 @@ class Cpu(GameObject):
     def cpu_id(self):
         return self._cpu_id
 
-    def update(self, current_time):
+    def update(self, current_time, events):
         pass
     

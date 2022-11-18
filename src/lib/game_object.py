@@ -9,7 +9,7 @@ class GameObject(ABC):
         return self._view
 
     @abstractmethod
-    def update(self, current_time):
+    def update(self, current_time, events):
         pass
 
     def render(self, surface):

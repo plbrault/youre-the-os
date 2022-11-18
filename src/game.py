@@ -3,6 +3,9 @@ import sys, pygame
 from game_objects.cpu import Cpu
 from game_objects.process import Process
 from lib.ui.color import Color
+from lib.game_event import GameEvent
+from lib.game_event_type import GameEventType
+
 class Game:
     def __init__(self):
         pygame.init()
@@ -39,11 +42,17 @@ class Game:
             self.render()        
 
     def update(self, current_time):
+        events = []
+
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: sys.exit()
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONUP:
+                if (event.button == 1):
+                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         for game_object in self._game_objects:
-            game_object.update(current_time)
+            game_object.update(current_time, events)
 
     def render(self):
         self._screen.fill(Color.BLACK)
