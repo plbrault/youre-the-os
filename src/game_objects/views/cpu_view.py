@@ -10,9 +10,11 @@ class CpuView(Drawable):
         self._text_surface = FONT_ARIAL_10.render('CPU ' + str(self._cpu.cpu_id), False, Color.WHITE)
         super().__init__()
 
+    @property
     def width(self):
         return 64
 
+    @property
     def height(self):
         return 64
 
