@@ -17,12 +17,12 @@ cpus = [
 ]
 
 for i, cpu in enumerate(cpus):
-    x = 50 + i * 50 + i * 5
+    x = 50 + i * cpu.view.width + i * 5
     y = 50
     cpu.view.setXY(x, y)
 
 process = Process()
-process.view.setXY(50, 100)
+process.view.setXY(50, 150)
 
 screen = pygame.display.set_mode(size)
 
