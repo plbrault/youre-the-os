@@ -17,6 +17,9 @@ class ProcessView(Drawable):
     def height(self):
         return 64
 
+    def collides(self, x, y):
+        return pygame.Rect(self._x, self._y, self.width, self.height).collidepoint(x, y)
+
     def draw(self, surface):
         pygame.draw.rect(surface, Color.GREEN, pygame.Rect(self._x, self._y, self.width, self.height))
         text_surface = FONT_ARIAL_10.render(self._process.state, False, Color.BLACK)

@@ -2,6 +2,7 @@ from fractions import Fraction
 from random import randint
 
 from lib.game_object import GameObject
+from lib.game_event_type import GameEventType
 from game_objects.process_state import ProcessState
 from game_objects.views.process_view import ProcessView
 
@@ -30,7 +31,16 @@ class Process(GameObject):
         if self._state == ProcessState.RUNNING:
             self._state = ProcessState.READY
 
+    def _clickedOn(self, event):
+        if event.type == GameEventType.MOUSE_LEFT_CLICK:
+            return self._view.collides(*event.getProperty('position'))
+        return False
+
     def update(self, current_time, events):
+        for event in events:
+            if self._clickedOn(event):
+                self._state = ProcessState.RUNNING
+
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
             if self._state != ProcessState.RUNNING and self._state != ProcessState.ENDED:
