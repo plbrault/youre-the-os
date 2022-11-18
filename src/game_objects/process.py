@@ -1,10 +1,14 @@
 from fractions import Fraction
 from random import randint
 
-from game_logic.process_state import ProcessState
+from lib.game_object import GameObject
+from game_objects.process_state import ProcessState
+from game_objects.views.process_view import ProcessView
 
-class Process:
+class Process(GameObject):
     def __init__(self):
+        super().__init__(ProcessView(self))
+
         self._state = ProcessState.NEW
         self._io_probability = randint(0, 50)
         self._ending_probability = randint(0, 5)
@@ -12,19 +16,16 @@ class Process:
         self._total_idle_time = 0
         self._last_update_time = 0
 
-    def get_state(self):
+    @property
+    def state(self):
         return self._state
 
-    state = property(get_state)
-
-    def get_running_idle_ratio(self):
+    @property
+    def running_idle_ratio(self):
         return Fraction(self._total_cpu_time, self._total_idle_time).limit_denominator()
-
-    running_idle_ratio = property(get_running_idle_ratio)
 
     def give_cpu_time(self):
         self._state = ProcessState.RUNNING
-        self._time_waiting = 0
 
     def yield_cpu(self):
         if self._state == ProcessState.RUNNING:
