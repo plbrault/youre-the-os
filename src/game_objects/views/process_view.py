@@ -6,9 +6,8 @@ from lib.ui.fonts import FONT_ARIAL_10
 
 class ProcessView(Drawable):
     def __init__(self, process):
-        super().__init__()
-
         self._process = process
+        super().__init__()
 
     def width(self):
         return 64

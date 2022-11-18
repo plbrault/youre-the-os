@@ -6,10 +6,9 @@ from lib.ui.fonts import FONT_ARIAL_10
 
 class CpuView(Drawable):
     def __init__(self, cpu):
-        super().__init__()
-
         self._cpu = cpu
         self._text_surface = FONT_ARIAL_10.render('CPU ' + str(self._cpu.cpu_id), False, Color.WHITE)
+        super().__init__()
 
     def width(self):
         return 64

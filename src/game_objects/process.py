@@ -7,14 +7,13 @@ from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
     def __init__(self):
-        super().__init__(ProcessView(self))
-
         self._state = ProcessState.NEW
         self._io_probability = randint(0, 50)
         self._ending_probability = randint(0, 5)
         self._total_cpu_time = 0
         self._total_idle_time = 0
         self._last_update_time = 0
+        super().__init__(ProcessView(self))
 
     @property
     def state(self):
