@@ -80,6 +80,18 @@ class Process(GameObject):
         self._is_blocked = False
         self._current_state_duration = 0
 
+    def _set_terminated_by_user(self):
+        self._has_ended = True
+        terminated_process_slot = None
+        for slot in self._terminated_process_slots:
+            if slot.process is None:
+                terminated_process_slot = slot
+                break
+        if terminated_process_slot:
+            terminated_process_slot.process = self
+            self._starvation_level = 6
+            self._view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
             return self._view.collides(*event.getProperty('position'))
@@ -92,21 +104,25 @@ class Process(GameObject):
             self._use_cpu()
 
     def update(self, current_time, events):
-        for event in events:
-            if self._check_if_clicked_on(event):
-                self._on_click()
+        if not self.has_ended:
+            for event in events:
+                if self._check_if_clicked_on(event):
+                    self._on_click()
 
-        if current_time >= self._last_update_time + 1000:
-            self._last_update_time = current_time
-                 
-            self._current_state_duration += 1
+            if current_time >= self._last_update_time + 1000:
+                self._last_update_time = current_time
+                    
+                self._current_state_duration += 1
 
-            if self.has_cpu and not self.is_blocked and randint(1, 20) == 1:
-                self._wait_for_io()
+                if self.has_cpu and not self.is_blocked and randint(1, 20) == 1:
+                    self._wait_for_io()
 
-            if self.has_cpu and not self.is_blocked:
-                if self._current_state_duration == 5:
-                    self._starvation_level = 0
-            else:
-                if self._current_state_duration > 0 and self._current_state_duration % 10 == 0 and self._starvation_level < 5:
-                    self._starvation_level += 1
+                if self.has_cpu and not self.is_blocked:
+                    if self._current_state_duration == 5:
+                        self._starvation_level = 0
+                else:
+                    if self._current_state_duration > 0 and self._current_state_duration % 10 == 0:
+                        if self._starvation_level < 5:
+                            self._starvation_level += 1
+                        else:
+                            self._set_terminated_by_user()

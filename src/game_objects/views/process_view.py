@@ -40,6 +40,9 @@ class ProcessView(Drawable):
         elif self._process.starvation_level == 5:
             color = Color.DARKER_RED
             starvation_emoji = '💀'
+        elif self._process.starvation_level == 6:
+            color = Color.DARK_GREY
+            starvation_emoji = '💀'
 
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
 
