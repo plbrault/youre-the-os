@@ -100,7 +100,7 @@ class Process(GameObject):
                  
             self._current_state_duration += 1
 
-            if self.has_cpu and not self.is_blocked and randint(0, 100) < 5:
+            if self.has_cpu and not self.is_blocked and randint(1, 20) == 1:
                 self._wait_for_io()
 
             if self.has_cpu and not self.is_blocked:
