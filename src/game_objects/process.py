@@ -7,8 +7,9 @@ from game_objects.process_state import ProcessState
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
-    def __init__(self, cpu_list):
+    def __init__(self, cpu_list, process_slots):
         self._cpu_list = cpu_list
+        self._process_slots = process_slots
 
         self._state = ProcessState.NEW
         self._io_probability = randint(0, 50)
