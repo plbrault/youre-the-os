@@ -107,5 +107,5 @@ class Process(GameObject):
                 if self._current_state_duration == 5:
                     self._starvation_level = 0
             else:
-                if self._current_state_duration % 10 == 0 and self._starvation_level < 5:
+                if self._current_state_duration > 0 and self._current_state_duration % 10 == 0 and self._starvation_level < 5:
                     self._starvation_level += 1
