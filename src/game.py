@@ -1,6 +1,7 @@
 import sys, pygame
 
 from game_objects.cpu import Cpu
+from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.process_slot import ProcessSlot
 from lib.ui.color import Color
@@ -31,7 +32,11 @@ class Game:
             x = 50 + i * cpu.view.width + i * 5
             y = 50
             cpu.view.setXY(x, y)
-        self._game_objects.extend(cpu_list)        
+        self._game_objects.extend(cpu_list)
+
+        io_queue = IoQueue()
+        io_queue.view.setXY(50, 10)
+        self._game_objects.append(io_queue)       
 
         process_slots = []
         for row in range(8):
@@ -42,9 +47,9 @@ class Game:
                 process_slot.view.setXY(x, y)
                 process_slots.append(process_slot)
 
-        for i in range(20):
+        for i in range(10):
             pid = i + 1
-            process = Process(pid, cpu_list, process_slots)
+            process = Process(pid, cpu_list, process_slots, io_queue)
             process_slot = process_slots[i]
             process_slot.process = process
             process.view.setXY(process_slot.view.x, process_slot.view.y)

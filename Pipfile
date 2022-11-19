@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 pygame = "*"
+pygame-emojis = "*"
 
 [dev-packages]
 
