@@ -23,27 +23,18 @@ class ProcessView(Drawable):
     def draw(self, surface):
         color = Color.YELLOW
 
-        if self._process.has_cpu:
-            if self._process.current_state_duration < 5:
-                if self._process.previous_state_duration < 10:
-                    color = Color.YELLOW
-                elif self._process.previous_state_duration < 20:
-                    color = Color.ORANGE
-                elif self._process.previous_state_duration < 30:
-                    color = Color.RED
-                elif self._process.previous_state_duration < 40:
-                    color = Color.DARK_RED
-            else:
-                color = Color.GREEN
-        else:
-            if self._process.current_state_duration < 10:
-                color = Color.YELLOW
-            elif self._process.current_state_duration < 20:
-                color = Color.ORANGE
-            elif self._process.current_state_duration < 30:
-                color = Color.RED
-            else:
-                color = Color.DARK_RED
+        if self._process.starvation_level == 0:
+            color = Color.GREEN
+        elif self._process.starvation_level == 1:
+            color = Color.YELLOW
+        elif self._process.starvation_level == 2:
+            color = Color.ORANGE
+        elif self._process.starvation_level == 3:
+            color = Color.RED
+        elif self._process.starvation_level == 4:
+            color = Color.DARK_RED
+        elif self._process.starvation_level == 5:
+            color = Color.DARKER_RED
 
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
         pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)

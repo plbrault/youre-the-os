@@ -11,10 +11,10 @@ class Process(GameObject):
         self._has_cpu = False
         self._is_blocked = False
         self._has_ended = False
-        self._current_state_duration = 0
-        self._previous_state_duration = 0
+        self._starvation_level = 1
 
         self._last_update_time = 0
+        self._current_state_duration = 0
 
         super().__init__(ProcessView(self))
 
@@ -35,12 +35,8 @@ class Process(GameObject):
         return self._has_ended
 
     @property
-    def current_state_duration(self):
-        return self._current_state_duration
-
-    @property
-    def previous_state_duration(self):
-        return self._previous_state_duration
+    def starvation_level(self):
+        return self._starvation_level
 
     def _use_cpu(self):
         if not self.has_cpu:
@@ -51,7 +47,6 @@ class Process(GameObject):
                     self._view.setXY(cpu.view.x, cpu.view.y)
                     break
             if self.has_cpu:
-                self._previous_state_duration = self._current_state_duration
                 self._current_state_duration = 0
                 for slot in self._process_slots:
                     if slot.process == self:
@@ -61,7 +56,6 @@ class Process(GameObject):
     def _yield_cpu(self):
         if self.has_cpu:
             self._has_cpu = False
-            self._previous_state_duration = self._current_state_duration
             self._current_state_duration = 0
             for cpu in self._cpu_list:
                 if cpu.process == self:
@@ -90,5 +84,12 @@ class Process(GameObject):
                 self._onClick()
 
         if current_time >= self._last_update_time + 1000:
-            self._current_state_duration += 1
             self._last_update_time = current_time
+            
+            self._current_state_duration += 1
+            if self.has_cpu:
+                if self._current_state_duration == 5:
+                    self._starvation_level = 0
+            else:
+                if self._current_state_duration % 10 == 0 and self._starvation_level < 5:
+                    self._starvation_level += 1
