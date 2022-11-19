@@ -53,19 +53,29 @@ class Game:
                 y = 150 + row * process_slot.view.height + row * 5
                 process_slot.view.setXY(x, y)
                 process_slots.append(process_slot)
-
-        for i in range(10):
-            pid = i + 1
-            process = Process(pid, cpu_list, process_slots, io_queue)
-            process_slot = process_slots[i]
-            process_slot.process = process
-            process.view.setXY(process_slot.view.x, process_slot.view.y)
-            self._game_objects.append(process)
+        self._game_objects.extend(process_slots)
 
         terminated_processes_label = Label('Terminated By User :')
         terminated_processes_label.view.setXY(50, 644)
         terminated_processes_label.font = FONT_ARIAL_20
         self._game_objects.append(terminated_processes_label)
+
+        terminated_process_slots = []
+        for i in range(5):
+            process_slot = ProcessSlot()
+            x = 50 + i * process_slot.view.width + i * 5
+            y = 644 + terminated_processes_label.view.height + 5
+            process_slot.view.setXY(x, y)
+            terminated_process_slots.append(process_slot)
+        self._game_objects.extend(terminated_process_slots)
+
+        for i in range(10):
+            pid = i + 1
+            process = Process(pid, cpu_list, process_slots, terminated_process_slots, io_queue)
+            process_slot = process_slots[i]
+            process_slot.process = process
+            process.view.setXY(process_slot.view.x, process_slot.view.y)
+            self._game_objects.append(process)
 
     def main_loop(self):
         while True:

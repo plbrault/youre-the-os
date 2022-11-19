@@ -5,10 +5,11 @@ from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
-    def __init__(self, pid, cpu_list, process_slots, io_queue):
+    def __init__(self, pid, cpu_list, process_slots, terminated_process_slots, io_queue):
         self._pid = pid
         self._cpu_list = cpu_list
         self._process_slots = process_slots
+        self._terminated_process_slots = terminated_process_slots
         self._io_queue = io_queue
 
         self._has_cpu = False
