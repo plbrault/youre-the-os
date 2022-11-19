@@ -2,6 +2,7 @@ import sys, pygame
 
 from game_objects.cpu import Cpu
 from game_objects.process import Process
+from game_objects.process_slot import ProcessSlot
 from lib.ui.color import Color
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
@@ -20,21 +21,33 @@ class Game:
         size = width, height = 1024, 768
         self._screen = pygame.display.set_mode(size)
 
-        cpus = [
+        cpu_list = [
             Cpu(1),
             Cpu(2),
             Cpu(3),
             Cpu(4),
         ]
-        for i, cpu in enumerate(cpus):
+        for i, cpu in enumerate(cpu_list):
             x = 50 + i * cpu.view.width + i * 5
             y = 50
             cpu.view.setXY(x, y)
-        self._game_objects.extend(cpus)        
+        self._game_objects.extend(cpu_list)        
 
-        process = Process()
-        process.view.setXY(50, 150)
-        self._game_objects.append(process)
+        process_slots = []
+        for row in range(8):
+            for column in range(6):
+                process_slot = ProcessSlot()          
+                x = 50 + column * process_slot.view.width + column * 5
+                y = 150 + row * process_slot.view.height + row * 5
+                process_slot.view.setXY(x, y)
+                process_slots.append(process_slot)
+
+        for i in range(10):
+            process = Process(cpu_list, process_slots)
+            process_slot = process_slots[i]
+            process_slot.process = process
+            process.view.setXY(process_slot.view.x, process_slot.view.y)
+            self._game_objects.append(process)
     
     def main_loop(self):
         while True:
