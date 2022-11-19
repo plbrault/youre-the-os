@@ -11,6 +11,7 @@ class Process(GameObject):
         self._has_cpu = False
         self._is_blocked = False
         self._has_ended = False
+        self._time_since_state_change = 0
 
         self._last_update_time = 0
 
@@ -32,6 +33,10 @@ class Process(GameObject):
     def has_ended(self):
         return self._has_ended
 
+    @property
+    def time_since_state_change(self):
+        return self._time_since_state_change
+
     def _use_cpu(self):
         if not self.has_cpu:
             for cpu in self._cpu_list:
@@ -41,6 +46,7 @@ class Process(GameObject):
                     self._view.setXY(cpu.view.x, cpu.view.y)
                     break
             if self.has_cpu:
+                self._time_since_state_change = 0
                 for slot in self._process_slots:
                     if slot.process == self:
                         slot.process = None
@@ -49,6 +55,7 @@ class Process(GameObject):
     def _yield_cpu(self):
         if self.has_cpu:
             self._has_cpu = False
+            self._time_since_state_change = 0
             for cpu in self._cpu_list:
                 if cpu.process == self:
                     cpu.process = None
@@ -76,4 +83,4 @@ class Process(GameObject):
                 self._onClick()
 
         if current_time >= self._last_update_time + 1000:
-            self._last_update_time = current_time
+            self._time_since_state_change += 1
