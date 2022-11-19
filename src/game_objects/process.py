@@ -31,10 +31,6 @@ class Process(GameObject):
 
     def _use_cpu(self):
         if self._current_cpu is None:
-            for slot in self._process_slots:
-                if slot.process == self:
-                    slot.process = None
-                    break
             for cpu in self._cpu_list:
                 if not cpu.has_process:
                     cpu.process = self
@@ -43,6 +39,11 @@ class Process(GameObject):
                     if self._state == ProcessState.NEW or ProcessState.READY:
                         self._state = ProcessState.RUNNING
                     break
+            if self._current_cpu is not None:
+                for slot in self._process_slots:
+                    if slot.process == self:
+                        slot.process = None
+                        break
 
     def _yield_cpu(self):
         if self._current_cpu is not None:
