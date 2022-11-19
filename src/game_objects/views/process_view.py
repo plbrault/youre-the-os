@@ -21,7 +21,20 @@ class ProcessView(Drawable):
         return pygame.Rect(self._x, self._y, self.width, self.height).collidepoint(x, y)
 
     def draw(self, surface):
-        pygame.draw.rect(surface, Color.GREEN, pygame.Rect(self._x, self._y, self.width, self.height))
+        color = None
+
+        if self._process.total_cpu_time >= self._process.total_idle_time:
+            color = Color.GREEN
+        elif self._process.total_cpu_time <= 10:
+            color = Color.YELLOW
+            if self._process.total_idle_time >= 20:
+                color = Color.RED
+        elif self._process.total_idle_time > self._process.total_cpu_time:
+            color = Color.YELLOW
+            if self._process.total_idle_time >= (2 * self._process.total_cpu_time):
+                color = Color.RED
+
+        pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
         status_text_surface = FONT_ARIAL_10.render(self._process.state, False, Color.BLACK)
         cpu_time_text_surface = FONT_ARIAL_10.render('CPU Time: ' + str(self._process.total_cpu_time), False, Color.BLACK)
         idle_time_text_surface = FONT_ARIAL_10.render('Idle Time: ' + str(self._process.total_idle_time), False, Color.BLACK)
