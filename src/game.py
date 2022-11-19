@@ -43,7 +43,8 @@ class Game:
                 process_slots.append(process_slot)
 
         for i in range(10):
-            process = Process(cpu_list, process_slots)
+            pid = i + 1
+            process = Process(pid, cpu_list, process_slots)
             process_slot = process_slots[i]
             process_slot.process = process
             process.view.setXY(process_slot.view.x, process_slot.view.y)
