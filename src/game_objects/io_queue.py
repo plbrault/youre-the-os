@@ -26,7 +26,7 @@ class IoQueue(GameObject):
         return False
 
     def _onClick(self):
-        if self.event_count > 0 and not self._subscriber_queue.empty():
+        while self.event_count > 0:
             self._event_count -= 1
             callback = self._subscriber_queue.get()
             callback()
