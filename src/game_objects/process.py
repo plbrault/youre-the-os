@@ -17,7 +17,7 @@ class Process(GameObject):
         self._total_cpu_time = 0
         self._total_idle_time = 0
         self._last_update_time = 0
-        self._is_attributed_cpu = False
+        self._current_cpu = None
 
         super().__init__(ProcessView(self))
 
@@ -30,19 +30,31 @@ class Process(GameObject):
         return Fraction(self._total_cpu_time, self._total_idle_time).limit_denominator()
 
     def _use_cpu(self):
-        for cpu in self._cpu_list:
-            if not cpu.has_process:
-                cpu.process = self
-                self._is_attributed_cpu = True
-                self._view.setXY(cpu.view.x, cpu.view.y)
-                if self._state == ProcessState.NEW or ProcessState.READY:
-                    self._state = ProcessState.RUNNING
-                break
+        if self._current_cpu is None:
+            for slot in self._process_slots:
+                if slot.process == self:
+                    slot.process = None
+                    break
+            for cpu in self._cpu_list:
+                if not cpu.has_process:
+                    cpu.process = self
+                    self._current_cpu = cpu
+                    self._view.setXY(cpu.view.x, cpu.view.y)
+                    if self._state == ProcessState.NEW or ProcessState.READY:
+                        self._state = ProcessState.RUNNING
+                    break
 
     def _yield_cpu(self):
-        if self._state == ProcessState.RUNNING:
-
-            self._state = ProcessState.READY
+        if self._current_cpu is not None:
+            if self._state == ProcessState.RUNNING:
+                self._state = ProcessState.READY
+            self._current_cpu.process = None
+            self._current_cpu = None
+            for slot in self._process_slots:
+                if slot.process is None:
+                    slot.process = self
+                    self._view.setXY(slot.view.x, slot.view.y)
+                    break
 
     def _checkIfClickedOn(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
@@ -50,7 +62,7 @@ class Process(GameObject):
         return False
 
     def _onClick(self):
-        if self._is_attributed_cpu:
+        if self._current_cpu is not None:
             self._yield_cpu()
         else:
             self._use_cpu()
