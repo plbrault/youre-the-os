@@ -17,9 +17,6 @@ class ProcessView(Drawable):
     def height(self):
         return 64
 
-    def collides(self, x, y):
-        return pygame.Rect(self._x, self._y, self.width, self.height).collidepoint(x, y)
-
     def draw(self, surface):
         color = Color.YELLOW
 

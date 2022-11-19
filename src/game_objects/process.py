@@ -67,12 +67,12 @@ class Process(GameObject):
                     self._view.setXY(slot.view.x, slot.view.y)
                     break
 
-    def _checkIfClickedOn(self, event):
+    def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
             return self._view.collides(*event.getProperty('position'))
         return False
 
-    def _onClick(self):
+    def _on_click(self):
         if self.has_cpu:
             self._yield_cpu()
         else:
@@ -80,8 +80,8 @@ class Process(GameObject):
 
     def update(self, current_time, events):
         for event in events:
-            if self._checkIfClickedOn(event):
-                self._onClick()
+            if self._check_if_clicked_on(event):
+                self._on_click()
 
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time

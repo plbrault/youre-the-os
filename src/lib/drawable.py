@@ -1,3 +1,5 @@
+import pygame
+
 from abc import ABC, abstractmethod
 
 class Drawable(ABC):
@@ -24,6 +26,9 @@ class Drawable(ABC):
     def setXY(self, x, y):
         self.x = x
         self.y = y
+
+    def collides(self, x, y):
+        return pygame.Rect(self._x, self._y, self.width, self.height).collidepoint(x, y)
 
     @property
     @abstractmethod
