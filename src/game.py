@@ -32,9 +32,12 @@ class Game:
             cpu.view.setXY(x, y)
         self._game_objects.extend(cpu_list)        
 
-        process = Process(cpu_list)
-        process.view.setXY(50, 150)
-        self._game_objects.append(process)
+        for i in range(0, 5):
+            process = Process(cpu_list)
+            x = 50 + i * cpu.view.width + i * 5
+            y = 150
+            process.view.setXY(x, y)
+            self._game_objects.append(process)
     
     def main_loop(self):
         while True:
