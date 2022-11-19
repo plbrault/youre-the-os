@@ -82,6 +82,7 @@ class Process(GameObject):
 
     def _set_terminated_by_user(self):
         self._has_ended = True
+        self._starvation_level = 6
         terminated_process_slot = None
         for slot in self._terminated_process_slots:
             if slot.process is None:
@@ -89,7 +90,6 @@ class Process(GameObject):
                 break
         if terminated_process_slot:
             terminated_process_slot.process = self
-            self._starvation_level = 6
             self._view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
 
     def _check_if_clicked_on(self, event):
