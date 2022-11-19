@@ -2,9 +2,11 @@ import sys, pygame
 
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
+from game_objects.label import Label
 from game_objects.process import Process
 from game_objects.process_slot import ProcessSlot
 from lib.ui.color import Color
+from lib.ui.fonts import FONT_ARIAL_20
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 
@@ -38,8 +40,13 @@ class Game:
         io_queue.view.setXY(50, 10)
         self._game_objects.append(io_queue)       
 
+        processes_label = Label('Processes:')
+        processes_label.view.setXY(50, 120)
+        processes_label.font = FONT_ARIAL_20
+        self._game_objects.append(processes_label)
+
         process_slots = []
-        for row in range(8):
+        for row in range(7):
             for column in range(6):
                 process_slot = ProcessSlot()          
                 x = 50 + column * process_slot.view.width + column * 5
@@ -54,7 +61,12 @@ class Game:
             process_slot.process = process
             process.view.setXY(process_slot.view.x, process_slot.view.y)
             self._game_objects.append(process)
-    
+
+        terminated_processes_label = Label('Terminated By User :')
+        terminated_processes_label.view.setXY(50, 644)
+        terminated_processes_label.font = FONT_ARIAL_20
+        self._game_objects.append(terminated_processes_label)
+
     def main_loop(self):
         while True:
             self.update(pygame.time.get_ticks())
