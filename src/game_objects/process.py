@@ -10,7 +10,6 @@ class Process(GameObject):
         self._cpu_list = cpu_list
         self._process_slots = process_slots
         self._io_queue = io_queue
-        self._io_probability = randint(0, 25)
 
         self._has_cpu = False
         self._is_blocked = False
@@ -101,7 +100,7 @@ class Process(GameObject):
                  
             self._current_state_duration += 1
 
-            if self.has_cpu and not self.is_blocked and randint(0, 100) < self._io_probability:
+            if self.has_cpu and not self.is_blocked and randint(0, 100) < 5:
                 self._wait_for_io()
 
             if self.has_cpu and not self.is_blocked:
