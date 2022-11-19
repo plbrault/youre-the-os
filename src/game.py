@@ -20,19 +20,19 @@ class Game:
         size = width, height = 1024, 768
         self._screen = pygame.display.set_mode(size)
 
-        cpus = [
+        cpu_list = [
             Cpu(1),
             Cpu(2),
             Cpu(3),
             Cpu(4),
         ]
-        for i, cpu in enumerate(cpus):
+        for i, cpu in enumerate(cpu_list):
             x = 50 + i * cpu.view.width + i * 5
             y = 50
             cpu.view.setXY(x, y)
-        self._game_objects.extend(cpus)        
+        self._game_objects.extend(cpu_list)        
 
-        process = Process()
+        process = Process(cpu_list)
         process.view.setXY(50, 150)
         self._game_objects.append(process)
     
