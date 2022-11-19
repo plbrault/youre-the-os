@@ -1,60 +1,66 @@
-from fractions import Fraction
-from random import randint
-
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
-from game_objects.process_state import ProcessState
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
-    def __init__(self, cpu_list, process_slots):
+    def __init__(self, pid, cpu_list, process_slots):
+        self._pid = pid
         self._cpu_list = cpu_list
         self._process_slots = process_slots
 
-        self._state = ProcessState.NEW
-        self._io_probability = randint(0, 50)
-        self._ending_probability = randint(0, 5)
-        self._total_cpu_time = 0
-        self._total_idle_time = 0
+        self._has_cpu = False
+        self._is_blocked = False
+        self._has_ended = False
+        self._starvation_level = 1
+
         self._last_update_time = 0
-        self._current_cpu = None
+        self._current_state_duration = 0
 
         super().__init__(ProcessView(self))
 
     @property
-    def state(self):
-        return self._state
+    def pid(self):
+        return self._pid
 
     @property
-    def total_cpu_time(self):
-        return self._total_cpu_time
+    def has_cpu(self):
+        return self._has_cpu
 
     @property
-    def total_idle_time(self):
-        return self._total_idle_time
+    def is_blocked(self):
+        return self._is_blocked
+
+    @property
+    def has_ended(self):
+        return self._has_ended
+
+    @property
+    def starvation_level(self):
+        return self._starvation_level
 
     def _use_cpu(self):
-        if self._current_cpu is None:
+        if not self.has_cpu:
             for cpu in self._cpu_list:
                 if not cpu.has_process:
                     cpu.process = self
-                    self._current_cpu = cpu
+                    self._has_cpu = True
                     self._view.setXY(cpu.view.x, cpu.view.y)
-                    if self._state == ProcessState.NEW or ProcessState.READY:
-                        self._state = ProcessState.RUNNING
                     break
-            if self._current_cpu is not None:
+            if self.has_cpu:
+                self._current_state_duration = 0
                 for slot in self._process_slots:
                     if slot.process == self:
                         slot.process = None
                         break
 
     def _yield_cpu(self):
-        if self._current_cpu is not None:
-            if self._state == ProcessState.RUNNING:
-                self._state = ProcessState.READY
-            self._current_cpu.process = None
-            self._current_cpu = None
+        if self.has_cpu:
+            self._has_cpu = False
+            self._current_state_duration = 0
+            for cpu in self._cpu_list:
+                if cpu.process == self:
+                    cpu.process = None
+                    break
             for slot in self._process_slots:
                 if slot.process is None:
                     slot.process = self
@@ -67,7 +73,7 @@ class Process(GameObject):
         return False
 
     def _onClick(self):
-        if self._current_cpu is not None:
+        if self.has_cpu:
             self._yield_cpu()
         else:
             self._use_cpu()
@@ -79,11 +85,11 @@ class Process(GameObject):
 
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
-            if self._state != ProcessState.RUNNING and self._state != ProcessState.ENDED:
-                self._total_idle_time += 1
-            elif self._state == ProcessState.RUNNING:
-                self._total_cpu_time += 1
-                #if (randint(0, 100) <= self._io_probability):
-                #    self._state = ProcessState.WAITING_IO
-                #elif (randint(0, 100) <= self._ending_probability):
-                #    self._state = ProcessState.ENDED
+            
+            self._current_state_duration += 1
+            if self.has_cpu:
+                if self._current_state_duration == 5:
+                    self._starvation_level = 0
+            else:
+                if self._current_state_duration % 10 == 0 and self._starvation_level < 5:
+                    self._starvation_level += 1
