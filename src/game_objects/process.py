@@ -79,7 +79,7 @@ class Process(GameObject):
                 self._total_idle_time += 1
             elif self._state == ProcessState.RUNNING:
                 self._total_cpu_time += 1
-                if (randint(0, 100) <= self._io_probability):
-                    self._state = ProcessState.WAITING_IO
-                elif (randint(0, 100) <= self._ending_probability):
-                    self._state = ProcessState.ENDED
+                #if (randint(0, 100) <= self._io_probability):
+                #    self._state = ProcessState.WAITING_IO
+                #elif (randint(0, 100) <= self._ending_probability):
+                #    self._state = ProcessState.ENDED
