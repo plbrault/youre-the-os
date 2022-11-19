@@ -21,23 +21,8 @@ class ProcessView(Drawable):
         return pygame.Rect(self._x, self._y, self.width, self.height).collidepoint(x, y)
 
     def draw(self, surface):
-        color = None
-
-        if self._process.total_cpu_time >= self._process.total_idle_time:
-            color = Color.GREEN
-        elif self._process.total_cpu_time <= 10:
-            color = Color.YELLOW
-            if self._process.total_idle_time >= 20:
-                color = Color.RED
-        elif self._process.total_idle_time > self._process.total_cpu_time:
-            color = Color.YELLOW
-            if self._process.total_idle_time >= (2 * self._process.total_cpu_time):
-                color = Color.RED
+        color = Color.GREEN
 
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
-        status_text_surface = FONT_ARIAL_10.render(self._process.state, False, Color.BLACK)
-        cpu_time_text_surface = FONT_ARIAL_10.render('CPU Time: ' + str(self._process.total_cpu_time), False, Color.BLACK)
-        idle_time_text_surface = FONT_ARIAL_10.render('Idle Time: ' + str(self._process.total_idle_time), False, Color.BLACK)
-        surface.blit(status_text_surface, (self._x + 18, self._y + 5))
-        surface.blit(cpu_time_text_surface, (self._x + 2, self._y + 30))
-        surface.blit(idle_time_text_surface, (self._x + 2, self._y + 45))
+        pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)
+        surface.blit(pid_text_surface, (self._x + 28, self._y + 5))
