@@ -26,8 +26,12 @@ class Process(GameObject):
         return self._state
 
     @property
-    def running_idle_ratio(self):
-        return Fraction(self._total_cpu_time, self._total_idle_time).limit_denominator()
+    def total_cpu_time(self):
+        return self._total_cpu_time
+
+    @property
+    def total_idle_time(self):
+        return self._total_idle_time
 
     def _use_cpu(self):
         if self._current_cpu is None:

@@ -22,5 +22,9 @@ class ProcessView(Drawable):
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.GREEN, pygame.Rect(self._x, self._y, self.width, self.height))
-        text_surface = FONT_ARIAL_10.render(self._process.state, False, Color.BLACK)
-        surface.blit(text_surface, (self._x + 18, self._y + 27))
+        status_text_surface = FONT_ARIAL_10.render(self._process.state, False, Color.BLACK)
+        cpu_time_text_surface = FONT_ARIAL_10.render('CPU Time: ' + str(self._process.total_cpu_time), False, Color.BLACK)
+        idle_time_text_surface = FONT_ARIAL_10.render('Idle Time: ' + str(self._process.total_idle_time), False, Color.BLACK)
+        surface.blit(status_text_surface, (self._x + 18, self._y + 5))
+        surface.blit(cpu_time_text_surface, (self._x + 2, self._y + 30))
+        surface.blit(idle_time_text_surface, (self._x + 2, self._y + 45))
