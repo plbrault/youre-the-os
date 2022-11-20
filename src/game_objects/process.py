@@ -80,6 +80,7 @@ class Process(GameObject):
     def _set_terminated_by_user(self):
         if self._game.terminate_process(self):
             self._has_ended = True
+            self._is_blocked = False
             self._starvation_level = 6
 
     def _check_if_clicked_on(self, event):
