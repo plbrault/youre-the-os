@@ -18,18 +18,8 @@ class Game:
 
         self._window_width = 1024
         self._window_height = 768
-
-        self._cpu_list = []
-        self._process_slots = []
-        self._terminated_process_slots = []
-        self._io_queue = IoQueue()
-        
-        self._next_pid = 1
-        self._last_new_process_check = 0
-        self._terminated_process_count = 0
-        self._game_over = True
-
-        self._game_objects = []
+        screen_size = self._window_width, self._window_height
+        self._screen = pygame.display.set_mode(screen_size)        
 
         self._setup()
         self._main_loop()
@@ -51,8 +41,22 @@ class Game:
         return self._io_queue
 
     def _setup(self):
-        screen_size = self._window_width, self._window_height
-        self._screen = pygame.display.set_mode(screen_size)
+        self._cpu_list = []
+        self._process_slots = []
+        self._terminated_process_slots = []
+        self._io_queue = IoQueue()
+
+        self._cpu_list = []
+        self._process_slots = []
+        self._terminated_process_slots = []
+        self._io_queue = IoQueue()
+        
+        self._next_pid = 1
+        self._last_new_process_check = 0
+        self._terminated_process_count = 0
+        self._game_over = False
+
+        self._game_objects = []
      
         self.cpu_list.extend([
             Cpu(1),
@@ -118,9 +122,13 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONUP:
-                if (event.button == 1):
-                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+            if self._game_over:
+                if event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYUP:
+                    self._setup()
+            else:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if (event.button == 1):
+                        events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         if self._game_over:
             game_over_dialog = GameOverDialog()
@@ -158,6 +166,9 @@ class Game:
             self._terminated_process_count += 1
             terminated_process_slot.process = process
             process.view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+            for cpu in self._cpu_list:
+                if cpu.process == process:
+                    cpu.process = None
             if self._terminated_process_count == 5:
                 self._game_over = True
             return True

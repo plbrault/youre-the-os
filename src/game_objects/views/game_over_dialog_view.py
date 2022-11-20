@@ -3,7 +3,7 @@ import os
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_ARIAL_16, FONT_ARIAL_30
+from lib.ui.fonts import FONT_ARIAL_10, FONT_ARIAL_12, FONT_ARIAL_16, FONT_ARIAL_30
 from game_objects.label import Label
 
 class GameOverDialogView(Drawable):
@@ -19,6 +19,10 @@ class GameOverDialogView(Drawable):
         self._explanation_label = Label('You made the user angry!')
         self._explanation_label.font = FONT_ARIAL_16
         self._explanation_label.color = Color.WHITE
+
+        self._replay_label = Label('Press any key to try again')
+        self._replay_label.font = FONT_ARIAL_12
+        self._replay_label.color = Color.WHITE        
 
     @property
     def width(self):
@@ -41,3 +45,9 @@ class GameOverDialogView(Drawable):
             self._game_over_label.view.y + self._game_over_label.view.height + 5,
         )
         self._explanation_label.render(surface)
+
+        self._replay_label.view.setXY(
+            (self.width - self._replay_label.view.width) / 2 + self.x,
+            self._explanation_label.view.y + self._explanation_label.view.height + 5,
+        )
+        self._replay_label.render(surface)
