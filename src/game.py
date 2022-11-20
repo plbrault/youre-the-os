@@ -22,6 +22,8 @@ class Game:
         
         self._next_pid = 1
         self._last_new_process_check = 0
+        self._terminated_process_count = 0
+        self._game_over = False
 
         self._game_objects = []
 
@@ -101,6 +103,11 @@ class Game:
             process.view.setXY(process_slot.view.x, process_slot.view.y)
             self._game_objects.append(process)
 
+    def _main_loop(self):
+        while True:
+            self._update(pygame.time.get_ticks())
+            self._render()
+
     def _update(self, current_time):
         events = []
 
@@ -111,20 +118,21 @@ class Game:
                 if (event.button == 1):
                     events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
-        if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
-            self._last_new_process_check = current_time
-            for process_slot in self.process_slots:
-                if process_slot.process is None:
-                    new_process = Process(self._next_pid, self)
-                    self._next_pid += 1
-                    new_process.view.x = process_slot.view.x
-                    new_process.view.y = process_slot.view.y
-                    process_slot.process = new_process
-                    self._game_objects.append(new_process)
-                    break
+        if not self._game_over:
+            if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
+                self._last_new_process_check = current_time
+                for process_slot in self.process_slots:
+                    if process_slot.process is None:
+                        new_process = Process(self._next_pid, self)
+                        self._next_pid += 1
+                        new_process.view.x = process_slot.view.x
+                        new_process.view.y = process_slot.view.y
+                        process_slot.process = new_process
+                        self._game_objects.append(new_process)
+                        break
 
-        for game_object in self._game_objects:
-            game_object.update(current_time, events)
+            for game_object in self._game_objects:
+                game_object.update(current_time, events)
 
     def _render(self):
         self._screen.fill(Color.BLACK)
@@ -134,7 +142,14 @@ class Game:
 
         pygame.display.flip()
 
-    def _main_loop(self):
-        while True:
-            self._update(pygame.time.get_ticks())
-            self._render()        
+    def terminate_process(self, process):
+        if self._terminated_process_count < 5:
+            terminated_process_slot = self._terminated_process_slots[self._terminated_process_count]
+            self._terminated_process_count += 1
+            terminated_process_slot.process = process
+            process.view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+            if self._terminated_process_count == 5:
+                self._game_over = True
+            return True
+        else:
+            return False

@@ -78,16 +78,9 @@ class Process(GameObject):
         self._current_state_duration = 0
 
     def _set_terminated_by_user(self):
-        self._has_ended = True
-        self._starvation_level = 6
-        terminated_process_slot = None
-        for slot in self._game.terminated_process_slots:
-            if slot.process is None:
-                terminated_process_slot = slot
-                break
-        if terminated_process_slot:
-            terminated_process_slot.process = self
-            self._view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+        if self._game.terminate_process(self):
+            self._has_ended = True
+            self._starvation_level = 6
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
