@@ -25,9 +25,8 @@ class Game:
 
         self._game_objects = []
 
-
-        self.setup()
-        self.main_loop()
+        self._setup()
+        self._main_loop()
 
     @property
     def cpu_list(self):
@@ -45,7 +44,7 @@ class Game:
     def io_queue(self):
         return self._io_queue
 
-    def setup(self):
+    def _setup(self):
         screen_size = 1024, 768
         self._screen = pygame.display.set_mode(screen_size)
      
@@ -102,12 +101,7 @@ class Game:
             process.view.setXY(process_slot.view.x, process_slot.view.y)
             self._game_objects.append(process)
 
-    def main_loop(self):
-        while True:
-            self.update(pygame.time.get_ticks())
-            self.render()        
-
-    def update(self, current_time):
+    def _update(self, current_time):
         events = []
 
         for event in pygame.event.get():
@@ -132,10 +126,15 @@ class Game:
         for game_object in self._game_objects:
             game_object.update(current_time, events)
 
-    def render(self):
+    def _render(self):
         self._screen.fill(Color.BLACK)
 
         for game_object in self._game_objects:
             game_object.render(self._screen)
 
         pygame.display.flip()
+
+    def _main_loop(self):
+        while True:
+            self._update(pygame.time.get_ticks())
+            self._render()        
