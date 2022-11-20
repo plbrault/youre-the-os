@@ -1,6 +1,7 @@
 import sys, pygame
 
 from game_objects.cpu import Cpu
+from game_objects.game_over_dialog import GameOverDialog
 from game_objects.io_queue import IoQueue
 from game_objects.label import Label
 from game_objects.process import Process
@@ -118,7 +119,11 @@ class Game:
                 if (event.button == 1):
                     events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
-        if not self._game_over:
+        if self._game_over:
+            game_over_dialog = GameOverDialog()
+            game_over_dialog.view.setXY(112, 34)
+            self._game_objects.append(game_over_dialog)
+        else:
             if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
                 self._last_new_process_check = current_time
                 for process_slot in self.process_slots:
