@@ -1,4 +1,5 @@
 class Color:
+    ALMOST_BLACK = (25, 25, 25)
     BLACK = (0, 0, 0)
     BLUE = (0, 0, 255)
     DARK_GREY = (99, 102, 106)

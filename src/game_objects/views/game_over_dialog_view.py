@@ -20,4 +20,5 @@ class GameOverDialogView(Drawable):
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self._x, self._y, self.width, self.height))
-        surface.blit(self._image, (self._x + 30, self._y + 104))
+        pygame.draw.rect(surface, Color.ALMOST_BLACK, pygame.Rect(self._x + 2, self._y + 2, self.width - 4, self.height - 4))
+        surface.blit(self._image, (self._x + 30, self._y + 98))

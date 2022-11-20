@@ -27,7 +27,7 @@ class Game:
         self._next_pid = 1
         self._last_new_process_check = 0
         self._terminated_process_count = 0
-        self._game_over = False
+        self._game_over = True
 
         self._game_objects = []
 
