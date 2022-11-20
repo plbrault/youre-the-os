@@ -96,7 +96,7 @@ class Game:
             pid = self._next_pid
             self._next_pid += 1
 
-            process = Process(pid, self.cpu_list, self.process_slots, self.terminated_process_slots, io_queue)
+            process = Process(pid, self)
             process_slot = self.process_slots[i]
             process_slot.process = process
             process.view.setXY(process_slot.view.x, process_slot.view.y)
@@ -121,13 +121,7 @@ class Game:
             self._last_new_process_check = current_time
             for process_slot in self.process_slots:
                 if process_slot.process is None:
-                    new_process = Process(
-                        self._next_pid,
-                        self._cpu_list,
-                        self._process_slots,
-                        self._terminated_process_slots,
-                        self._io_queue
-                    )
+                    new_process = Process(self._next_pid, self)
                     self._next_pid += 1
                     new_process.view.x = process_slot.view.x
                     new_process.view.y = process_slot.view.y
