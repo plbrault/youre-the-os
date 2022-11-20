@@ -5,12 +5,9 @@ from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
-    def __init__(self, pid, cpu_list, process_slots, terminated_process_slots, io_queue):
+    def __init__(self, pid, game):
         self._pid = pid
-        self._cpu_list = cpu_list
-        self._process_slots = process_slots
-        self._terminated_process_slots = terminated_process_slots
-        self._io_queue = io_queue
+        self._game = game
 
         self._has_cpu = False
         self._is_blocked = False
@@ -44,7 +41,7 @@ class Process(GameObject):
 
     def _use_cpu(self):
         if not self.has_cpu:
-            for cpu in self._cpu_list:
+            for cpu in self._game.cpu_list:
                 if not cpu.has_process:
                     cpu.process = self
                     self._has_cpu = True
@@ -52,7 +49,7 @@ class Process(GameObject):
                     break
             if self.has_cpu:
                 self._current_state_duration = 0
-                for slot in self._process_slots:
+                for slot in self._game.process_slots:
                     if slot.process == self:
                         slot.process = None
                         break
@@ -61,11 +58,11 @@ class Process(GameObject):
         if self.has_cpu:
             self._has_cpu = False
             self._current_state_duration = 0
-            for cpu in self._cpu_list:
+            for cpu in self._game.cpu_list:
                 if cpu.process == self:
                     cpu.process = None
                     break
-            for slot in self._process_slots:
+            for slot in self._game.process_slots:
                 if slot.process is None:
                     slot.process = self
                     self._view.setXY(slot.view.x, slot.view.y)
@@ -74,7 +71,7 @@ class Process(GameObject):
     def _wait_for_io(self):
         self._is_blocked = True
         self._current_state_duration = 0
-        self._io_queue.wait_for_event(self._on_io_event)
+        self._game.io_queue.wait_for_event(self._on_io_event)
 
     def _on_io_event(self):
         self._is_blocked = False
@@ -84,7 +81,7 @@ class Process(GameObject):
         self._has_ended = True
         self._starvation_level = 6
         terminated_process_slot = None
-        for slot in self._terminated_process_slots:
+        for slot in self._game.terminated_process_slots:
             if slot.process is None:
                 terminated_process_slot = slot
                 break
