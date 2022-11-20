@@ -1,6 +1,7 @@
 import sys, pygame
 
 from game_objects.cpu import Cpu
+from game_objects.game_over_dialog import GameOverDialog
 from game_objects.io_queue import IoQueue
 from game_objects.label import Label
 from game_objects.process import Process
@@ -15,15 +16,10 @@ class Game:
         pygame.init()
         pygame.font.init()
 
-        self._cpu_list = []
-        self._process_slots = []
-        self._terminated_process_slots = []
-        self._io_queue = IoQueue()
-        
-        self._next_pid = 1
-        self._last_new_process_check = 0
-
-        self._game_objects = []
+        self._window_width = 1024
+        self._window_height = 768
+        screen_size = self._window_width, self._window_height
+        self._screen = pygame.display.set_mode(screen_size)        
 
         self._setup()
         self._main_loop()
@@ -45,8 +41,22 @@ class Game:
         return self._io_queue
 
     def _setup(self):
-        screen_size = 1024, 768
-        self._screen = pygame.display.set_mode(screen_size)
+        self._cpu_list = []
+        self._process_slots = []
+        self._terminated_process_slots = []
+        self._io_queue = IoQueue()
+
+        self._cpu_list = []
+        self._process_slots = []
+        self._terminated_process_slots = []
+        self._io_queue = IoQueue()
+        
+        self._next_pid = 1
+        self._last_new_process_check = 0
+        self._terminated_process_count = 0
+        self._game_over = False
+
+        self._game_objects = []
      
         self.cpu_list.extend([
             Cpu(1),
@@ -101,30 +111,46 @@ class Game:
             process.view.setXY(process_slot.view.x, process_slot.view.y)
             self._game_objects.append(process)
 
+    def _main_loop(self):
+        while True:
+            self._update(pygame.time.get_ticks())
+            self._render()
+
     def _update(self, current_time):
         events = []
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONUP:
-                if (event.button == 1):
-                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+            if self._game_over:
+                if event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYUP:
+                    self._setup()
+            else:
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if (event.button == 1):
+                        events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
-        if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
-            self._last_new_process_check = current_time
-            for process_slot in self.process_slots:
-                if process_slot.process is None:
-                    new_process = Process(self._next_pid, self)
-                    self._next_pid += 1
-                    new_process.view.x = process_slot.view.x
-                    new_process.view.y = process_slot.view.y
-                    process_slot.process = new_process
-                    self._game_objects.append(new_process)
-                    break
+        if self._game_over:
+            game_over_dialog = GameOverDialog()
+            game_over_dialog.view.setXY(
+                (self._window_width - game_over_dialog.view.width) / 2, (self._window_height - game_over_dialog.view.height) / 2
+            )
+            self._game_objects.append(game_over_dialog)
+        else:
+            if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
+                self._last_new_process_check = current_time
+                for process_slot in self.process_slots:
+                    if process_slot.process is None:
+                        new_process = Process(self._next_pid, self)
+                        self._next_pid += 1
+                        new_process.view.x = process_slot.view.x
+                        new_process.view.y = process_slot.view.y
+                        process_slot.process = new_process
+                        self._game_objects.append(new_process)
+                        break
 
-        for game_object in self._game_objects:
-            game_object.update(current_time, events)
+            for game_object in self._game_objects:
+                game_object.update(current_time, events)
 
     def _render(self):
         self._screen.fill(Color.BLACK)
@@ -134,7 +160,17 @@ class Game:
 
         pygame.display.flip()
 
-    def _main_loop(self):
-        while True:
-            self._update(pygame.time.get_ticks())
-            self._render()        
+    def terminate_process(self, process):
+        if self._terminated_process_count < 5:
+            terminated_process_slot = self._terminated_process_slots[self._terminated_process_count]
+            self._terminated_process_count += 1
+            terminated_process_slot.process = process
+            process.view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+            for cpu in self._cpu_list:
+                if cpu.process == process:
+                    cpu.process = None
+            if self._terminated_process_count == 5:
+                self._game_over = True
+            return True
+        else:
+            return False
