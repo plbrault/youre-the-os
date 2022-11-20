@@ -1,4 +1,6 @@
-import sys, pygame
+import os
+import pygame
+import sys
 
 from game_objects.cpu import Cpu
 from game_objects.game_over_dialog import GameOverDialog
@@ -19,7 +21,11 @@ class Game:
         self._window_width = 1024
         self._window_height = 768
         screen_size = self._window_width, self._window_height
-        self._screen = pygame.display.set_mode(screen_size)        
+        self._screen = pygame.display.set_mode(screen_size)
+
+        icon = pygame.image.load(os.path.join('assets', 'icon.png'))
+        pygame.display.set_caption("You're the OS!")
+        pygame.display.set_icon(icon)
 
         self._setup()
         self._main_loop()
