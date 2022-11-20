@@ -16,6 +16,9 @@ class Game:
         pygame.init()
         pygame.font.init()
 
+        self._window_width = 1024
+        self._window_height = 768
+
         self._cpu_list = []
         self._process_slots = []
         self._terminated_process_slots = []
@@ -48,7 +51,7 @@ class Game:
         return self._io_queue
 
     def _setup(self):
-        screen_size = 1024, 768
+        screen_size = self._window_width, self._window_height
         self._screen = pygame.display.set_mode(screen_size)
      
         self.cpu_list.extend([
@@ -121,7 +124,9 @@ class Game:
 
         if self._game_over:
             game_over_dialog = GameOverDialog()
-            game_over_dialog.view.setXY(112, 34)
+            game_over_dialog.view.setXY(
+                (self._window_width - game_over_dialog.view.width) / 2, (self._window_height - game_over_dialog.view.height) / 2
+            )
             self._game_objects.append(game_over_dialog)
         else:
             if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
