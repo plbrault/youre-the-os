@@ -26,6 +26,8 @@ _starvation_emojis = [
     load_emoji('💀', _starvation_emoji_size),
 ]
 
+_gracefully_terminated_emoji = load_emoji('😇', _starvation_emoji_size)
+
 _blocked_emoji = load_emoji('⏳', (32, 32))
 
 class ProcessView(Drawable):
@@ -64,13 +66,17 @@ class ProcessView(Drawable):
         self.target_y = target_y
 
     def draw(self, surface):
-        color = _starvation_colors[self._process.starvation_level]
+        if self._process.has_ended and self._process.starvation_level == 0:
+            color = Color.LIGHT_BLUE
+            starvation_emoji_surface = _gracefully_terminated_emoji
+        else:
+            color = _starvation_colors[self._process.starvation_level]
+            starvation_emoji_surface = _starvation_emojis[self._process.starvation_level]
+        
+        pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)  
+
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
-
-        starvation_emoji_surface = _starvation_emojis[self._process.starvation_level]
         surface.blit(starvation_emoji_surface, (self._x + 2, self._y + 2))
-
-        pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)
         surface.blit(pid_text_surface, (self._x + 32, self._y + 5))
 
         if self._process.is_blocked:

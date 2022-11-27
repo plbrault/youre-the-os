@@ -79,6 +79,12 @@ class Process(GameObject):
         self._is_blocked = False
         self._current_state_duration = 0
 
+    def _terminate_gracefully(self):
+        if self._game.terminate_process(self, False):
+            self._has_ended = True
+            self._is_blocked = False
+            self._starvation_level = 0
+
     def _terminate_by_user(self):
         if self._game.terminate_process(self, True):
             self._has_ended = True
@@ -107,12 +113,12 @@ class Process(GameObject):
                     
                 self._current_state_duration += 1
 
-                if self.has_cpu and not self.is_blocked and randint(1, 20) == 1:
-                    self._wait_for_io()
-
                 if self.has_cpu and not self.is_blocked:
-                    if self._current_state_duration == 5:
+                    if randint(1, 20) == 1:
+                        self._wait_for_io()
+                    elif self._current_state_duration == 5:
                         self._starvation_level = 0
+
                 else:
                     if self._current_state_duration > 0 and self._current_state_duration % 10 == 0:
                         if self._starvation_level < 5:
