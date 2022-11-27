@@ -5,6 +5,8 @@ from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
+    _ANIMATION_SPEED = 5
+
     def __init__(self, pid, game):
         self._pid = pid
         self._game = game
@@ -45,7 +47,7 @@ class Process(GameObject):
                 if not cpu.has_process:
                     cpu.process = self
                     self._has_cpu = True
-                    self._view.setXY(cpu.view.x, cpu.view.y)
+                    self.view.setTargetXY(cpu.view.x, cpu.view.y)
                     break
             if self.has_cpu:
                 self._current_state_duration = 0
@@ -65,7 +67,7 @@ class Process(GameObject):
             for slot in self._game.process_slots:
                 if slot.process is None:
                     slot.process = self
-                    self._view.setXY(slot.view.x, slot.view.y)
+                    self.view.setTargetXY(slot.view.x, slot.view.y)
                     break
 
     def _wait_for_io(self):
@@ -117,3 +119,21 @@ class Process(GameObject):
                             self._starvation_level += 1
                         else:
                             self._terminate_by_user()
+
+        if self.view.target_x is not None:
+            if self.view.x == self.view.target_x:
+                self.view.target_x = None
+            else:
+                if self.view.x < self.view.target_x:
+                    self.view.x += min(self._ANIMATION_SPEED, self.view.target_x - self.view.x)
+                if self.view.x > self.view.target_x:
+                    self.view.x -= min(self._ANIMATION_SPEED, self.view.x - self.view.target_x)
+
+        if self.view.target_y is not None:
+            if self.view.y == self.view.target_y:
+                self.view.target_y = None
+            else:
+                if self.view.y < self.view.target_y:
+                    self.view.y += min(self._ANIMATION_SPEED, self.view.target_y - self.view.y)
+                if self.view.y > self.view.target_y:
+                    self.view.y -= min(self._ANIMATION_SPEED, self.view.y - self.view.target_y)
