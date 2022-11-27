@@ -186,20 +186,25 @@ class Game:
         else:
             return False
 
-    def terminate_process(self, process):
-        if self._user_terminated_process_count < 5:
-            terminated_process_slot = self._user_terminated_process_slots[self._user_terminated_process_count]
-            self._user_terminated_process_count += 1
-            terminated_process_slot.process = process
-            process.view.setTargetXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+    def terminate_process(self, process, by_user):
+        can_terminate = False
+
+        if by_user:
+            if self._user_terminated_process_count < 5:
+                slot = self._user_terminated_process_slots[self._user_terminated_process_count]
+                self._user_terminated_process_count += 1
+                slot.process = process
+                process.view.setTargetXY(slot.view.x, slot.view.y)
+
+                if self._user_terminated_process_count == 5:
+                    self._game_over = True
+        else:
+            can_terminate = True
+
+        if can_terminate:
             for cpu in self._cpu_list:
                 if cpu.process == process:
                     cpu.process = None
-            if self._user_terminated_process_count == 5:
-                self._game_over = True
+            self._alive_process_list.remove(process)                    
 
-            self._alive_process_list.remove(process)
-
-            return True
-        else:
-            return False
+        return can_terminate
