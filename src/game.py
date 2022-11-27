@@ -154,7 +154,6 @@ class Game:
         for game_object in self._game_objects:
             game_object.update(current_time, events)
             if isinstance(game_object, Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
-                print('DELETE')
                 self._game_objects.remove(game_object)
 
     def _render(self):
