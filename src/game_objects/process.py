@@ -120,7 +120,7 @@ class Process(GameObject):
                 if self.has_cpu and not self.is_blocked:
                     if randint(1, 20) == 1:
                         self._wait_for_io()
-                    elif randint(1, 100) == 1:
+                    elif self._current_state_duration >= 1 and randint(1, 60) == 1:
                         self._terminate_gracefully()
                     elif self._current_state_duration == 5:
                         self._starvation_level = 0

@@ -1,3 +1,4 @@
+from random import randint
 import os
 import pygame
 import sys
@@ -28,6 +29,7 @@ class Game:
 
         self._next_pid = None
         self._last_new_process_check = None
+        self._last_process_creation = None
         self._user_terminated_process_count = None
         self._game_over = False
         self._game_over_time = None
@@ -66,6 +68,7 @@ class Game:
         
         self._next_pid = 1
         self._last_new_process_check = 0
+        self._last_process_creation = 0
         self._user_terminated_process_count = 0
         self._game_over = False
         self._game_over_time = None
@@ -146,10 +149,15 @@ class Game:
                     (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
                 )
                 self._game_objects.append(self._game_over_dialog)
-        else:
-            if current_time > self._last_new_process_check + (30000 if self._next_pid > 12 else 50):
-                self._last_new_process_check = current_time
+        elif self._next_pid <= 12 and current_time - self._last_new_process_check >= 50:
+            self._last_new_process_check = current_time
+            self._last_process_creation = current_time
+            self._create_process()            
+        elif current_time - self._last_new_process_check >= 1000:
+            self._last_new_process_check = current_time
+            if randint(1, 30) == 1 or current_time - self._last_process_creation >= 30000:
                 self._create_process()
+                self._last_process_creation = current_time
 
         for game_object in self._game_objects:
             game_object.update(current_time, events)
