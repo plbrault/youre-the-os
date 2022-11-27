@@ -149,7 +149,7 @@ class Game:
                     (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
                 )
                 self._game_objects.append(self._game_over_dialog)
-        elif self._next_pid <= 20 and current_time - self._last_new_process_check >= 50:
+        elif self._next_pid <= 12 and current_time - self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
             self._create_process()            
