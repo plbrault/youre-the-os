@@ -112,9 +112,6 @@ class Game:
             self._terminated_process_slots.append(process_slot)
         self._game_objects.extend(self._terminated_process_slots)
 
-        for i in range(10):
-            self._create_process()
-
     def _main_loop(self):
         while True:
             self._update(pygame.time.get_ticks())
@@ -141,7 +138,7 @@ class Game:
             )
             self._game_objects.append(game_over_dialog)
         else:
-            if current_time > self._last_new_process_check + 30000:
+            if current_time > self._last_new_process_check + (30000 if self._next_pid > 12 else 50):
                 self._last_new_process_check = current_time
                 self._create_process()
 
