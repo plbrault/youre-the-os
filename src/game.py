@@ -21,10 +21,15 @@ class Game:
         pygame.font.init()
 
         self._cpu_list = None
-        self._process_list = None
+        self._alive_process_list = None
         self._process_slots = None
         self._terminated_process_slots = None
         self._io_queue = None
+
+        self._next_pid = None
+        self._last_new_process_check = None
+        self._terminated_process_count = None
+        self._game_over = False        
 
         self._window_width = 1024
         self._window_height = 768
@@ -52,7 +57,7 @@ class Game:
 
     def _setup(self):
         self._cpu_list = []
-        self._process_list = []
+        self._alive_process_list = []
         self._process_slots = []
         self._terminated_process_slots = []
         self._io_queue = IoQueue()
@@ -136,17 +141,9 @@ class Game:
             )
             self._game_objects.append(game_over_dialog)
         else:
-            if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
+            if current_time > self._last_new_process_check + 30000:
                 self._last_new_process_check = current_time
-                for process_slot in self.process_slots:
-                    if process_slot.process is None:
-                        new_process = Process(self._next_pid, self)
-                        self._next_pid += 1
-                        new_process.view.x = process_slot.view.x
-                        new_process.view.y = process_slot.view.y
-                        process_slot.process = new_process
-                        self._game_objects.append(new_process)
-                        break
+                self._create_process()
 
             for game_object in self._game_objects:
                 game_object.update(current_time, events)
@@ -160,20 +157,26 @@ class Game:
         pygame.display.flip()
 
     def _create_process(self, process_slot_id = None):
-        if process_slot_id is None:
-            for i, process_slot in enumerate(self.process_slots):
-                if process_slot.process is None:
-                    process_slot_id = id
-                    break
-        
-        pid = self._next_pid
-        self._next_pid += 1
+        if len(self._alive_process_list) < self.MAX_PROCESSES:
+            if process_slot_id is None:
+                for i, process_slot in enumerate(self.process_slots):
+                    if process_slot.process is None:
+                        process_slot_id = id
+                        break
+            
+            pid = self._next_pid
+            self._next_pid += 1
 
-        process = Process(pid, self)
-        process_slot = self.process_slots[i]
-        process_slot.process = process
-        process.view.setXY(process_slot.view.x, process_slot.view.y)
-        self._game_objects.append(process)
+            process = Process(pid, self)
+            process_slot = self.process_slots[i]
+            process_slot.process = process
+            process.view.setXY(process_slot.view.x, process_slot.view.y)
+            self._game_objects.append(process)
+            self._alive_process_list.append(process)
+            
+            return True
+        else:
+            return False
 
     def terminate_process(self, process):
         if self._terminated_process_count < 5:
@@ -186,6 +189,9 @@ class Game:
                     cpu.process = None
             if self._terminated_process_count == 5:
                 self._game_over = True
+
+            self._alive_process_list.remove(process)
+
             return True
         else:
             return False
