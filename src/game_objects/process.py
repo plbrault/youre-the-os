@@ -5,6 +5,8 @@ from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
+    _ANIMATION_SPEED = 5
+
     def __init__(self, pid, game):
         self._pid = pid
         self._game = game
@@ -125,15 +127,15 @@ class Process(GameObject):
                 self.view.target_x = None
             else:
                 if self.view.x < self.view.target_x:
-                    self.view.x += min(10, self.view.target_x - self.view.x)
+                    self.view.x += min(self._ANIMATION_SPEED, self.view.target_x - self.view.x)
                 if self.view.x > self.view.target_x:
-                    self.view.x -= min(10, self.view.x - self.view.target_x)
+                    self.view.x -= min(self._ANIMATION_SPEED, self.view.x - self.view.target_x)
 
         if self.view.target_y is not None:
             if self.view.y == self.view.target_y:
                 self.view.target_y = None
             else:
                 if self.view.y < self.view.target_y:
-                    self.view.y += min(10, self.view.target_y - self.view.y)
+                    self.view.y += min(self._ANIMATION_SPEED, self.view.target_y - self.view.y)
                 if self.view.y > self.view.target_y:
-                    self.view.y -= min(10, self.view.y - self.view.target_y)
+                    self.view.y -= min(self._ANIMATION_SPEED, self.view.y - self.view.target_y)

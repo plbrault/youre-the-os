@@ -14,7 +14,7 @@ from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 
 class Game:
-    MAX_PROCESSES = 42
+    _MAX_PROCESSES = 42
 
     def __init__(self):
         pygame.init()
@@ -154,7 +154,7 @@ class Game:
         pygame.display.flip()
 
     def _create_process(self, process_slot_id = None):
-        if len(self._alive_process_list) < self.MAX_PROCESSES:
+        if len(self._alive_process_list) < self._MAX_PROCESSES:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
