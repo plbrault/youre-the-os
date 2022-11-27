@@ -64,11 +64,15 @@ class Process(GameObject):
                 if cpu.process == self:
                     cpu.process = None
                     break
-            for slot in self._game.process_slots:
-                if slot.process is None:
-                    slot.process = self
-                    self.view.setTargetXY(slot.view.x, slot.view.y)
-                    break
+            if self.has_ended:
+                if self.starvation_level == 0:
+                    self.view.target_y = -self.view.height
+            else:
+                for slot in self._game.process_slots:
+                    if slot.process is None:
+                        slot.process = self
+                        self.view.setTargetXY(slot.view.x, slot.view.y)
+                        break
 
     def _wait_for_io(self):
         self._is_blocked = True
@@ -79,8 +83,14 @@ class Process(GameObject):
         self._is_blocked = False
         self._current_state_duration = 0
 
+    def _terminate_gracefully(self):
+        if self._game.terminate_process(self, False):
+            self._has_ended = True
+            self._is_blocked = False
+            self._starvation_level = 0
+
     def _terminate_by_user(self):
-        if self._game.terminate_process(self):
+        if self._game.terminate_process(self, True):
             self._has_ended = True
             self._is_blocked = False
             self._starvation_level = 6
@@ -97,22 +107,24 @@ class Process(GameObject):
             self._use_cpu()
 
     def update(self, current_time, events):
-        if not self.has_ended:
-            for event in events:
-                if self._check_if_clicked_on(event):
-                    self._on_click()
+        for event in events:
+            if self._check_if_clicked_on(event):
+                self._on_click()
 
+        if not self.has_ended:
             if current_time >= self._last_update_time + 1000:
                 self._last_update_time = current_time
                     
                 self._current_state_duration += 1
 
-                if self.has_cpu and not self.is_blocked and randint(1, 20) == 1:
-                    self._wait_for_io()
-
                 if self.has_cpu and not self.is_blocked:
-                    if self._current_state_duration == 5:
+                    if randint(1, 20) == 1:
+                        self._wait_for_io()
+                    elif randint(1, 100) == 1:
+                        self._terminate_gracefully()
+                    elif self._current_state_duration == 5:
                         self._starvation_level = 0
+
                 else:
                     if self._current_state_duration > 0 and self._current_state_duration % 10 == 0:
                         if self._starvation_level < 5:
