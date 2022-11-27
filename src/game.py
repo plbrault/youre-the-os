@@ -14,9 +14,22 @@ from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 
 class Game:
+    MAX_PROCESSES = 42
+
     def __init__(self):
         pygame.init()
         pygame.font.init()
+
+        self._cpu_list = None
+        self._alive_process_list = None
+        self._process_slots = None
+        self._terminated_process_slots = None
+        self._io_queue = None
+
+        self._next_pid = None
+        self._last_new_process_check = None
+        self._terminated_process_count = None
+        self._game_over = False        
 
         self._window_width = 1024
         self._window_height = 768
@@ -39,20 +52,12 @@ class Game:
         return self._process_slots
 
     @property
-    def terminated_process_slots(self):
-        return self._terminated_process_slots
-
-    @property
     def io_queue(self):
         return self._io_queue
 
     def _setup(self):
         self._cpu_list = []
-        self._process_slots = []
-        self._terminated_process_slots = []
-        self._io_queue = IoQueue()
-
-        self._cpu_list = []
+        self._alive_process_list = []
         self._process_slots = []
         self._terminated_process_slots = []
         self._io_queue = IoQueue()
@@ -104,18 +109,11 @@ class Game:
             x = 50 + i * process_slot.view.width + i * 5
             y = 644 + terminated_processes_label.view.height + 5
             process_slot.view.setXY(x, y)
-            self.terminated_process_slots.append(process_slot)
-        self._game_objects.extend(self.terminated_process_slots)
+            self._terminated_process_slots.append(process_slot)
+        self._game_objects.extend(self._terminated_process_slots)
 
         for i in range(10):
-            pid = self._next_pid
-            self._next_pid += 1
-
-            process = Process(pid, self)
-            process_slot = self.process_slots[i]
-            process_slot.process = process
-            process.view.setXY(process_slot.view.x, process_slot.view.y)
-            self._game_objects.append(process)
+            self._create_process()
 
     def _main_loop(self):
         while True:
@@ -143,17 +141,9 @@ class Game:
             )
             self._game_objects.append(game_over_dialog)
         else:
-            if current_time > self._last_new_process_check + 30000 and self._next_pid <= 42:
+            if current_time > self._last_new_process_check + 30000:
                 self._last_new_process_check = current_time
-                for process_slot in self.process_slots:
-                    if process_slot.process is None:
-                        new_process = Process(self._next_pid, self)
-                        self._next_pid += 1
-                        new_process.view.x = process_slot.view.x
-                        new_process.view.y = process_slot.view.y
-                        process_slot.process = new_process
-                        self._game_objects.append(new_process)
-                        break
+                self._create_process()
 
             for game_object in self._game_objects:
                 game_object.update(current_time, events)
@@ -166,6 +156,28 @@ class Game:
 
         pygame.display.flip()
 
+    def _create_process(self, process_slot_id = None):
+        if len(self._alive_process_list) < self.MAX_PROCESSES:
+            if process_slot_id is None:
+                for i, process_slot in enumerate(self.process_slots):
+                    if process_slot.process is None:
+                        process_slot_id = id
+                        break
+            
+            pid = self._next_pid
+            self._next_pid += 1
+
+            process = Process(pid, self)
+            process_slot = self.process_slots[i]
+            process_slot.process = process
+            process.view.setXY(process_slot.view.x, process_slot.view.y)
+            self._game_objects.append(process)
+            self._alive_process_list.append(process)
+            
+            return True
+        else:
+            return False
+
     def terminate_process(self, process):
         if self._terminated_process_count < 5:
             terminated_process_slot = self._terminated_process_slots[self._terminated_process_count]
@@ -177,6 +189,9 @@ class Game:
                     cpu.process = None
             if self._terminated_process_count == 5:
                 self._game_over = True
+
+            self._alive_process_list.remove(process)
+
             return True
         else:
             return False
