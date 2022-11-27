@@ -29,7 +29,9 @@ class Game:
         self._next_pid = None
         self._last_new_process_check = None
         self._terminated_process_count = None
-        self._game_over = False        
+        self._game_over = False
+        self._game_over_time = None
+        self._game_over_dialog = None
 
         self._window_width = 1024
         self._window_height = 768
@@ -66,6 +68,8 @@ class Game:
         self._last_new_process_check = 0
         self._terminated_process_count = 0
         self._game_over = False
+        self._game_over_time = None
+        self._game_over_dialog = None
 
         self._game_objects = []
      
@@ -123,21 +127,24 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if self._game_over:
+            if self._game_over and current_time - self._game_over_time >= 1000:
                 if event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYUP:
                     self._setup()
-            else:
+            elif not self._game_over:
                 if event.type == pygame.MOUSEBUTTONUP:
                     if (event.button == 1):
                         events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         if self._game_over:
-            game_over_dialog = GameOverDialog()
-            game_over_dialog.view.setXY(
-                (self._window_width - game_over_dialog.view.width) / 2, (self._window_height - game_over_dialog.view.height) / 2
-            )
-            self._game_objects.append(game_over_dialog)
-        else:
+            if self._game_over_time is None:
+                self._game_over_time = current_time
+            elif current_time - self._game_over_time >= 1000 and self._game_over_dialog is None:
+                self._game_over_dialog = GameOverDialog()
+                self._game_over_dialog.view.setXY(
+                    (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
+                )
+                self._game_objects.append(self._game_over_dialog)
+        if not self._game_over or current_time - self._game_over_time < 1000:
             if current_time > self._last_new_process_check + (30000 if self._next_pid > 12 else 50):
                 self._last_new_process_check = current_time
                 self._create_process()
@@ -182,7 +189,7 @@ class Game:
             terminated_process_slot = self._terminated_process_slots[self._terminated_process_count]
             self._terminated_process_count += 1
             terminated_process_slot.process = process
-            process.view.setXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
+            process.view.setTargetXY(terminated_process_slot.view.x, terminated_process_slot.view.y)
             for cpu in self._cpu_list:
                 if cpu.process == process:
                     cpu.process = None
