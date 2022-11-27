@@ -153,6 +153,8 @@ class Game:
 
         for game_object in self._game_objects:
             game_object.update(current_time, events)
+            if isinstance(game_object, Process) and game_object.has_ended and game_object.view.y < -game_object.view.height:
+                self._game_objects.remove(game_object)
 
     def _render(self):
         self._screen.fill(Color.BLACK)
@@ -200,13 +202,14 @@ class Game:
 
                 if self._user_terminated_process_count == 5:
                     self._game_over = True
+
+                for cpu in self._cpu_list:
+                    if cpu.process == process:
+                        cpu.process = None         
         else:
             can_terminate = True
 
         if can_terminate:
-            for cpu in self._cpu_list:
-                if cpu.process == process:
-                    cpu.process = None
-            self._alive_process_list.remove(process)                    
+            self._alive_process_list.remove(process) 
 
         return can_terminate
