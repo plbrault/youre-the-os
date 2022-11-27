@@ -117,3 +117,21 @@ class Process(GameObject):
                             self._starvation_level += 1
                         else:
                             self._terminate_by_user()
+
+        if self.view.target_x is not None:
+            if self.view.x == self.view.target_x:
+                self.view.target_x = None
+            else:
+                if self.view.x < self.view.target_x:
+                    self.view.x += min(10, self.view.target_x - self.view.x)
+                if self.view.x > self.view.target_x:
+                    self.view.x -= min(10, self.view.x - self.view.target_x)
+
+        if self.view.target_y is not None:
+            if self.view.y == self.view.target_y:
+                self.view.target_y = None
+            else:
+                if self.view.y < self.view.target_y:
+                    self.view.y += min(10, self.view.target_y - self.view.y)
+                if self.view.y > self.view.target_y:
+                    self.view.y -= min(10, self.view.y - self.view.target_y)

@@ -167,9 +167,11 @@ class Game:
             process = Process(pid, self)
             process_slot = self.process_slots[i]
             process_slot.process = process
-            process.view.setXY(process_slot.view.x, process_slot.view.y)
             self._game_objects.append(process)
             self._alive_process_list.append(process)
+
+            process.view.setXY(process_slot.view.x, self._window_height + process.view.height)
+            process.view.target_y = process_slot.view.y
             
             return True
         else:

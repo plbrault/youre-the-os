@@ -31,6 +31,8 @@ _blocked_emoji = load_emoji('⏳', (32, 32))
 class ProcessView(Drawable):
     def __init__(self, process):
         self._process = process
+        self._target_x = None
+        self._target_y = None
         super().__init__()
 
     @property
@@ -40,6 +42,22 @@ class ProcessView(Drawable):
     @property
     def height(self):
         return 64
+
+    @property
+    def target_x(self):
+        return self._target_x
+
+    @target_x.setter
+    def target_x(self, target_x):
+        self._target_x = target_x
+
+    @property
+    def target_y(self):
+        return self._target_y
+
+    @target_y.setter
+    def target_y(self, target_y):
+        self._target_y = target_y
 
     def draw(self, surface):
         color = _starvation_colors[self._process.starvation_level]
