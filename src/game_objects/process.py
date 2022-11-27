@@ -77,7 +77,7 @@ class Process(GameObject):
         self._is_blocked = False
         self._current_state_duration = 0
 
-    def _set_terminated_by_user(self):
+    def _terminate_by_user(self):
         if self._game.terminate_process(self):
             self._has_ended = True
             self._is_blocked = False
@@ -116,4 +116,4 @@ class Process(GameObject):
                         if self._starvation_level < 5:
                             self._starvation_level += 1
                         else:
-                            self._set_terminated_by_user()
+                            self._terminate_by_user()

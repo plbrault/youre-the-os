@@ -14,9 +14,17 @@ from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 
 class Game:
+    MAX_PROCESSES = 42
+
     def __init__(self):
         pygame.init()
         pygame.font.init()
+
+        self._cpu_list = None
+        self._process_list = None
+        self._process_slots = None
+        self._terminated_process_slots = None
+        self._io_queue = None
 
         self._window_width = 1024
         self._window_height = 768
@@ -39,20 +47,12 @@ class Game:
         return self._process_slots
 
     @property
-    def terminated_process_slots(self):
-        return self._terminated_process_slots
-
-    @property
     def io_queue(self):
         return self._io_queue
 
     def _setup(self):
         self._cpu_list = []
-        self._process_slots = []
-        self._terminated_process_slots = []
-        self._io_queue = IoQueue()
-
-        self._cpu_list = []
+        self._process_list = []
         self._process_slots = []
         self._terminated_process_slots = []
         self._io_queue = IoQueue()
@@ -104,18 +104,11 @@ class Game:
             x = 50 + i * process_slot.view.width + i * 5
             y = 644 + terminated_processes_label.view.height + 5
             process_slot.view.setXY(x, y)
-            self.terminated_process_slots.append(process_slot)
-        self._game_objects.extend(self.terminated_process_slots)
+            self._terminated_process_slots.append(process_slot)
+        self._game_objects.extend(self._terminated_process_slots)
 
         for i in range(10):
-            pid = self._next_pid
-            self._next_pid += 1
-
-            process = Process(pid, self)
-            process_slot = self.process_slots[i]
-            process_slot.process = process
-            process.view.setXY(process_slot.view.x, process_slot.view.y)
-            self._game_objects.append(process)
+            self._create_process()
 
     def _main_loop(self):
         while True:
@@ -165,6 +158,22 @@ class Game:
             game_object.render(self._screen)
 
         pygame.display.flip()
+
+    def _create_process(self, process_slot_id = None):
+        if process_slot_id is None:
+            for i, process_slot in enumerate(self.process_slots):
+                if process_slot.process is None:
+                    process_slot_id = id
+                    break
+        
+        pid = self._next_pid
+        self._next_pid += 1
+
+        process = Process(pid, self)
+        process_slot = self.process_slots[i]
+        process_slot.process = process
+        process.view.setXY(process_slot.view.x, process_slot.view.y)
+        self._game_objects.append(process)
 
     def terminate_process(self, process):
         if self._terminated_process_count < 5:
