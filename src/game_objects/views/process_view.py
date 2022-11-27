@@ -59,6 +59,10 @@ class ProcessView(Drawable):
     def target_y(self, target_y):
         self._target_y = target_y
 
+    def setTargetXY(self, target_x, target_y):
+        self.target_x = target_x
+        self.target_y = target_y
+
     def draw(self, surface):
         color = _starvation_colors[self._process.starvation_level]
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))

@@ -47,8 +47,7 @@ class Process(GameObject):
                 if not cpu.has_process:
                     cpu.process = self
                     self._has_cpu = True
-                    self._view.target_x = cpu.view.x
-                    self._view.target_y = cpu.view.y
+                    self.view.setTargetXY(cpu.view.x, cpu.view.y)
                     break
             if self.has_cpu:
                 self._current_state_duration = 0
@@ -68,8 +67,7 @@ class Process(GameObject):
             for slot in self._game.process_slots:
                 if slot.process is None:
                     slot.process = self
-                    self._view.target_x = slot.view.x
-                    self._view.target_y = slot.view.y
+                    self.view.setTargetXY(slot.view.x, slot.view.y)
                     break
 
     def _wait_for_io(self):
