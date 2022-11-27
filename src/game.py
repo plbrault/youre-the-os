@@ -191,6 +191,8 @@ class Game:
 
         if by_user:
             if self._user_terminated_process_count < 5:
+                can_terminate = True
+
                 slot = self._user_terminated_process_slots[self._user_terminated_process_count]
                 self._user_terminated_process_count += 1
                 slot.process = process
