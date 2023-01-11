@@ -14,12 +14,13 @@ Run program:
 
 ```bash
 pipenv shell
+cd src
 python main.py
 ```
 
 ## License
 
-Copyright (c) 2022 Pier-Luc Brault <pier-luc@brault.me>
+Copyright (c) 2023 Pier-Luc Brault <pier-luc@brault.me>
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
