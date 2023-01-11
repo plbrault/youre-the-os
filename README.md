@@ -4,7 +4,7 @@
 
 * Python 3.10
 * [pipenv](https://pypi.org/project/pipenv/)
-* Create an empty `.venv` directory at the root of the project
+* An empty `.venv` directory at the root of the project
 
 ## Usage
 
