@@ -1,3 +1,3 @@
-from game import Game
+from mainScene import MainScene
 
-Game()
+MainScene()
