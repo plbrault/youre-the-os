@@ -55,7 +55,6 @@ class MainScene:
         self._game_over_dialog = None
         
         process_manager = ProcessManager(self)
-        process_manager.view.setXY(50, 0)
         self._game_objects.append(process_manager)
 
     def _main_loop(self):

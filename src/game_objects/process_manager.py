@@ -65,38 +65,38 @@ class ProcessManager(GameObject):
             Cpu(4),
         ])
         for i, cpu in enumerate(self.cpu_list):
-            x = self.view.x + i * cpu.view.width + i * 5
-            y = self.view.y + 50
+            x = 50 + i * cpu.view.width + i * 5
+            y = 50
             cpu.view.setXY(x, y)
         self.children.extend(self.cpu_list)
 
         io_queue = self._io_queue
-        io_queue.view.setXY(self.view.x, self.view.y + 10)
+        io_queue.view.setXY(50, 10)
         self.children.append(io_queue)       
 
         processes_label = Label('Processes:')
-        processes_label.view.setXY(self.view.x, self.view.y + 120)
+        processes_label.view.setXY(50, 120)
         processes_label.font = FONT_ARIAL_20
         self.children.append(processes_label)
 
         for row in range(7):
             for column in range(6):
                 process_slot = ProcessSlot()          
-                x = self.view.x + column * process_slot.view.width + column * 5
-                y = self.view.y + 150 + row * process_slot.view.height + row * 5
+                x = 50 + column * process_slot.view.width + column * 5
+                y = 150 + row * process_slot.view.height + row * 5
                 process_slot.view.setXY(x, y)
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
         terminated_processes_label = Label('Terminated By User :')
-        terminated_processes_label.view.setXY(self.view.x, self.view.y + 644)
+        terminated_processes_label.view.setXY(50, 644)
         terminated_processes_label.font = FONT_ARIAL_20
         self.children.append(terminated_processes_label)
 
         for i in range(5):
             process_slot = ProcessSlot()
-            x = self.view.x + i * process_slot.view.width + i * 5
-            y = self.view.y + 644 + terminated_processes_label.view.height + 5
+            x = 50 + i * process_slot.view.width + i * 5
+            y = 644 + terminated_processes_label.view.height + 5
             process_slot.view.setXY(x, y)
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)        
