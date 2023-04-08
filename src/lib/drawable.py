@@ -23,7 +23,7 @@ class Drawable(ABC):
     def y(self, y):
         self._y = y
 
-    def setXY(self, x, y):
+    def set_xy(self, x, y):
         self.x = x
         self.y = y
 

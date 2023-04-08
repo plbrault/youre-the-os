@@ -7,9 +7,9 @@ from game_objects.views.process_view import ProcessView
 class Process(GameObject):
     _ANIMATION_SPEED = 5
 
-    def __init__(self, pid, game):
+    def __init__(self, pid, processManager):
         self._pid = pid
-        self._game = game
+        self._processManager = processManager
 
         self._has_cpu = False
         self._is_blocked = False
@@ -43,15 +43,15 @@ class Process(GameObject):
 
     def _use_cpu(self):
         if not self.has_cpu:
-            for cpu in self._game.cpu_list:
+            for cpu in self._processManager.cpu_list:
                 if not cpu.has_process:
                     cpu.process = self
                     self._has_cpu = True
-                    self.view.setTargetXY(cpu.view.x, cpu.view.y)
+                    self.view.set_target_xy(cpu.view.x, cpu.view.y)
                     break
             if self.has_cpu:
                 self._current_state_duration = 0
-                for slot in self._game.process_slots:
+                for slot in self._processManager.process_slots:
                     if slot.process == self:
                         slot.process = None
                         break
@@ -60,7 +60,7 @@ class Process(GameObject):
         if self.has_cpu:
             self._has_cpu = False
             self._current_state_duration = 0
-            for cpu in self._game.cpu_list:
+            for cpu in self._processManager.cpu_list:
                 if cpu.process == self:
                     cpu.process = None
                     break
@@ -68,29 +68,29 @@ class Process(GameObject):
                 if self.starvation_level == 0:
                     self.view.target_y = -self.view.height
             else:
-                for slot in self._game.process_slots:
+                for slot in self._processManager.process_slots:
                     if slot.process is None:
                         slot.process = self
-                        self.view.setTargetXY(slot.view.x, slot.view.y)
+                        self.view.set_target_xy(slot.view.x, slot.view.y)
                         break
 
     def _wait_for_io(self):
         self._is_blocked = True
         self._current_state_duration = 0
-        self._game.io_queue.wait_for_event(self._on_io_event)
+        self._processManager.io_queue.wait_for_event(self._on_io_event)
 
     def _on_io_event(self):
         self._is_blocked = False
         self._current_state_duration = 0
 
     def _terminate_gracefully(self):
-        if self._game.terminate_process(self, False):
+        if self._processManager.terminate_process(self, False):
             self._has_ended = True
             self._is_blocked = False
             self._starvation_level = 0
 
     def _terminate_by_user(self):
-        if self._game.terminate_process(self, True):
+        if self._processManager.terminate_process(self, True):
             self._has_ended = True
             self._is_blocked = False
             self._starvation_level = 6
