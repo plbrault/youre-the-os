@@ -16,8 +16,8 @@ from lib.game_event_type import GameEventType
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42
     
-    def __init__(self, scene):
-        self._scene = scene
+    def __init__(self, game):
+        self._game = game
               
         self._cpu_list = None
         self._alive_process_list = None
@@ -138,7 +138,7 @@ class ProcessManager(GameObject):
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
                 if self._user_terminated_process_count == 5:
-                    self._scene.game_over = True
+                    self._game.game_over = True
 
                 for cpu in self._cpu_list:
                     if cpu.process == process:

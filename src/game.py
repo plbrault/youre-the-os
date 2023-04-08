@@ -9,7 +9,7 @@ from lib.game_event_type import GameEventType
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.process_manager import ProcessManager
 
-class MainScene:
+class Game:
     def __init__(self):
         pygame.init()
         pygame.font.init()
