@@ -61,7 +61,7 @@ class ProcessView(Drawable):
     def target_y(self, target_y):
         self._target_y = target_y
 
-    def setTargetXY(self, target_x, target_y):
+    def set_target_xy(self, target_x, target_y):
         self.target_x = target_x
         self.target_y = target_y
 

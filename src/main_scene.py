@@ -83,7 +83,7 @@ class MainScene:
                 self._game_over_time = current_time
             elif display_game_over_dialog and self._game_over_dialog is None:
                 self._game_over_dialog = GameOverDialog()
-                self._game_over_dialog.view.setXY(
+                self._game_over_dialog.view.set_xy(
                     (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
                 )
                 self._game_objects.append(self._game_over_dialog)

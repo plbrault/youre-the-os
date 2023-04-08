@@ -37,16 +37,16 @@ class GameOverDialogView(Drawable):
         pygame.draw.rect(surface, Color.ALMOST_BLACK, pygame.Rect(self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
         surface.blit(self._image, (self._x + 30, self._y + 98))
 
-        self._game_over_label.view.setXY((self.width - self._game_over_label.view.width) / 2 + self.x, self.y + 20)
+        self._game_over_label.view.set_xy((self.width - self._game_over_label.view.width) / 2 + self.x, self.y + 20)
         self._game_over_label.render(surface)
 
-        self._explanation_label.view.setXY(
+        self._explanation_label.view.set_xy(
             (self.width - self._explanation_label.view.width) / 2 + self.x,
             self._game_over_label.view.y + self._game_over_label.view.height + 5,
         )
         self._explanation_label.render(surface)
 
-        self._replay_label.view.setXY(
+        self._replay_label.view.set_xy(
             (self.width - self._replay_label.view.width) / 2 + self.x,
             self._explanation_label.view.y + self._explanation_label.view.height + 5,
         )
