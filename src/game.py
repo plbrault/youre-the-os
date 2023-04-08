@@ -47,6 +47,7 @@ class Game:
     def process_manager(self):
         return self._process_manager
     
+    @property
     def page_manager(self):
         return self._page_manager
 

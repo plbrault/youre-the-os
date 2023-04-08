@@ -19,6 +19,8 @@ class Process(GameObject):
 
         self._last_update_time = 0
         self._current_state_duration = 0
+        
+        self._pages = []
 
         super().__init__(ProcessView(self))
 
@@ -56,6 +58,9 @@ class Process(GameObject):
                     if slot.process == self:
                         slot.process = None
                         break
+                if len(self._pages) == 0:
+                    for i in range(randint(0, 4)):
+                        self._pages.append(self._page_manager.create_page())
 
     def _yield_cpu(self):
         if self.has_cpu:
