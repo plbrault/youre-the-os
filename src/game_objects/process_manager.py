@@ -8,10 +8,7 @@ from game_objects.label import Label
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
-from lib.ui.color import Color
 from lib.ui.fonts import FONT_ARIAL_20
-from lib.game_event import GameEvent
-from lib.game_event_type import GameEventType
 
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42

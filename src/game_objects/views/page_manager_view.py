@@ -1,13 +1,13 @@
 from lib.drawable import Drawable
 
-class ProcessManagerView(Drawable):
-    def __init__(self, process_manager):
-        self._process_manager = process_manager
+class PageManagerView(Drawable):
+    def __init__(self, page_manager):
+        self.page_manager = page_manager
         super().__init__()
 
     @property
     def width(self):
-        return 514
+        return 610
 
     @property
     def height(self):
