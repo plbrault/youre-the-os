@@ -9,6 +9,7 @@ class LabelView(Drawable):
         self._label = label
         self._color = Color.WHITE
         self._font = FONT_ARIAL_10
+        self._render()
 
         super().__init__()
 
@@ -19,6 +20,7 @@ class LabelView(Drawable):
     @font.setter
     def font(self, font):
         self._font = font
+        self._render()
 
     @property
     def color(self):
@@ -27,6 +29,7 @@ class LabelView(Drawable):
     @color.setter
     def color(self, color):
         self._color = color
+        self._render()
 
     @property
     def width(self):
@@ -36,6 +39,8 @@ class LabelView(Drawable):
     def height(self):
         return self.font.size(self._label.text)[1]
 
+    def _render(self):
+        self._text_surface = self.font.render(self._label.text, False, self._color)
+
     def draw(self, surface):
-        text_surface = self.font.render(self._label.text, False, self._color)
-        surface.blit(text_surface, (self._x, self._y))
+        surface.blit(self._text_surface, (self._x, self._y))
