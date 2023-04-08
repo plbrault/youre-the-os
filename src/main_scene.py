@@ -1,20 +1,13 @@
-from random import randint
 import os
 import pygame
+from random import randint
 import sys
 
-from game_objects.process_manager import ProcessManager
-
-from game_objects.cpu import Cpu
-from game_objects.game_over_dialog import GameOverDialog
-from game_objects.io_queue import IoQueue
-from game_objects.label import Label
-from game_objects.process import Process
-from game_objects.process_slot import ProcessSlot
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_ARIAL_20
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
+from game_objects.game_over_dialog import GameOverDialog
+from game_objects.process_manager import ProcessManager
 
 class MainScene:
     def __init__(self):
