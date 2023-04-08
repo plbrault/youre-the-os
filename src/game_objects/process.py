@@ -59,8 +59,10 @@ class Process(GameObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    for i in range(randint(0, 4)):
+                    for i in range(randint(1, 4)):
                         self._pages.append(self._page_manager.create_page())
+                for page in self._pages:
+                    page.in_use = True
 
     def _yield_cpu(self):
         if self.has_cpu:
@@ -70,6 +72,8 @@ class Process(GameObject):
                 if cpu.process == self:
                     cpu.process = None
                     break
+            for page in self._pages:
+                page.in_use = False
             if self.has_ended:
                 if self.starvation_level == 0:
                     self.view.target_y = -self.view.height

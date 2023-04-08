@@ -17,5 +17,8 @@ class PageView(Drawable):
         return 32
     
     def draw(self, surface):
-        pygame.draw.rect(surface, Color.DARK_GREY, pygame.Rect(self._x, self._y, self.width, self.height))
+        color = Color.DARK_GREY
+        if self._page.in_use:
+            color = Color.WHITE
+        pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
         
