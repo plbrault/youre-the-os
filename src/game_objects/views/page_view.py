@@ -10,12 +10,12 @@ class PageView(Drawable):
         
     @property
     def width(self):
-        return 16
+        return 32
 
     @property
     def height(self):
-        return 16
+        return 32
     
     def draw(self, surface):
-        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self._x, self._y, self.width, self.height))
+        pygame.draw.rect(surface, Color.DARK_GREY, pygame.Rect(self._x, self._y, self.width, self.height))
         

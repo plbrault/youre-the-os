@@ -6,7 +6,7 @@ from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 
 class PageManager(GameObject):
-    _MAX_PAGES= 156
+    _MAX_PAGES= 168
     
     def __init__(self, game, ram_size):
         self._game = game
@@ -24,8 +24,8 @@ class PageManager(GameObject):
         ram_pages_label.font = FONT_ARIAL_20
         self.children.append(ram_pages_label)
         
-        for row in range(28):
-            for column in range(24):
+        for row in range(14):
+            for column in range(12):
                 ram_slot = PageSlot()          
                 x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
                 y = 150 + row * ram_slot.view.height + row * 5
@@ -33,10 +33,15 @@ class PageManager(GameObject):
                 self._ram_slots.append(ram_slot)
         self.children.extend(self._ram_slots)
         
+    def create_page(self):
+        page = Page()
         for ram_slot in self._ram_slots:
-            page = Page()
-            page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
-            self.children.append(page)
+            if not ram_slot.has_page:
+                ram_slot.page = page
+                page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
+                break
+        self.children.append(page)
+        return page
         
     def update(self, current_time, events):
         pass

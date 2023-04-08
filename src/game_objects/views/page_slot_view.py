@@ -6,11 +6,11 @@ class PageSlotView(Drawable):
 
     @property
     def width(self):
-        return 16
+        return 32
 
     @property
     def height(self):
-        return 16
+        return 32
 
     def draw(self, surface):
         pass
