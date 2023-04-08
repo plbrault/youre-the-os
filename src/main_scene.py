@@ -88,9 +88,9 @@ class MainScene:
                     (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
                 )
                 self._game_objects.append(self._game_over_dialog)
-           
-        for game_object in self._game_objects:
-            game_object.update(current_time, events)
+        else:  
+            for game_object in self._game_objects:
+                game_object.update(current_time, events)
 
     def _render(self):
         self._screen.fill(Color.BLACK)
