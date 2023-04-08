@@ -2,11 +2,16 @@ from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
 
 class Page(GameObject):    
-    def __init__(self):
+    def __init__(self, pid):
+        self._pid = pid
         self._in_use = False
-        
+              
         super().__init__(PageView(self))
         
+    @property
+    def pid(self):
+        return self._pid
+    
     @property
     def in_use(self):     
         return self._in_use

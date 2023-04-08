@@ -33,8 +33,8 @@ class PageManager(GameObject):
                 self._ram_slots.append(ram_slot)
         self.children.extend(self._ram_slots)
         
-    def create_page(self):
-        page = Page()
+    def create_page(self, pid):
+        page = Page(pid)
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
                 ram_slot.page = page

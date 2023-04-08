@@ -60,7 +60,7 @@ class Process(GameObject):
                         break
                 if len(self._pages) == 0:
                     for i in range(randint(1, 4)):
-                        self._pages.append(self._page_manager.create_page())
+                        self._pages.append(self._page_manager.create_page(self._pid))
                 for page in self._pages:
                     page.in_use = True
 
