@@ -35,6 +35,7 @@ class ProcessView(Drawable):
         self._process = process
         self._target_x = None
         self._target_y = None
+        self._pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)
         super().__init__()
 
     @property
@@ -73,11 +74,9 @@ class ProcessView(Drawable):
             color = _starvation_colors[self._process.starvation_level]
             starvation_emoji_surface = _starvation_emojis[self._process.starvation_level]
         
-        pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)  
-
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
         surface.blit(starvation_emoji_surface, (self._x + 2, self._y + 2))
-        surface.blit(pid_text_surface, (self._x + 32, self._y + 5))
+        surface.blit(self._pid_text_surface, (self._x + 32, self._y + 5))
 
         if self._process.is_blocked:
             surface.blit(_blocked_emoji, (self._x + 28, self._y + 32))
