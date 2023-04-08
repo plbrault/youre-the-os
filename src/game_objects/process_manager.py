@@ -109,7 +109,7 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process = Process(pid, self)
+            process = Process(pid, self, self._game.page_manager)
             process_slot = self.process_slots[i]
             process_slot.process = process
             self.children.append(process)
