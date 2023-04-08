@@ -42,6 +42,13 @@ class PageManager(GameObject):
                 break
         self.children.append(page)
         return page
+    
+    def delete_page(self, page):
+        for ram_slot in self._ram_slots:
+            if ram_slot.page == page:
+                ram_slot.page = None
+                break
+        self.children.remove(page)
         
     def update(self, current_time, events):
         pass

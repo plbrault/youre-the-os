@@ -77,6 +77,8 @@ class Process(GameObject):
             if self.has_ended:
                 if self.starvation_level == 0:
                     self.view.target_y = -self.view.height
+                for page in self._pages:
+                    self._page_manager.delete_page(page)
             else:
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
