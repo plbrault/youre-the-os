@@ -1,3 +1,3 @@
-from mainScene import MainScene
+from main_scene import MainScene
 
 MainScene()
