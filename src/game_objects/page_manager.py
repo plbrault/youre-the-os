@@ -8,9 +8,8 @@ from game_objects.page_slot import PageSlot
 class PageManager(GameObject):
     _MAX_PAGES= 168
     
-    def __init__(self, game, ram_size):
+    def __init__(self, game):
         self._game = game
-        self._ram_size = ram_size
         
         self._ram_slots = []
         

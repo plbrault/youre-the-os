@@ -61,7 +61,7 @@ class Game:
         self._process_manager = ProcessManager(self)
         self._game_objects.append(self._process_manager)
         
-        self._page_manager = PageManager(self, 156)
+        self._page_manager = PageManager(self)
         self._game_objects.append(self._page_manager)
 
     def _main_loop(self):
