@@ -12,6 +12,7 @@ from lib.ui.fonts import FONT_ARIAL_20
 
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42
+    _MAX_TERMINATED_BY_USER = 10
     
     def __init__(self, game):
         self._game = game
@@ -90,7 +91,7 @@ class ProcessManager(GameObject):
         terminated_processes_label.font = FONT_ARIAL_20
         self.children.append(terminated_processes_label)
 
-        for i in range(5):
+        for i in range(self._MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
             y = 644 + terminated_processes_label.view.height + 5
@@ -126,7 +127,7 @@ class ProcessManager(GameObject):
         can_terminate = False
 
         if by_user:
-            if self._user_terminated_process_count < 5:
+            if self._user_terminated_process_count < self._MAX_TERMINATED_BY_USER:
                 can_terminate = True
 
                 slot = self._user_terminated_process_slots[self._user_terminated_process_count]
@@ -134,12 +135,16 @@ class ProcessManager(GameObject):
                 slot.process = process
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
-                if self._user_terminated_process_count == 5:
+                if self._user_terminated_process_count == self._MAX_TERMINATED_BY_USER:
                     self._game.game_over = True
 
                 for cpu in self._cpu_list:
                     if cpu.process == process:
-                        cpu.process = None         
+                        cpu.process = None
+                for process_slot in self._process_slots:
+                    if process_slot.process == process:
+                        process_slot.process = None
+                
         else:
             can_terminate = True
 
@@ -156,8 +161,9 @@ class ProcessManager(GameObject):
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
             if randint(1, 30) == 1 or current_time - self._last_process_creation >= 30000:
-                self._create_process()
-                self._last_process_creation = current_time
+                for i in range(1, randint(1, 4)):
+                    self._create_process()
+                    self._last_process_creation = current_time
                 
         for game_object in self.children:
             game_object.update(current_time, events)

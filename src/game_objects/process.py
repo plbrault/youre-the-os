@@ -59,7 +59,7 @@ class Process(GameObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    for i in range(randint(1, 4)):
+                    for i in range(2, randint(1, 5)):
                         self._pages.append(self._page_manager.create_page(self._pid))
                 for page in self._pages:
                     page.in_use = True
