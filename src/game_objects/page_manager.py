@@ -19,7 +19,7 @@ class PageManager(GameObject):
         self._setup()
         
     def _setup(self):
-        ram_pages_label = Label('RAM Pages :')
+        ram_pages_label = Label('Memory Pages in RAM :')
         ram_pages_label.view.set_xy(self._game.process_manager.view.width, 120)
         ram_pages_label.font = FONT_ARIAL_20
         self.children.append(ram_pages_label)
