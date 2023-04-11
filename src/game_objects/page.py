@@ -39,7 +39,6 @@ class Page(GameObject):
         return False
     
     def _on_click(self):
-        print('click')
         self._page_manager.swap_page(self)
     
     def update(self, current_time, events):
@@ -48,6 +47,6 @@ class Page(GameObject):
                 self._on_click()
         
         if self.in_use and self.in_swap:
-            if int(current_time / 250) % 2 == 1:
-                self._display_blink_color = True
-        pass
+            self._display_blink_color = (int(current_time / 200) % 2 == 1)
+        else:
+            self._display_blink_color = False
