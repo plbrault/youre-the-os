@@ -7,6 +7,7 @@ from lib.ui.color import Color
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 from game_objects.game_over_dialog import GameOverDialog
+from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 
 class Game:
@@ -15,6 +16,8 @@ class Game:
         pygame.font.init()
         
         self._game_objects = []
+        self._process_manager = None
+        self._page_manager = None
 
         self._game_over = False
         self._game_over_time = None
@@ -39,6 +42,14 @@ class Game:
     @game_over.setter
     def game_over(self, value):
         self._game_over = value
+        
+    @property
+    def process_manager(self):
+        return self._process_manager
+    
+    @property
+    def page_manager(self):
+        return self._page_manager
 
     def _setup(self):
         self._game_objects = []
@@ -47,8 +58,11 @@ class Game:
         self._game_over_time = None
         self._game_over_dialog = None
         
-        process_manager = ProcessManager(self)
-        self._game_objects.append(process_manager)
+        self._process_manager = ProcessManager(self)
+        self._game_objects.append(self._process_manager)
+        
+        self._page_manager = PageManager(self)
+        self._game_objects.append(self._page_manager)
 
     def _main_loop(self):
         while True:

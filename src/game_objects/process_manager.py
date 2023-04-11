@@ -8,13 +8,11 @@ from game_objects.label import Label
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
-from lib.ui.color import Color
 from lib.ui.fonts import FONT_ARIAL_20
-from lib.game_event import GameEvent
-from lib.game_event_type import GameEventType
 
 class ProcessManager(GameObject):
-    _MAX_PROCESSES = 42
+    _MAX_PROCESSES = 39
+    _MAX_TERMINATED_BY_USER = 10
     
     def __init__(self, game):
         self._game = game
@@ -74,7 +72,7 @@ class ProcessManager(GameObject):
         io_queue.view.set_xy(50, 10)
         self.children.append(io_queue)       
 
-        processes_label = Label('Processes:')
+        processes_label = Label('Idle Processes :')
         processes_label.view.set_xy(50, 120)
         processes_label.font = FONT_ARIAL_20
         self.children.append(processes_label)
@@ -88,15 +86,15 @@ class ProcessManager(GameObject):
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
-        terminated_processes_label = Label('Terminated By User :')
-        terminated_processes_label.view.set_xy(50, 644)
+        terminated_processes_label = Label('User Ragequits :')
+        terminated_processes_label.view.set_xy(50, 668)
         terminated_processes_label.font = FONT_ARIAL_20
         self.children.append(terminated_processes_label)
 
-        for i in range(5):
+        for i in range(self._MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
-            y = 644 + terminated_processes_label.view.height + 5
+            y = 668 + terminated_processes_label.view.height + 5
             process_slot.view.set_xy(x, y)
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)        
@@ -112,7 +110,7 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process = Process(pid, self)
+            process = Process(pid, self, self._game.page_manager)
             process_slot = self.process_slots[i]
             process_slot.process = process
             self.children.append(process)
@@ -129,7 +127,7 @@ class ProcessManager(GameObject):
         can_terminate = False
 
         if by_user:
-            if self._user_terminated_process_count < 5:
+            if self._user_terminated_process_count < self._MAX_TERMINATED_BY_USER:
                 can_terminate = True
 
                 slot = self._user_terminated_process_slots[self._user_terminated_process_count]
@@ -137,12 +135,16 @@ class ProcessManager(GameObject):
                 slot.process = process
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
-                if self._user_terminated_process_count == 5:
+                if self._user_terminated_process_count == self._MAX_TERMINATED_BY_USER:
                     self._game.game_over = True
 
                 for cpu in self._cpu_list:
                     if cpu.process == process:
-                        cpu.process = None         
+                        cpu.process = None
+                for process_slot in self._process_slots:
+                    if process_slot.process == process:
+                        process_slot.process = None
+                
         else:
             can_terminate = True
 
@@ -159,8 +161,9 @@ class ProcessManager(GameObject):
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
             if randint(1, 30) == 1 or current_time - self._last_process_creation >= 30000:
-                self._create_process()
-                self._last_process_creation = current_time
+                for i in range(randint(1, 4)):
+                    self._create_process()
+                    self._last_process_creation = current_time
                 
         for game_object in self.children:
             game_object.update(current_time, events)

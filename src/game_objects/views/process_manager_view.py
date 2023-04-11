@@ -7,7 +7,7 @@ class ProcessManagerView(Drawable):
 
     @property
     def width(self):
-        return 414
+        return 530
 
     @property
     def height(self):
