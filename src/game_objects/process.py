@@ -13,7 +13,8 @@ class Process(GameObject):
         self._page_manager = page_manager
 
         self._has_cpu = False
-        self._is_blocked = False
+        self._is_waiting_for_io = False
+        self._is_waiting_for_page = False
         self._has_ended = False
         self._starvation_level = 1
 
@@ -34,7 +35,7 @@ class Process(GameObject):
 
     @property
     def is_blocked(self):
-        return self._is_blocked
+        return self._is_waiting_for_io or self._is_waiting_for_page
 
     @property
     def has_ended(self):
@@ -42,7 +43,23 @@ class Process(GameObject):
 
     @property
     def starvation_level(self):
-        return self._starvation_level
+        return self._starvation_level   
+    
+    def _update_blocking_condition(self, update_fn):
+        was_blocked = self.is_blocked
+        update_fn()
+        if was_blocked != self.is_blocked:
+            self._current_state_duration = 0
+    
+    def _set_waiting_for_io(self, waiting_for_io):
+        def update_fn():
+            self._is_waiting_for_io = waiting_for_io
+        self._update_blocking_condition(update_fn)
+        
+    def _set_waiting_for_page(self, waiting_for_page):
+        def update_fn():
+            self._is_waiting_for_page = waiting_for_page
+        self._update_blocking_condition(update_fn)
 
     def _use_cpu(self):
         if not self.has_cpu:
@@ -87,24 +104,22 @@ class Process(GameObject):
                         break
 
     def _wait_for_io(self):
-        self._is_blocked = True
-        self._current_state_duration = 0
+        self._set_waiting_for_io(True)
         self._process_manager.io_queue.wait_for_event(self._on_io_event)
 
     def _on_io_event(self):
-        self._is_blocked = False
-        self._current_state_duration = 0
+        self._set_waiting_for_io(False)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
             self._has_ended = True
-            self._is_blocked = False
+            self._set_waiting_for_io(False)
             self._starvation_level = 0
 
     def _terminate_by_user(self):
         if self._process_manager.terminate_process(self, True):
             self._has_ended = True
-            self._is_blocked = False
+            self._set_waiting_for_io(False)
             self._starvation_level = 6
 
     def _check_if_clicked_on(self, event):
