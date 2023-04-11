@@ -139,6 +139,13 @@ class Process(GameObject):
                 self._on_click()
 
         if not self.has_ended:
+            pages_in_swap = 0
+            if self.has_cpu:
+                for page in self._pages:
+                    if page.in_swap:
+                        pages_in_swap += 1
+            self._set_waiting_for_page(pages_in_swap > 0)
+            
             if current_time >= self._last_update_time + 1000:
                 self._last_update_time = current_time
                     
