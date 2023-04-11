@@ -22,5 +22,5 @@ class IoQueueView(Drawable):
         if self._io_queue.event_count > 0:
             color = Color.BLUE
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
-        text_surface = FONT_ARIAL_10.render('I/O QUEUE (' + str(self._io_queue.event_count) + ')', False, Color.BLACK)
+        text_surface = FONT_ARIAL_10.render('I/O EVENTS (' + str(self._io_queue.event_count) + ')', False, Color.BLACK)
         surface.blit(text_surface, (self._x + 20, self._y + 10))
