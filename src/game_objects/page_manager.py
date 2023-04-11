@@ -24,7 +24,7 @@ class PageManager(GameObject):
         ram_pages_label.font = FONT_ARIAL_20
         self.children.append(ram_pages_label)
               
-        for row in range(7):
+        for row in range(4):
             for column in range(12):
                 ram_slot = PageSlot()          
                 x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
@@ -34,26 +34,35 @@ class PageManager(GameObject):
         self.children.extend(self._ram_slots)
         
         swap_pages_label = Label('Memory Pages in Swap Space :')
-        swap_pages_label.view.set_xy(self._game.process_manager.view.width, 411)
+        swap_pages_label.view.set_xy(self._game.process_manager.view.width, 300)
         swap_pages_label.font = FONT_ARIAL_20
         self.children.append(swap_pages_label)
         
-        for row in range(6):
+        for row in range(9):
             for column in range(12):
                 swap_slot = PageSlot()          
                 x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
-                y = 416 + swap_pages_label.view.height + row * ram_slot.view.height + row * 5
+                y = 305 + swap_pages_label.view.height + row * ram_slot.view.height + row * 5
                 swap_slot.view.set_xy(x, y)
                 self._swap_slots.append(swap_slot)
         self.children.extend(self._swap_slots)        
         
     def create_page(self, pid):
         page = Page(pid)
+        page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
                 ram_slot.page = page
                 page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
+                page_created = True
                 break
+        if not page_created:
+            for swap_slot in self._swap_slots:
+                if not swap_slot.has_page:
+                    swap_slot.page = page
+                    page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
+                    page_created = True
+                    break
         self.children.append(page)
         return page
     
