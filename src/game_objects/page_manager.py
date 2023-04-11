@@ -48,7 +48,7 @@ class PageManager(GameObject):
         self.children.extend(self._swap_slots)        
         
     def create_page(self, pid):
-        page = Page(pid)
+        page = Page(pid, self)
         page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
@@ -60,11 +60,35 @@ class PageManager(GameObject):
             for swap_slot in self._swap_slots:
                 if not swap_slot.has_page:
                     swap_slot.page = page
+                    page.in_swap = True
                     page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
                     page_created = True
                     break
         self.children.append(page)
         return page
+    
+    def swap_page(self, page):
+        if page.in_swap:
+            for swap_slot in self._swap_slots:
+                if swap_slot.page == page:
+                    swap_slot.page = None
+                    break
+            for ram_slot in self._ram_slots:
+                if not ram_slot.has_page:
+                    ram_slot.page = page
+                    page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
+                    break
+        else:
+            for ram_slot in self._ram_slots:
+                if ram_slot.page == page:
+                    ram_slot.page = None
+                    break
+            for swap_slot in self._swap_slots:
+                if not swap_slot.has_page:
+                    swap_slot.page = page
+                    page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
+                    break
+        page._in_swap = not page._in_swap
     
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
@@ -72,6 +96,3 @@ class PageManager(GameObject):
                 ram_slot.page = None
                 break
         self.children.remove(page)
-        
-    def update(self, current_time, events):
-        pass

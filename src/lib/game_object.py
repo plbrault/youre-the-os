@@ -13,9 +13,9 @@ class GameObject(ABC):
     def children(self):
         return self._children
 
-    @abstractmethod
     def update(self, current_time, events):
-        pass
+        for child in self._children:
+            child.update(current_time, events)
 
     def render(self, surface):
         self._view.draw(surface)
