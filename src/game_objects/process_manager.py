@@ -11,7 +11,7 @@ from game_objects.process_slot import ProcessSlot
 from lib.ui.fonts import FONT_ARIAL_20
 
 class ProcessManager(GameObject):
-    _MAX_PROCESSES = 42
+    _MAX_PROCESSES = 39
     _MAX_TERMINATED_BY_USER = 10
     
     def __init__(self, game):
@@ -72,7 +72,7 @@ class ProcessManager(GameObject):
         io_queue.view.set_xy(50, 10)
         self.children.append(io_queue)       
 
-        processes_label = Label('Processes:')
+        processes_label = Label('Idle Processes :')
         processes_label.view.set_xy(50, 120)
         processes_label.font = FONT_ARIAL_20
         self.children.append(processes_label)
@@ -86,15 +86,15 @@ class ProcessManager(GameObject):
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
-        terminated_processes_label = Label('Terminated By User :')
-        terminated_processes_label.view.set_xy(50, 644)
+        terminated_processes_label = Label('User Ragequits :')
+        terminated_processes_label.view.set_xy(50, 668)
         terminated_processes_label.font = FONT_ARIAL_20
         self.children.append(terminated_processes_label)
 
         for i in range(self._MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
-            y = 644 + terminated_processes_label.view.height + 5
+            y = 668 + terminated_processes_label.view.height + 5
             process_slot.view.set_xy(x, y)
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)        
