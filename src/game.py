@@ -78,7 +78,7 @@ class Game:
             if event.type == pygame.QUIT:
                 sys.exit()
             if self._game_over and display_game_over_dialog:
-                if event.type == pygame.MOUSEBUTTONUP or event.type == pygame.KEYUP:
+                if event.type == pygame.KEYUP:
                     self._setup()
             elif not self._game_over:
                 if event.type == pygame.MOUSEBUTTONUP:
