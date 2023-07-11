@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Python 3.10
+* Python 3.11
 * [pipenv](https://pypi.org/project/pipenv/)
 * An empty `.venv` directory at the root of the project
 
