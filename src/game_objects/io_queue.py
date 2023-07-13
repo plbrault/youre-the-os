@@ -40,4 +40,4 @@ class IoQueue(GameObject):
             self._last_update_time = current_time
 
             if self._event_count < self._subscriber_queue.qsize() and randint(1, 3) == 3:
-                self._event_count += 1
+                self._event_count = randint(self._event_count + 1, self._subscriber_queue.qsize())

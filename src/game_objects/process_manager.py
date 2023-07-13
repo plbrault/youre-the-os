@@ -160,10 +160,9 @@ class ProcessManager(GameObject):
             self._create_process()      
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
-            if randint(1, 30) == 1 or current_time - self._last_process_creation >= 30000:
-                for i in range(randint(1, 4)):
-                    self._create_process()
-                    self._last_process_creation = current_time
+            if randint(1, 20) == 1 or current_time - self._last_process_creation >= 20000:
+                self._create_process()
+                self._last_process_creation = current_time
                 
         for game_object in self.children:
             game_object.update(current_time, events)

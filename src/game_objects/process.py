@@ -1,3 +1,4 @@
+from math import sqrt
 from random import randint
 
 from lib.game_object import GameObject
@@ -76,7 +77,8 @@ class Process(GameObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    for i in range(randint(1, 4)):
+                    num_pages = round(sqrt(randint(1, 20))) # Generate a number of pages between 1 and 4 with a higher probability for higher numbers
+                    for i in range(1, num_pages): 
                         self._pages.append(self._page_manager.create_page(self._pid))
                 for page in self._pages:
                     page.in_use = True
@@ -154,8 +156,12 @@ class Process(GameObject):
                 self._current_state_duration += 1
 
                 if self.has_cpu and not self.is_blocked:
-                    if randint(1, 20) == 1:
+                    if randint(1, 10) == 1:
                         self._wait_for_io()
+                    if len(self._pages) < 4 and randint(1, 20) == 1:
+                        new_page = self._page_manager.create_page(self._pid)
+                        self._pages.append(new_page)
+                        new_page.in_use = True
                     elif self._current_state_duration >= 1 and randint(1, 100) == 1:
                         self._terminate_gracefully()
                     elif self._current_state_duration == 5:
