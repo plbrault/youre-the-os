@@ -21,7 +21,7 @@ class PageView(Drawable):
     def draw(self, surface):
         color = Color.DARK_GREY
         if self._page.display_blink_color:
-            color = Color.RED
+            color = Color.BLUE
         elif self._page.in_use:
             color = Color.WHITE
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
