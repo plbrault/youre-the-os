@@ -156,8 +156,12 @@ class Process(GameObject):
                 self._current_state_duration += 1
 
                 if self.has_cpu and not self.is_blocked:
-                    if randint(1, 20) == 1:
+                    if randint(1, 10) == 1:
                         self._wait_for_io()
+                    if len(self._pages) < 4 and randint(1, 20) == 1:
+                        new_page = self._page_manager.create_page(self._pid)
+                        self._pages.append(new_page)
+                        new_page.in_use = True
                     elif self._current_state_duration >= 1 and randint(1, 100) == 1:
                         self._terminate_gracefully()
                     elif self._current_state_duration == 5:
