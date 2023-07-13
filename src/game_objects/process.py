@@ -121,6 +121,8 @@ class Process(GameObject):
             self._has_ended = True
             self._set_waiting_for_io(False)
             self._starvation_level = 6
+            for page in self._pages:
+                self._page_manager.delete_page(page)
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
