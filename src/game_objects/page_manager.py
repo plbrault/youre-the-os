@@ -24,8 +24,8 @@ class PageManager(GameObject):
         ram_pages_label.font = FONT_ARIAL_20
         self.children.append(ram_pages_label)
         
-        num_ram_lines = 7
-        num_swap_lines = 6
+        num_ram_lines = 5
+        num_swap_lines = 8
              
         for row in range(num_ram_lines):
             for column in range(12):
