@@ -3,6 +3,7 @@ import pygame
 from lib.ui.color import Color
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_ARIAL_8
+
 class PageView(Drawable):
     def __init__(self, page):
         self._page = page
