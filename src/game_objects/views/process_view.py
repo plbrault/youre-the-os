@@ -28,7 +28,7 @@ _starvation_emojis = [
 
 _gracefully_terminated_emoji = load_emoji('😇', _starvation_emoji_size)
 
-_blocked_emoji = load_emoji('⏳', (32, 32))
+_waiting_for_io_emoji = load_emoji('⏳', (32, 32))
 
 class ProcessView(Drawable):
     def __init__(self, process):
@@ -81,5 +81,5 @@ class ProcessView(Drawable):
         surface.blit(starvation_emoji_surface, (self._x + 2, self._y + 2))
         surface.blit(self._pid_text_surface, (self._x + 32, self._y + 5))
 
-        if self._process.is_blocked:
-            surface.blit(_blocked_emoji, (self._x + 28, self._y + 32))
+        if self._process.is_waiting_for_io:
+            surface.blit(_waiting_for_io_emoji, (self._x + 28, self._y + 32))

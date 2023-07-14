@@ -37,8 +37,16 @@ class Process(GameObject):
         return self._has_cpu
 
     @property
+    def is_waiting_for_io(self):
+        return self._is_waiting_for_io
+    
+    @property
+    def is_waiting_for_page(self):
+        return self._is_waiting_for_page
+
+    @property
     def is_blocked(self):
-        return self._is_waiting_for_io or self._is_waiting_for_page
+        return self.is_waiting_for_io or self.is_waiting_for_page
 
     @property
     def has_ended(self):
