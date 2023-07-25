@@ -1,4 +1,6 @@
 from lib.drawable import Drawable
+from lib.ui.color import Color
+from lib.ui.fonts import FONT_ARIAL_20
 
 class ScoreManagerView(Drawable):
     def __init__(self, score_manager):
@@ -14,4 +16,4 @@ class ScoreManagerView(Drawable):
         return 0
 
     def draw(self, surface):
-        pass
+        surface.blit(FONT_ARIAL_20.render('Score : ' + format(self._score_manager.score, '09'), False, Color.WHITE), (840, 10))

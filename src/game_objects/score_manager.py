@@ -14,12 +14,16 @@ class ScoreManager(GameObject):
         
         super().__init__(ScoreManagerView(self))
         
+    @property
+    def score(self):
+        return self._score
+        
     def update(self, current_time, events):
         if current_time % 1000 == 0:
             stats = self._process_manager.get_current_stats()
             for starvation_level in range(0, 6):
                 """
-                Points for each starvation level:
+                Points per process for each starvation level:
                 0 -> 100
                 1 -> 50
                 2 -> 25
