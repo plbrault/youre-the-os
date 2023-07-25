@@ -42,7 +42,7 @@ class Game:
     @property
     def current_time(self):
         return self._current_time
-
+    
     @property
     def game_over(self):
         return self._game_over
@@ -77,6 +77,8 @@ class Game:
         
         self._uptime_manager = UptimeManager(self)
         self._game_objects.append(self._uptime_manager)
+        
+        self._uptime_manager.reset()
 
     def _main_loop(self):
         while True:
