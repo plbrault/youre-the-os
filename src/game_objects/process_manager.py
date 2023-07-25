@@ -26,7 +26,8 @@ class ProcessManager(GameObject):
         self._next_pid = None
         self._last_new_process_check = None
         self._last_process_creation = None
-        self._user_terminated_process_count = None
+        self._gracefully_terminated_process_count = 0
+        self._user_terminated_process_count = 0
         
         super().__init__(ProcessManagerView(self))
         
@@ -149,9 +150,21 @@ class ProcessManager(GameObject):
             can_terminate = True
 
         if can_terminate:
-            self._alive_process_list.remove(process) 
+            self._alive_process_list.remove(process)
+            self._gracefully_terminated_process_count += 1
 
-        return can_terminate        
+        return can_terminate
+    
+    def get_current_stats(self):
+        process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
+        for process in self._alive_process_list:
+            process_count_by_starvation_level[process.starvation_level] += 1
+        return {
+            'alive_process_count': len(self._alive_process_list),           
+            'alive_process_count_by_starvation_level': process_count_by_starvation_level,
+            'gracefully_terminated_process_count': self._gracefully_terminated_process_count,
+            'user_terminated_process_count': self._user_terminated_process_count,
+        }     
 
     def update(self, current_time, events):
         if self._next_pid <= 12 and current_time - self._last_new_process_check >= 50:

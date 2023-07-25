@@ -9,6 +9,7 @@ from lib.game_event_type import GameEventType
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
+from game_objects.score_manager import ScoreManager
 
 class Game:
     def __init__(self):
@@ -63,6 +64,9 @@ class Game:
         
         self._page_manager = PageManager(self)
         self._game_objects.append(self._page_manager)
+        
+        self._score_manager = ScoreManager(self)
+        self._game_objects.append(self._score_manager)
 
     def _main_loop(self):
         while True:
