@@ -61,12 +61,9 @@ class ProcessManager(GameObject):
         self._last_process_creation = 0
         self._user_terminated_process_count = 0
         
-        self.cpu_list.extend([
-            Cpu(1),
-            Cpu(2),
-            Cpu(3),
-            Cpu(4),
-        ])
+        for i in range(self._game.config['num_cpus']):
+            self.cpu_list.append(Cpu(i + 1))
+        
         for i, cpu in enumerate(self.cpu_list):
             x = 50 + i * cpu.view.width + i * 5
             y = 50
@@ -172,7 +169,7 @@ class ProcessManager(GameObject):
                 self._game.game_over = True
                 return
         
-        if self._next_pid <= 12 and current_time - self._last_new_process_check >= 50:
+        if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
             self._create_process()      
