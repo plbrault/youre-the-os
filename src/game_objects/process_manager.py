@@ -7,7 +7,6 @@ from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
-from lib.ui.fonts import FONT_ARIAL_20
 
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 39

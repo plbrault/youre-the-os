@@ -8,3 +8,8 @@ FONT_ARIAL_12 = pygame.font.SysFont('Arial', 12)
 FONT_ARIAL_16 = pygame.font.SysFont('Arial', 16)
 FONT_ARIAL_20 = pygame.font.SysFont('Arial', 20)
 FONT_ARIAL_30 = pygame.font.SysFont('Arial', 30)
+
+FONT_PRIMARY_12 = pygame.font.Font('assets/VT323-Regular.ttf', 12) 
+FONT_PRIMARY_18 = pygame.font.Font('assets/VT323-Regular.ttf', 18) 
+FONT_PRIMARY_24 = pygame.font.Font('assets/VT323-Regular.ttf', 24) 
+FONT_PRIMARY_30 = FONT_PRIMARY_24 = pygame.font.Font('assets/VT323-Regular.ttf', 30) 

@@ -1,4 +1,3 @@
-from lib.ui.fonts import FONT_ARIAL_20
 from lib.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
