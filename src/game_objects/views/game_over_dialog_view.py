@@ -4,7 +4,6 @@ import os
 from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_ARIAL_10, FONT_ARIAL_12, FONT_ARIAL_16, FONT_ARIAL_30
-from game_objects.label import Label
 
 class GameOverDialogView(Drawable):
     def __init__(self, game_over_dialog):
