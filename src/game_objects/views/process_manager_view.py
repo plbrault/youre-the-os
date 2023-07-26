@@ -1,13 +1,13 @@
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_18
+from lib.ui.fonts import FONT_PRIMARY_24
 
 class ProcessManagerView(Drawable):
     def __init__(self, process_manager):
         self._process_manager = process_manager
         super().__init__()
-        
-        self._idle_processes_text_surface = FONT_PRIMARY_18.render('Idle Processes :', False, Color.WHITE)
+             
+        self._idle_processes_text_surface = FONT_PRIMARY_24.render('Idle Processes :', False, Color.WHITE)
 
     @property
     def width(self):
@@ -23,7 +23,7 @@ class ProcessManagerView(Drawable):
             self._process_manager.MAX_TERMINATED_BY_USER
         )
         
-        terminated_processes_text_surface = FONT_PRIMARY_18.render(terminated_processes_text, False, Color.WHITE)
+        terminated_processes_text_surface = FONT_PRIMARY_24.render(terminated_processes_text, False, Color.WHITE)
         
         surface.blit(self._idle_processes_text_surface, (50, 120))
         surface.blit(terminated_processes_text_surface, (50, 658))
