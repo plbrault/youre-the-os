@@ -94,7 +94,7 @@ class Process(GameObject):
                         break
                 if len(self._pages) == 0:
                     num_pages = round(sqrt(randint(1, 20))) # Generate a number of pages between 1 and 4 with a higher probability for higher numbers
-                    for i in range(1, num_pages): 
+                    for i in range(num_pages): 
                         self._pages.append(self._page_manager.create_page(self._pid))
                 for page in self._pages:
                     page.in_use = True
