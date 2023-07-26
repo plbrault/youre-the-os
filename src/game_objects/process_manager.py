@@ -28,6 +28,9 @@ class ProcessManager(GameObject):
         self._last_process_creation = None
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
+        
+        self._new_process_probability_numerator = int(game.config['new_process_probability'] * 100)
+        self._max_wait_between_new_processes = int(100 / self._new_process_probability_numerator * 1000)
                
         super().__init__(ProcessManagerView(self))
         
@@ -175,7 +178,7 @@ class ProcessManager(GameObject):
             self._create_process()      
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
-            if randint(1, 20) == 1 or current_time - self._last_process_creation >= 20000:
+            if randint(1, 100) <= self._new_process_probability_numerator or current_time - self._last_process_creation >= self._max_wait_between_new_processes:
                 self._create_process()
                 self._last_process_creation = current_time
                 
