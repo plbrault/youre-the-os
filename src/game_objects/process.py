@@ -130,12 +130,14 @@ class Process(GameObject):
         if self._process_manager.terminate_process(self, False):
             self._has_ended = True
             self._set_waiting_for_io(False)
+            self._set_waiting_for_page(False)
             self._starvation_level = 0
 
     def _terminate_by_user(self):
         if self._process_manager.terminate_process(self, True):
             self._has_ended = True
             self._set_waiting_for_io(False)
+            self._set_waiting_for_page(False)
             self._starvation_level = 6
             for page in self._pages:
                 self._page_manager.delete_page(page)
