@@ -3,7 +3,7 @@ from pygame_emojis import load_emoji
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_ARIAL_10
+from lib.ui.fonts import FONT_SECONDARY_XSMALL
 
 _starvation_colors = [
     Color.GREEN,
@@ -15,7 +15,7 @@ _starvation_colors = [
     Color.DARK_GREY
 ]
 
-_starvation_emoji_size = (32, 32)
+_starvation_emoji_size = (28, 28)
 _starvation_emojis = [
     load_emoji('😀', _starvation_emoji_size),
     load_emoji('🙂', _starvation_emoji_size),
@@ -28,14 +28,14 @@ _starvation_emojis = [
 
 _gracefully_terminated_emoji = load_emoji('😇', _starvation_emoji_size)
 
-_waiting_for_io_emoji = load_emoji('⏳', (32, 32))
+_waiting_for_io_emoji = load_emoji('⏳', (28, 28))
 
 class ProcessView(Drawable):
     def __init__(self, process):
         self._process = process
         self._target_x = None
         self._target_y = None
-        self._pid_text_surface = FONT_ARIAL_10.render('PID ' + str(self._process.pid), False, Color.BLACK)
+        self._pid_text_surface = FONT_SECONDARY_XSMALL.render('PID ' + str(self._process.pid), False, Color.BLACK)
         super().__init__()
 
     @property
@@ -78,8 +78,8 @@ class ProcessView(Drawable):
             color = Color.BLUE
         
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
-        surface.blit(starvation_emoji_surface, (self._x + 2, self._y + 2))
-        surface.blit(self._pid_text_surface, (self._x + 32, self._y + 5))
+        surface.blit(starvation_emoji_surface, (self._x, self._y + 2))
+        surface.blit(self._pid_text_surface, (self._x + 28, self._y + 5))
 
         if self._process.is_waiting_for_io:
-            surface.blit(_waiting_for_io_emoji, (self._x + 28, self._y + 32))
+            surface.blit(_waiting_for_io_emoji, (self._x + 27, self._y + 32))
