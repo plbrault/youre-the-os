@@ -8,7 +8,6 @@ class ProcessManagerView(Drawable):
         super().__init__()
         
         self._idle_processes_text_surface = FONT_ARIAL_20.render('Idle Processes :', False, Color.WHITE)
-        self._terminated_processes_text_surface = FONT_ARIAL_20.render('User Ragequits :', False, Color.WHITE)
 
     @property
     def width(self):
@@ -19,5 +18,12 @@ class ProcessManagerView(Drawable):
         return 768
 
     def draw(self, surface):
+        terminated_processes_text = 'User Ragequits ({0} / {1}) :'.format(
+            self._process_manager.user_terminated_process_count,
+            self._process_manager.MAX_TERMINATED_BY_USER
+        )
+        
+        terminated_processes_text_surface = FONT_ARIAL_20.render(terminated_processes_text, False, Color.WHITE)
+        
         surface.blit(self._idle_processes_text_surface, (50, 120))
-        surface.blit(self._terminated_processes_text_surface, (50, 668))
+        surface.blit(terminated_processes_text_surface, (50, 668))
