@@ -25,7 +25,7 @@ class ScoreManager(GameObject):
         if current_time - self._last_update_time >= _UPDATE_INTERVAL:
             self._last_update_time = current_time
             stats = self._process_manager.get_current_stats()
-            for starvation_level in range(0, 6):
+            for starvation_level in range(6):
                 """
                 Points per second for each starvation level:
                 0 -> 100
