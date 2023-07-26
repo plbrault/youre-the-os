@@ -80,7 +80,7 @@ class ProcessManager(GameObject):
             for column in range(6):
                 process_slot = ProcessSlot()          
                 x = 50 + column * process_slot.view.width + column * 5
-                y = 150 + row * process_slot.view.height + row * 5
+                y = 155 + row * process_slot.view.height + row * 5
                 process_slot.view.set_xy(x, y)
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
@@ -88,7 +88,7 @@ class ProcessManager(GameObject):
         for i in range(self.MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
-            y = 698
+            y = 694
             process_slot.view.set_xy(x, y)
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)        

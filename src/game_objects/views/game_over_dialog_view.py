@@ -3,7 +3,7 @@ import os
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_12, FONT_PRIMARY_18, FONT_PRIMARY_30
+from lib.ui.fonts import FONT_PRIMARY_12, FONT_PRIMARY_16, FONT_PRIMARY_30
 
 class GameOverDialogView(Drawable):
     def __init__(self, game_over_dialog):
@@ -12,7 +12,7 @@ class GameOverDialogView(Drawable):
         self._image = pygame.image.load(os.path.join('assets', 'game-over-image.png')).convert_alpha()
         
         self._main_text_surface = FONT_PRIMARY_30.render('GAME OVER', False, Color.WHITE)
-        self._secondary_text_surface = FONT_PRIMARY_18.render('You made the user angry!', False, Color.WHITE)
+        self._secondary_text_surface = FONT_PRIMARY_16.render('You made the user angry!', False, Color.WHITE)
         self._press_any_key_text_surface = FONT_PRIMARY_12.render('Press any key to try again', False, Color.WHITE)
 
     @property
