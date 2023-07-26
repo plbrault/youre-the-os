@@ -130,9 +130,6 @@ class ProcessManager(GameObject):
                 slot.process = process
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
-                if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
-                    self._game.game_over = True
-
                 for cpu in self._cpu_list:
                     if cpu.process == process:
                         cpu.process = None
@@ -142,10 +139,10 @@ class ProcessManager(GameObject):
                 
         else:
             can_terminate = True
+            self._gracefully_terminated_process_count += 1
 
         if can_terminate:
             self._alive_process_list.remove(process)
-            self._gracefully_terminated_process_count += 1
 
         return can_terminate
     
@@ -161,6 +158,20 @@ class ProcessManager(GameObject):
         }     
 
     def update(self, current_time, events):
+        if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
+            processes_are_moving = False
+            for child in self.children:
+                if isinstance(child, Process):
+                    if child.view.target_x is not None and child.view.target_x != child.view.x:
+                        processes_are_moving = True
+                        break
+                    if child.view.target_y is not None and child.view.target_y != child.view.y:
+                        processes_are_moving = True
+                        break
+            if not processes_are_moving:
+                self._game.game_over = True
+                return
+        
         if self._next_pid <= 12 and current_time - self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
