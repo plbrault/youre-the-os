@@ -8,10 +8,10 @@ from game_objects.views.process_view import ProcessView
 class Process(GameObject):
     _ANIMATION_SPEED = 5
 
-    def __init__(self, pid, process_manager, page_manager):
+    def __init__(self, pid, game):
         self._pid = pid
-        self._process_manager = process_manager
-        self._page_manager = page_manager
+        self._process_manager = game.process_manager
+        self._page_manager = game.page_manager
 
         self._has_cpu = False
         self._is_waiting_for_io = False
@@ -25,6 +25,8 @@ class Process(GameObject):
         self._display_blink_color = False
         
         self._pages = []
+        
+        self._io_probability_numerator = int(game.config['io_probability'] * 100)
 
         super().__init__(ProcessView(self))
 
@@ -172,7 +174,7 @@ class Process(GameObject):
                 self._current_state_duration += 1
 
                 if self.has_cpu and not self.is_blocked:
-                    if randint(1, 10) == 1:
+                    if randint(1, 100) <= self._io_probability_numerator:
                         self._wait_for_io()
                     if len(self._pages) < 4 and randint(1, 20) == 1:
                         new_page = self._page_manager.create_page(self._pid)
