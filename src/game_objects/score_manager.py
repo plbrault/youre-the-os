@@ -37,7 +37,6 @@ class ScoreManager(GameObject):
                 """
                 points_per_second = max(5 * floor(100 / 2 ** starvation_level / 5), 1)
                 points = points_per_second / (1000 / _UPDATE_INTERVAL)
-                print(points)
                 self._score += points * stats['alive_process_count_by_starvation_level'][starvation_level]
             if stats['user_terminated_process_count'] != self._user_terminated_process_count:
                 self._user_terminated_process_count = stats['user_terminated_process_count']

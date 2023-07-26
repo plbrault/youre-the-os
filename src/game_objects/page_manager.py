@@ -14,15 +14,23 @@ class PageManager(GameObject):
         self._ram_slots = []
         self._swap_slots = []
         
+        self._pages_in_ram_label_xy = (0,0)
+        self._pages_in_swap_label_xy = (0,0)
+        
         super().__init__(PageManagerView(self))
         
         self._setup()
-        
-    def _setup(self):
-        ram_pages_label = Label('Memory Pages in RAM :')
-        ram_pages_label.view.set_xy(self._game.process_manager.view.width, 120)
-        ram_pages_label.font = FONT_ARIAL_20
-        self.children.append(ram_pages_label)
+
+    @property
+    def pages_in_ram_label_xy(self):
+        return self._pages_in_ram_label_xy
+    
+    @property
+    def pages_in_swap_label_xy(self):
+        return self._pages_in_swap_label_xy
+               
+    def _setup(self):        
+        self._pages_in_ram_label_xy = (self._game.process_manager.view.width, 120)
         
         num_ram_lines = 5
         num_swap_lines = 8
@@ -36,18 +44,13 @@ class PageManager(GameObject):
                 self._ram_slots.append(ram_slot)
         self.children.extend(self._ram_slots)
         
-        swap_pages_label = Label('Memory Pages in Swap Space :')
-        swap_pages_label_x = self._game.process_manager.view.width
-        swap_pages_label_y = 150 + num_ram_lines * PageSlot().view.height + num_ram_lines * 5
-        swap_pages_label.view.set_xy(swap_pages_label_x, swap_pages_label_y)
-        swap_pages_label.font = FONT_ARIAL_20
-        self.children.append(swap_pages_label)
+        self._pages_in_swap_label_xy = (self._game.process_manager.view.width, 150 + num_ram_lines * PageSlot().view.height + num_ram_lines * 5)
         
         for row in range(num_swap_lines):
             for column in range(12):
                 swap_slot = PageSlot()          
                 x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
-                y = swap_pages_label_y + swap_pages_label.view.height + 5 + row * ram_slot.view.height + row * 5
+                y = self._pages_in_swap_label_xy[1] + 30 + row * ram_slot.view.height + row * 5
                 swap_slot.view.set_xy(x, y)
                 self._swap_slots.append(swap_slot)
         self.children.extend(self._swap_slots)        
