@@ -11,7 +11,8 @@ from lib.ui.fonts import FONT_ARIAL_20
 
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 39
-    _MAX_TERMINATED_BY_USER = 10
+    
+    MAX_TERMINATED_BY_USER = 10
     
     def __init__(self, game):
         self._game = game
@@ -43,6 +44,10 @@ class ProcessManager(GameObject):
     @property
     def io_queue(self):
         return self._io_queue
+    
+    @property
+    def user_terminated_process_count(self):
+        return self._user_terminated_process_count
     
     def _setup(self):
         self._cpu_list = []
@@ -81,7 +86,7 @@ class ProcessManager(GameObject):
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
-        for i in range(self._MAX_TERMINATED_BY_USER):
+        for i in range(self.MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
             y = 698
@@ -117,7 +122,7 @@ class ProcessManager(GameObject):
         can_terminate = False
 
         if by_user:
-            if self._user_terminated_process_count < self._MAX_TERMINATED_BY_USER:
+            if self._user_terminated_process_count < self.MAX_TERMINATED_BY_USER:
                 can_terminate = True
 
                 slot = self._user_terminated_process_slots[self._user_terminated_process_count]
@@ -125,7 +130,7 @@ class ProcessManager(GameObject):
                 slot.process = process
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
-                if self._user_terminated_process_count == self._MAX_TERMINATED_BY_USER:
+                if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
                     self._game.game_over = True
 
                 for cpu in self._cpu_list:
