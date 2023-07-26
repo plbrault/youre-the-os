@@ -71,7 +71,7 @@ class Game:
         self._score_manager = ScoreManager(self)
         self._game_objects.append(self._score_manager)
         
-        self._uptime_manager = UptimeManager(self)
+        self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._game_objects.append(self._uptime_manager)
 
     def _main_loop(self):

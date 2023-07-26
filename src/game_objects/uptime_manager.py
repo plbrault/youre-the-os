@@ -5,10 +5,10 @@ from game_objects.views.uptime_manager_view import UptimeManagerView
 
 class UptimeManager(GameObject):
     
-    def __init__(self, game):
+    def __init__(self, game, current_time):
         self._game = game
         
-        self._last_reset_time = 0
+        self._start_time = current_time
         self._uptime_text = '0:00:00'     
           
         super().__init__(UptimeManagerView(self))
@@ -18,6 +18,6 @@ class UptimeManager(GameObject):
         return self._uptime_text
        
     def update(self, current_time, events):
-        uptime = current_time - self._last_reset_time
-        self._uptime_text = str(timedelta(seconds=int(uptime/1000)))
+        uptime = current_time - self._start_time
+        self._uptime_text = str(timedelta(seconds=int(uptime / 1000)))
     
