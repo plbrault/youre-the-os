@@ -10,11 +10,14 @@ from game_objects.game_over_dialog import GameOverDialog
 from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
+from game_objects.uptime_manager import UptimeManager
 
 class Game:
     def __init__(self):
         pygame.init()
         pygame.font.init()
+        
+        self._current_time = 0
         
         self._game_objects = []
         self._process_manager = None
@@ -35,7 +38,7 @@ class Game:
 
         self._setup()
         self._main_loop()
-
+   
     @property
     def game_over(self):
         return self._game_over
@@ -67,13 +70,16 @@ class Game:
         
         self._score_manager = ScoreManager(self)
         self._game_objects.append(self._score_manager)
+        
+        self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
+        self._game_objects.append(self._uptime_manager)
 
     def _main_loop(self):
         while True:
             self._update(pygame.time.get_ticks())
             self._render()
 
-    def _update(self, current_time):
+    def _update(self, current_time):      
         events = []
 
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000

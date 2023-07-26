@@ -9,6 +9,7 @@ class ScoreManager(GameObject):
         self._process_manager = game.process_manager
         
         self._score = 0
+        self._last_update_time = 0
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
         
@@ -19,7 +20,8 @@ class ScoreManager(GameObject):
         return self._score
         
     def update(self, current_time, events):
-        if current_time % 1000 == 0:
+        if current_time - self._last_update_time >= 1000:
+            self._last_update_time = current_time
             stats = self._process_manager.get_current_stats()
             for starvation_level in range(0, 6):
                 """
