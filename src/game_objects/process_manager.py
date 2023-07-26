@@ -28,6 +28,9 @@ class ProcessManager(GameObject):
         self._last_process_creation = None
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
+        
+        self._new_process_probability_numerator = int(game.config['new_process_probability'] * 100)
+        self._max_wait_between_new_processes = int(100 / self._new_process_probability_numerator * 1000)
                
         super().__init__(ProcessManagerView(self))
         
@@ -61,12 +64,9 @@ class ProcessManager(GameObject):
         self._last_process_creation = 0
         self._user_terminated_process_count = 0
         
-        self.cpu_list.extend([
-            Cpu(1),
-            Cpu(2),
-            Cpu(3),
-            Cpu(4),
-        ])
+        for i in range(self._game.config['num_cpus']):
+            self.cpu_list.append(Cpu(i + 1))
+        
         for i, cpu in enumerate(self.cpu_list):
             x = 50 + i * cpu.view.width + i * 5
             y = 50
@@ -105,7 +105,7 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process = Process(pid, self, self._game.page_manager)
+            process = Process(pid, self._game)
             process_slot = self.process_slots[i]
             process_slot.process = process
             self.children.append(process)
@@ -172,13 +172,13 @@ class ProcessManager(GameObject):
                 self._game.game_over = True
                 return
         
-        if self._next_pid <= 12 and current_time - self._last_new_process_check >= 50:
+        if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
             self._create_process()      
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
-            if randint(1, 20) == 1 or current_time - self._last_process_creation >= 20000:
+            if randint(1, 100) <= self._new_process_probability_numerator or current_time - self._last_process_creation >= self._max_wait_between_new_processes:
                 self._create_process()
                 self._last_process_creation = current_time
                 

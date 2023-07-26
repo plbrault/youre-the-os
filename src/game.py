@@ -3,6 +3,7 @@ import pygame
 from random import randint
 import sys
 
+from difficulty_levels import default_difficulty
 from lib.ui.color import Color
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
@@ -13,7 +14,9 @@ from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
 class Game:
-    def __init__(self):
+    def __init__(self, config=default_difficulty['config']):
+        self._config = config
+        
         pygame.init()
         pygame.font.init()
         
@@ -38,6 +41,10 @@ class Game:
 
         self._setup()
         self._main_loop()
+   
+    @property
+    def config(self):
+        return self._config
    
     @property
     def game_over(self):
