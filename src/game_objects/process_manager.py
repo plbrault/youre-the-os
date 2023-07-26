@@ -28,7 +28,7 @@ class ProcessManager(GameObject):
         self._last_process_creation = None
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
-        
+               
         super().__init__(ProcessManagerView(self))
         
         self._setup()
@@ -73,11 +73,6 @@ class ProcessManager(GameObject):
         io_queue.view.set_xy(50, 10)
         self.children.append(io_queue)       
 
-        processes_label = Label('Idle Processes :')
-        processes_label.view.set_xy(50, 120)
-        processes_label.font = FONT_ARIAL_20
-        self.children.append(processes_label)
-
         for row in range(7):
             for column in range(6):
                 process_slot = ProcessSlot()          
@@ -87,15 +82,10 @@ class ProcessManager(GameObject):
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
-        terminated_processes_label = Label('User Ragequits :')
-        terminated_processes_label.view.set_xy(50, 668)
-        terminated_processes_label.font = FONT_ARIAL_20
-        self.children.append(terminated_processes_label)
-
         for i in range(self._MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
-            y = 668 + terminated_processes_label.view.height + 5
+            y = 698
             process_slot.view.set_xy(x, y)
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)        
