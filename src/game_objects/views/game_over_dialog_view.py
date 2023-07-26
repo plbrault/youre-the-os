@@ -12,17 +12,9 @@ class GameOverDialogView(Drawable):
         
         self._image = pygame.image.load(os.path.join('assets', 'game-over-image.png')).convert_alpha()
         
-        self._game_over_label = Label('GAME OVER')
-        self._game_over_label.font = FONT_ARIAL_30
-        self._game_over_label.color = Color.WHITE
-
-        self._explanation_label = Label('You made the user angry!')
-        self._explanation_label.font = FONT_ARIAL_16
-        self._explanation_label.color = Color.WHITE
-
-        self._replay_label = Label('Press any key to try again')
-        self._replay_label.font = FONT_ARIAL_12
-        self._replay_label.color = Color.WHITE        
+        self._main_text_surface = FONT_ARIAL_30.render('GAME OVER', False, Color.WHITE)
+        self._secondary_text_surface = FONT_ARIAL_16.render('You made the user angry!', False, Color.WHITE)
+        self._press_any_key_text_surface = FONT_ARIAL_12.render('Press any key to try again', False, Color.WHITE)
 
     @property
     def width(self):
@@ -37,17 +29,12 @@ class GameOverDialogView(Drawable):
         pygame.draw.rect(surface, Color.ALMOST_BLACK, pygame.Rect(self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
         surface.blit(self._image, (self._x + 30, self._y + 98))
 
-        self._game_over_label.view.set_xy((self.width - self._game_over_label.view.width) / 2 + self.x, self.y + 20)
-        self._game_over_label.render(surface)
-
-        self._explanation_label.view.set_xy(
-            (self.width - self._explanation_label.view.width) / 2 + self.x,
-            self._game_over_label.view.y + self._game_over_label.view.height + 5,
-        )
-        self._explanation_label.render(surface)
-
-        self._replay_label.view.set_xy(
-            (self.width - self._replay_label.view.width) / 2 + self.x,
-            self._explanation_label.view.y + self._explanation_label.view.height + 5,
-        )
-        self._replay_label.render(surface)
+        surface.blit(self._main_text_surface, (self.x + (self.width - self._main_text_surface.get_width()) / 2, self.y + 20))
+        surface.blit(self._secondary_text_surface, (
+            self.x + (self.width - self._secondary_text_surface.get_width()) / 2,
+            self.y + self._main_text_surface.get_height() + 25
+        ))
+        surface.blit(self._press_any_key_text_surface, (
+            self.x + (self.width - self._press_any_key_text_surface.get_width()) / 2,
+            self.y + self._main_text_surface.get_height() + self._secondary_text_surface.get_height() + 50
+        ))
