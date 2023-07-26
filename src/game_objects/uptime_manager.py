@@ -16,12 +16,8 @@ class UptimeManager(GameObject):
     @property
     def uptime_text(self):
         return self._uptime_text
-            
-    def reset(self):
-        self._last_reset_time = self._game.current_time
        
     def update(self, current_time, events):
         uptime = current_time - self._last_reset_time
-        if uptime % 1000 == 0:
-            self._uptime_text = str(timedelta(milliseconds=uptime))
+        self._uptime_text = str(timedelta(seconds=int(uptime/1000)))
     

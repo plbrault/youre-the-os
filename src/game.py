@@ -38,11 +38,7 @@ class Game:
 
         self._setup()
         self._main_loop()
-
-    @property
-    def current_time(self):
-        return self._current_time
-    
+   
     @property
     def game_over(self):
         return self._game_over
@@ -77,17 +73,13 @@ class Game:
         
         self._uptime_manager = UptimeManager(self)
         self._game_objects.append(self._uptime_manager)
-        
-        self._uptime_manager.reset()
 
     def _main_loop(self):
         while True:
             self._update(pygame.time.get_ticks())
             self._render()
 
-    def _update(self, current_time):
-        self._current_time = current_time
-        
+    def _update(self, current_time):      
         events = []
 
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
