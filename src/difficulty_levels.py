@@ -2,7 +2,7 @@ _normal_difficulty = {
     'name': 'Normal',
     'config': {
         'num_cpus': 4,
-        'num_processes_at_startup': 12,
+        'num_processes_at_startup': 39,
         'num_ram_rows': 5,
         'new_process_probability': 0.05,
         'io_probability': 0.1
