@@ -36,12 +36,13 @@ class ScoreManager(GameObject):
                 5 -> 1
                 """
                 points_per_second = max(5 * floor(100 / 2 ** starvation_level / 5), 1)
-                points = points_per_second / _UPDATE_INTERVAL
+                points = points_per_second / (1000 / _UPDATE_INTERVAL)
+                print(points)
                 self._score += points * stats['alive_process_count_by_starvation_level'][starvation_level]
             if stats['user_terminated_process_count'] != self._user_terminated_process_count:
                 self._user_terminated_process_count = stats['user_terminated_process_count']
                 self._score = max(0, self._score - 1000)
             if stats['gracefully_terminated_process_count'] != self._gracefully_terminated_process_count:
                 self._gracefully_terminated_process_count = stats['gracefully_terminated_process_count']
-                self._score += 200
+                self._score += 1000
     
