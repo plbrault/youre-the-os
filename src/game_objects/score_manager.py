@@ -3,6 +3,8 @@ from math import floor
 from lib.game_object import GameObject
 from game_objects.views.score_manager_view import ScoreManagerView
 
+_UPDATE_INTERVAL = 100
+
 class ScoreManager(GameObject):
     
     def __init__(self, game):
@@ -17,15 +19,15 @@ class ScoreManager(GameObject):
         
     @property
     def score(self):
-        return self._score
+        return int(self._score)
         
     def update(self, current_time, events):
-        if current_time - self._last_update_time >= 1000:
+        if current_time - self._last_update_time >= _UPDATE_INTERVAL:
             self._last_update_time = current_time
             stats = self._process_manager.get_current_stats()
             for starvation_level in range(0, 6):
                 """
-                Points per process for each starvation level:
+                Points per second for each starvation level:
                 0 -> 100
                 1 -> 50
                 2 -> 25
@@ -33,7 +35,8 @@ class ScoreManager(GameObject):
                 4 -> 5
                 5 -> 1
                 """
-                points = max(5 * floor(100 / 2 ** starvation_level / 5), 1)
+                points_per_second = max(5 * floor(100 / 2 ** starvation_level / 5), 1)
+                points = points_per_second / _UPDATE_INTERVAL
                 self._score += points * stats['alive_process_count_by_starvation_level'][starvation_level]
             if stats['user_terminated_process_count'] != self._user_terminated_process_count:
                 self._user_terminated_process_count = stats['user_terminated_process_count']
