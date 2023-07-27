@@ -21,7 +21,7 @@ class GameOverDialogView(Drawable):
 
     @property
     def height(self):
-        return 700
+        return 600
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self.x, self.y, self.width, self.height), border_radius=3)
