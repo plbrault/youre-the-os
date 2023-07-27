@@ -9,7 +9,7 @@ from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
 
 class ProcessManager(GameObject):
-    _MAX_PROCESSES = 39
+    _MAX_PROCESSES = 36
     
     MAX_TERMINATED_BY_USER = 10
     

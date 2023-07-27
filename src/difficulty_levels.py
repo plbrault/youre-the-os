@@ -3,7 +3,7 @@ _normal_difficulty = {
     'config': {
         'num_cpus': 4,
         'num_processes_at_startup': 12,
-        'num_ram_rows': 5,
+        'num_ram_rows': 6,
         'new_process_probability': 0.05,
         'io_probability': 0.1
     }

@@ -36,7 +36,7 @@ class PageManager(GameObject):
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
              
         for row in range(num_ram_rows):
-            for column in range(12):
+            for column in range(11):
                 ram_slot = PageSlot()          
                 x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
                 y = 155 + row * ram_slot.view.height + row * 5
@@ -48,7 +48,7 @@ class PageManager(GameObject):
             self._pages_in_swap_label_xy = (self._game.process_manager.view.width, 155 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
             
             for row in range(num_swap_rows):
-                for column in range(12):
+                for column in range(11):
                     swap_slot = PageSlot()          
                     x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
                     y = self._pages_in_swap_label_xy[1] + 35 + row * ram_slot.view.height + row * 5
