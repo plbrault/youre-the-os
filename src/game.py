@@ -14,12 +14,11 @@ from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
 class Game:
-    def __init__(self, config=default_difficulty['config']):
+    def __init__(self, screen, config=default_difficulty['config']):
+        self._screen = screen
+        
         self._config = config
-        
-        pygame.init()
-        pygame.font.init()
-        
+               
         self._current_time = 0
         
         self._game_objects = []
@@ -29,15 +28,6 @@ class Game:
         self._game_over = False
         self._game_over_time = None
         self._game_over_dialog = None
-
-        self._window_width = 1024
-        self._window_height = 768
-        screen_size = self._window_width, self._window_height
-        self._screen = pygame.display.set_mode(screen_size)
-
-        icon = pygame.image.load(path.join('assets', 'icon.png'))
-        pygame.display.set_caption("You're the OS!")
-        pygame.display.set_icon(icon)
 
         self._setup()
         self._main_loop()
@@ -105,7 +95,7 @@ class Game:
                 if self._game_over_dialog is None:
                     self._game_over_dialog = GameOverDialog(self._uptime_manager.uptime_text, self._score_manager.score, self._setup)
                     self._game_over_dialog.view.set_xy(
-                        (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
+                        (self._screen.get_width() - self._game_over_dialog.view.width) / 2, (self._screen.get_height() - self._game_over_dialog.view.height) / 2
                     )
                     self._game_objects.append(self._game_over_dialog)
                 self._game_over_dialog.update(current_time, events)
