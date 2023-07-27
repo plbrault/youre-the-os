@@ -86,7 +86,11 @@ class Game:
             self._update(pygame.time.get_ticks())
             self._render()
 
-    def _update(self, current_time):      
+    def _update(self, current_time):
+        ### TEMP
+        self._game_over = True
+        ###
+              
         events = []
 
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
@@ -106,7 +110,7 @@ class Game:
             if self._game_over_time is None:
                 self._game_over_time = current_time
             elif display_game_over_dialog and self._game_over_dialog is None:
-                self._game_over_dialog = GameOverDialog()
+                self._game_over_dialog = GameOverDialog(self._uptime_manager.uptime_text, self._score_manager.score)
                 self._game_over_dialog.view.set_xy(
                     (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
                 )
