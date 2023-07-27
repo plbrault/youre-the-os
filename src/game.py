@@ -98,13 +98,9 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if self._game_over and display_game_over_dialog:
-                if event.type == pygame.KEYUP:
-                    self._setup()
-            elif not self._game_over:
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if (event.button == 1):
-                        events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+            if event.type == pygame.MOUSEBUTTONUP:
+                if (event.button == 1):
+                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         if self._game_over:
             if self._game_over_time is None:

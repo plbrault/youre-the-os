@@ -8,4 +8,17 @@ class Button(GameObject):
         self.text = text
         self._action_fn = action_fn
         super().__init__(ButtonView(self))
+        
+    def _check_if_clicked_on(self, event):
+        if event.type == GameEventType.MOUSE_LEFT_CLICK:
+            return self._view.collides(*event.getProperty('position'))
+        return False
+    
+    def _on_click(self):
+        self._action_fn()       
+        
+    def update(self, current_time, events):
+        for event in events:
+            if self._check_if_clicked_on(event):
+                self._on_click()
     

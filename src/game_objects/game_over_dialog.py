@@ -9,7 +9,7 @@ class GameOverDialog(GameObject):
         self.score = score
         super().__init__(GameOverDialogView(self))
         
-        self._tryAgainButton = Button('Try Again', lambda x: x)
+        self._tryAgainButton = Button('Try Again', lambda : print('Click'))
                 
         self.children.append(self._tryAgainButton)
 
