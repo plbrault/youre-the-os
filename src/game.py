@@ -1,4 +1,4 @@
-import os
+from os import path
 import pygame
 from random import randint
 import sys
@@ -35,7 +35,7 @@ class Game:
         screen_size = self._window_width, self._window_height
         self._screen = pygame.display.set_mode(screen_size)
 
-        icon = pygame.image.load(os.path.join('assets', 'icon.png'))
+        icon = pygame.image.load(path.join('assets', 'icon.png'))
         pygame.display.set_caption("You're the OS!")
         pygame.display.set_icon(icon)
 
