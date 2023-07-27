@@ -86,7 +86,7 @@ class Game:
             self._update(pygame.time.get_ticks())
             self._render()
 
-    def _update(self, current_time):      
+    def _update(self, current_time):                  
         events = []
 
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
@@ -94,23 +94,21 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if self._game_over and display_game_over_dialog:
-                if event.type == pygame.KEYUP:
-                    self._setup()
-            elif not self._game_over:
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if (event.button == 1):
-                        events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+            if event.type == pygame.MOUSEBUTTONUP:
+                if (event.button == 1):
+                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         if self._game_over:
             if self._game_over_time is None:
                 self._game_over_time = current_time
-            elif display_game_over_dialog and self._game_over_dialog is None:
-                self._game_over_dialog = GameOverDialog()
-                self._game_over_dialog.view.set_xy(
-                    (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
-                )
-                self._game_objects.append(self._game_over_dialog)
+            elif display_game_over_dialog:
+                if self._game_over_dialog is None:
+                    self._game_over_dialog = GameOverDialog(self._uptime_manager.uptime_text, self._score_manager.score, self._setup)
+                    self._game_over_dialog.view.set_xy(
+                        (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
+                    )
+                    self._game_objects.append(self._game_over_dialog)
+                self._game_over_dialog.update(current_time, events)
         else:  
             for game_object in self._game_objects:
                 game_object.update(current_time, events)
