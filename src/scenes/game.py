@@ -30,6 +30,10 @@ class Game(Scene):
     @property
     def config(self):
         return self._config
+    
+    @config.setter
+    def config(self, value):
+        self._config = value
    
     @property
     def game_over(self):

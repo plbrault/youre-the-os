@@ -21,19 +21,20 @@ class MainMenu(Scene):
         title.view.set_xy(0, 50)
         self._game_objects.append(title)
         
-        difficulty_selector = OptionSelector(
+        self._difficulty_selector = OptionSelector(
             list(map(lambda difficulty_level: difficulty_level['name'], difficulty_levels)),
             1
         )
-        difficulty_selector.view.set_xy((self._screen.get_width() - difficulty_selector.view.width) / 2, title.view.y + title.view.height + 100)
-        self._game_objects.append(difficulty_selector)
+        self._difficulty_selector.view.set_xy((self._screen.get_width() - self._difficulty_selector.view.width) / 2, title.view.y + title.view.height + 100)
+        self._game_objects.append(self._difficulty_selector)
         
-        play_button = Button('Play Game', self._start_game)
+        play_button = Button('Play', self._start_game)
         play_button.view.set_xy((self._screen.get_width() - play_button.view.width) / 2, title.view.y + title.view.height + 200)
         self._game_objects.append(play_button)
         
     def _start_game(self):
         self.stop()
+        self._scenes['game'].config = difficulty_levels[self._difficulty_selector.selected_option_id]['config']
         self._scenes['game'].start()
             
     def _update(self, current_time, events):
