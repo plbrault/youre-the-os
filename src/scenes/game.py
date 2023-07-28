@@ -88,14 +88,25 @@ class Game(Scene):
     def _open_in_game_menu(self):
         self._in_game_menu_is_open = True
         
+    def _close_in_game_menu(self):
+        self._in_game_menu_is_open = False
+        self._game_objects.remove(self._in_game_menu_dialog)
+        self._in_game_menu_dialog = None
+        
     def _return_to_main_menu(self):
         self.stop()
         self._scenes['main_menu'].start()
 
-    def _update(self, current_time, events):                        
-        display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
-
-        if self._game_over:
+    def _update(self, current_time, events):
+        dialog = None
+            
+        if self._in_game_menu_is_open:
+            if self._in_game_menu_dialog is None:
+                self._in_game_menu_dialog = InGameMenuDialog(self._setup, self._return_to_main_menu, self._close_in_game_menu)
+                self._game_objects.append(self._in_game_menu_dialog)
+            dialog = self._in_game_menu_dialog
+        elif self._game_over:
+            display_game_over_dialog = self._game_over_time is not None and current_time - self._game_over_time > 1000
             if self._game_over_time is None:
                 self._game_over_time = current_time
             elif display_game_over_dialog:
@@ -103,11 +114,16 @@ class Game(Scene):
                     self._game_over_dialog = GameOverDialog(
                         self._uptime_manager.uptime_text, self._score_manager.score, self._setup, self._return_to_main_menu
                     )
-                    self._game_over_dialog.view.set_xy(
-                        (self._screen.get_width() - self._game_over_dialog.view.width) / 2, (self._screen.get_height() - self._game_over_dialog.view.height) / 2
-                    )
                     self._game_objects.append(self._game_over_dialog)
-                self._game_over_dialog.update(current_time, events)
-        else:  
+                dialog = self._game_over_dialog
+        
+        if dialog is not None:
+            if dialog.view.x == 0:
+                dialog.view.set_xy(
+                    (self._screen.get_width() - dialog.view.width) / 2,
+                    (self._screen.get_height() - dialog.view.height) / 2
+                )
+            dialog.update(current_time, events)
+        else:
             for game_object in self._game_objects:
                 game_object.update(current_time, events)
