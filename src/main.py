@@ -1,6 +1,7 @@
 from os import path
 import pygame
 
+from main_menu import MainMenu
 from game import Game
 
 pygame.init()
@@ -15,4 +16,5 @@ icon = pygame.image.load(path.join('assets', 'icon.png'))
 pygame.display.set_caption("You're the OS!")
 pygame.display.set_icon(icon)
 
+#MainMenu(screen)
 Game(screen)

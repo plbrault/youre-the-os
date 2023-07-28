@@ -3,6 +3,7 @@ import pygame
 from random import randint
 import sys
 
+from lib.scene import Scene
 from difficulty_levels import default_difficulty
 from lib.ui.color import Color
 from lib.game_event import GameEvent
@@ -13,15 +14,12 @@ from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
-class Game:
-    def __init__(self, screen, config=default_difficulty['config']):
-        self._screen = screen
-        
+class Game(Scene):
+    def __init__(self, screen, config=default_difficulty['config']):      
         self._config = config
                
         self._current_time = 0
         
-        self._game_objects = []
         self._process_manager = None
         self._page_manager = None
 
@@ -29,8 +27,7 @@ class Game:
         self._game_over_time = None
         self._game_over_dialog = None
 
-        self._setup()
-        self._main_loop()
+        super().__init__(screen)
    
     @property
     def config(self):
@@ -71,11 +68,6 @@ class Game:
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._game_objects.append(self._uptime_manager)
 
-    def _main_loop(self):
-        while True:
-            self._update(pygame.time.get_ticks())
-            self._render()
-
     def _update(self, current_time):                  
         events = []
 
@@ -102,11 +94,3 @@ class Game:
         else:  
             for game_object in self._game_objects:
                 game_object.update(current_time, events)
-
-    def _render(self):
-        self._screen.fill(Color.BLACK)
-
-        for game_object in self._game_objects:
-            game_object.render(self._screen)
-
-        pygame.display.flip()
