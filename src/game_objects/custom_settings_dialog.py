@@ -40,6 +40,17 @@ class CustomSettingsDialog(GameObject):
         self._cancel_button = Button('Cancel', lambda : print('cancel'))
         self.children.append(self._cancel_button)
 
+    @property
+    def config(self):
+        config = {
+            'num_cpus': self._num_cpus_selector.selected_option,
+            'num_processes_at_startup': self._num_processes_selector.selected_option,
+            'num_ram_rows': self._num_ram_rows_selector.selected_option,
+            'new_process_probability': self._num_ram_rows_selector.selected_option_id * 0.05,
+            'io_probability': self._io_probability_selector.selected_option_id * 0.05
+        }
+        return config
+
     def update(self, current_time, events):
         self._num_cpus_selector.view.set_xy(
             self.view.x + self.view.width - self._num_cpus_selector.view.width - 20,
