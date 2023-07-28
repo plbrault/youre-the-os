@@ -6,7 +6,4 @@ class MainMenuTitle(GameObject):
     
     def __init__(self):
         super().__init__(MainMenuTitleView(self))
-
-    def update(self, current_time, events):
-        pass
     

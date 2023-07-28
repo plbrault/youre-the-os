@@ -2,14 +2,14 @@ import pygame
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_MEDIUM
+from lib.ui.fonts import FONT_PRIMARY_LARGE
 
 class ButtonView(Drawable):
     def __init__(self, button):
         self._button = button
         super().__init__()
         
-        self._text_surface = FONT_PRIMARY_MEDIUM.render(self._button.text, False, Color.WHITE)
+        self._text_surface = FONT_PRIMARY_LARGE.render(self._button.text, False, Color.WHITE)
 
     @property
     def width(self):
