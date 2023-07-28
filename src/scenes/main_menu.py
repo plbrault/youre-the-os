@@ -15,6 +15,7 @@ class MainMenu(Scene):
         self._game_objects = []
         
         title = MainMenuTitle()
+        title.view.set_xy(0, 50)
         
         self._game_objects.append(title)
         
