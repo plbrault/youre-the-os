@@ -16,5 +16,12 @@ icon = pygame.image.load(path.join('assets', 'icon.png'))
 pygame.display.set_caption("You're the OS!")
 pygame.display.set_icon(icon)
 
-MainMenu(screen)
-#Game(screen)
+scenes = {}
+
+game_scene = Game(screen, scenes)
+scenes['game'] = game_scene
+
+main_menu_scene = MainMenu(screen, scenes)
+scenes['main_menu'] = main_menu_scene
+
+main_menu_scene.start()

@@ -13,7 +13,7 @@ from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
 class Game(Scene):
-    def __init__(self, screen, config=default_difficulty['config']):      
+    def __init__(self, screen, scenes, config=default_difficulty['config']):      
         self._config = config
                
         self._current_time = 0
@@ -25,7 +25,7 @@ class Game(Scene):
         self._game_over_time = None
         self._game_over_dialog = None
 
-        super().__init__(screen)
+        super().__init__(screen, scenes)
    
     @property
     def config(self):
