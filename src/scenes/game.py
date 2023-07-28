@@ -1,10 +1,9 @@
 from os import path
 import pygame
 from random import randint
-import sys
 
+from lib.scene import Scene
 from difficulty_levels import default_difficulty
-from lib.ui.color import Color
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 from game_objects.game_over_dialog import GameOverDialog
@@ -13,16 +12,12 @@ from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
-class Game:
-    def __init__(self, config=default_difficulty['config']):
+class Game(Scene):
+    def __init__(self, screen, scenes, config=default_difficulty['config']):      
         self._config = config
-        
-        pygame.init()
-        pygame.font.init()
-        
+               
         self._current_time = 0
         
-        self._game_objects = []
         self._process_manager = None
         self._page_manager = None
 
@@ -30,21 +25,15 @@ class Game:
         self._game_over_time = None
         self._game_over_dialog = None
 
-        self._window_width = 1024
-        self._window_height = 768
-        screen_size = self._window_width, self._window_height
-        self._screen = pygame.display.set_mode(screen_size)
-
-        icon = pygame.image.load(path.join('assets', 'icon.png'))
-        pygame.display.set_caption("You're the OS!")
-        pygame.display.set_icon(icon)
-
-        self._setup()
-        self._main_loop()
+        super().__init__(screen, scenes)
    
     @property
     def config(self):
         return self._config
+    
+    @config.setter
+    def config(self, value):
+        self._config = value
    
     @property
     def game_over(self):
@@ -80,43 +69,27 @@ class Game:
         
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._game_objects.append(self._uptime_manager)
+        
+    def _return_to_main_menu(self):
+        self.stop()
+        self._scenes['main_menu'].start()
 
-    def _main_loop(self):
-        while True:
-            self._update(pygame.time.get_ticks())
-            self._render()
-
-    def _update(self, current_time):                  
-        events = []
-
+    def _update(self, current_time, events):                        
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONUP:
-                if (event.button == 1):
-                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         if self._game_over:
             if self._game_over_time is None:
                 self._game_over_time = current_time
             elif display_game_over_dialog:
                 if self._game_over_dialog is None:
-                    self._game_over_dialog = GameOverDialog(self._uptime_manager.uptime_text, self._score_manager.score, self._setup)
+                    self._game_over_dialog = GameOverDialog(
+                        self._uptime_manager.uptime_text, self._score_manager.score, self._setup, self._return_to_main_menu
+                    )
                     self._game_over_dialog.view.set_xy(
-                        (self._window_width - self._game_over_dialog.view.width) / 2, (self._window_height - self._game_over_dialog.view.height) / 2
+                        (self._screen.get_width() - self._game_over_dialog.view.width) / 2, (self._screen.get_height() - self._game_over_dialog.view.height) / 2
                     )
                     self._game_objects.append(self._game_over_dialog)
                 self._game_over_dialog.update(current_time, events)
         else:  
             for game_object in self._game_objects:
                 game_object.update(current_time, events)
-
-    def _render(self):
-        self._screen.fill(Color.BLACK)
-
-        for game_object in self._game_objects:
-            game_object.render(self._screen)
-
-        pygame.display.flip()
