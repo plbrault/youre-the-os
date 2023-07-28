@@ -20,12 +20,12 @@ class CustomSettingsDialog(GameObject):
         self._num_ram_rows_selector = OptionSelector([str(i) for i in range(1, 14)], self._config['num_ram_rows'] - 1)
         self.children.append(self._num_ram_rows_selector)
         
-        self._new_process_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 105, 5)])
-        self._new_process_probability_selector.selected_option = str(int(self._config['new_process_probability'] * 100)) + ' %'
+        self._new_process_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 205, 5)])
+        self._new_process_probability_selector.selected_option = str(int(self._config['new_process_probability'] * 200)) + ' %'
         self.children.append(self._new_process_probability_selector)
         
         self._io_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 55, 5)])
-        self._io_probability_selector.selected_option = str(int(self._config['io_probability'] * 100)) + ' %'
+        self._io_probability_selector.selected_option = str(int(self._config['io_probability'] * 200)) + ' %'
         self.children.append(self._io_probability_selector)
         
         selector_width = self._new_process_probability_selector.view.width
@@ -33,27 +33,41 @@ class CustomSettingsDialog(GameObject):
         self._num_processes_selector.view.min_width = selector_width
         self._num_ram_rows_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
+        
+        self._start_button = Button('Start', lambda : print('start'))
+        self.children.append(self._start_button)
+        
+        self._cancel_button = Button('Cancel', lambda : print('cancel'))
+        self.children.append(self._cancel_button)
 
     def update(self, current_time, events):
         self._num_cpus_selector.view.set_xy(
-            self.view.x + self.view.width - self._num_cpus_selector.view.width - 10,
+            self.view.x + self.view.width - self._num_cpus_selector.view.width - 20,
             self.view.num_cpus_y + (self.view.label_height - self._num_cpus_selector.view.height) / 2
         )
         self._num_processes_selector.view.set_xy(
-            self.view.x + self.view.width - self._num_processes_selector.view.width - 10,
+            self.view.x + self.view.width - self._num_processes_selector.view.width - 20,
             self.view.num_processes_y + (self.view.label_height - self._num_processes_selector.view.height) / 2
         )
         self._num_ram_rows_selector.view.set_xy(
-            self.view.x + self.view.width - self._num_ram_rows_selector.view.width - 10,
+            self.view.x + self.view.width - self._num_ram_rows_selector.view.width - 20,
             self.view.num_ram_rows_y + (self.view.label_height - self._num_ram_rows_selector.view.height) / 2
         )
         self._new_process_probability_selector.view.set_xy(
-            self.view.x + self.view.width - self._new_process_probability_selector.view.width - 10,
+            self.view.x + self.view.width - self._new_process_probability_selector.view.width - 20,
             self.view.new_process_probability_y + (self.view.label_height - self._new_process_probability_selector.view.height) / 2
         )
         self._io_probability_selector.view.set_xy(
-            self.view.x + self.view.width - self._io_probability_selector.view.width - 10,
+            self.view.x + self.view.width - self._io_probability_selector.view.width - 20,
             self.view.io_probability_y + (self.view.label_height - self._io_probability_selector.view.height) / 2
+        )
+        self._start_button.view.set_xy(
+            self.view.x + (self.view.width / 2) - self._start_button.view.width - 10,
+            self.view.y + self.view.height - self._start_button.view.height - 20
+        )
+        self._cancel_button.view.set_xy(
+            self.view.x + (self.view.width / 2) + 10,
+            self.view.y + self.view.height - self._cancel_button.view.height - 20
         )
         
         for child in self.children:

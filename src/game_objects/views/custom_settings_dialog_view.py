@@ -20,11 +20,11 @@ class CustomSettingsDialogView(Drawable):
         
     @property
     def width(self):
-        return 500
+        return 520
 
     @property
     def height(self):
-        return 400
+        return 460
     
     @property
     def label_height(self):
@@ -32,7 +32,7 @@ class CustomSettingsDialogView(Drawable):
     
     @property
     def num_cpus_y(self):
-        return self.y + self._title_text.get_height() + 40
+        return self.y + self._title_text.get_height() + 60
     
     @property
     def num_processes_y(self):
@@ -54,9 +54,9 @@ class CustomSettingsDialogView(Drawable):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self.x, self.y, self.width, self.height), border_radius=3)
         pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
         
-        surface.blit(self._title_text, (self.x + (self.width - self._title_text.get_width()) / 2, self.y + 10))
-        surface.blit(self._num_cpus_label_text, (self.x + 10, self.num_cpus_y))
-        surface.blit(self._num_processes_label_text, (self.x + 10, self.num_processes_y))
-        surface.blit(self._num_ram_rows_label_text, (self.x + 10, self.num_ram_rows_y))
-        surface.blit(self._new_process_probability_label_text, (self.x + 10, self.new_process_probability_y))
-        surface.blit(self._io_probability_label_text, (self.x + 10, self.io_probability_y))
+        surface.blit(self._title_text, (self.x + (self.width - self._title_text.get_width()) / 2, self.y + 20))
+        surface.blit(self._num_cpus_label_text, (self.x + 20, self.num_cpus_y))
+        surface.blit(self._num_processes_label_text, (self.x + 20, self.num_processes_y))
+        surface.blit(self._num_ram_rows_label_text, (self.x + 20, self.num_ram_rows_y))
+        surface.blit(self._new_process_probability_label_text, (self.x + 20, self.new_process_probability_y))
+        surface.blit(self._io_probability_label_text, (self.x + 20, self.io_probability_y))
