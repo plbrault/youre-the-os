@@ -7,15 +7,16 @@ from lib.ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XLARGE, FONT_PRIMARY_X
 
 class InGameMenuDialogView(Drawable):
     def __init__(self, game_over_dialog):
+        self._game_over_dialog = game_over_dialog
         super().__init__()
 
     @property
     def width(self):
-        return 400
+        return self._game_over_dialog.button_width + 8
 
     @property
     def height(self):
-        return 400
+        return 3 * self._game_over_dialog.button_height + 12
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self.x, self.y, self.width, self.height), border_radius=3)
