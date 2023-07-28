@@ -1,0 +1,13 @@
+from lib.game_object import GameObject
+from game_objects.button import Button
+from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
+
+class CustomSettingsDialog(GameObject):
+    
+    def __init__(self):
+        super().__init__(CustomSettingsDialogView(self))
+
+    def update(self, current_time, events):  
+        for child in self.children:
+            child.update(current_time, events)
+    
