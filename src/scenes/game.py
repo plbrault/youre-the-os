@@ -65,8 +65,12 @@ class Game(Scene):
         
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._game_objects.append(self._uptime_manager)
+        
+    def _return_to_main_menu(self):
+        self.stop()
+        self._scenes['main_menu'].start()
 
-    def _update(self, current_time, events):                  
+    def _update(self, current_time, events):                        
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
 
         if self._game_over:
@@ -74,7 +78,9 @@ class Game(Scene):
                 self._game_over_time = current_time
             elif display_game_over_dialog:
                 if self._game_over_dialog is None:
-                    self._game_over_dialog = GameOverDialog(self._uptime_manager.uptime_text, self._score_manager.score, self._setup)
+                    self._game_over_dialog = GameOverDialog(
+                        self._uptime_manager.uptime_text, self._score_manager.score, self._setup, self._return_to_main_menu
+                    )
                     self._game_over_dialog.view.set_xy(
                         (self._screen.get_width() - self._game_over_dialog.view.width) / 2, (self._screen.get_height() - self._game_over_dialog.view.height) / 2
                     )

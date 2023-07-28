@@ -19,7 +19,7 @@ class MainMenu(Scene):
         title.view.set_xy(0, 50)
         self._game_objects.append(title)
         
-        play_button = Button('PLAY GAME', self._start_game)
+        play_button = Button('Play Game', self._start_game)
         play_button.view.set_xy((self._screen.get_width() - play_button.view.width) / 2, title.view.y + title.view.height + 200)
         self._game_objects.append(play_button)
         

@@ -9,7 +9,7 @@ class ButtonView(Drawable):
         self._button = button
         super().__init__()
         
-        self._text_surface = FONT_PRIMARY_LARGE.render(self._button.text, False, Color.WHITE)
+        self._text_surface = FONT_PRIMARY_LARGE.render(self._button.text.upper(), False, Color.WHITE)
 
     @property
     def width(self):
