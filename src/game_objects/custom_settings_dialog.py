@@ -6,7 +6,7 @@ from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogV
 
 class CustomSettingsDialog(GameObject):
     
-    def __init__(self):
+    def __init__(self, start_fn, cancel_fn):
         super().__init__(CustomSettingsDialogView(self))
         
         self._config = default_difficulty['config']
@@ -34,10 +34,10 @@ class CustomSettingsDialog(GameObject):
         self._num_ram_rows_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
         
-        self._start_button = Button('Start', lambda : print('start'))
+        self._start_button = Button('Start', start_fn)
         self.children.append(self._start_button)
         
-        self._cancel_button = Button('Cancel', lambda : print('cancel'))
+        self._cancel_button = Button('Cancel', cancel_fn)
         self.children.append(self._cancel_button)
 
     @property

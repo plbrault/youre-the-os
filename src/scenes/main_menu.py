@@ -48,7 +48,7 @@ class MainMenu(Scene):
         
     def _on_start_button_click(self):
         if self._difficulty_selector.selected_option_id == len(difficulty_levels):
-            custom_settings_dialog = CustomSettingsDialog()
+            custom_settings_dialog = CustomSettingsDialog(lambda: print('start'), lambda: print('cancel'))
             custom_settings_dialog.view.set_xy(
                 self._screen.get_width() / 2 - custom_settings_dialog.view.width / 2,
                 self._screen.get_height() / 2 - custom_settings_dialog.view.height / 2
