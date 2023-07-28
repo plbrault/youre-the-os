@@ -17,11 +17,11 @@ class GameOverDialog(GameObject):
 
     def update(self, current_time, events):
         self._playAgainButton.view.set_xy(
-            self.view.x + 200,
+            self.view.x + (self.view.width / 2) - self._playAgainButton.view.width - 10,
             self.view.y + self.view.height - self._playAgainButton.view.height - 20
         )
         self._mainMenuButton.view.set_xy(
-            self.view.x + self.view.width - self._mainMenuButton.view.width - 200,
+            self.view.x + (self.view.width / 2) + 10,
             self.view.y + self.view.height - self._playAgainButton.view.height - 20              
         )
         
