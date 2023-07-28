@@ -1,3 +1,4 @@
+from math import inf
 from random import randint
 
 from lib.game_object import GameObject
@@ -29,7 +30,11 @@ class ProcessManager(GameObject):
         self._user_terminated_process_count = 0
         
         self._new_process_probability_numerator = int(game.config['new_process_probability'] * 100)
-        self._max_wait_between_new_processes = int(100 / self._new_process_probability_numerator * 1000)
+        
+        if self._new_process_probability_numerator > 0:
+            self._max_wait_between_new_processes = int(100 / self._new_process_probability_numerator * 1000)
+        else:
+            self._max_wait_between_new_processes = inf
                
         super().__init__(ProcessManagerView(self))
         

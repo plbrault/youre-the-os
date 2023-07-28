@@ -32,17 +32,17 @@ class OptionSelector(GameObject):
     def selected_option(self):
         return self._options[self.selected_option_id]
     
+    @selected_option.setter
+    def selected_option(self, value):
+        self.selected_option_id = self._options.index(value) 
+    
     @property
     def previous_button(self):
         return self._previous_button
     
     @property
     def next_button(self):
-        return self._next_button
-    
-    @selected_option.setter
-    def selected_option(self, value):
-        self.selected_option_id = self._options.index(value)  
+        return self._next_button 
     
     def _select_previous_option(self):
         if self.selected_option_id == 0:

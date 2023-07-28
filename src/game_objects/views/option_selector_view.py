@@ -9,6 +9,8 @@ class OptionSelectorView(Drawable):
         self._option_selector = option_selector
         super().__init__()
         
+        self._min_width = 0
+        
         self._option_surfaces = []
         longest_option_id = 0
         for i, option in enumerate(self._option_selector.options):
@@ -20,8 +22,19 @@ class OptionSelectorView(Drawable):
         self._text_height = self._option_surfaces[longest_option_id].get_height()
 
     @property
+    def min_width(self):
+        return self._min_width
+    
+    @min_width.setter
+    def min_width(self, value):
+        self._min_width = value
+
+    @property
     def width(self):
-        return self._max_text_width + self._option_selector.previous_button.view.width + self._option_selector.next_button.view.width + 40
+        return max(
+            self.min_width,
+            self._max_text_width + self._option_selector.previous_button.view.width + self._option_selector.next_button.view.width + 40
+        )
 
     @property
     def height(self):
