@@ -1,8 +1,8 @@
 from os import path
 import pygame
 
-from main_menu import MainMenu
-from game import Game
+from scenes.main_menu import MainMenu
+from scenes.game import Game
 
 pygame.init()
 pygame.font.init()
