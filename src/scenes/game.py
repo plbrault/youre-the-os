@@ -1,11 +1,9 @@
 from os import path
 import pygame
 from random import randint
-import sys
 
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
-from lib.ui.color import Color
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 from game_objects.game_over_dialog import GameOverDialog
@@ -68,17 +66,8 @@ class Game(Scene):
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._game_objects.append(self._uptime_manager)
 
-    def _update(self, current_time):                  
-        events = []
-
+    def _update(self, current_time, events):                  
         display_game_over_dialog = self._game_over and self._game_over_time is not None and current_time - self._game_over_time > 1000
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONUP:
-                if (event.button == 1):
-                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
 
         if self._game_over:
             if self._game_over_time is None:
