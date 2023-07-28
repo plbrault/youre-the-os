@@ -6,7 +6,9 @@ from lib.scene import Scene
 from difficulty_levels import default_difficulty
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
+from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
+from game_objects.in_game_menu_dialog import InGameMenuDialog
 from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
@@ -20,6 +22,9 @@ class Game(Scene):
         
         self._process_manager = None
         self._page_manager = None
+
+        self._in_game_menu_is_open = False
+        self._in_game_menu_dialog = None
 
         self._game_over = False
         self._game_over_time = None
@@ -54,6 +59,9 @@ class Game(Scene):
     def _setup(self):
         self._game_objects = []
         
+        self._in_game_menu_is_open = False
+        self._in_game_menu_dialog = None
+        
         self._game_over = False
         self._game_over_time = None
         self._game_over_dialog = None
@@ -69,6 +77,16 @@ class Game(Scene):
         
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._game_objects.append(self._uptime_manager)
+        
+        open_in_game_menu_button = Button('Menu', self._open_in_game_menu)
+        open_in_game_menu_button.view.set_xy(
+            self._screen.get_width() - open_in_game_menu_button.view.width - 10,
+            self._screen.get_height() - open_in_game_menu_button.view.height - 10
+        )
+        self._game_objects.append(open_in_game_menu_button)
+    
+    def _open_in_game_menu(self):
+        self._in_game_menu_is_open = True
         
     def _return_to_main_menu(self):
         self.stop()
