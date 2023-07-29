@@ -51,6 +51,15 @@ class HowToPlay(Scene):
                     path.join('assets', 'how_to_play_3_0.png'),
                     path.join('assets', 'how_to_play_3_1.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'The same way, you can click on a running process to remove it from its CPU.',
+                ],
+                [
+                    path.join('assets', 'how_to_play_4_0.png'),
+                    path.join('assets', 'how_to_play_4_1.png')
+                ]
             )
         ]
         
