@@ -15,7 +15,7 @@ class PageManager(GameObject):
         
         self._pages_in_ram_label_xy = (0,0)
         self._swap_is_enabled = True
-        self._pages_in_swap_label_xy = (0,0)
+        self._pages_in_swap_label_xy = None
         
         super().__init__(PageManagerView(self))
         
