@@ -1,6 +1,7 @@
 from os import path
 import pygame
 
+from game_info import TITLE
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_PRIMARY_XXLARGE
 
@@ -12,7 +13,7 @@ class MainMenuTitleView(Drawable):
         original_size_icon = pygame.image.load(path.join('assets', 'icon.png'))
         self._icon = pygame.transform.scale(original_size_icon, (200, 200))
         
-        self._text = FONT_PRIMARY_XXLARGE.render("YOU'RE THE OS!", True, (61, 154, 226))
+        self._text = FONT_PRIMARY_XXLARGE.render(TITLE, True, (61, 154, 226))
 
     @property
     def width(self):

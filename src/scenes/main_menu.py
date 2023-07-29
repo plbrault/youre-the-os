@@ -89,12 +89,16 @@ class MainMenu(Scene):
         self._game_objects.append(self._custom_settings_dialog)
         
     def _open_about_dialog(self):
-        self._about_dialog = AboutDialog()
+        self._about_dialog = AboutDialog(self._close_about_dialog)
         self._about_dialog.view.set_xy(
             self._screen.get_width() / 2 - self._about_dialog.view.width / 2,
             self._screen.get_height() / 2 - self._about_dialog.view.height / 2
         )
         self._game_objects.append(self._about_dialog)
+        
+    def _close_about_dialog(self):
+        self._game_objects.remove(self._about_dialog)
+        self._about_dialog = None
         
     def _close_custom_settings_dialog(self):
         self._game_objects.remove(self._custom_settings_dialog)

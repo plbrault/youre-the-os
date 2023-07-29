@@ -1,6 +1,8 @@
 from os import path
 import pygame
 
+from game_info import TITLE
+
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
 from scenes.game import Game
@@ -14,7 +16,7 @@ screen_size = (1024, 768)
 screen = pygame.display.set_mode(screen_size)
 
 icon = pygame.image.load(path.join('assets', 'icon.png'))
-pygame.display.set_caption("You're the OS!")
+pygame.display.set_caption(TITLE)
 pygame.display.set_icon(icon)
 
 scenes = {}
