@@ -5,31 +5,26 @@ from lib.ui.color import Color
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_SECONDARY_SMALL
 
-_text = [
-    'In this game, you are the operating system of a computer.',
-    'You have to manage processes, memory, and input/output (I/O) events.'
-]
 
-_IMAGE_SCALE = 0.9
-
-class HowToPlayPart1View(Drawable):
-    def __init__(self, how_to_play_part1):
-        self._how_to_play_part1 = how_to_play_part1
+class HowToPlayPartView(Drawable):
+    def __init__(self, how_to_play_part):
+        self._how_to_play_part = how_to_play_part
         super().__init__()
         
         self._text_surfaces = list(
             map(
                 lambda text: FONT_SECONDARY_SMALL.render(text, True, Color.BLACK),
-                _text
+                how_to_play_part.text
             )
         )
         
-        original_size_image = pygame.image.load(path.join('assets', 'how_to_play_0_0.png'))
-        self._image = pygame.transform.scale(original_size_image, (
-            int(original_size_image.get_width() * _IMAGE_SCALE),
-            int(original_size_image.get_height() * _IMAGE_SCALE)
-        ))
-
+        self._images = list(
+            map(
+                lambda image_file_path: pygame.image.load(image_file_path),
+                how_to_play_part.image_file_paths
+            )
+        )
+        
     @property
     def width(self):
         return 1024
@@ -47,7 +42,7 @@ class HowToPlayPart1View(Drawable):
             ))
             y += text_surface.get_height() + 10
             
-        surface.blit(self._image, (
-            self.x + (self.width - self._image.get_width()) / 2,
+        surface.blit(self._images[0], (
+            self.x + (self.width - self._images[0].get_width()) / 2,
             y
         ))
