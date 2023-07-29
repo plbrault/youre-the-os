@@ -7,9 +7,10 @@ from lib.game_event_type import GameEventType
 from lib.ui.color import Color
 
 class Scene(ABC):
-    def __init__(self, screen, scenes):
+    def __init__(self, screen, scenes, background_color=Color.BLACK):
         self._screen = screen
         self._scenes = scenes
+        self._background_color = background_color
         self._is_started = False
         self._game_objects = []
     
@@ -44,7 +45,7 @@ class Scene(ABC):
         pass
     
     def _render(self):      
-        self._screen.fill(Color.BLACK)
+        self._screen.fill(self._background_color)
 
         for game_object in self._game_objects:
             game_object.render(self._screen)

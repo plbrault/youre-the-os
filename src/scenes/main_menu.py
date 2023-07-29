@@ -1,11 +1,9 @@
 from os import path
 import pygame
 from random import randint
-import sys
 
 from difficulty_levels import difficulty_levels
 from lib.scene import Scene
-from lib.ui.color import Color
 from game_objects.button import Button
 from game_objects.custom_settings_dialog import CustomSettingsDialog
 from game_objects.main_menu_title import MainMenuTitle
