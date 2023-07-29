@@ -16,6 +16,7 @@ class MainMenu(Scene):
     def __init__(self, screen, scenes):
         super().__init__(screen, scenes)
         self._selected_difficulty_id = None
+        self._custom_config = None
     
     def _setup(self):
         self._game_objects = []
@@ -62,7 +63,8 @@ class MainMenu(Scene):
     def _open_custom_settings_dialog(self):
         self._custom_settings_dialog = CustomSettingsDialog(
             lambda: self._start_game(self._custom_settings_dialog.config),
-            self._close_custom_settings_dialog
+            self._close_custom_settings_dialog,
+            self._custom_config
         )
         self._custom_settings_dialog.view.set_xy(
             self._screen.get_width() / 2 - self._custom_settings_dialog.view.width / 2,
@@ -75,6 +77,8 @@ class MainMenu(Scene):
         self._custom_settings_dialog = None
             
     def _start_game(self, config):
+            if self._custom_settings_dialog is not None:
+                self._custom_config = self._custom_settings_dialog.config
             self.stop()
             self._scenes['game'].config = config
             self._scenes['game'].start()
