@@ -92,6 +92,54 @@ class HowToPlay(Scene):
                 [
                     path.join('assets', 'how_to_play_7_0.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'A process can also terminate gracefully. In that case, you can simply remove it by clicking on it.',
+                    'Processes that terminate gracefully do not count towards your limit of 10 killed processes.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_8_0.png')
+                ]
+            ),
+            HowToPlayPart(
+                [
+                    'Sometimes, a running process becomes blocked because it is waiting for an I/O event.',
+                    'Blocked processes waste CPU time. It is a good idea to remove them from their CPU.',
+                ],
+                [
+                    path.join('assets', 'how_to_play_9_0.png')
+                ]
+            ),
+            HowToPlayPart(
+                [
+                    'When you have blocked processes, watch the I/IO event bar.',
+                    'Make sure to click on it when it has events, otherwise your processes will stay blocked and starve.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_10_0.png'),
+                    path.join('assets', 'how_to_play_10_1.png')
+                ]
+            ),
+            HowToPlayPart(
+                [
+                    'You also have to manage memory! Processes create memory pages when they run.',
+                    'Pages that are currently in use appear in white. Currently unused pages appear in grey.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_11_0.png')
+                ]
+            ),
+            HowToPlayPart(
+                [
+                    'Sometimes, you will run out of RAM and new pages will be written on disk.',
+                    'You can swap pages between RAM and disk by clicking on them.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_12_0.png'),
+                    path.join('assets', 'how_to_play_12_1.png'),
+                    path.join('assets', 'how_to_play_12_2.png')
+                ]
             )
         ]
         
