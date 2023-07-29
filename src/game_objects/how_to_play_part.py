@@ -8,6 +8,9 @@ class HowToPlayPart(GameObject):
         self._text = text
         self._image_file_paths = image_file_paths
         super().__init__(HowToPlayPartView(self))
+        
+        self._initial_time = 0
+        self._current_image_id = 0
 
     @property
     def text(self):
@@ -16,8 +19,22 @@ class HowToPlayPart(GameObject):
     @property
     def image_file_paths(self):
         return self._image_file_paths
+    
+    @property
+    def initial_time(self):
+        return self._initial_time
+    
+    @initial_time.setter
+    def initial_time(self, initial_time):
+        self._initial_time = initial_time
+    
+    @property
+    def current_image_id(self):
+        return self._current_image_id
 
     def update(self, current_time, events):
+        self._current_image_id = int((current_time - self.initial_time) / 1000) % len(self._image_file_paths)
+        
         for child in self.children:
             child.update(current_time, events)
     

@@ -71,6 +71,7 @@ class HowToPlay(Scene):
         else:
             self._game_objects.remove(self._parts[self._current_part_id])
             self._current_part_id -= 1
+            self._parts[self._current_part_id].initial_time = self.current_time
             self._game_objects.append(self._parts[self._current_part_id])
         
     def _go_to_next_part(self):
@@ -79,6 +80,7 @@ class HowToPlay(Scene):
         else:
             self._game_objects.remove(self._parts[self._current_part_id])
             self._current_part_id += 1
+            self._parts[self._current_part_id].initial_time = self.current_time
             self._game_objects.append(self._parts[self._current_part_id])
     
     def _return_to_main_menu(self):

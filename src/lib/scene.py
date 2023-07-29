@@ -14,6 +14,10 @@ class Scene(ABC):
         self._is_started = False
         self._game_objects = []
     
+    @property
+    def current_time(self):
+        return pygame.time.get_ticks()
+    
     def start(self):
         self._setup()
         self._is_started = True
@@ -37,7 +41,7 @@ class Scene(ABC):
                     if (event.button == 1):
                         events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
                         
-            self._update(pygame.time.get_ticks(), events)
+            self._update(self.current_time, events)
             self._render()
     
     @abstractmethod
