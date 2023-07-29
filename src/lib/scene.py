@@ -7,11 +7,16 @@ from lib.game_event_type import GameEventType
 from lib.ui.color import Color
 
 class Scene(ABC):
-    def __init__(self, screen, scenes):
+    def __init__(self, screen, scenes, background_color=Color.BLACK):
         self._screen = screen
         self._scenes = scenes
+        self._background_color = background_color
         self._is_started = False
         self._game_objects = []
+    
+    @property
+    def current_time(self):
+        return pygame.time.get_ticks()
     
     def start(self):
         self._setup()
@@ -36,7 +41,7 @@ class Scene(ABC):
                     if (event.button == 1):
                         events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
                         
-            self._update(pygame.time.get_ticks(), events)
+            self._update(self.current_time, events)
             self._render()
     
     @abstractmethod
@@ -44,7 +49,7 @@ class Scene(ABC):
         pass
     
     def _render(self):      
-        self._screen.fill(Color.BLACK)
+        self._screen.fill(self._background_color)
 
         for game_object in self._game_objects:
             game_object.render(self._screen)

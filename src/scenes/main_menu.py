@@ -1,11 +1,9 @@
 from os import path
 import pygame
 from random import randint
-import sys
 
 from difficulty_levels import difficulty_levels
 from lib.scene import Scene
-from lib.ui.color import Color
 from game_objects.button import Button
 from game_objects.custom_settings_dialog import CustomSettingsDialog
 from game_objects.main_menu_title import MainMenuTitle
@@ -48,6 +46,20 @@ class MainMenu(Scene):
         )
         self._game_objects.append(play_button)
         
+        how_to_play_button = Button('How to Play', self._start_how_to_play)
+        how_to_play_button.view.set_xy(
+            150,
+            self._screen.get_height() - how_to_play_button.view.height - 100
+        )
+        self._game_objects.append(how_to_play_button)
+        
+        about_button = Button('About', lambda: print('about'))
+        about_button.view.set_xy(
+            self._screen.get_width() - about_button.view.width - 150,
+            self._screen.get_height() - about_button.view.height - 100
+        )
+        self._game_objects.append(about_button)
+        
         self._custom_settings_dialog = None
         
         if self._selected_difficulty_id is not None:
@@ -82,6 +94,10 @@ class MainMenu(Scene):
             self.stop()
             self._scenes['game'].config = config
             self._scenes['game'].start()
+            
+    def _start_how_to_play(self):
+        self.stop()
+        self._scenes['how_to_play'].start()
             
     def _update(self, current_time, events):
         if self._custom_settings_dialog is not None:
