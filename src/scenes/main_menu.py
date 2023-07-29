@@ -15,6 +15,7 @@ from game_objects.option_selector import OptionSelector
 class MainMenu(Scene):
     def __init__(self, screen, scenes):
         super().__init__(screen, scenes)
+        self._selected_difficulty_id = None
     
     def _setup(self):
         self._game_objects = []
@@ -48,8 +49,12 @@ class MainMenu(Scene):
         
         self._custom_settings_dialog = None
         
+        if self._selected_difficulty_id is not None:
+            self._difficulty_selector.selected_option_id = self._selected_difficulty_id
+        
     def _on_start_button_click(self):
-        if self._difficulty_selector.selected_option_id == len(difficulty_levels):
+        self._selected_difficulty_id = self._difficulty_selector.selected_option_id
+        if self._selected_difficulty_id == len(difficulty_levels):
             self._open_custom_settings_dialog()
         else:
             self._start_game(difficulty_levels[self._difficulty_selector.selected_option_id]['config'])
