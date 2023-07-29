@@ -83,6 +83,15 @@ class HowToPlay(Scene):
                     path.join('assets', 'how_to_play_6_0.png'),
                     path.join('assets', 'how_to_play_6_1.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'Once the number of killed processes reaches 10, the user gets angry and reboots you.',
+                    'The game is then over. Your goal is to survive as long as possible without getting rebooted!'
+                ],
+                [
+                    path.join('assets', 'how_to_play_7_0.png')
+                ]
             )
         ]
         
