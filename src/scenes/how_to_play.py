@@ -73,6 +73,16 @@ class HowToPlay(Scene):
                     path.join('assets', 'how_to_play_5_4.png'),
                     path.join('assets', 'how_to_play_5_5.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'Starvation levels help you know which processes have been idle the longest.',
+                    'When a process stays idle for too long, the user becomes impatient and kills it.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_6_0.png'),
+                    path.join('assets', 'how_to_play_6_1.png')
+                ]
             )
         ]
         
