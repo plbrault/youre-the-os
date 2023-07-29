@@ -26,6 +26,22 @@ class HowToPlay(Scene):
                 [
                     path.join('assets', 'how_to_play_0_0.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'At the top of the screen, you can see your CPUs.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_1_0.png')
+                ]
+            ),
+            HowToPlayPart(
+                [
+                    'Under your CPUs, you have the list of your idle processes.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_2_0.png')
+                ]
             )
         ]
         

@@ -42,6 +42,9 @@ class HowToPlayPartView(Drawable):
             ))
             y += text_surface.get_height() + 10
             
+        if len(self._text_surfaces) == 1:
+            y += self._text_surfaces[0].get_height() + 10
+            
         surface.blit(self._images[0], (
             self.x + (self.width - self._images[0].get_width()) / 2,
             y
