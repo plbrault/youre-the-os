@@ -35,6 +35,7 @@ class HowToPlayPartView(Drawable):
 
     def draw(self, surface):
         y = self.y + 10
+        
         for text_surface in self._text_surfaces:
             surface.blit(text_surface, (
                 self.x + (self.width - text_surface.get_width()) / 2,
@@ -46,6 +47,6 @@ class HowToPlayPartView(Drawable):
             y += self._text_surfaces[0].get_height() + 10
             
         surface.blit(self._images[self._how_to_play_part.current_image_id], (
-            self.x + (self.width - self._images[0].get_width()) / 2,
-            y
+            self.x + (self.width - self._images[self._how_to_play_part.current_image_id].get_width()) / 2,
+            y + (self.height - y - self._images[self._how_to_play_part.current_image_id].get_height()) / 2
         ))

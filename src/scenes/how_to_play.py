@@ -60,6 +60,19 @@ class HowToPlay(Scene):
                     path.join('assets', 'how_to_play_4_0.png'),
                     path.join('assets', 'how_to_play_4_1.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'Over time, idle processes will go through 6 starvation levels.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_5_0.png'),
+                    path.join('assets', 'how_to_play_5_1.png'),
+                    path.join('assets', 'how_to_play_5_2.png'),
+                    path.join('assets', 'how_to_play_5_3.png'),
+                    path.join('assets', 'how_to_play_5_4.png'),
+                    path.join('assets', 'how_to_play_5_5.png')
+                ]
             )
         ]
         
