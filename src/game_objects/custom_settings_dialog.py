@@ -20,12 +20,12 @@ class CustomSettingsDialog(GameObject):
         self._num_ram_rows_selector = OptionSelector([str(i) for i in range(1, 14)], self._config['num_ram_rows'] - 1)
         self.children.append(self._num_ram_rows_selector)
         
-        self._new_process_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 205, 5)])
-        self._new_process_probability_selector.selected_option = str(int(self._config['new_process_probability'] * 200)) + ' %'
+        self._new_process_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 105, 5)])
+        self._new_process_probability_selector.selected_option = str(int(self._config['new_process_probability'] * 100)) + ' %'
         self.children.append(self._new_process_probability_selector)
         
         self._io_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 55, 5)])
-        self._io_probability_selector.selected_option = str(int(self._config['io_probability'] * 200)) + ' %'
+        self._io_probability_selector.selected_option = str(int(self._config['io_probability'] * 100)) + ' %'
         self.children.append(self._io_probability_selector)
         
         selector_width = self._new_process_probability_selector.view.width
