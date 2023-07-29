@@ -48,6 +48,20 @@ class MainMenu(Scene):
         )
         self._game_objects.append(play_button)
         
+        how_to_play_button = Button('How to Play', lambda: print('how to play'))
+        how_to_play_button.view.set_xy(
+            150,
+            self._screen.get_height() - how_to_play_button.view.height - 100
+        )
+        self._game_objects.append(how_to_play_button)
+        
+        about_button = Button('About', lambda: print('about'))
+        about_button.view.set_xy(
+            self._screen.get_width() - about_button.view.width - 150,
+            self._screen.get_height() - about_button.view.height - 100
+        )
+        self._game_objects.append(about_button)
+        
         self._custom_settings_dialog = None
         
         if self._selected_difficulty_id is not None:
