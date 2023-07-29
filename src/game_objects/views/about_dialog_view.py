@@ -25,7 +25,7 @@ class AboutDialogView(Drawable):
 
     @property
     def height(self):
-        return 440
+        return 460
 
     def draw(self, surface):
         y = self.y + 40
