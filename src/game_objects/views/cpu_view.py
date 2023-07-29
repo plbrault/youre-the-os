@@ -2,12 +2,12 @@ import pygame
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_SECONDARY_XSMALL
+from lib.ui.fonts import FONT_SECONDARY_XXSMALL
 
 class CpuView(Drawable):
     def __init__(self, cpu):
         self._cpu = cpu
-        self._text_surface = FONT_SECONDARY_XSMALL.render('CPU ' + str(self._cpu.cpu_id), False, Color.WHITE)
+        self._text_surface = FONT_SECONDARY_XXSMALL.render('CPU ' + str(self._cpu.cpu_id), False, Color.WHITE)
         super().__init__()
 
     @property

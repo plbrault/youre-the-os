@@ -3,7 +3,7 @@ from pygame_emojis import load_emoji
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_SECONDARY_XSMALL
+from lib.ui.fonts import FONT_SECONDARY_XXSMALL
 
 _starvation_colors = [
     Color.GREEN,
@@ -35,7 +35,7 @@ class ProcessView(Drawable):
         self._process = process
         self._target_x = None
         self._target_y = None
-        self._pid_text_surface = FONT_SECONDARY_XSMALL.render('PID ' + str(self._process.pid), False, Color.BLACK)
+        self._pid_text_surface = FONT_SECONDARY_XXSMALL.render('PID ' + str(self._process.pid), False, Color.BLACK)
         super().__init__()
 
     @property

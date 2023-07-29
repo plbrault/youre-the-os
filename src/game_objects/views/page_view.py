@@ -2,12 +2,12 @@ import pygame
 
 from lib.ui.color import Color
 from lib.drawable import Drawable
-from lib.ui.fonts import FONT_SECONDARY_XXSMALL
+from lib.ui.fonts import FONT_SECONDARY_XXXSMALL
 
 class PageView(Drawable):
     def __init__(self, page):
         self._page = page
-        self._pid_text_surface = FONT_SECONDARY_XXSMALL.render('PID ' + str(self._page.pid), False, Color.BLACK)
+        self._pid_text_surface = FONT_SECONDARY_XXXSMALL.render('PID ' + str(self._page.pid), False, Color.BLACK)
         super().__init__()
         
     @property

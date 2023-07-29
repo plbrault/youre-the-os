@@ -4,6 +4,7 @@ from random import randint
 
 from difficulty_levels import difficulty_levels
 from lib.scene import Scene
+from game_objects.about_dialog import AboutDialog
 from game_objects.button import Button
 from game_objects.custom_settings_dialog import CustomSettingsDialog
 from game_objects.main_menu_title import MainMenuTitle
@@ -15,6 +16,9 @@ class MainMenu(Scene):
         super().__init__(screen, scenes)
         self._selected_difficulty_id = None
         self._custom_config = None
+        
+        self._custom_settings_dialog = None
+        self._about_dialog = None
     
     def _setup(self):
         self._game_objects = []
@@ -53,7 +57,7 @@ class MainMenu(Scene):
         )
         self._game_objects.append(how_to_play_button)
         
-        about_button = Button('About', lambda: print('about'))
+        about_button = Button('About', self._open_about_dialog)
         about_button.view.set_xy(
             self._screen.get_width() - about_button.view.width - 150,
             self._screen.get_height() - about_button.view.height - 100
@@ -84,6 +88,18 @@ class MainMenu(Scene):
         )
         self._game_objects.append(self._custom_settings_dialog)
         
+    def _open_about_dialog(self):
+        self._about_dialog = AboutDialog(self._close_about_dialog)
+        self._about_dialog.view.set_xy(
+            self._screen.get_width() / 2 - self._about_dialog.view.width / 2,
+            self._screen.get_height() / 2 - self._about_dialog.view.height / 2
+        )
+        self._game_objects.append(self._about_dialog)
+        
+    def _close_about_dialog(self):
+        self._game_objects.remove(self._about_dialog)
+        self._about_dialog = None
+        
     def _close_custom_settings_dialog(self):
         self._game_objects.remove(self._custom_settings_dialog)
         self._custom_settings_dialog = None
@@ -100,7 +116,9 @@ class MainMenu(Scene):
         self._scenes['how_to_play'].start()
             
     def _update(self, current_time, events):
-        if self._custom_settings_dialog is not None:
+        if self._about_dialog is not None:
+            self._about_dialog.update(current_time, events)
+        elif self._custom_settings_dialog is not None:
             self._custom_settings_dialog.update(current_time, events)
         else:
             for game_object in self._game_objects:
