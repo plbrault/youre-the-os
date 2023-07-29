@@ -1,6 +1,7 @@
 from os import path
 import pygame
 
+from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
 from scenes.game import Game
 
@@ -23,5 +24,8 @@ scenes['game'] = game_scene
 
 main_menu_scene = MainMenu(screen, scenes)
 scenes['main_menu'] = main_menu_scene
+
+how_to_play_scene = HowToPlay(screen, scenes)
+scenes['how_to_play'] = how_to_play_scene
 
 main_menu_scene.start()

@@ -48,7 +48,7 @@ class MainMenu(Scene):
         )
         self._game_objects.append(play_button)
         
-        how_to_play_button = Button('How to Play', lambda: print('how to play'))
+        how_to_play_button = Button('How to Play', self._start_how_to_play)
         how_to_play_button.view.set_xy(
             150,
             self._screen.get_height() - how_to_play_button.view.height - 100
@@ -96,6 +96,10 @@ class MainMenu(Scene):
             self.stop()
             self._scenes['game'].config = config
             self._scenes['game'].start()
+            
+    def _start_how_to_play(self):
+        self.stop()
+        self._scenes['how_to_play'].start()
             
     def _update(self, current_time, events):
         if self._custom_settings_dialog is not None:
