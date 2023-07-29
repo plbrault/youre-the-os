@@ -42,6 +42,15 @@ class HowToPlay(Scene):
                 [
                     path.join('assets', 'how_to_play_2_0.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'You can click on an idle process to assign it to an available CPU.',
+                ],
+                [
+                    path.join('assets', 'how_to_play_3_0.png'),
+                    path.join('assets', 'how_to_play_3_1.png')
+                ]
             )
         ]
         
