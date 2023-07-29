@@ -113,7 +113,7 @@ class HowToPlay(Scene):
             ),
             HowToPlayPart(
                 [
-                    'When you have blocked processes, watch the I/IO event bar.',
+                    'When you have blocked processes, watch the I/O event bar.',
                     'Make sure to click on it when it has events, otherwise your processes will stay blocked and starve.'
                 ],
                 [
@@ -140,6 +140,17 @@ class HowToPlay(Scene):
                     path.join('assets', 'how_to_play_12_1.png'),
                     path.join('assets', 'how_to_play_12_2.png')
                 ]
+            ),
+            HowToPlayPart(
+                [
+                    'Processes can only use pages from RAM. A process will blink if trying to use pages that are on disk.',
+                    'This is when you need to swap pages! The pages that the process is trying to access will also blink.'
+                ],
+                [
+                    path.join('assets', 'how_to_play_13_0.png'),
+                    path.join('assets', 'how_to_play_13_1.png')
+                ],
+                animation_interval=200
             )
         ]
         
