@@ -21,18 +21,18 @@ class MainMenu(Scene):
         self._about_dialog = None
     
     def _setup(self):
-        self._game_objects = []
+        self._scene_objects = []
         
         title = MainMenuTitle()
         title.view.set_xy(0, 50)
-        self._game_objects.append(title)
+        self._scene_objects.append(title)
         
         difficulty_selection_label = DifficultySelectionLabel()
         difficulty_selection_label.view.set_xy(
             (self._screen.get_width() - difficulty_selection_label.view.width) / 2,
             title.view.y + title.view.height + 50
         )
-        self._game_objects.append(difficulty_selection_label)
+        self._scene_objects.append(difficulty_selection_label)
         
         difficulty_level_names = list(map(lambda difficulty_level: difficulty_level['name'], difficulty_levels))
         difficulty_level_names.append('Custom')
@@ -41,28 +41,28 @@ class MainMenu(Scene):
             (self._screen.get_width() - self._difficulty_selector.view.width) / 2,
             difficulty_selection_label.view.y + difficulty_selection_label.view.height + 20
         )
-        self._game_objects.append(self._difficulty_selector)
+        self._scene_objects.append(self._difficulty_selector)
         
         play_button = Button('Play', self._on_start_button_click)
         play_button.view.set_xy(
             (self._screen.get_width() - play_button.view.width) / 2,
             self._difficulty_selector.view.y + self._difficulty_selector.view.height + 20
         )
-        self._game_objects.append(play_button)
+        self._scene_objects.append(play_button)
         
         how_to_play_button = Button('How to Play', self._start_how_to_play)
         how_to_play_button.view.set_xy(
             150,
             self._screen.get_height() - how_to_play_button.view.height - 100
         )
-        self._game_objects.append(how_to_play_button)
+        self._scene_objects.append(how_to_play_button)
         
         about_button = Button('About', self._open_about_dialog)
         about_button.view.set_xy(
             self._screen.get_width() - about_button.view.width - 150,
             self._screen.get_height() - about_button.view.height - 100
         )
-        self._game_objects.append(about_button)
+        self._scene_objects.append(about_button)
         
         self._custom_settings_dialog = None
         
@@ -86,7 +86,7 @@ class MainMenu(Scene):
             self._screen.get_width() / 2 - self._custom_settings_dialog.view.width / 2,
             self._screen.get_height() / 2 - self._custom_settings_dialog.view.height / 2
         )
-        self._game_objects.append(self._custom_settings_dialog)
+        self._scene_objects.append(self._custom_settings_dialog)
         
     def _open_about_dialog(self):
         self._about_dialog = AboutDialog(self._close_about_dialog)
@@ -94,14 +94,14 @@ class MainMenu(Scene):
             self._screen.get_width() / 2 - self._about_dialog.view.width / 2,
             self._screen.get_height() / 2 - self._about_dialog.view.height / 2
         )
-        self._game_objects.append(self._about_dialog)
+        self._scene_objects.append(self._about_dialog)
         
     def _close_about_dialog(self):
-        self._game_objects.remove(self._about_dialog)
+        self._scene_objects.remove(self._about_dialog)
         self._about_dialog = None
         
     def _close_custom_settings_dialog(self):
-        self._game_objects.remove(self._custom_settings_dialog)
+        self._scene_objects.remove(self._custom_settings_dialog)
         self._custom_settings_dialog = None
             
     def _start_game(self, config):
@@ -121,5 +121,5 @@ class MainMenu(Scene):
         elif self._custom_settings_dialog is not None:
             self._custom_settings_dialog.update(current_time, events)
         else:
-            for game_object in self._game_objects:
+            for game_object in self._scene_objects:
                 game_object.update(current_time, events)

@@ -15,7 +15,7 @@ class HowToPlay(Scene):
         self._current_part_id = 0
     
     def _setup(self):       
-        self._game_objects = []
+        self._scene_objects = []
         
         self._parts = [
             HowToPlayPart(
@@ -155,38 +155,38 @@ class HowToPlay(Scene):
         ]
         
         self._current_part_id = 0
-        self._game_objects.append(self._parts[self._current_part_id])
+        self._scene_objects.append(self._parts[self._current_part_id])
         
         previous_button = Button('<', self._go_to_previous_part)
         previous_button.view.set_xy(50, 10)
-        self._game_objects.append(previous_button)
+        self._scene_objects.append(previous_button)
         
         next_button = Button('>', self._go_to_next_part)
         next_button.view.set_xy(self._screen.get_width() - next_button.view.width - 50, 10)
-        self._game_objects.append(next_button)
+        self._scene_objects.append(next_button)
     
     def _go_to_previous_part(self):
         if self._current_part_id == 0:
             self._return_to_main_menu()
         else:
-            self._game_objects.remove(self._parts[self._current_part_id])
+            self._scene_objects.remove(self._parts[self._current_part_id])
             self._current_part_id -= 1
             self._parts[self._current_part_id].initial_time = self.current_time
-            self._game_objects.append(self._parts[self._current_part_id])
+            self._scene_objects.append(self._parts[self._current_part_id])
         
     def _go_to_next_part(self):
         if self._current_part_id == len(self._parts) - 1:
             self._return_to_main_menu()
         else:
-            self._game_objects.remove(self._parts[self._current_part_id])
+            self._scene_objects.remove(self._parts[self._current_part_id])
             self._current_part_id += 1
             self._parts[self._current_part_id].initial_time = self.current_time
-            self._game_objects.append(self._parts[self._current_part_id])
+            self._scene_objects.append(self._parts[self._current_part_id])
     
     def _return_to_main_menu(self):
         self.stop()
         self._scenes['main_menu'].start()
     
     def _update(self, current_time, events):
-        for game_object in self._game_objects:
+        for game_object in self._scene_objects:
             game_object.update(current_time, events)

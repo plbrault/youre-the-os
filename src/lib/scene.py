@@ -12,7 +12,7 @@ class Scene(ABC):
         self._scenes = scenes
         self._background_color = background_color
         self._is_started = False
-        self._game_objects = []
+        self._scene_objects = []
     
     @property
     def current_time(self):
@@ -51,7 +51,7 @@ class Scene(ABC):
     def _render(self):      
         self._screen.fill(self._background_color)
 
-        for game_object in self._game_objects:
+        for game_object in self._scene_objects:
             game_object.render(self._screen)
 
         pygame.display.flip()

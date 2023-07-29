@@ -57,7 +57,7 @@ class Game(Scene):
         return self._page_manager
 
     def _setup(self):
-        self._game_objects = []
+        self._scene_objects = []
         
         self._in_game_menu_is_open = False
         self._in_game_menu_dialog = None
@@ -67,23 +67,23 @@ class Game(Scene):
         self._game_over_dialog = None
         
         self._process_manager = ProcessManager(self)
-        self._game_objects.append(self._process_manager)
+        self._scene_objects.append(self._process_manager)
         
         self._page_manager = PageManager(self)
-        self._game_objects.append(self._page_manager)
+        self._scene_objects.append(self._page_manager)
         
         self._score_manager = ScoreManager(self)
-        self._game_objects.append(self._score_manager)
+        self._scene_objects.append(self._score_manager)
         
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
-        self._game_objects.append(self._uptime_manager)
+        self._scene_objects.append(self._uptime_manager)
         
         open_in_game_menu_button = Button('Menu', self._open_in_game_menu)
         open_in_game_menu_button.view.set_xy(
             self._screen.get_width() - open_in_game_menu_button.view.width - 10,
             self._screen.get_height() - open_in_game_menu_button.view.height - 10
         )
-        self._game_objects.append(open_in_game_menu_button)
+        self._scene_objects.append(open_in_game_menu_button)
     
     def _open_in_game_menu(self):
         self._in_game_menu_is_open = True
@@ -93,11 +93,11 @@ class Game(Scene):
                 (self._screen.get_width() - self._in_game_menu_dialog.view.width) / 2,
                 (self._screen.get_height() - self._in_game_menu_dialog.view.height) / 2
             )
-            self._game_objects.append(self._in_game_menu_dialog)
+            self._scene_objects.append(self._in_game_menu_dialog)
         
     def _close_in_game_menu(self):
         self._in_game_menu_is_open = False
-        self._game_objects.remove(self._in_game_menu_dialog)
+        self._scene_objects.remove(self._in_game_menu_dialog)
         self._in_game_menu_dialog = None
         
     def _return_to_main_menu(self):
@@ -122,11 +122,11 @@ class Game(Scene):
                         (self._screen.get_width() - self._game_over_dialog.view.width) / 2,
                         (self._screen.get_height() - self._game_over_dialog.view.height) / 2
                     )
-                    self._game_objects.append(self._game_over_dialog)
+                    self._scene_objects.append(self._game_over_dialog)
                 dialog = self._game_over_dialog
         
         if dialog is not None:
             dialog.update(current_time, events)
         else:
-            for game_object in self._game_objects:
+            for game_object in self._scene_objects:
                 game_object.update(current_time, events)
