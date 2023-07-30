@@ -1,4 +1,10 @@
-# OS Simulation Game
+# You're the OS!
+
+This is a game where you are the operating system of a computer. As such, you have to manage processes,
+memory and I/O events. Make sure to not leave processes idling for too long, or the user will get
+real impatient and reboot you!
+
+<img src="readme-assets/in_game_screenshot.png" style="width:512; height:384;" />
 
 ## Prerequisites
 
@@ -8,9 +14,9 @@
 
 ## Usage
 
-Install dependencies: `pipenv install`
+**Install dependencies:** `pipenv install`
 
-Run as a desktop app:
+**Run as a desktop app:**
 
 ```bash
 pipenv shell
@@ -18,7 +24,7 @@ cd src
 python main.py
 ```
 
-Run in a web browser:
+**Run in a web browser:**
 
 ```bash
 pipenv shell
