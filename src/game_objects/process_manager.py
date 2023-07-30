@@ -157,13 +157,13 @@ class ProcessManager(GameObject):
             
         active_process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
         for cpu in self._cpu_list:
-            if cpu.process is not None:
+            if cpu.process is not None and not cpu.process.has_ended:
                 active_process_count_by_starvation_level[cpu.process.starvation_level] += 1
             
         return {
             'alive_process_count': len(self._alive_process_list),           
             'alive_process_count_by_starvation_level': process_count_by_starvation_level,
-            'active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None]),
+            'active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None and not cpu.process.has_ended]),
             'active_process_count_by_starvation_level': active_process_count_by_starvation_level,
             'blocked_active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None and cpu.process.is_blocked]),
             'io_event_count': self._io_queue.event_count,
