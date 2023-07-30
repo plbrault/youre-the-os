@@ -14,7 +14,7 @@ Make sure not to leave processes idling for too long, or the user will get reall
 
 ## Usage
 
-**Install dependencies:** `pipenv sync`
+**Install dependencies:** `pipenv sync --dev`
 
 **Run as a desktop app:**
 

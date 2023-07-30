@@ -13,7 +13,7 @@ jobs:
     - name: Install dependencies
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
-        command: sync
+        command: sync --dev
     - name: Build
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
