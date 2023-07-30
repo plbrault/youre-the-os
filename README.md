@@ -4,6 +4,8 @@ This is a game where you are the operating system of a computer.
 As such, you have to manage processes, memory and I/O events.
 Make sure not to leave processes idling for too long, or the user will get really impatient and reboot you!
 
+You can play the game here: [https://plbrault.github.io/youre-the-os](https://plbrault.github.io/youre-the-os)
+
 ![In-game screenshot](readme-assets/in_game_screenshot.png)
 
 ## Prerequisites
