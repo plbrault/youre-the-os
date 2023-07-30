@@ -136,8 +136,7 @@ _parts = [
             "If you don\'t swap a process' pages when needed, the process will eventually starve and get killed.",
         ],
         [
-            pygame.image.load(path.join('assets', 'how_to_play_12_0.png')),
-            pygame.image.load(path.join('assets', 'how_to_play_12_1.png'))
+            pygame.image.load(path.join('assets', 'how_to_play_13_0.png'))
         ],
         animation_interval=200
     ),    
