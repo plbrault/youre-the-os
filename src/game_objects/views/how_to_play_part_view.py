@@ -36,7 +36,7 @@ class HowToPlayPartView(Drawable):
               
         pygame.draw.rect(
             surface,
-            (255, 171, 196),
+            Color.YELLOW,
             pygame.Rect(
                 self.x + 50,
                 self.y + self.height - 66,
