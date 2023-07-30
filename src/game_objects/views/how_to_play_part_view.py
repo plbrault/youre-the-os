@@ -18,12 +18,7 @@ class HowToPlayPartView(Drawable):
             )
         )
         
-        self._images = list(
-            map(
-                lambda image_file_path: pygame.image.load(image_file_path),
-                how_to_play_part.image_file_paths
-            )
-        )
+        self._images = how_to_play_part.images
         
     @property
     def width(self):

@@ -4,9 +4,9 @@ from game_objects.views.how_to_play_part_view import HowToPlayPartView
 
 class HowToPlayPart(GameObject):
     
-    def __init__(self, text, image_file_paths, animation_interval=1000):
+    def __init__(self, text, images, animation_interval=1000):
         self._text = text
-        self._image_file_paths = image_file_paths
+        self._images = images
         self._animation_interval = animation_interval
         super().__init__(HowToPlayPartView(self))
         
@@ -18,8 +18,8 @@ class HowToPlayPart(GameObject):
         return self._text
     
     @property
-    def image_file_paths(self):
-        return self._image_file_paths
+    def images(self):
+        return self._images
     
     @property
     def initial_time(self):
@@ -34,7 +34,7 @@ class HowToPlayPart(GameObject):
         return self._current_image_id
 
     def update(self, current_time, events):
-        self._current_image_id = int((current_time - self.initial_time) / self._animation_interval) % len(self._image_file_paths)
+        self._current_image_id = int((current_time - self.initial_time) / self._animation_interval) % len(self._images)
         
         for child in self.children:
             child.update(current_time, events)
