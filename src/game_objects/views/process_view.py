@@ -77,8 +77,8 @@ class ProcessView(Drawable):
             color = Color.BLUE
         
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
-        surface.blit(starvation_emoji_surface, (self._x, self._y + 2))
+        surface.blit(starvation_emoji_surface, (self._x + 4, self._y + 6))
         surface.blit(self._pid_text_surface, (self._x + 28, self._y + 5))
 
         if self._process.is_waiting_for_io:
-            surface.blit(_waiting_for_io_emoji, (self._x + 27, self._y + 32))
+            surface.blit(_waiting_for_io_emoji, (self._x + 31, self._y + 36))
