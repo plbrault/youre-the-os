@@ -139,8 +139,7 @@ class HowToPlay(Scene):
                 ],
                 [
                     path.join('assets', 'how_to_play_12_0.png'),
-                    path.join('assets', 'how_to_play_12_1.png'),
-                    path.join('assets', 'how_to_play_12_2.png')
+                    path.join('assets', 'how_to_play_12_1.png')
                 ]
             ),
             HowToPlayPart(
