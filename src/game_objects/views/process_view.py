@@ -15,9 +15,7 @@ _starvation_colors = [
     Color.DARK_GREY
 ]
 
-_emoji_size = (28, 28)
-
-_starvation_emojis_full_size = [
+_starvation_emojis = [
     pygame.image.load(path.join('assets', 'grinning_face_emoji.png')),
     pygame.image.load(path.join('assets', 'slightly_smiling_face_emoji.png')),
     pygame.image.load(path.join('assets', 'neutral_face_emoji.png')),
@@ -27,15 +25,9 @@ _starvation_emojis_full_size = [
     pygame.image.load(path.join('assets', 'skull_emoji.png')),
 ]
 
-_starvation_emojis = list(map(lambda emoji: pygame.transform.scale(emoji, _emoji_size), _starvation_emojis_full_size))
+_gracefully_terminated_emoji = pygame.image.load(path.join('assets', 'smiling_face_with_halo_emoji.png'))
 
-_gracefully_terminated_emoji_full_size = pygame.image.load(path.join('assets', 'smiling_face_with_halo_emoji.png'))
-
-_gracefully_terminated_emoji = pygame.transform.scale(_gracefully_terminated_emoji_full_size, _emoji_size)
-
-_waiting_for_io_emoji_full_size = pygame.image.load(path.join('assets', 'hourglass_not_done_emoji.png'))
-
-_waiting_for_io_emoji = pygame.transform.scale(_waiting_for_io_emoji_full_size, _emoji_size)
+_waiting_for_io_emoji = pygame.image.load(path.join('assets', 'hourglass_not_done_emoji.png'))
 
 class ProcessView(Drawable):
     def __init__(self, process):
