@@ -10,12 +10,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Checkout
-      run: |
-            python -m pip install pygbag
-            python -m pygbag --build $GITHUB_WORKSPACE/main.py
+    - name: Install dependencies
+      uses: VaultVulp/action-pipenv@v2.0.1
+      with:
+        command: sync --dev
+    - name: Build
+      uses: VaultVulp/action-pipenv@v2.0.1
+      with:
+        command:  run web build
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
         branch: gh-pages
-        folder: build/web
+        folder: src/build/web
