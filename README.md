@@ -10,13 +10,22 @@
 
 Install dependencies: `pipenv install`
 
-Run program:
+Run as a desktop app:
 
 ```bash
 pipenv shell
 cd src
 python main.py
 ```
+
+Run in a web browser:
+
+```bash
+pipenv shell
+pygbag src
+```
+
+Then open `https://localhost:8000` in your browser.
 
 ## License
 

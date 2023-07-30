@@ -6,7 +6,7 @@ from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
 class Process(GameObject):
-    _ANIMATION_SPEED = 5
+    _ANIMATION_SPEED = 35
 
     def __init__(self, pid, game):
         self._pid = pid

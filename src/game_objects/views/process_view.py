@@ -1,5 +1,5 @@
+from os import path
 import pygame
-from pygame_emojis import load_emoji
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
@@ -15,20 +15,19 @@ _starvation_colors = [
     Color.DARK_GREY
 ]
 
-_starvation_emoji_size = (28, 28)
 _starvation_emojis = [
-    load_emoji('😀', _starvation_emoji_size),
-    load_emoji('🙂', _starvation_emoji_size),
-    load_emoji('😐', _starvation_emoji_size),
-    load_emoji('☹️', _starvation_emoji_size),
-    load_emoji('😭', _starvation_emoji_size),
-    load_emoji('🥶', _starvation_emoji_size),
-    load_emoji('💀', _starvation_emoji_size),
+    pygame.image.load(path.join('assets', 'grinning_face_emoji.png')),
+    pygame.image.load(path.join('assets', 'slightly_smiling_face_emoji.png')),
+    pygame.image.load(path.join('assets', 'neutral_face_emoji.png')),
+    pygame.image.load(path.join('assets', 'frowning_face_emoji.png')),
+    pygame.image.load(path.join('assets', 'loudly_crying_face_emoji.png')),
+    pygame.image.load(path.join('assets', 'cold_face_emoji.png')),
+    pygame.image.load(path.join('assets', 'skull_emoji.png')),
 ]
 
-_gracefully_terminated_emoji = load_emoji('😇', _starvation_emoji_size)
+_gracefully_terminated_emoji = pygame.image.load(path.join('assets', 'smiling_face_with_halo_emoji.png'))
 
-_waiting_for_io_emoji = load_emoji('⏳', (28, 28))
+_waiting_for_io_emoji = pygame.image.load(path.join('assets', 'hourglass_not_done_emoji.png'))
 
 class ProcessView(Drawable):
     def __init__(self, process):

@@ -5,11 +5,13 @@ from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XLARGE, FONT_PRIMARY_XXLARGE
 
+_shutdown_image = pygame.image.load(path.join('assets', 'shutdown.jpg'))
+
 class GameOverDialogView(Drawable):
     def __init__(self, game_over_dialog):
         super().__init__()
         
-        self._image = pygame.image.load(path.join('assets', 'shutdown.jpg'))
+        self._image = _shutdown_image
         
         self._main_text_surface = FONT_PRIMARY_XXLARGE.render('YOU GOT REBOOTED!', False, Color.WHITE)
         self._uptime_text_surface = FONT_PRIMARY_LARGE.render('UPTIME: ' + game_over_dialog.uptime, False, Color.WHITE)

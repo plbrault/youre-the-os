@@ -1,10 +1,12 @@
+from abc import ABC, abstractmethod
+import asyncio
 import pygame
 import sys
 
-from abc import ABC, abstractmethod
+from lib.ui.color import Color
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
-from lib.ui.color import Color
+from scene_manager import scene_manager
 
 class Scene(ABC):
     def __init__(self, screen, scenes, background_color=Color.BLACK):
@@ -19,36 +21,17 @@ class Scene(ABC):
         return pygame.time.get_ticks()
     
     def start(self):
-        self._setup()
-        self._is_started = True
-        self._main_loop()
-        
-    def stop(self):
-        self._is_started = False
+        scene_manager.start_scene(self)
     
     @abstractmethod
-    def _setup(self):
+    def setup(self):
         pass
-    
-    def _main_loop(self):
-        while self._is_started:
-            events = []
-            
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if (event.button == 1):
-                        events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
-                        
-            self._update(self.current_time, events)
-            self._render()
     
     @abstractmethod
-    def _update(self, current_time, events):
+    def update(self, current_time, events):
         pass
     
-    def _render(self):      
+    def render(self):      
         self._screen.fill(self._background_color)
 
         for game_object in self._scene_objects:
