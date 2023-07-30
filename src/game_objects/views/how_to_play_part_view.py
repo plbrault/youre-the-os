@@ -34,8 +34,23 @@ class HowToPlayPartView(Drawable):
         return 768
 
     def draw(self, surface):
-        y = self.y + 10
+        surface.blit(self._images[self._how_to_play_part.current_image_id], (
+            self.x + (self.width - self._images[self._how_to_play_part.current_image_id].get_width()) / 2,
+            (self.height - 65 - self._images[self._how_to_play_part.current_image_id].get_height()) / 2
+        ))
+              
+        pygame.draw.rect(
+            surface,
+            (255, 171, 196),
+            pygame.Rect(
+                self.x + 50,
+                self.y + self.height - 66,
+                self.width - 100,
+                58
+            )
+        )
         
+        y = self.height - 62
         for text_surface in self._text_surfaces:
             surface.blit(text_surface, (
                 self.x + (self.width - text_surface.get_width()) / 2,
@@ -45,8 +60,3 @@ class HowToPlayPartView(Drawable):
             
         if len(self._text_surfaces) == 1:
             y += self._text_surfaces[0].get_height() + 10
-            
-        surface.blit(self._images[self._how_to_play_part.current_image_id], (
-            self.x + (self.width - self._images[self._how_to_play_part.current_image_id].get_width()) / 2,
-            y + (self.height - y - self._images[self._how_to_play_part.current_image_id].get_height()) / 2
-        ))
