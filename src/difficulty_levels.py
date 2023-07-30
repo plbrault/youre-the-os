@@ -23,10 +23,10 @@ _normal_difficulty = {
 _hard_difficulty = {
     'name': 'Hard',
     'config': {
-        'num_cpus': 6,
-        'num_processes_at_startup': 18,
+        'num_cpus': 8,
+        'num_processes_at_startup': 24,
         'num_ram_rows': 6,
-        'new_process_probability': 0.05,
+        'new_process_probability': 0.1,
         'io_probability': 0.1
     }
 }
@@ -34,10 +34,10 @@ _hard_difficulty = {
 _harder_difficulty = {
     'name': 'Harder',
     'config': {
-        'num_cpus': 8,
-        'num_processes_at_startup': 24,
+        'num_cpus': 12,
+        'num_processes_at_startup': 30,
         'num_ram_rows': 6,
-        'new_process_probability': 0.1,
+        'new_process_probability': 0.2,
         'io_probability': 0.2
     }
 }
