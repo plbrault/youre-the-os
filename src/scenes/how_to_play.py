@@ -15,8 +15,8 @@ class HowToPlay(Scene):
         self._current_part_id = 0
         self._previous_button = None
         self._next_button = None
-    
-    def _setup(self):       
+        
+    def setup(self):       
         self._scene_objects = []
         
         self._parts = [
@@ -171,7 +171,7 @@ class HowToPlay(Scene):
             self._screen.get_height() - 62
         )
         self._scene_objects.append(self._next_button)
-    
+        
     def _go_to_previous_part(self):
         if self._current_part_id == 0:
             self._return_to_main_menu()
@@ -203,9 +203,8 @@ class HowToPlay(Scene):
             self._scene_objects.append(self._next_button)
     
     def _return_to_main_menu(self):
-        self.stop()
         self._scenes['main_menu'].start()
     
-    def _update(self, current_time, events):
+    def update(self, current_time, events):
         for game_object in self._scene_objects:
             game_object.update(current_time, events)

@@ -1,13 +1,15 @@
-import pygame
-
+import asyncio
 from os import path
 import pygame
+import sys
 
-from game_info import TITLE
-
+from scenes.game import Game
+from lib.game_event import GameEvent
+from lib.game_event_type import GameEventType
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
-from scenes.game import Game
+from scene_manager import scene_manager
+from game_info import TITLE
 
 pygame.init()
 pygame.font.init()
@@ -32,4 +34,22 @@ scenes['main_menu'] = main_menu_scene
 how_to_play_scene = HowToPlay(screen, scenes)
 scenes['how_to_play'] = how_to_play_scene
 
-asyncio.run(main_menu_scene.start())
+main_menu_scene.start()
+
+async def main():
+    while True:
+        events = []
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONUP:
+                if (event.button == 1):
+                    events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+                    
+        scene_manager.current_scene.update(pygame.time.get_ticks(), events)
+        scene_manager.current_scene.render()
+        
+        await asyncio.sleep(0)
+
+asyncio.run(main())
