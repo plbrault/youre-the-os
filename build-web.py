@@ -10,7 +10,7 @@ command = [
     'pygbag',
     '--app_name', 'youre_the_os',
     '--ume_block', '0',
-    '--title', '"You\'re the OS\\!"',
+    '--title', "You're the OS!",
 ]
 
 if build_only:
