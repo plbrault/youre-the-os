@@ -15,7 +15,9 @@ jobs:
       with:
         command: sync
     - name: Build
-      run:  pipenv run web build
+      uses: VaultVulp/action-pipenv@v2.0.1
+      with:
+        command:  run web build
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
