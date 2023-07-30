@@ -5,9 +5,13 @@ name = "pypi"
 
 [packages]
 pygame = "*"
-pygbag = "*"
 
 [dev-packages]
+pygbag = "*"
 
 [requires]
 python_version = "3.11"
+
+[scripts]
+web = "python ./build-web.py"
+"web build" = "python ./build-web.py --run"

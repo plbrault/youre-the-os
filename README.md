@@ -14,7 +14,7 @@ Make sure not to leave processes idling for too long, or the user will get reall
 
 ## Usage
 
-**Install dependencies:** `pipenv install`
+**Install dependencies:** `pipenv sync`
 
 **Run as a desktop app:**
 
@@ -27,11 +27,13 @@ python main.py
 **Run in a web browser:**
 
 ```bash
-pipenv shell
-pygbag src
+pipenv run web
 ```
 
 Then open `https://localhost:8000` in your browser.
+
+If you want to build the web version without running it, use `pipenv run web build`.
+The web files will be available under `src/build/web`.
 
 ## License
 
