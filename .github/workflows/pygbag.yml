@@ -10,11 +10,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Checkout
-      run: |
-            python -m pip install pipenv
-            pipenv sync
-            pipenv run web build
+    - name: Install dependencies
+      uses: VaultVulp/action-pipenv@v2.0.1
+      with:
+        command: sync
+    - name: Build
+      run:  pipenv run web build
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
