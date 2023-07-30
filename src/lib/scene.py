@@ -1,3 +1,4 @@
+import asyncio
 import pygame
 import sys
 
@@ -18,10 +19,10 @@ class Scene(ABC):
     def current_time(self):
         return pygame.time.get_ticks()
     
-    def start(self):
+    async def start(self):
         self._setup()
         self._is_started = True
-        self._main_loop()
+        await self._main_loop()
         
     def stop(self):
         self._is_started = False
@@ -30,7 +31,7 @@ class Scene(ABC):
     def _setup(self):
         pass
     
-    def _main_loop(self):
+    async def _main_loop(self):
         while self._is_started:
             events = []
             
@@ -43,6 +44,8 @@ class Scene(ABC):
                         
             self._update(self.current_time, events)
             self._render()
+            
+            await asyncio.sleep(0)
     
     @abstractmethod
     def _update(self, current_time, events):

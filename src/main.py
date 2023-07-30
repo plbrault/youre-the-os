@@ -1,3 +1,5 @@
+import pygame
+
 from os import path
 import pygame
 
@@ -30,4 +32,4 @@ scenes['main_menu'] = main_menu_scene
 how_to_play_scene = HowToPlay(screen, scenes)
 scenes['how_to_play'] = how_to_play_scene
 
-main_menu_scene.start()
+asyncio.run(main_menu_scene.start())

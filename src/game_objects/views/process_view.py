@@ -1,5 +1,5 @@
 import pygame
-from pygame_emojis import load_emoji
+#from pygame_emojis import load_emoji
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
@@ -15,20 +15,20 @@ _starvation_colors = [
     Color.DARK_GREY
 ]
 
-_starvation_emoji_size = (28, 28)
-_starvation_emojis = [
-    load_emoji('😀', _starvation_emoji_size),
-    load_emoji('🙂', _starvation_emoji_size),
-    load_emoji('😐', _starvation_emoji_size),
-    load_emoji('☹️', _starvation_emoji_size),
-    load_emoji('😭', _starvation_emoji_size),
-    load_emoji('🥶', _starvation_emoji_size),
-    load_emoji('💀', _starvation_emoji_size),
-]
+#_starvation_emoji_size = (28, 28)
+#_starvation_emojis = [
+#    load_emoji('😀', _starvation_emoji_size),
+#    load_emoji('🙂', _starvation_emoji_size),
+#    load_emoji('😐', _starvation_emoji_size),
+#    load_emoji('☹️', _starvation_emoji_size),
+#    load_emoji('😭', _starvation_emoji_size),
+#    load_emoji('🥶', _starvation_emoji_size),
+#    load_emoji('💀', _starvation_emoji_size),
+#]
 
-_gracefully_terminated_emoji = load_emoji('😇', _starvation_emoji_size)
+#_gracefully_terminated_emoji = load_emoji('😇', _starvation_emoji_size)
 
-_waiting_for_io_emoji = load_emoji('⏳', (28, 28))
+#_waiting_for_io_emoji = load_emoji('⏳', (28, 28))
 
 class ProcessView(Drawable):
     def __init__(self, process):

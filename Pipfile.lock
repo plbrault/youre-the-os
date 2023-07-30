@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "db561191320e22f2317001ae779eebe9063f32aab3b5aa5cc6900ffbdcd9d8a4"
+            "sha256": "6b82967818245068977b246dc406fbbdabb9b0e3fef31f2927d4bdba0831c0f6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,11 +18,11 @@
     "default": {
         "cairocffi": {
             "hashes": [
-                "sha256:e7f21ea1546a5d490ceba77b6216c1393d7e0a7856e292864a88a7506092bf4d",
-                "sha256:fec979f3e904c1a38350b06dcc91d3c15f9a4954e618a068761622e3a0d5058c"
+                "sha256:78e6bbe47357640c453d0be929fa49cd05cce2e1286f3d2a1ca9cbda7efdb8b7",
+                "sha256:aa78ee52b9069d7475eeac457389b6275aa92111895d78fbaa2202a52dac112e"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==1.6.0"
+            "version": "==1.6.1"
         },
         "cairosvg": {
             "hashes": [
@@ -119,10 +119,10 @@
         },
         "emoji": {
             "hashes": [
-                "sha256:39ad95c9ba270cdfbd141d20c2ebcfc4e295d010b605de66908a098a3ba63a3c"
+                "sha256:375cc08589704266099846c553b6572ec5be591374b4d2cd1623b8343d5c9abb"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
-            "version": "==2.6.0"
+            "version": "==2.7.0"
         },
         "pillow": {
             "hashes": [
@@ -262,6 +262,14 @@
             "index": "pypi",
             "version": "==0.1.1"
         },
+        "pygbag": {
+            "hashes": [
+                "sha256:a4f67cdf9d4124793599c1e19ac443383258ecc5627ae21d778bfa7067149bc5",
+                "sha256:c78c40bc500111eb5826b8228ce606437938f7820fca907b937cd7b3255fd43a"
+            ],
+            "index": "pypi",
+            "version": "==0.7.1"
+        },
         "tinycss2": {
             "hashes": [
                 "sha256:2b80a96d41e7c3914b8cda8bc7f705a4d9c49275616e886103dd839dfc847847",
@@ -269,6 +277,14 @@
             ],
             "markers": "python_version >= '3.7'",
             "version": "==1.2.1"
+        },
+        "token-utils": {
+            "hashes": [
+                "sha256:7f4e2ff973822ce1e1829ba70e17d00b315a570c5be625b01a3f361933c2f86a",
+                "sha256:8bdca11ae8aacab3e47dacbb21165c2d118167d2a0a59b93e61aa8af03f62481"
+            ],
+            "markers": "python_version >= '3.6'",
+            "version": "==0.1.8"
         },
         "webencodings": {
             "hashes": [
