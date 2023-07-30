@@ -36,8 +36,12 @@ scenes['how_to_play'] = how_to_play_scene
 
 main_menu_scene.start()
 
+clock = pygame.time.Clock()
+
+FPS = 60
+
 async def main():
-    while True:
+    while True:      
         events = []
         
         for event in pygame.event.get():
@@ -49,6 +53,8 @@ async def main():
                     
         scene_manager.current_scene.update(pygame.time.get_ticks(), events)
         scene_manager.current_scene.render()
+        
+        clock.tick(FPS)
         
         await asyncio.sleep(0)
 
