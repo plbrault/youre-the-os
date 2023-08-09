@@ -1,6 +1,7 @@
 from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_PRIMARY_LARGE
+from window_size import WINDOW_HEIGHT
 
 class ProcessManagerView(Drawable):
     def __init__(self, process_manager):
@@ -15,7 +16,7 @@ class ProcessManagerView(Drawable):
 
     @property
     def height(self):
-        return 768
+        return WINDOW_HEIGHT
 
     def draw(self, surface):
         terminated_processes_text = 'User Ragequits ({0} / {1}) :'.format(

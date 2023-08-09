@@ -4,7 +4,7 @@ import pygame
 from lib.ui.color import Color
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_SECONDARY_SMALL
-
+from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 class HowToPlayPartView(Drawable):
     def __init__(self, how_to_play_part):
@@ -22,11 +22,11 @@ class HowToPlayPartView(Drawable):
         
     @property
     def width(self):
-        return 1024
+        return WINDOW_WIDTH
 
     @property
     def height(self):
-        return 768
+        return WINDOW_HEIGHT
 
     def draw(self, surface):
         surface.blit(self._images[self._how_to_play_part.current_image_id], (
