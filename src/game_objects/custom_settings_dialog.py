@@ -17,10 +17,10 @@ class CustomSettingsDialog(GameObject):
         self._num_cpus_selector = OptionSelector([str(i) for i in range(1, 13)], self._config['num_cpus'] - 1)
         self.children.append(self._num_cpus_selector)
         
-        self._num_processes_selector = OptionSelector([str(i) for i in range(1, 37)], self._config['num_processes_at_startup'] - 1)
+        self._num_processes_selector = OptionSelector([str(i) for i in range(1, 42)], self._config['num_processes_at_startup'] - 1)
         self.children.append(self._num_processes_selector)
         
-        self._num_ram_rows_selector = OptionSelector([str(i) for i in range(1, 14)], self._config['num_ram_rows'] - 1)
+        self._num_ram_rows_selector = OptionSelector([str(i) for i in range(1, 11)], self._config['num_ram_rows'] - 1)
         self.children.append(self._num_ram_rows_selector)
         
         self._new_process_probability_selector = OptionSelector([str(i) + ' %' for i in range(0, 105, 5)])

@@ -13,7 +13,7 @@ class PageManagerView(Drawable):
 
     @property
     def width(self):
-        return 494
+        return 691
 
     @property
     def height(self):

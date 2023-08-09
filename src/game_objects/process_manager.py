@@ -8,9 +8,10 @@ from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
+from window_size import WINDOW_HEIGHT
 
 class ProcessManager(GameObject):
-    _MAX_PROCESSES = 36
+    _MAX_PROCESSES = 42
     
     MAX_TERMINATED_BY_USER = 10
     
@@ -83,8 +84,8 @@ class ProcessManager(GameObject):
         io_queue.view.set_xy(50, 10)
         self.children.append(io_queue)       
 
-        for row in range(7):
-            for column in range(6):
+        for row in range(6):
+            for column in range(7):
                 process_slot = ProcessSlot()          
                 x = 50 + column * process_slot.view.width + column * 5
                 y = 155 + row * process_slot.view.height + row * 5
@@ -95,7 +96,7 @@ class ProcessManager(GameObject):
         for i in range(self.MAX_TERMINATED_BY_USER):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
-            y = 694
+            y = WINDOW_HEIGHT - process_slot.view.height - 20
             process_slot.view.set_xy(x, y)
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)        

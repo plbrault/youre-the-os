@@ -4,8 +4,7 @@ from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 
 class PageManager(GameObject):
-    _MAX_PAGES= 156
-    _TOTAL_ROWS = 13
+    _TOTAL_ROWS = 10
     
     def __init__(self, game):
         self._game = game
@@ -32,9 +31,11 @@ class PageManager(GameObject):
         
         num_ram_rows = self._game.config['num_ram_rows']
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
+        
+        num_cols = 16
              
         for row in range(num_ram_rows):
-            for column in range(11):
+            for column in range(num_cols):
                 ram_slot = PageSlot()          
                 x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
                 y = 155 + row * ram_slot.view.height + row * 5
@@ -43,10 +44,10 @@ class PageManager(GameObject):
         self.children.extend(self._ram_slots)
         
         if num_swap_rows > 0:
-            self._pages_in_swap_label_xy = (self._game.process_manager.view.width, 155 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
+            self._pages_in_swap_label_xy = (self._game.process_manager.view.width, 164 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
             
             for row in range(num_swap_rows):
-                for column in range(11):
+                for column in range(num_cols):
                     swap_slot = PageSlot()          
                     x = self._game.process_manager.view.width + column * ram_slot.view.width + column * 5
                     y = self._pages_in_swap_label_xy[1] + 35 + row * ram_slot.view.height + row * 5

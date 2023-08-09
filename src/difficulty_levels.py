@@ -3,7 +3,7 @@ _easy_difficulty = {
     'config': {
         'num_cpus': 4,
         'num_processes_at_startup': 12,
-        'num_ram_rows': 12,
+        'num_ram_rows': 8,
         'new_process_probability': 0.05,
         'io_probability': 0.05
     }
@@ -14,7 +14,7 @@ _normal_difficulty = {
     'config': {
         'num_cpus': 4,
         'num_processes_at_startup': 12,
-        'num_ram_rows': 6,
+        'num_ram_rows': 4,
         'new_process_probability': 0.05,
         'io_probability': 0.1
     }
@@ -25,7 +25,7 @@ _hard_difficulty = {
     'config': {
         'num_cpus': 8,
         'num_processes_at_startup': 24,
-        'num_ram_rows': 6,
+        'num_ram_rows': 4,
         'new_process_probability': 0.1,
         'io_probability': 0.1
     }
@@ -36,7 +36,7 @@ _harder_difficulty = {
     'config': {
         'num_cpus': 12,
         'num_processes_at_startup': 30,
-        'num_ram_rows': 6,
+        'num_ram_rows': 4,
         'new_process_probability': 0.2,
         'io_probability': 0.2
     }
@@ -46,8 +46,8 @@ _insane_difficulty = {
     'name': 'Insane',
     'config': {
         'num_cpus': 12,
-        'num_processes_at_startup': 36,
-        'num_ram_rows': 4,
+        'num_processes_at_startup': 42,
+        'num_ram_rows': 3,
         'new_process_probability': 1,
         'io_probability': 0.3
     }
