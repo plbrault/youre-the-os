@@ -14,8 +14,8 @@ from game_info import TITLE
 pygame.init()
 pygame.font.init()
 
-window_width = 1024
-window_height = 768
+window_width = 1280
+window_height = 720
 screen_size = (window_width, window_height)
 screen = pygame.display.set_mode(screen_size)
 
