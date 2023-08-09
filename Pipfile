@@ -13,5 +13,6 @@ pygbag = "*"
 python_version = "3.11"
 
 [scripts]
-web = "python ./build-web.py"
-"web build" = "python ./build-web.py --run"
+desktop = "python ./run-desktop.py"
+web = "python ./run-web.py"
+"web build" = "python ./run-web.py --build"

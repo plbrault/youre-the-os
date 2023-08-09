@@ -23,9 +23,7 @@ Also available on [itch.io](https://drfreckles42.itch.io/youre-the-os).
 **Run as a desktop app:**
 
 ```bash
-pipenv shell
-cd src
-python main.py
+pipenv run desktop
 ```
 
 **Run in a web browser:**
