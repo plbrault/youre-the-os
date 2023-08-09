@@ -1,7 +1,7 @@
 from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_PRIMARY_LARGE
-from window_size import WINDOW_HEIGHT
+from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 class ProcessManagerView(Drawable):
     def __init__(self, process_manager):
@@ -12,7 +12,7 @@ class ProcessManagerView(Drawable):
 
     @property
     def width(self):
-        return 530
+        return WINDOW_WIDTH - self._process_manager.game.page_manager.view.width
 
     @property
     def height(self):

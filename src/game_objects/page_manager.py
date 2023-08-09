@@ -18,8 +18,6 @@ class PageManager(GameObject):
         self._pages_in_swap_label_xy = None
         
         super().__init__(PageManagerView(self))
-        
-        self._setup()
 
     @property
     def pages_in_ram_label_xy(self):
@@ -29,7 +27,7 @@ class PageManager(GameObject):
     def pages_in_swap_label_xy(self):
         return self._pages_in_swap_label_xy
                
-    def _setup(self):        
+    def setup(self):        
         self._pages_in_ram_label_xy = (self._game.process_manager.view.width, 120)
         
         num_ram_rows = self._game.config['num_ram_rows']

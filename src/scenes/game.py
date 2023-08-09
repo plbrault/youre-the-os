@@ -43,9 +43,12 @@ class Game(Scene):
         self._game_over_dialog = None
         
         self._process_manager = ProcessManager(self)
+        self._page_manager = PageManager(self)
+        
+        self._process_manager.setup()
         self._scene_objects.append(self._process_manager)
         
-        self._page_manager = PageManager(self)
+        self._page_manager.setup()
         self._scene_objects.append(self._page_manager)
         
         self._score_manager = ScoreManager(self)

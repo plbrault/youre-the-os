@@ -37,8 +37,10 @@ class ProcessManager(GameObject):
             self._max_wait_between_new_processes = inf
                
         super().__init__(ProcessManagerView(self))
-        
-        self._setup()
+
+    @property
+    def game(self):
+        return self._game
 
     @property
     def cpu_list(self):
@@ -56,7 +58,7 @@ class ProcessManager(GameObject):
     def user_terminated_process_count(self):
         return self._user_terminated_process_count
     
-    def _setup(self):
+    def setup(self):
         self._cpu_list = []
         self._alive_process_list = []
         self._process_slots = []
