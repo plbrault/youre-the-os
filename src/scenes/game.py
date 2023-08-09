@@ -60,7 +60,7 @@ class Game(Scene):
         open_in_game_menu_button = Button('Menu', self._open_in_game_menu)
         open_in_game_menu_button.view.set_xy(
             self._screen.get_width() - open_in_game_menu_button.view.width - 10,
-            self._screen.get_height() - open_in_game_menu_button.view.height - 10
+            10
         )
         self._scene_objects.append(open_in_game_menu_button)
    
