@@ -1,10 +1,17 @@
 import subprocess
 import sys
 
-build_only = False
+RUN = 'RUN'
+BUILD = 'BUILD'
+ARCHIVE = 'ARCHIVE'
 
-if len(sys.argv) > 1 and sys.argv[1] != '--build-only':
-    build_only = True
+mode = 'run'
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'build':
+        mode = BUILD
+    elif sys.argv[1] == 'archive':
+        mode = ARCHIVE
 
 command = [
     'pygbag',
@@ -13,8 +20,10 @@ command = [
     '--title', "You're the OS!",
 ]
 
-if build_only:
+if mode == BUILD:
     command.append('--build')
+elif mode == ARCHIVE:
+    command.append('--archive')
 
 command.append('src')
 

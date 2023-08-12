@@ -15,4 +15,3 @@ python_version = "3.11"
 [scripts]
 desktop = "python ./run-desktop.py"
 web = "python ./run-web.py"
-"web build" = "python ./run-web.py --build"
