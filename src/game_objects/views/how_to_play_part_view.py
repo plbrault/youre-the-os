@@ -39,13 +39,13 @@ class HowToPlayPartView(Drawable):
             Color.YELLOW,
             pygame.Rect(
                 self.x + 50,
-                self.y + self.height - 66,
+                self.y + self.height - 82,
                 self.width - 100,
                 58
             )
         )
         
-        y = self.height - 62
+        y = self.height - 80
         for text_surface in self._text_surfaces:
             surface.blit(text_surface, (
                 self.x + (self.width - text_surface.get_width()) / 2,

@@ -171,14 +171,14 @@ class HowToPlay(Scene):
         self._previous_button = Button('<', self._go_to_previous_part)
         self._previous_button.view.set_xy(
             52,
-            self._screen.get_height() - 62
+            self._screen.get_height() - 78
         )
         self._scene_objects.append(self._previous_button)
         
         self._next_button = Button('>', self._go_to_next_part)
         self._next_button.view.set_xy(
             self._screen.get_width() - self._next_button.view.width - 52,
-            self._screen.get_height() - 62
+            self._screen.get_height() - 78
         )
         self._scene_objects.append(self._next_button)
         
