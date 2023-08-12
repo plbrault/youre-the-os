@@ -1,6 +1,7 @@
 from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_PRIMARY_LARGE
+from window_size import WINDOW_HEIGHT
 
 class PageManagerView(Drawable):
     def __init__(self, page_manager):
@@ -12,11 +13,11 @@ class PageManagerView(Drawable):
 
     @property
     def width(self):
-        return 494
+        return 691
 
     @property
     def height(self):
-        return 768
+        return WINDOW_HEIGHT
 
     def draw(self, surface):
         surface.blit(self._pages_in_ram_text_surface, self._page_manager.pages_in_ram_label_xy)

@@ -10,14 +10,12 @@ from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
 from scene_manager import scene_manager
 from game_info import TITLE
+from window_size import WINDOW_SIZE
 
 pygame.init()
 pygame.font.init()
 
-window_width = 1024
-window_height = 768
-screen_size = (window_width, window_height)
-screen = pygame.display.set_mode(screen_size)
+screen = pygame.display.set_mode(WINDOW_SIZE)
 
 icon = pygame.image.load(path.join('assets', 'icon.png'))
 pygame.display.set_caption(TITLE)

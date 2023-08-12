@@ -4,6 +4,7 @@ import pygame
 from game_info import TITLE
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_PRIMARY_XXLARGE
+from window_size import WINDOW_WIDTH
 
 _icon_image = pygame.image.load(path.join('assets', 'icon.png'))
 
@@ -19,7 +20,7 @@ class MainMenuTitleView(Drawable):
 
     @property
     def width(self):
-        return 1024
+        return WINDOW_WIDTH
 
     @property
     def height(self):
