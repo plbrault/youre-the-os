@@ -18,7 +18,11 @@ Also available on [itch.io](https://drfreckles42.itch.io/youre-the-os).
 
 ## Usage
 
-**Install dependencies:** `pipenv sync --dev`
+**Install dependencies:** 
+
+```bash
+pipenv sync --dev
+```
 
 **Run as a desktop app:**
 
@@ -26,16 +30,23 @@ Also available on [itch.io](https://drfreckles42.itch.io/youre-the-os).
 pipenv run desktop
 ```
 
-**Run in a web browser:**
+**Run web version:**
 
 ```bash
 pipenv run web
 ```
 
-Then open `https://localhost:8000` in your browser.
+**Build web version without running:**
 
-If you want to build the web version without running it, use `pipenv run web build`.
-The web files will be available under `src/build/web`.
+```bash
+pipenv run web build
+```
+
+**Create `web.zip` archive for itch.io:**
+
+```bash
+pipenv run web archive
+```
 
 ## License
 
