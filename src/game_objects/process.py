@@ -146,7 +146,7 @@ class Process(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self._view.collides(*event.getProperty('position'))
+            return not self.has_ended and self._view.collides(*event.getProperty('position'))
         return False
 
     def _on_click(self):
