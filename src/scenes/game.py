@@ -97,11 +97,13 @@ class Game(Scene):
                 (self._screen.get_height() - self._in_game_menu_dialog.view.height) / 2
             )
             self._scene_objects.append(self._in_game_menu_dialog)
+        self._uptime_manager.pause()
         
     def _close_in_game_menu(self):
         self._in_game_menu_is_open = False
         self._scene_objects.remove(self._in_game_menu_dialog)
         self._in_game_menu_dialog = None
+        self._uptime_manager.resume()
         
     def _return_to_main_menu(self):
         self._scenes['main_menu'].start()
