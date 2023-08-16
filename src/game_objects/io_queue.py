@@ -33,7 +33,10 @@ class IoQueue(GameObject):
 
     def update(self, current_time, events):
         for event in events:
-            if self._checkIfClickedOn(event):
+            if event.type == GameEventType.KEY_PRESS:
+                if event.getProperty('key') == 'CTRL':
+                    self._onClick()
+            elif self._checkIfClickedOn(event):
                 self._onClick()
 
         if current_time >= self._last_update_time + 1000:

@@ -52,6 +52,9 @@ async def main():
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_down = False
                 events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+            elif event.type == pygame.KEYUP:
+                if pygame.key.name(event.key).endswith('ctrl'):
+                    events.append(GameEvent(GameEventType.KEY_PRESS, { 'key': 'CTRL' }))
                 
             if event.type == pygame.MOUSEMOTION and mouse_down:
                 events.append(GameEvent(GameEventType.MOUSE_LEFT_DRAG, { 'position': event.pos }))
