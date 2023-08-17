@@ -1,6 +1,7 @@
 from math import inf
 from random import randint
 
+from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.cpu import Cpu
 from game_objects.game_over_dialog import GameOverDialog
@@ -175,6 +176,17 @@ class ProcessManager(GameObject):
         }     
 
     def update(self, current_time, events):
+        for event in events:
+            if event.type == GameEventType.KEY_UP:
+                if len(event.getProperty('key')) == 1 and event.getProperty('key') >= '0' and event.getProperty('key') <= '9':
+                    cpu_id = int(event.getProperty('key')) - 1
+                    if cpu_id == -1:
+                        cpu_id = 9
+                    if cpu_id < len(self._cpu_list):
+                        cpu = self._cpu_list[cpu_id]
+                        if cpu.has_process:
+                            cpu.process.yield_cpu()
+        
         if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
             processes_are_moving = False
             for child in self.children:

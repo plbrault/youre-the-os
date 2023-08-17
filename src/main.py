@@ -40,7 +40,7 @@ FPS = 60
 
 async def main():
     mouse_down = False
-    number_keys = map(str, range(0, 10))
+    number_keys = list(map(str, range(0, 10)))
     
     while True:      
         events = []
@@ -57,9 +57,8 @@ async def main():
                 if pygame.key.name(event.key).endswith('ctrl'):
                     events.append(GameEvent(GameEventType.KEY_UP, { 'key': 'CTRL' }))
                 elif pygame.key.name(event.key) in number_keys:
-                    events.append(GameEvent(GameEventType.KEY_UP, { 'key': int(pygame.key.name(event.key)) }))
-                
-            if event.type == pygame.MOUSEMOTION and mouse_down:
+                    events.append(GameEvent(GameEventType.KEY_UP, { 'key': pygame.key.name(event.key) }))  
+            elif event.type == pygame.MOUSEMOTION and mouse_down:
                 events.append(GameEvent(GameEventType.MOUSE_LEFT_DRAG, { 'position': event.pos }))
                     
         scene_manager.current_scene.update(pygame.time.get_ticks(), events)
