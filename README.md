@@ -36,6 +36,14 @@ pipenv run desktop
 pipenv run web
 ```
 
+**Run desktop version with an automated script:**
+
+```bash
+pipenv run desktop <script.py>
+```
+
+See `automated_example.py` for more info on API.
+
 **Build web version without running:**
 
 ```bash
