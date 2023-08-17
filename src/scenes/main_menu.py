@@ -7,6 +7,7 @@ from lib.scene import Scene
 from game_objects.about_dialog import AboutDialog
 from game_objects.button import Button
 from game_objects.custom_settings_dialog import CustomSettingsDialog
+from game_objects.key_binding_dialog import KeyBindingDialog
 from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
@@ -19,6 +20,7 @@ class MainMenu(Scene):
         
         self._custom_settings_dialog = None
         self._about_dialog = None
+        self._key_binding_dialog = None
     
     def setup(self):
         self._scene_objects = []
@@ -57,6 +59,13 @@ class MainMenu(Scene):
         )
         self._scene_objects.append(how_to_play_button)
         
+        key_binding_button = Button('Key Bindings', self._open_key_binding_dialog)
+        key_binding_button.view.set_xy(
+            how_to_play_button.view.x + how_to_play_button.view.width + 20,
+            self._screen.get_height() - key_binding_button.view.height - 100
+        )
+        self._scene_objects.append(key_binding_button)        
+        
         about_button = Button('About', self._open_about_dialog)
         about_button.view.set_xy(
             self._screen.get_width() - about_button.view.width - 150,
@@ -94,15 +103,27 @@ class MainMenu(Scene):
             self._screen.get_width() / 2 - self._about_dialog.view.width / 2,
             self._screen.get_height() / 2 - self._about_dialog.view.height / 2
         )
-        self._scene_objects.append(self._about_dialog)
+        self._scene_objects.append(self._about_dialog)  
         
     def _close_about_dialog(self):
         self._scene_objects.remove(self._about_dialog)
         self._about_dialog = None
         
+    def _open_key_binding_dialog(self):
+        self._key_binding_dialog = KeyBindingDialog(self._close_key_binding_dialog)
+        self._key_binding_dialog.view.set_xy(
+            self._screen.get_width() / 2 - self._key_binding_dialog.view.width / 2,
+            self._screen.get_height() / 2 - self._key_binding_dialog.view.height / 2
+        )
+        self._scene_objects.append(self._key_binding_dialog)              
+        
     def _close_custom_settings_dialog(self):
         self._scene_objects.remove(self._custom_settings_dialog)
         self._custom_settings_dialog = None
+        
+    def _close_key_binding_dialog(self):
+        self._scene_objects.remove(self._key_binding_dialog)
+        self._key_binding_dialog = None        
             
     def _start_game(self, config):
             if self._custom_settings_dialog is not None:
@@ -118,6 +139,8 @@ class MainMenu(Scene):
             self._about_dialog.update(current_time, events)
         elif self._custom_settings_dialog is not None:
             self._custom_settings_dialog.update(current_time, events)
+        elif self._key_binding_dialog is not None:
+            self._key_binding_dialog.update(current_time, events)
         else:
             for game_object in self._scene_objects:
                 game_object.update(current_time, events)
