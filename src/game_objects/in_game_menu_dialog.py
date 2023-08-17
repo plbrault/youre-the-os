@@ -10,7 +10,7 @@ class InGameMenuDialog(GameObject):
 
         self._restart_button = Button('Restart Game', restart_game_fn)
         self._main_menu_button = Button('Return to Main Menu', main_menu_fn)
-        self._close_menu_button = Button('Close', close_menu_fn)
+        self._close_menu_button = Button('Close', close_menu_fn, key_bind='escape')
 
         self.children.append(self._restart_button)
         self.children.append(self._main_menu_button)
