@@ -1,6 +1,8 @@
 from os import path
 import pygame
+import sys
 from random import randint
+from types import SimpleNamespace
 
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
@@ -13,10 +15,17 @@ from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
+from game_objects.io_queue import IoQueue
+from game_objects.process import Process
+from game_objects.page import Page
+
+from lib import event_manager
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=default_difficulty['config']):
+    def __init__(self, screen, scenes, config=default_difficulty['config'], script=None):
         self._config = config
+        self._script = script
+        self._script_callback = None
 
         self._current_time = 0
 
@@ -64,6 +73,26 @@ class Game(Scene):
         )
         self._scene_objects.append(open_in_game_menu_button)
 
+        # for automation
+        self._script_callback = None
+        if self._script:
+            g = {
+                'num_cpus': self._config['num_cpus'],
+                'num_ram_pages': 16 * self._config['num_ram_rows'],
+                'num_swap_pages': 16 * (PageManager._TOTAL_ROWS - self._config['num_ram_rows']),
+                **{
+                    v.name: v.value
+                    for v in event_manager.etypes
+                }
+            }
+
+            l = None#{}
+            exec(self._script, g, l)
+            try:
+                self._script_callback = g['run_os']
+            except KeyError:
+                pass
+
     @property
     def config(self):
         return self._config
@@ -108,6 +137,13 @@ class Game(Scene):
     def _return_to_main_menu(self):
         self._scenes['main_menu'].start()
 
+    def _get_script_events(self):
+        if self._script_callback is None:
+            return []
+        events = self._script_callback(event_manager.get_events())
+        event_manager.clear_events()
+        return events
+
     def update(self, current_time, events):
         dialog = None
 
@@ -132,5 +168,17 @@ class Game(Scene):
         if dialog is not None:
             dialog.update(current_time, events)
         else:
+            # first, the script generated events
+            for event in self._get_script_events():
+                try:
+                    if event['type'] == 'io_queue':
+                        IoQueue.Instance.onClick()
+                    elif event['type'] == 'process':
+                        Process.Processes[event['pid']].onClick()
+                    elif event['type'] == 'page':
+                        Page.Pages[(event['pid'],event['idx'])].onClick()
+                except Exception as e:
+                    print(e.__class__.__name__, *e.args, event, file=sys.stderr)
+            # now, update
             for game_object in self._scene_objects:
                 game_object.update(current_time, events)

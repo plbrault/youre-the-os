@@ -11,6 +11,8 @@ from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
 from window_size import WINDOW_HEIGHT
 
+from lib import event_manager
+
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42
 
@@ -122,6 +124,8 @@ class ProcessManager(GameObject):
             process.view.set_xy(process_slot.view.x, self.view.height + process.view.height)
             process.view.target_y = process_slot.view.y
 
+            event_manager.event_process_new(pid)
+            Process.Processes[pid] = process
             return True
         else:
             return False

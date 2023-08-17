@@ -4,9 +4,12 @@ from random import randint
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
+from lib import event_manager
 
 class Process(GameObject):
     _ANIMATION_SPEED = 35
+
+    Processes = {}
 
     def __init__(self, pid, game):
         self._pid = pid
@@ -62,6 +65,26 @@ class Process(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
 
+    def _update_blocking_condition(self, update_fn):
+        was_blocked = self.is_blocked
+        update_fn()
+        if was_blocked != self.is_blocked:
+            self._current_state_duration = 0
+
+    def _set_waiting_for_io(self, waiting_for_io):
+        if self._is_waiting_for_io != waiting_for_io:
+            event_manager.event_process_wait_io(self._pid, waiting_for_io)
+        def update_fn():
+            self._is_waiting_for_io = waiting_for_io
+        self._update_blocking_condition(update_fn)
+
+    def _set_waiting_for_page(self, waiting_for_page):
+        if self._is_waiting_for_page != waiting_for_page:
+            event_manager.event_process_wait_page(self._pid, waiting_for_page)
+        def update_fn():
+            self._is_waiting_for_page = waiting_for_page
+        self._update_blocking_condition(update_fn)
+
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
@@ -69,6 +92,7 @@ class Process(GameObject):
                     cpu.process = self
                     self._has_cpu = True
                     self.view.set_target_xy(cpu.view.x, cpu.view.y)
+                    event_manager.event_process_cpu(self._pid, self._has_cpu)
                     break
             if self.has_cpu:
                 self._current_state_duration = 0
@@ -79,13 +103,17 @@ class Process(GameObject):
                 if len(self._pages) == 0:
                     num_pages = round(sqrt(randint(1, 20))) # Generate a number of pages between 1 and 4 with a higher probability for higher numbers
                     for i in range(num_pages):
-                        self._pages.append(self._page_manager.create_page(self._pid))
+                        page = self._page_manager.create_page(self._pid, i)
+                        self._pages.append(page)
+                        event_manager.event_page_new(page.pid, page.idx, page.in_swap, page.in_use)
                 for page in self._pages:
                     page.in_use = True
+                    event_manager.event_page_use(page.pid, page.idx, page.in_use)
 
     def yield_cpu(self):
         if self.has_cpu:
             self._has_cpu = False
+            event_manager.event_process_cpu(self._pid, self._has_cpu)
             self._current_state_duration = 0
             for cpu in self._process_manager.cpu_list:
                 if cpu.process == self:
@@ -93,11 +121,14 @@ class Process(GameObject):
                     break
             for page in self._pages:
                 page.in_use = False
+                event_manager.event_page_use(page.pid, page.idx, page.in_use)
             if self.has_ended:
                 if self.starvation_level == 0:
                     self.view.target_y = -self.view.height
                 for page in self._pages:
+                    event_manager.event_page_free(page.pid, page.idx)
                     self._page_manager.delete_page(page)
+                del Process.Processes[self._pid]
             else:
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
@@ -130,6 +161,7 @@ class Process(GameObject):
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
+            event_manager.event_process_terminated(self._pid)
             self._has_ended = True
             self._set_waiting_for_io(False)
             self._set_waiting_for_page(False)
@@ -137,19 +169,31 @@ class Process(GameObject):
 
     def _terminate_by_user(self):
         if self._process_manager.terminate_process(self, True):
+            event_manager.event_process_killed(self._pid)
             self._has_ended = True
             self._set_waiting_for_io(False)
             self._set_waiting_for_page(False)
             self._starvation_level = 6
             for page in self._pages:
+                event_manager.event_page_free(page.pid, page.idx)
                 self._page_manager.delete_page(page)
+            del Process.Processes[self._pid]
 
     def _check_if_clicked_on(self, event):
+        if self.starvation_level >= 6:
+            return False
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self.starvation_level < 6 and self._view.collides(*event.getProperty('position'))
+            return self._view.collides(*event.getProperty('position'))
+        if event.type == GameEventType.SCRIPT_ACTION:
+            return (
+                event.getProperty('type').lower == 'process'
+                and
+                event.getProperty('pid') == self.pid
+            )
+
         return False
 
-    def _on_click(self):
+    def onClick(self):
         if self.has_cpu:
             self.yield_cpu()
         else:
@@ -158,7 +202,7 @@ class Process(GameObject):
     def update(self, current_time, events):
         for event in events:
             if self._check_if_clicked_on(event):
-                self._on_click()
+                self.onClick()
 
         if not self.has_ended:
             pages_in_swap = 0
@@ -177,18 +221,21 @@ class Process(GameObject):
                     if randint(1, 100) <= self._io_probability_numerator:
                         self._wait_for_io()
                     if len(self._pages) < 4 and randint(1, 20) == 1:
-                        new_page = self._page_manager.create_page(self._pid)
+                        new_page = self._page_manager.create_page(self._pid, len(self._pages))
                         self._pages.append(new_page)
                         new_page.in_use = True
+                        event_manager.event_page_new(page.pid, page.idx, page.in_swap, page.in_use)
                     elif self._current_state_duration >= 1 and randint(1, 100) == 1:
                         self._terminate_gracefully()
                     elif self._current_state_duration == 5:
                         self._starvation_level = 0
+                        event_manager.event_process_starvation(self._pid, self._starvation_level)
 
                 else:
                     if self._current_state_duration > 0 and self._current_state_duration % 10 == 0:
                         if self._starvation_level < 5:
                             self._starvation_level += 1
+                            event_manager.event_process_starvation(self._pid, self._starvation_level)
                         else:
                             self._terminate_by_user()
 

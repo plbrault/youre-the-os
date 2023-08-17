@@ -3,6 +3,8 @@ from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 
+from lib import event_manager
+
 class PageManager(GameObject):
     _TOTAL_ROWS = 11
 
@@ -57,8 +59,8 @@ class PageManager(GameObject):
         else:
             self._swap_is_enabled = False
 
-    def create_page(self, pid):
-        page = Page(pid, self)
+    def create_page(self, pid, idx):
+        page = Page(pid, idx, self)
         page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
@@ -75,6 +77,7 @@ class PageManager(GameObject):
                     page_created = True
                     break
         self.children.append(page)
+        Page.Pages[(page.pid, page.idx)] = page
         return page
 
     def swap_page(self, page):
@@ -94,6 +97,7 @@ class PageManager(GameObject):
                         ram_slot.page = page
                         page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
                         break
+                event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
                 page._in_swap = False
         else:
             for swap_slot in self._swap_slots:
@@ -110,6 +114,7 @@ class PageManager(GameObject):
                         swap_slot.page = page
                         page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
                         break
+                event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
                 page._in_swap = True
 
     def delete_page(self, page):
@@ -118,3 +123,4 @@ class PageManager(GameObject):
                 ram_slot.page = None
                 break
         self.children.remove(page)
+        del Page.Pages[(page.pid, page.idx)]

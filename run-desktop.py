@@ -3,5 +3,6 @@ import sys
 
 subprocess.run([
     'python',
-    'main.py'
+    'main.py',
+    *sys.argv[1:]
 ], cwd='src')

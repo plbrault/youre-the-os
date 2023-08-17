@@ -126,10 +126,10 @@ class MainMenu(Scene):
         self._key_binding_dialog = None
 
     def _start_game(self, config):
-            if self._custom_settings_dialog is not None:
-                self._custom_config = self._custom_settings_dialog.config
-            self._scenes['game'].config = config
-            self._scenes['game'].start()
+        if self._custom_settings_dialog is not None:
+            self._custom_config = self._custom_settings_dialog.config
+        self._scenes['game'].config = config
+        self._scenes['game'].start()
 
     def _start_how_to_play(self):
         self._scenes['how_to_play'].start()

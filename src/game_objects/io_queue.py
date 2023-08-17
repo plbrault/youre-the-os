@@ -4,14 +4,20 @@ from random import randint
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.io_queue_view import IoQueueView
+from lib import event_manager
 
 class IoQueue(GameObject):
+
+    Instance = None
+
     def __init__(self):
         self._subscriber_queue = SimpleQueue()
         self._event_count = 0
         self._last_update_time = 0
 
         super().__init__(IoQueueView(self))
+
+        IoQueue.Instance = self
 
     def wait_for_event(self, callback):
         self._subscriber_queue.put(callback)
@@ -31,13 +37,13 @@ class IoQueue(GameObject):
             return self._view.collides(*event.getProperty('position'))
         return False
 
-    def _onClick(self):
+    def onClick(self):
         self._process_events()
 
     def update(self, current_time, events):
         for event in events:
             if self._checkIfClickedOn(event):
-                self._onClick()
+                self.onClick()
             if event.type == GameEventType.KEY_UP:
                 if event.getProperty('key') == 'space':
                     self._process_events()
@@ -47,3 +53,4 @@ class IoQueue(GameObject):
 
             if self._event_count < self._subscriber_queue.qsize() and randint(1, 3) == 3:
                 self._event_count = randint(self._event_count + 1, self._subscriber_queue.qsize())
+                event_manager.event_io_queue(self._event_count)
