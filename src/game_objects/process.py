@@ -62,23 +62,7 @@ class Process(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
     
-    def _update_blocking_condition(self, update_fn):
-        was_blocked = self.is_blocked
-        update_fn()
-        if was_blocked != self.is_blocked:
-            self._current_state_duration = 0
-    
-    def _set_waiting_for_io(self, waiting_for_io):
-        def update_fn():
-            self._is_waiting_for_io = waiting_for_io
-        self._update_blocking_condition(update_fn)
-        
-    def _set_waiting_for_page(self, waiting_for_page):
-        def update_fn():
-            self._is_waiting_for_page = waiting_for_page
-        self._update_blocking_condition(update_fn)
-
-    def _use_cpu(self):
+    def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
                 if not cpu.has_process:
@@ -99,7 +83,7 @@ class Process(GameObject):
                 for page in self._pages:
                     page.in_use = True
 
-    def _yield_cpu(self):
+    def yield_cpu(self):
         if self.has_cpu:
             self._has_cpu = False
             self._current_state_duration = 0
@@ -120,6 +104,22 @@ class Process(GameObject):
                         slot.process = self
                         self.view.set_target_xy(slot.view.x, slot.view.y)
                         break
+    
+    def _update_blocking_condition(self, update_fn):
+        was_blocked = self.is_blocked
+        update_fn()
+        if was_blocked != self.is_blocked:
+            self._current_state_duration = 0
+    
+    def _set_waiting_for_io(self, waiting_for_io):
+        def update_fn():
+            self._is_waiting_for_io = waiting_for_io
+        self._update_blocking_condition(update_fn)
+        
+    def _set_waiting_for_page(self, waiting_for_page):
+        def update_fn():
+            self._is_waiting_for_page = waiting_for_page
+        self._update_blocking_condition(update_fn)
 
     def _wait_for_io(self):
         self._set_waiting_for_io(True)
@@ -151,9 +151,9 @@ class Process(GameObject):
 
     def _on_click(self):
         if self.has_cpu:
-            self._yield_cpu()
+            self.yield_cpu()
         else:
-            self._use_cpu()
+            self.use_cpu()
 
     def update(self, current_time, events):
         for event in events:
