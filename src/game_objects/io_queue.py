@@ -20,24 +20,27 @@ class IoQueue(GameObject):
     def event_count(self):
         return self._event_count
 
+    def _process_events(self):
+        while self.event_count > 0:
+            self._event_count -= 1
+            callback = self._subscriber_queue.get()
+            callback()
+
     def _checkIfClickedOn(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
             return self._view.collides(*event.getProperty('position'))
         return False
 
     def _onClick(self):
-        while self.event_count > 0:
-            self._event_count -= 1
-            callback = self._subscriber_queue.get()
-            callback()
+        self._process_events()
 
     def update(self, current_time, events):
         for event in events:
-            if event.type == GameEventType.KEY_UP:
-                if event.getProperty('key') == 'CTRL':
-                    self._onClick()
-            elif self._checkIfClickedOn(event):
+            if self._checkIfClickedOn(event):
                 self._onClick()
+            if event.type == GameEventType.KEY_UP:
+                if event.getProperty('key') == 'space':
+                    self._process_events()
 
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
