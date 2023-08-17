@@ -182,6 +182,8 @@ class ProcessManager(GameObject):
                     cpu_id = int(event.getProperty('key')) - 1
                     if cpu_id == -1:
                         cpu_id = 9
+                    if event.getProperty('shift'):
+                        cpu_id += 10
                     if cpu_id < len(self._cpu_list):
                         cpu = self._cpu_list[cpu_id]
                         if cpu.has_process:

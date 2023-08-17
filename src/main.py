@@ -40,6 +40,7 @@ FPS = 60
 
 async def main():
     mouse_down = False
+    shift_down = False
     number_keys = list(map(str, range(0, 10)))
     
     while True:      
@@ -53,8 +54,13 @@ async def main():
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_down = False
                 events.append(GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': event.pos }))
+            elif event.type == pygame.KEYDOWN:
+                if pygame.key.name(event.key).endswith('shift'):
+                    shift_down = True
             elif event.type == pygame.KEYUP:
-                events.append(GameEvent(GameEventType.KEY_UP, { 'key': pygame.key.name(event.key) }))  
+                if pygame.key.name(event.key).endswith('shift'):
+                    shift_down = False
+                events.append(GameEvent(GameEventType.KEY_UP, { 'key': pygame.key.name(event.key), 'shift': shift_down }))   
             elif event.type == pygame.MOUSEMOTION and mouse_down:
                 events.append(GameEvent(GameEventType.MOUSE_LEFT_DRAG, { 'position': event.pos }))
                     
