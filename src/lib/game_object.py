@@ -8,7 +8,7 @@ class GameObject(ABC):
     @property
     def view(self):
         return self._view
-    
+
     @property
     def children(self):
         return self._children

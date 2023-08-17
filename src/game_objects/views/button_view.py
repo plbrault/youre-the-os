@@ -8,14 +8,14 @@ class ButtonView(Drawable):
     def __init__(self, button):
         self._button = button
         super().__init__()
-        
+
         self._min_width = 0
         self._text_surface = FONT_PRIMARY_LARGE.render(self._button.text.upper(), False, Color.WHITE)
 
     @property
     def min_width(self):
         return self._min_width
-    
+
     @min_width.setter
     def min_width(self, value):
         self._min_width = value

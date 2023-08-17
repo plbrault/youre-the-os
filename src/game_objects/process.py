@@ -21,11 +21,11 @@ class Process(GameObject):
 
         self._last_update_time = 0
         self._current_state_duration = 0
-        
+
         self._display_blink_color = False
-        
+
         self._pages = []
-        
+
         self._io_probability_numerator = int(game.config['io_probability'] * 100)
 
         super().__init__(ProcessView(self))
@@ -41,7 +41,7 @@ class Process(GameObject):
     @property
     def is_waiting_for_io(self):
         return self._is_waiting_for_io
-    
+
     @property
     def is_waiting_for_page(self):
         return self._is_waiting_for_page
@@ -56,12 +56,12 @@ class Process(GameObject):
 
     @property
     def starvation_level(self):
-        return self._starvation_level   
-    
+        return self._starvation_level
+
     @property
     def display_blink_color(self):
         return self._display_blink_color
-    
+
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
@@ -78,7 +78,7 @@ class Process(GameObject):
                         break
                 if len(self._pages) == 0:
                     num_pages = round(sqrt(randint(1, 20))) # Generate a number of pages between 1 and 4 with a higher probability for higher numbers
-                    for i in range(num_pages): 
+                    for i in range(num_pages):
                         self._pages.append(self._page_manager.create_page(self._pid))
                 for page in self._pages:
                     page.in_use = True
@@ -104,18 +104,18 @@ class Process(GameObject):
                         slot.process = self
                         self.view.set_target_xy(slot.view.x, slot.view.y)
                         break
-    
+
     def _update_blocking_condition(self, update_fn):
         was_blocked = self.is_blocked
         update_fn()
         if was_blocked != self.is_blocked:
             self._current_state_duration = 0
-    
+
     def _set_waiting_for_io(self, waiting_for_io):
         def update_fn():
             self._is_waiting_for_io = waiting_for_io
         self._update_blocking_condition(update_fn)
-        
+
     def _set_waiting_for_page(self, waiting_for_page):
         def update_fn():
             self._is_waiting_for_page = waiting_for_page
@@ -167,10 +167,10 @@ class Process(GameObject):
                     if page.in_swap:
                         pages_in_swap += 1
             self._set_waiting_for_page(pages_in_swap > 0)
-            
+
             if current_time >= self._last_update_time + 1000:
                 self._last_update_time = current_time
-                    
+
                 self._current_state_duration += 1
 
                 if self.has_cpu and not self.is_blocked:
@@ -209,7 +209,7 @@ class Process(GameObject):
                     self.view.y += min(self._ANIMATION_SPEED, self.view.target_y - self.view.y)
                 if self.view.y > self.view.target_y:
                     self.view.y -= min(self._ANIMATION_SPEED, self.view.y - self.view.target_y)
-                    
+
         if self._is_waiting_for_page:
             self._display_blink_color = (int(current_time / 200) % 2 == 1)
         else:

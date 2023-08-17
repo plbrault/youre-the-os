@@ -7,9 +7,9 @@ class PageManagerView(Drawable):
     def __init__(self, page_manager):
         self._page_manager = page_manager
         super().__init__()
-        
+
         self._pages_in_ram_text_surface = FONT_PRIMARY_LARGE.render('Memory Pages in RAM :', False, Color.WHITE)
-        self._pages_in_swap_space_text_surface = FONT_PRIMARY_LARGE.render('Memory Pages on Disk :', False, Color.WHITE)        
+        self._pages_in_swap_space_text_surface = FONT_PRIMARY_LARGE.render('Memory Pages on Disk :', False, Color.WHITE)
 
     @property
     def width(self):
