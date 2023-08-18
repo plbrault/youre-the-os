@@ -72,10 +72,10 @@ class ProcessView(Drawable):
         else:
             color = _starvation_colors[self._process.starvation_level]
             starvation_emoji_surface = _starvation_emojis[self._process.starvation_level]
-            
+
         if self._process.display_blink_color:
             color = Color.BLUE
-        
+
         pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
         surface.blit(starvation_emoji_surface, (self._x, self._y + 2))
         surface.blit(self._pid_text_surface, (self._x + 28, self._y + 5))

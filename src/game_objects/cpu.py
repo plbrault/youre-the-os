@@ -26,4 +26,3 @@ class Cpu(GameObject):
 
     def update(self, current_time, events):
         pass
-    

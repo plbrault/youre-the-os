@@ -15,11 +15,11 @@ from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=default_difficulty['config']):      
+    def __init__(self, screen, scenes, config=default_difficulty['config']):
         self._config = config
-               
+
         self._current_time = 0
-        
+
         self._process_manager = None
         self._page_manager = None
 
@@ -34,60 +34,60 @@ class Game(Scene):
 
     def setup(self):
         self._scene_objects = []
-        
+
         self._in_game_menu_is_open = False
         self._in_game_menu_dialog = None
-        
+
         self._game_over = False
         self._game_over_time = None
         self._game_over_dialog = None
-        
+
         self._process_manager = ProcessManager(self)
         self._page_manager = PageManager(self)
-        
+
         self._process_manager.setup()
         self._scene_objects.append(self._process_manager)
-        
+
         self._page_manager.setup()
         self._scene_objects.append(self._page_manager)
-        
+
         self._score_manager = ScoreManager(self)
         self._scene_objects.append(self._score_manager)
-        
+
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._scene_objects.append(self._uptime_manager)
-        
+
         open_in_game_menu_button = Button('Menu', self._open_in_game_menu)
         open_in_game_menu_button.view.set_xy(
             self._screen.get_width() - open_in_game_menu_button.view.width - 10,
             10
         )
         self._scene_objects.append(open_in_game_menu_button)
-   
+
     @property
     def config(self):
         return self._config
-    
+
     @config.setter
     def config(self, value):
         self._config = value
-   
+
     @property
     def game_over(self):
         return self._game_over
-    
+
     @game_over.setter
     def game_over(self, value):
         self._game_over = value
-        
+
     @property
     def process_manager(self):
         return self._process_manager
-    
+
     @property
     def page_manager(self):
         return self._page_manager
-   
+
     def _open_in_game_menu(self):
         self._in_game_menu_is_open = True
         if self._in_game_menu_dialog is None:
@@ -98,19 +98,19 @@ class Game(Scene):
             )
             self._scene_objects.append(self._in_game_menu_dialog)
         self._uptime_manager.pause()
-        
+
     def _close_in_game_menu(self):
         self._in_game_menu_is_open = False
         self._scene_objects.remove(self._in_game_menu_dialog)
         self._in_game_menu_dialog = None
         self._uptime_manager.resume()
-        
+
     def _return_to_main_menu(self):
         self._scenes['main_menu'].start()
 
     def update(self, current_time, events):
         dialog = None
-            
+
         if self._in_game_menu_is_open:
             dialog = self._in_game_menu_dialog
         elif self._game_over:
@@ -128,7 +128,7 @@ class Game(Scene):
                     )
                     self._scene_objects.append(self._game_over_dialog)
                 dialog = self._game_over_dialog
-        
+
         if dialog is not None:
             dialog.update(current_time, events)
         else:

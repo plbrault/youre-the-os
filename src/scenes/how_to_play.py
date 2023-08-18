@@ -12,7 +12,7 @@ _parts = [
         [
             'In this game, you are the operating system of a computer.',
             'You have to manage processes, memory, and input/output (I/O) events.'
-        ], 
+        ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_0_0.png'))
         ]
@@ -139,7 +139,7 @@ _parts = [
             pygame.image.load(path.join('assets', 'how_to_play_13_0.png'))
         ],
         animation_interval=200
-    ),    
+    ),
     HowToPlayPart(
         [
             'Once the number of killed processes reaches 10, the user gets angry and reboots you.',
@@ -154,34 +154,34 @@ _parts = [
 class HowToPlay(Scene):
     def __init__(self, screen, scenes):
         super().__init__(screen, scenes, background_color=Color.LIGHT_GREY)
-        
+
         self._parts = []
         self._current_part_id = 0
         self._previous_button = None
         self._next_button = None
-        
-    def setup(self):       
+
+    def setup(self):
         self._scene_objects = []
-        
+
         self._parts = _parts
-        
+
         self._current_part_id = 0
         self._scene_objects.append(self._parts[self._current_part_id])
-        
+
         self._previous_button = Button('<', self._go_to_previous_part)
         self._previous_button.view.set_xy(
             52,
             self._screen.get_height() - 78
         )
         self._scene_objects.append(self._previous_button)
-        
+
         self._next_button = Button('>', self._go_to_next_part)
         self._next_button.view.set_xy(
             self._screen.get_width() - self._next_button.view.width - 52,
             self._screen.get_height() - 78
         )
         self._scene_objects.append(self._next_button)
-        
+
     def _go_to_previous_part(self):
         if self._current_part_id == 0:
             self._return_to_main_menu()
@@ -189,14 +189,14 @@ class HowToPlay(Scene):
             self._scene_objects.remove(self._previous_button)
             self._scene_objects.remove(self._next_button)
             self._scene_objects.remove(self._parts[self._current_part_id])
-            
+
             self._current_part_id -= 1
             self._parts[self._current_part_id].initial_time = self.current_time
-            
+
             self._scene_objects.append(self._parts[self._current_part_id])
             self._scene_objects.append(self._previous_button)
             self._scene_objects.append(self._next_button)
-        
+
     def _go_to_next_part(self):
         if self._current_part_id == len(self._parts) - 1:
             self._return_to_main_menu()
@@ -204,17 +204,17 @@ class HowToPlay(Scene):
             self._scene_objects.remove(self._previous_button)
             self._scene_objects.remove(self._next_button)
             self._scene_objects.remove(self._parts[self._current_part_id])
-            
+
             self._current_part_id += 1
             self._parts[self._current_part_id].initial_time = self.current_time
-            
+
             self._scene_objects.append(self._parts[self._current_part_id])
             self._scene_objects.append(self._previous_button)
             self._scene_objects.append(self._next_button)
-    
+
     def _return_to_main_menu(self):
         self._scenes['main_menu'].start()
-    
+
     def update(self, current_time, events):
         for game_object in self._scene_objects:
             game_object.update(current_time, events)
