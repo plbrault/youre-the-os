@@ -180,10 +180,8 @@ class Process(GameObject):
             del Process.Processes[self._pid]
 
     def _check_if_clicked_on(self, event):
-        if self.starvation_level >= 6:
-            return False
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self._view.collides(*event.getProperty('position'))
+            return self.starvation_level < 6 and self._view.collides(*event.getProperty('position'))
 
         return False
 
