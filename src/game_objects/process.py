@@ -184,12 +184,6 @@ class Process(GameObject):
             return False
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
             return self._view.collides(*event.getProperty('position'))
-        if event.type == GameEventType.SCRIPT_ACTION:
-            return (
-                event.getProperty('type').lower == 'process'
-                and
-                event.getProperty('pid') == self.pid
-            )
 
         return False
 
