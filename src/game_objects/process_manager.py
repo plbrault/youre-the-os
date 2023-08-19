@@ -109,14 +109,14 @@ class ProcessManager(GameObject):
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
-                        process_slot_id = id
+                        process_slot_id = i
                         break
 
             pid = self._next_pid
             self._next_pid += 1
 
             process = Process(pid, self._game)
-            process_slot = self.process_slots[i]
+            process_slot = self.process_slots[process_slot_id]
             process_slot.process = process
             self.children.append(process)
             self._alive_process_list.append(process)
@@ -126,8 +126,7 @@ class ProcessManager(GameObject):
             process.view.target_y = process_slot.view.y
 
             return True
-        else:
-            return False
+        return False
 
     def terminate_process(self, process, by_user):
         can_terminate = False
