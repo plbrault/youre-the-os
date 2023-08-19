@@ -54,12 +54,16 @@ class CustomSettingsDialog(GameObject):
     @property
     def config(self):
         config = {
-            'num_cpus': int(self._num_cpus_selector.selected_option),
-            'num_processes_at_startup': int(self._num_processes_selector.selected_option),
-            'num_ram_rows': int(self._num_ram_rows_selector.selected_option),
-            'new_process_probability': self._new_process_probability_selector.selected_option_id * 0.05,
-            'io_probability': self._io_probability_selector.selected_option_id * 0.05
-        }
+            'num_cpus': int(
+                self._num_cpus_selector.selected_option),
+            'num_processes_at_startup': int(
+                self._num_processes_selector.selected_option),
+            'num_ram_rows': int(
+                self._num_ram_rows_selector.selected_option),
+            'new_process_probability': self._new_process_probability_selector.selected_option_id *
+            0.05,
+            'io_probability': self._io_probability_selector.selected_option_id *
+            0.05}
         return config
 
     def update(self, current_time, events):

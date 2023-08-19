@@ -30,5 +30,6 @@ class MainMenuTitleView(Drawable):
     def draw(self, surface):
         surface.blit(self._icon, (self.x + (self.width -
                      self._icon.get_width()) / 2, self.y))
-        surface.blit(self._text, (self.x + (self.width - self._text.get_width()
-                                            ) / 2, self.y + self._icon.get_height() + 20))
+        surface.blit(self._text,
+                     (self.x + (self.width - self._text.get_width()) / 2,
+                      self.y + self._icon.get_height() + 20))

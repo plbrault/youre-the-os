@@ -22,5 +22,14 @@ class InGameMenuDialogView(Drawable):
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
             self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(
-            self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
+        pygame.draw.rect(
+            surface,
+            (70,
+             70,
+             70),
+            pygame.Rect(
+                self.x + 2,
+                self.y + 2,
+                self.width - 4,
+                self.height - 4),
+            border_radius=3)

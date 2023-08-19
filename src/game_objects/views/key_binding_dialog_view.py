@@ -26,14 +26,21 @@ class KeyBindingDialogView(Drawable):
 
         self._binding_explanations = [
             FONT_SECONDARY_SMALL.render(
-                'Process I/O events', True, Color.WHITE),
+                'Process I/O events',
+                True,
+                Color.WHITE),
             FONT_SECONDARY_SMALL.render(
-                'Remove process from a CPU between #1 and #9', True, Color.WHITE),
+                'Remove process from a CPU between #1 and #9',
+                True,
+                Color.WHITE),
             FONT_SECONDARY_SMALL.render(
-                'Remove process from CPU #10', True, Color.WHITE),
+                'Remove process from CPU #10',
+                True,
+                Color.WHITE),
             FONT_SECONDARY_SMALL.render(
-                'Remove process from a CPU between #11 and #16', True, Color.WHITE)
-        ]
+                'Remove process from a CPU between #11 and #16',
+                True,
+                Color.WHITE)]
 
     @property
     def width(self):
@@ -48,8 +55,17 @@ class KeyBindingDialogView(Drawable):
 
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
             self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(
-            self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
+        pygame.draw.rect(
+            surface,
+            (70,
+             70,
+             70),
+            pygame.Rect(
+                self.x + 2,
+                self.y + 2,
+                self.width - 4,
+                self.height - 4),
+            border_radius=3)
 
         surface.blit(self._title_text, (self.x + (self.width -
                      self._title_text.get_width()) / 2, self.y + 30))

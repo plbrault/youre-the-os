@@ -19,5 +19,13 @@ class UptimeManagerView(Drawable):
             'Uptime : ' + self._uptime_manager.uptime_text)[1]
 
     def draw(self, surface):
-        surface.blit(FONT_PRIMARY_MEDIUM.render(
-            'Uptime : ' + self._uptime_manager.uptime_text, False, Color.WHITE), (512 - self.width / 2, 10))
+        surface.blit(
+            FONT_PRIMARY_MEDIUM.render(
+                'Uptime : ' +
+                self._uptime_manager.uptime_text,
+                False,
+                Color.WHITE),
+            (512 -
+             self.width /
+             2,
+             10))

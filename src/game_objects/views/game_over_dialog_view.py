@@ -32,8 +32,17 @@ class GameOverDialogView(Drawable):
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
             self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(
-            self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
+        pygame.draw.rect(
+            surface,
+            (70,
+             70,
+             70),
+            pygame.Rect(
+                self.x + 2,
+                self.y + 2,
+                self.width - 4,
+                self.height - 4),
+            border_radius=3)
 
         surface.blit(self._main_text_surface, (self.x + (self.width -
                      self._main_text_surface.get_width()) / 2, self.y + 20))
@@ -41,11 +50,21 @@ class GameOverDialogView(Drawable):
         surface.blit(self._image, (self._x + 2, self._y +
                      self._main_text_surface.get_height() + 40))
 
-        surface.blit(self._uptime_text_surface, (
-            self.x + 20,
-            self.y + self._main_text_surface.get_height() + self._image.get_height() + 80
-        ))
-        surface.blit(self._score_text_surface, (
-            self.x + self.width - self._score_text_surface.get_width() - 20,
-            self.y + self._main_text_surface.get_height() + self._image.get_height() + 80
-        ))
+        surface.blit(
+            self._uptime_text_surface,
+            (self.x +
+             20,
+             self.y +
+             self._main_text_surface.get_height() +
+             self._image.get_height() +
+             80))
+        surface.blit(
+            self._score_text_surface,
+            (self.x +
+             self.width -
+             self._score_text_surface.get_width() -
+             20,
+             self.y +
+             self._main_text_surface.get_height() +
+             self._image.get_height() +
+             80))

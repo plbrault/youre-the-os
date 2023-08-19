@@ -48,7 +48,8 @@ class PageManager(GameObject):
 
         if num_swap_rows > 0:
             self._pages_in_swap_label_xy = (
-                self._game.process_manager.view.width, 164 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
+                self._game.process_manager.view.width,
+                164 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
 
             for row in range(num_swap_rows):
                 for column in range(num_cols):

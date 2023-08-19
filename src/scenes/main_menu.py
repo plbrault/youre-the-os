@@ -33,8 +33,7 @@ class MainMenu(Scene):
         difficulty_selection_label = DifficultySelectionLabel()
         difficulty_selection_label.view.set_xy(
             (self._screen.get_width() - difficulty_selection_label.view.width) / 2,
-            title.view.y + title.view.height + 50
-        )
+            title.view.y + title.view.height + 50)
         self._scene_objects.append(difficulty_selection_label)
 
         difficulty_level_names = list(
@@ -43,15 +42,13 @@ class MainMenu(Scene):
         self._difficulty_selector = OptionSelector(difficulty_level_names, 1)
         self._difficulty_selector.view.set_xy(
             (self._screen.get_width() - self._difficulty_selector.view.width) / 2,
-            difficulty_selection_label.view.y + difficulty_selection_label.view.height + 20
-        )
+            difficulty_selection_label.view.y + difficulty_selection_label.view.height + 20)
         self._scene_objects.append(self._difficulty_selector)
 
         play_button = Button('Play', self._on_start_button_click)
         play_button.view.set_xy(
             (self._screen.get_width() - play_button.view.width) / 2,
-            self._difficulty_selector.view.y + self._difficulty_selector.view.height + 20
-        )
+            self._difficulty_selector.view.y + self._difficulty_selector.view.height + 20)
         self._scene_objects.append(play_button)
 
         how_to_play_button = Button('How to Play', self._start_how_to_play)
@@ -97,8 +94,7 @@ class MainMenu(Scene):
         )
         self._custom_settings_dialog.view.set_xy(
             self._screen.get_width() / 2 - self._custom_settings_dialog.view.width / 2,
-            self._screen.get_height() / 2 - self._custom_settings_dialog.view.height / 2
-        )
+            self._screen.get_height() / 2 - self._custom_settings_dialog.view.height / 2)
         self._scene_objects.append(self._custom_settings_dialog)
 
     def _open_about_dialog(self):
@@ -118,8 +114,7 @@ class MainMenu(Scene):
             self._close_key_binding_dialog)
         self._key_binding_dialog.view.set_xy(
             self._screen.get_width() / 2 - self._key_binding_dialog.view.width / 2,
-            self._screen.get_height() / 2 - self._key_binding_dialog.view.height / 2
-        )
+            self._screen.get_height() / 2 - self._key_binding_dialog.view.height / 2)
         self._scene_objects.append(self._key_binding_dialog)
 
     def _close_custom_settings_dialog(self):

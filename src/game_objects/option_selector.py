@@ -60,7 +60,10 @@ class OptionSelector(GameObject):
     def update(self, current_time, events):
         self._previous_button.view.set_xy(self.view.x, self.view.y)
         self._next_button.view.set_xy(
-            self.view.x + self.view.width - self._next_button.view.width, self.view.y)
+            self.view.x +
+            self.view.width -
+            self._next_button.view.width,
+            self.view.y)
 
         for child in self._children:
             child.update(current_time, events)

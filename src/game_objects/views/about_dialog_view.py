@@ -19,7 +19,9 @@ class AboutDialogView(Drawable):
         self._copyright_text = FONT_SECONDARY_SMALL.render(
             '© ' + COPYRIGHT_YEAR + ' Pier-Luc Brault', True, Color.WHITE)
         self._license_text = FONT_SECONDARY_XSMALL.render(
-            'This game is published under the GNU General Public License Version 3.', True, Color.WHITE)
+            'This game is published under the GNU General Public License Version 3.',
+            True,
+            Color.WHITE)
         self._license_url_text = FONT_SECONDARY_XSMALL.render(
             '<https://www.gnu.org/licenses/gpl-3.0.html>', True, Color.WHITE)
         self._asset_license_text = FONT_SECONDARY_XSMALL.render(
@@ -40,8 +42,17 @@ class AboutDialogView(Drawable):
 
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
             self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(
-            self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
+        pygame.draw.rect(
+            surface,
+            (70,
+             70,
+             70),
+            pygame.Rect(
+                self.x + 2,
+                self.y + 2,
+                self.width - 4,
+                self.height - 4),
+            border_radius=3)
 
         surface.blit(self._title_text, (self.x + (self.width -
                      self._title_text.get_width()) / 2, self.y + 30))

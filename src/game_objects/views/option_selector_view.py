@@ -38,9 +38,10 @@ class OptionSelectorView(Drawable):
     def width(self):
         return max(
             self.min_width,
-            self._max_text_width + self._option_selector.previous_button.view.width +
-            self._option_selector.next_button.view.width + 40
-        )
+            self._max_text_width +
+            self._option_selector.previous_button.view.width +
+            self._option_selector.next_button.view.width +
+            40)
 
     @property
     def height(self):

@@ -19,5 +19,13 @@ class ScoreManagerView(Drawable):
             'Score : ' + format(self._score_manager.score, '09'))[1]
 
     def draw(self, surface):
-        surface.blit(FONT_PRIMARY_MEDIUM.render(
-            'Score : ' + format(self._score_manager.score, '09'), False, Color.WHITE), (840, 10))
+        surface.blit(
+            FONT_PRIMARY_MEDIUM.render(
+                'Score : ' +
+                format(
+                    self._score_manager.score,
+                    '09'),
+                False,
+                Color.WHITE),
+            (840,
+             10))

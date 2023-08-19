@@ -223,5 +223,6 @@ class ProcessManager(GameObject):
         for game_object in self.children:
             game_object.update(current_time, events)
             if isinstance(
-                    game_object, Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
+                    game_object,
+                    Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
                 self.children.remove(game_object)
