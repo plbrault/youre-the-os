@@ -36,7 +36,7 @@ class Page(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK or event.type == GameEventType.MOUSE_LEFT_DRAG:
-            return self._view.collides(*event.getProperty('position'))
+            return self._view.collides(*event.get_property('position'))
         return False
 
     def _on_click(self):

@@ -152,7 +152,7 @@ class Process(GameObject):
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
             return self.starvation_level < 6 and self._view.collides(
-                *event.getProperty('position'))
+                *event.get_property('position'))
         return False
 
     def _on_click(self):

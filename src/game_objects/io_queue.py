@@ -29,7 +29,7 @@ class IoQueue(GameObject):
 
     def _checkIfClickedOn(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self._view.collides(*event.getProperty('position'))
+            return self._view.collides(*event.get_property('position'))
         return False
 
     def _onClick(self):
@@ -40,7 +40,7 @@ class IoQueue(GameObject):
             if self._checkIfClickedOn(event):
                 self._onClick()
             if event.type == GameEventType.KEY_UP:
-                if event.getProperty('key') == 'space':
+                if event.get_property('key') == 'space':
                     self._process_events()
 
         if current_time >= self._last_update_time + 1000:
