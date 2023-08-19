@@ -182,7 +182,8 @@ class ProcessManager(GameObject):
     def update(self, current_time, events):
         for event in events:
             if event.type == GameEventType.KEY_UP:
-                if len(event.getProperty('key')) == 1 and event.getProperty('key') >= '0' and event.getProperty('key') <= '9':
+                if len(event.getProperty('key')) == 1 and event.getProperty(
+                        'key') >= '0' and event.getProperty('key') <= '9':
                     cpu_id = int(event.getProperty('key')) - 1
                     if cpu_id == -1:
                         cpu_id = 9
@@ -207,17 +208,20 @@ class ProcessManager(GameObject):
                 self._game.game_over = True
                 return
 
-        if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - self._last_new_process_check >= 50:
+        if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - \
+                self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
             self._create_process()
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
-            if randint(1, 100) <= self._new_process_probability_numerator or current_time - self._last_process_creation >= self._max_wait_between_new_processes:
+            if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
+                    self._last_process_creation >= self._max_wait_between_new_processes:
                 self._create_process()
                 self._last_process_creation = current_time
 
         for game_object in self.children:
             game_object.update(current_time, events)
-            if isinstance(game_object, Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
+            if isinstance(
+                    game_object, Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
                 self.children.remove(game_object)

@@ -17,7 +17,8 @@ class OptionSelectorView(Drawable):
         for i, option in enumerate(self._option_selector.options):
             self._option_surfaces.append(FONT_SECONDARY_MEDIUM.render(
                 option.upper(), False, Color.WHITE))
-            if len(option) > len(self._option_selector.options[longest_option_id]):
+            if len(option) > len(
+                    self._option_selector.options[longest_option_id]):
                 longest_option_id = i
 
         self._max_text_width = self._option_surfaces[longest_option_id].get_width(
@@ -43,7 +44,8 @@ class OptionSelectorView(Drawable):
 
     @property
     def height(self):
-        return max(self._text_height, self._option_selector.previous_button.view.height)
+        return max(self._text_height,
+                   self._option_selector.previous_button.view.height)
 
     def draw(self, surface):
         text_surface = self._option_surfaces[self._option_selector.selected_option_id]

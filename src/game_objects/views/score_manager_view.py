@@ -10,11 +10,13 @@ class ScoreManagerView(Drawable):
 
     @property
     def width(self):
-        return FONT_PRIMARY_MEDIUM.size('Score : ' + format(self._score_manager.score, '09'))[0]
+        return FONT_PRIMARY_MEDIUM.size(
+            'Score : ' + format(self._score_manager.score, '09'))[0]
 
     @property
     def height(self):
-        return FONT_PRIMARY_MEDIUM.size('Score : ' + format(self._score_manager.score, '09'))[1]
+        return FONT_PRIMARY_MEDIUM.size(
+            'Score : ' + format(self._score_manager.score, '09'))[1]
 
     def draw(self, surface):
         surface.blit(FONT_PRIMARY_MEDIUM.render(

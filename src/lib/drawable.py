@@ -29,7 +29,8 @@ class Drawable(ABC):
         self.y = y
 
     def collides(self, x, y):
-        return pygame.Rect(self._x, self._y, self.width, self.height).collidepoint(x, y)
+        return pygame.Rect(self._x, self._y, self.width,
+                           self.height).collidepoint(x, y)
 
     @property
     @abstractmethod

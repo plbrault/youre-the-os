@@ -79,7 +79,8 @@ class Process(GameObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    # Generate a number of pages between 1 and 4 with a higher probability for higher numbers
+                    # Generate a number of pages between 1 and 4 with a higher
+                    # probability for higher numbers
                     num_pages = round(sqrt(randint(1, 20)))
                     for i in range(num_pages):
                         self._pages.append(
@@ -150,7 +151,8 @@ class Process(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self.starvation_level < 6 and self._view.collides(*event.getProperty('position'))
+            return self.starvation_level < 6 and self._view.collides(
+                *event.getProperty('position'))
         return False
 
     def _on_click(self):
