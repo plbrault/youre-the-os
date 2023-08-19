@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABC
+
 
 class GameObject(ABC):
     def __init__(self, view):

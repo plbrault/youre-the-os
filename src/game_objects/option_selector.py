@@ -1,11 +1,11 @@
-from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.option_selector_view import OptionSelectorView
 from game_objects.button import Button
 
+
 class OptionSelector(GameObject):
 
-    def __init__(self, options, default_option_id = 0):
+    def __init__(self, options, default_option_id=0):
         self._options = options
         self._selected_option_id = default_option_id
         super().__init__(OptionSelectorView(self))
@@ -58,7 +58,11 @@ class OptionSelector(GameObject):
 
     def update(self, current_time, events):
         self._previous_button.view.set_xy(self.view.x, self.view.y)
-        self._next_button.view.set_xy(self.view.x + self.view.width - self._next_button.view.width, self.view.y)
+        self._next_button.view.set_xy(
+            self.view.x +
+            self.view.width -
+            self._next_button.view.width,
+            self.view.y)
 
         for child in self._children:
             child.update(current_time, events)

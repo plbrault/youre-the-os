@@ -1,6 +1,7 @@
 from lib.game_object import GameObject
 from game_objects.views.cpu_view import CpuView
 
+
 class Cpu(GameObject):
     def __init__(self, cpu_id):
         self._cpu_id = cpu_id

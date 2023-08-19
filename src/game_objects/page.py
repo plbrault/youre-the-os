@@ -2,6 +2,7 @@ from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
 
+
 class Page(GameObject):
     def __init__(self, pid, page_manager):
         self._pid = pid
@@ -25,6 +26,10 @@ class Page(GameObject):
     def in_swap(self):
         return self._in_swap
 
+    @in_swap.setter
+    def in_swap(self, value):
+        self._in_swap = value
+
     @property
     def display_blink_color(self):
         return self._display_blink_color
@@ -34,8 +39,8 @@ class Page(GameObject):
         self._in_use = value
 
     def _check_if_clicked_on(self, event):
-        if event.type == GameEventType.MOUSE_LEFT_CLICK or event.type == GameEventType.MOUSE_LEFT_DRAG:
-            return self._view.collides(*event.getProperty('position'))
+        if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
+            return self._view.collides(*event.get_property('position'))
         return False
 
     def _on_click(self):
@@ -47,6 +52,6 @@ class Page(GameObject):
                 self._on_click()
 
         if self.in_use and self.in_swap:
-            self._display_blink_color = (int(current_time / 200) % 2 == 1)
+            self._display_blink_color = int(current_time / 200) % 2 == 1
         else:
             self._display_blink_color = False

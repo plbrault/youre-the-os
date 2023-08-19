@@ -1,5 +1,6 @@
 from lib.drawable import Drawable
 
+
 class PageSlotView(Drawable):
     def __init__(self):
         super().__init__()
