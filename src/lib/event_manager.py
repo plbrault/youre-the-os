@@ -30,7 +30,7 @@ _events = []
 
 def add_event(typ, data):
     _events.append(
-        SimpleNamespace(etype=typ.value, **data)
+        SimpleNamespace(etype=typ.name, **data)
     )
 
 def event_io_queue(count):
