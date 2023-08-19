@@ -13,19 +13,21 @@ from scene_manager import scene_manager
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 
-from lib import event_manager
 
-
-if len(sys.argv) > 1:
-    source_file = sys.argv[1]
-    if not path.isabs(source_file):
-        source_file = '../' + source_file
-    print('reading source file' , source_file)
-    with open(source_file) as fd:
-        source = fd.read()
-    source_compiled = compile(source, source_file, 'exec')
-else:
-    source_compiled = None
+def compile_auto_script():
+    if len(sys.argv) == 1:
+        return None
+    try:
+        source_file = sys.argv[1]
+        if not path.isabs(source_file):
+            source_file = '../' + source_file
+        print('reading source file' , source_file, file=sys.stderr)
+        with open(source_file, encoding="utf_8") as in_file:
+            source = in_file.read()
+        return compile(source, source_file, 'exec')
+    except (SyntaxError, ValueError):
+        print('Compilation failed, ignoring argument', file=sys.stderr)
+        return None
 
 
 pygame.init()
@@ -39,7 +41,7 @@ pygame.display.set_icon(icon)
 
 scenes = {}
 
-game_scene = Game(screen, scenes, script=source_compiled)
+game_scene = Game(screen, scenes, script=compile_auto_script())
 scenes['game'] = game_scene
 
 main_menu_scene = MainMenu(screen, scenes)

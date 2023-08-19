@@ -1,6 +1,7 @@
 from math import inf
 from random import randint
 
+from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.cpu import Cpu
@@ -9,7 +10,6 @@ from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
 from window_size import WINDOW_HEIGHT
-from lib import event_manager
 
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42

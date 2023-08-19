@@ -1,10 +1,10 @@
 from queue import SimpleQueue
 from random import randint
 
+from lib import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.io_queue_view import IoQueueView
-from lib import event_manager
 
 
 class IoQueue(GameObject):
@@ -38,13 +38,13 @@ class IoQueue(GameObject):
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def onClick(self):
+    def on_click(self):
         self._process_events()
 
     def update(self, current_time, events):
         for event in events:
-            if self._checkIfClickedOn(event):
-                self.onClick()
+            if self._check_if_clicked_on(event):
+                self.on_click()
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') == 'space':
                     self._process_events()

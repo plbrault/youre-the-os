@@ -1,8 +1,7 @@
-import pygame
 import sys
-from random import randint
-from types import SimpleNamespace
+import pygame
 
+from lib import event_manager
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
 from game_objects.button import Button
@@ -16,11 +15,9 @@ from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.page import Page
 
-from lib import event_manager
-
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=None):
+    def __init__(self, screen, scenes, config=None, script=None):
         self._config = config
         if self._config is None:
             self._config = default_difficulty['config']
@@ -77,20 +74,22 @@ class Game(Scene):
         # for automation
         self._script_callback = None
         if self._script:
-            g = {
+            # pylint: disable=exec-used
+            num_cols = PageManager.get_num_ram_cols()
+            script_globals = {
                 'num_cpus': self._config['num_cpus'],
-                'num_ram_pages': 16 * self._config['num_ram_rows'],
-                'num_swap_pages': 16 * (PageManager._TOTAL_ROWS - self._config['num_ram_rows']),
+                'num_ram_pages': num_cols * self._config['num_ram_rows'],
+                'num_swap_pages':
+                    num_cols * (PageManager.get_total_rows() - self._config['num_ram_rows']),
                 **{
                     v.name: v.value
                     for v in event_manager.etypes
                 }
             }
 
-            l = None#{}
-            exec(self._script, g, l)
+            exec(self._script, script_globals)
             try:
-                self._script_callback = g['run_os']
+                self._script_callback = script_globals['run_os']
             except KeyError:
                 pass
 
@@ -178,13 +177,13 @@ class Game(Scene):
             for event in self._get_script_events():
                 try:
                     if event['type'] == 'io_queue':
-                        IoQueue.Instance.onClick()
+                        IoQueue.Instance.on_click()
                     elif event['type'] == 'process':
-                        Process.Processes[event['pid']].onClick()
+                        Process.Processes[event['pid']].on_click()
                     elif event['type'] == 'page':
-                        Page.Pages[(event['pid'],event['idx'])].onClick()
-                except Exception as e:
-                    print(e.__class__.__name__, *e.args, event, file=sys.stderr)
+                        Page.Pages[(event['pid'],event['idx'])].on_click()
+                except Exception as exc: # pylint: disable=broad-exception-caught
+                    print(exc.__class__.__name__, *exc.args, event, file=sys.stderr)
             # now, update
             for game_object in self._scene_objects:
                 game_object.update(current_time, events)

@@ -1,10 +1,10 @@
 from math import sqrt
 from random import randint
 
+from lib import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
-from lib import event_manager
 
 class Process(GameObject):
     _ANIMATION_SPEED = 35
@@ -168,16 +168,17 @@ class Process(GameObject):
                 *event.get_property('position'))
         return False
 
-    def onClick(self):
+    def on_click(self):
         if self.has_cpu:
             self.yield_cpu()
         else:
             self.use_cpu()
 
     def update(self, current_time, events):
+        # pylint: disable=too-many-statements
         for event in events:
             if self._check_if_clicked_on(event):
-                self.onClick()
+                self.on_click()
 
         if not self.has_ended:
             pages_in_swap = 0
@@ -199,7 +200,8 @@ class Process(GameObject):
                         new_page = self._page_manager.create_page(self._pid, len(self._pages))
                         self._pages.append(new_page)
                         new_page.in_use = True
-                        event_manager.event_page_new(page.pid, page.idx, page.in_swap, page.in_use)
+                        event_manager.event_page_new(
+                            new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
                     elif self._current_state_duration >= 1 and randint(1, 100) == 1:
                         self._terminate_gracefully()
                     elif self._current_state_duration == 5:
@@ -210,7 +212,8 @@ class Process(GameObject):
                     if self._current_state_duration > 0 and self._current_state_duration % 10 == 0:
                         if self._starvation_level < 5:
                             self._starvation_level += 1
-                            event_manager.event_process_starvation(self._pid, self._starvation_level)
+                            event_manager.event_process_starvation(
+                                self._pid, self._starvation_level)
                         else:
                             self._terminate_by_user()
 

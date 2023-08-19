@@ -1,7 +1,7 @@
+from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
-from lib import event_manager
 
 
 class Page(GameObject):
@@ -54,13 +54,13 @@ class Page(GameObject):
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def onClick(self):
+    def on_click(self):
         self._page_manager.swap_page(self)
 
     def update(self, current_time, events):
         for event in events:
             if self._check_if_clicked_on(event):
-                self.onClick()
+                self.on_click()
 
         if self.in_use and self.in_swap:
             self._display_blink_color = int(current_time / 200) % 2 == 1

@@ -1,12 +1,12 @@
+from lib import event_manager
 from lib.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 
-from lib import event_manager
-
 class PageManager(GameObject):
     _TOTAL_ROWS = 11
+    _NUM_RAM_COLS = 16
 
     def __init__(self, game):
         self._game = game
@@ -19,6 +19,14 @@ class PageManager(GameObject):
         self._pages_in_swap_label_xy = None
 
         super().__init__(PageManagerView(self))
+
+    @classmethod
+    def get_total_rows(cls):
+        return cls._TOTAL_ROWS
+
+    @classmethod
+    def get_num_ram_cols(cls):
+        return cls._NUM_RAM_COLS
 
     @property
     def pages_in_ram_label_xy(self):
@@ -35,7 +43,7 @@ class PageManager(GameObject):
         num_ram_rows = self._game.config['num_ram_rows']
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
 
-        num_cols = 16
+        num_cols = PageManager._NUM_RAM_COLS
 
         for row in range(num_ram_rows):
             for column in range(num_cols):
