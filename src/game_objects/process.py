@@ -65,26 +65,6 @@ class Process(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
 
-    def _update_blocking_condition(self, update_fn):
-        was_blocked = self.is_blocked
-        update_fn()
-        if was_blocked != self.is_blocked:
-            self._current_state_duration = 0
-
-    def _set_waiting_for_io(self, waiting_for_io):
-        if self._is_waiting_for_io != waiting_for_io:
-            event_manager.event_process_wait_io(self._pid, waiting_for_io)
-        def update_fn():
-            self._is_waiting_for_io = waiting_for_io
-        self._update_blocking_condition(update_fn)
-
-    def _set_waiting_for_page(self, waiting_for_page):
-        if self._is_waiting_for_page != waiting_for_page:
-            event_manager.event_process_wait_page(self._pid, waiting_for_page)
-        def update_fn():
-            self._is_waiting_for_page = waiting_for_page
-        self._update_blocking_condition(update_fn)
-
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
