@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 class Color:
     ALMOST_BLACK = (25, 25, 25)
     BLACK = (0, 0, 0)

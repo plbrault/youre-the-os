@@ -35,7 +35,7 @@ class Page(GameObject):
         self._in_use = value
 
     def _check_if_clicked_on(self, event):
-        if event.type == GameEventType.MOUSE_LEFT_CLICK or event.type == GameEventType.MOUSE_LEFT_DRAG:
+        if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
             return self._view.collides(*event.get_property('position'))
         return False
 
@@ -48,6 +48,6 @@ class Page(GameObject):
                 self._on_click()
 
         if self.in_use and self.in_swap:
-            self._display_blink_color = (int(current_time / 200) % 2 == 1)
+            self._display_blink_color = int(current_time / 200) % 2 == 1
         else:
             self._display_blink_color = False

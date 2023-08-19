@@ -170,9 +170,15 @@ class ProcessManager(GameObject):
         return {
             'alive_process_count': len(self._alive_process_list),
             'alive_process_count_by_starvation_level': process_count_by_starvation_level,
-            'active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None and not cpu.process.has_ended]),
+            'active_process_count': len([
+                cpu for cpu in self._cpu_list
+                    if cpu.process is not None and not cpu.process.has_ended
+            ]),
             'active_process_count_by_starvation_level': active_process_count_by_starvation_level,
-            'blocked_active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None and cpu.process.is_blocked]),
+            'blocked_active_process_count': len([
+                cpu for cpu in self._cpu_list
+                    if cpu.process is not None and cpu.process.is_blocked
+            ]),
             'io_event_count': self._io_queue.event_count,
             'gracefully_terminated_process_count': self._gracefully_terminated_process_count,
             'user_terminated_process_count': self._user_terminated_process_count,
@@ -221,7 +227,9 @@ class ProcessManager(GameObject):
 
         for game_object in self.children:
             game_object.update(current_time, events)
-            if isinstance(
-                    game_object,
-                    Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
+            if (
+                isinstance(game_object, Process)
+                and game_object.has_ended
+                and game_object.view.y <= -game_object.view.height
+            ):
                 self.children.remove(game_object)
