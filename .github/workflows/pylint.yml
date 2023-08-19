@@ -13,7 +13,7 @@ jobs:
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
         command: sync --dev
-    - name: Build
+    - name: Run pylint
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
         command:  run pylint
