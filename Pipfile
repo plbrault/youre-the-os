@@ -8,6 +8,8 @@ pygame = "*"
 
 [dev-packages]
 pygbag = "*"
+pylint = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.11"
@@ -15,3 +17,4 @@ python_version = "3.11"
 [scripts]
 desktop = "python ./run-desktop.py"
 web = "python ./run-web.py"
+pylint = "pylint ./src"

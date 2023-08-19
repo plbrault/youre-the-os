@@ -56,6 +56,12 @@ pipenv run web build
 pipenv run web archive
 ```
 
+**Run linter:**
+
+```bash
+pipenv run pylint
+```
+
 ## License
 
 Copyright (c) 2023 Pier-Luc Brault <pier-luc@brault.me>

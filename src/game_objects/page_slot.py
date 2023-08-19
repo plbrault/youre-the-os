@@ -1,6 +1,7 @@
 from lib.game_object import GameObject
 from game_objects.views.page_slot_view import PageSlotView
 
+
 class PageSlot(GameObject):
     def __init__(self):
         self._page = None

@@ -29,7 +29,8 @@ class Process(GameObject):
 
         self._pages = []
 
-        self._io_probability_numerator = int(game.config['io_probability'] * 100)
+        self._io_probability_numerator = int(
+            game.config['io_probability'] * 100)
 
         super().__init__(ProcessView(self))
 
@@ -81,7 +82,9 @@ class Process(GameObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    num_pages = round(sqrt(randint(1, 20))) # Generate a number of pages between 1 and 4 with a higher probability for higher numbers
+                    # Generate a number of pages between 1 and 4 with a higher
+                    # probability for higher numbers
+                    num_pages = round(sqrt(randint(1, 20)))
                     for i in range(num_pages):
                         page = self._page_manager.create_page(self._pid, i)
                         self._pages.append(page)
@@ -161,8 +164,8 @@ class Process(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self.starvation_level < 6 and self._view.collides(*event.getProperty('position'))
-
+            return self.starvation_level < 6 and self._view.collides(
+                *event.get_property('position'))
         return False
 
     def onClick(self):
@@ -216,20 +219,24 @@ class Process(GameObject):
                 self.view.target_x = None
             else:
                 if self.view.x < self.view.target_x:
-                    self.view.x += min(self._ANIMATION_SPEED, self.view.target_x - self.view.x)
+                    self.view.x += min(self._ANIMATION_SPEED,
+                                       self.view.target_x - self.view.x)
                 if self.view.x > self.view.target_x:
-                    self.view.x -= min(self._ANIMATION_SPEED, self.view.x - self.view.target_x)
+                    self.view.x -= min(self._ANIMATION_SPEED,
+                                       self.view.x - self.view.target_x)
 
         if self.view.target_y is not None:
             if self.view.y == self.view.target_y:
                 self.view.target_y = None
             else:
                 if self.view.y < self.view.target_y:
-                    self.view.y += min(self._ANIMATION_SPEED, self.view.target_y - self.view.y)
+                    self.view.y += min(self._ANIMATION_SPEED,
+                                       self.view.target_y - self.view.y)
                 if self.view.y > self.view.target_y:
-                    self.view.y -= min(self._ANIMATION_SPEED, self.view.y - self.view.target_y)
+                    self.view.y -= min(self._ANIMATION_SPEED,
+                                       self.view.y - self.view.target_y)
 
         if self._is_waiting_for_page:
-            self._display_blink_color = (int(current_time / 200) % 2 == 1)
+            self._display_blink_color = int(current_time / 200) % 2 == 1
         else:
             self._display_blink_color = False

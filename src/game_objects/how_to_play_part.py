@@ -1,6 +1,6 @@
 from lib.game_object import GameObject
-from game_objects.button import Button
 from game_objects.views.how_to_play_part_view import HowToPlayPartView
+
 
 class HowToPlayPart(GameObject):
 
@@ -34,7 +34,8 @@ class HowToPlayPart(GameObject):
         return self._current_image_id
 
     def update(self, current_time, events):
-        self._current_image_id = int((current_time - self.initial_time) / self._animation_interval) % len(self._images)
+        self._current_image_id = int(
+            (current_time - self.initial_time) / self._animation_interval) % len(self._images)
 
         for child in self.children:
             child.update(current_time, events)

@@ -4,13 +4,11 @@ from random import randint
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.cpu import Cpu
-from game_objects.game_over_dialog import GameOverDialog
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
 from window_size import WINDOW_HEIGHT
-
 from lib import event_manager
 
 class ProcessManager(GameObject):
@@ -33,10 +31,12 @@ class ProcessManager(GameObject):
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
 
-        self._new_process_probability_numerator = int(game.config['new_process_probability'] * 100)
+        self._new_process_probability_numerator = int(
+            game.config['new_process_probability'] * 100)
 
         if self._new_process_probability_numerator > 0:
-            self._max_wait_between_new_processes = int(100 / self._new_process_probability_numerator * 1000)
+            self._max_wait_between_new_processes = int(
+                100 / self._new_process_probability_numerator * 1000)
         else:
             self._max_wait_between_new_processes = inf
 
@@ -104,31 +104,31 @@ class ProcessManager(GameObject):
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)
 
-    def _create_process(self, process_slot_id = None):
+    def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._MAX_PROCESSES:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
-                        process_slot_id = id
+                        process_slot_id = i
                         break
 
             pid = self._next_pid
             self._next_pid += 1
 
             process = Process(pid, self._game)
-            process_slot = self.process_slots[i]
+            process_slot = self.process_slots[process_slot_id]
             process_slot.process = process
             self.children.append(process)
             self._alive_process_list.append(process)
 
-            process.view.set_xy(process_slot.view.x, self.view.height + process.view.height)
+            process.view.set_xy(process_slot.view.x,
+                                self.view.height + process.view.height)
             process.view.target_y = process_slot.view.y
 
             event_manager.event_process_new(pid)
             Process.Processes[pid] = process
             return True
-        else:
-            return False
+        return False
 
     def terminate_process(self, process, by_user):
         can_terminate = False
@@ -171,9 +171,15 @@ class ProcessManager(GameObject):
         return {
             'alive_process_count': len(self._alive_process_list),
             'alive_process_count_by_starvation_level': process_count_by_starvation_level,
-            'active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None and not cpu.process.has_ended]),
+            'active_process_count': len([
+                cpu for cpu in self._cpu_list
+                    if cpu.process is not None and not cpu.process.has_ended
+            ]),
             'active_process_count_by_starvation_level': active_process_count_by_starvation_level,
-            'blocked_active_process_count': len([cpu for cpu in self._cpu_list if cpu.process is not None and cpu.process.is_blocked]),
+            'blocked_active_process_count': len([
+                cpu for cpu in self._cpu_list
+                    if cpu.process is not None and cpu.process.is_blocked
+            ]),
             'io_event_count': self._io_queue.event_count,
             'gracefully_terminated_process_count': self._gracefully_terminated_process_count,
             'user_terminated_process_count': self._user_terminated_process_count,
@@ -182,11 +188,12 @@ class ProcessManager(GameObject):
     def update(self, current_time, events):
         for event in events:
             if event.type == GameEventType.KEY_UP:
-                if len(event.getProperty('key')) == 1 and event.getProperty('key') >= '0' and event.getProperty('key') <= '9':
-                    cpu_id = int(event.getProperty('key')) - 1
+                if len(event.get_property('key')) == 1 and event.get_property(
+                        'key') >= '0' and event.get_property('key') <= '9':
+                    cpu_id = int(event.get_property('key')) - 1
                     if cpu_id == -1:
                         cpu_id = 9
-                    if event.getProperty('shift'):
+                    if event.get_property('shift'):
                         cpu_id += 10
                     if cpu_id < len(self._cpu_list):
                         cpu = self._cpu_list[cpu_id]
@@ -207,17 +214,23 @@ class ProcessManager(GameObject):
                 self._game.game_over = True
                 return
 
-        if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - self._last_new_process_check >= 50:
+        if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - \
+                self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
             self._create_process()
         elif current_time - self._last_new_process_check >= 1000:
             self._last_new_process_check = current_time
-            if randint(1, 100) <= self._new_process_probability_numerator or current_time - self._last_process_creation >= self._max_wait_between_new_processes:
+            if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
+                    self._last_process_creation >= self._max_wait_between_new_processes:
                 self._create_process()
                 self._last_process_creation = current_time
 
         for game_object in self.children:
             game_object.update(current_time, events)
-            if isinstance(game_object, Process) and game_object.has_ended and game_object.view.y <= -game_object.view.height:
+            if (
+                isinstance(game_object, Process)
+                and game_object.has_ended
+                and game_object.view.y <= -game_object.view.height
+            ):
                 self.children.remove(game_object)

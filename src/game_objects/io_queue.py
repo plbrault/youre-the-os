@@ -6,6 +6,7 @@ from lib.game_event_type import GameEventType
 from game_objects.views.io_queue_view import IoQueueView
 from lib import event_manager
 
+
 class IoQueue(GameObject):
 
     Instance = None
@@ -32,9 +33,9 @@ class IoQueue(GameObject):
             callback = self._subscriber_queue.get()
             callback()
 
-    def _checkIfClickedOn(self, event):
+    def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self._view.collides(*event.getProperty('position'))
+            return self._view.collides(*event.get_property('position'))
         return False
 
     def onClick(self):
@@ -45,12 +46,13 @@ class IoQueue(GameObject):
             if self._checkIfClickedOn(event):
                 self.onClick()
             if event.type == GameEventType.KEY_UP:
-                if event.getProperty('key') == 'space':
+                if event.get_property('key') == 'space':
                     self._process_events()
 
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
 
             if self._event_count < self._subscriber_queue.qsize() and randint(1, 3) == 3:
-                self._event_count = randint(self._event_count + 1, self._subscriber_queue.qsize())
+                self._event_count = randint(
+                    self._event_count + 1, self._subscriber_queue.qsize())
                 event_manager.event_io_queue(self._event_count)

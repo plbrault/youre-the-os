@@ -1,8 +1,7 @@
-from difficulty_levels import default_difficulty
 from lib.game_object import GameObject
 from game_objects.button import Button
-from game_objects.option_selector import OptionSelector
 from game_objects.views.key_binding_dialog_view import KeyBindingDialogView
+
 
 class KeyBindingDialog(GameObject):
 
@@ -14,7 +13,8 @@ class KeyBindingDialog(GameObject):
 
     def update(self, current_time, events):
         self._close_button.view.set_xy(
-            self.view.x + (self.view.width - self._close_button.view.width) / 2,
+            self.view.x + (self.view.width -
+                           self._close_button.view.width) / 2,
             self.view.y + self.view.height - self._close_button.view.height - 40
         )
 

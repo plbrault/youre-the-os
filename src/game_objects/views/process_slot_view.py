@@ -1,5 +1,6 @@
 from lib.drawable import Drawable
 
+
 class ProcessSlotView(Drawable):
     def __init__(self):
         super().__init__()
