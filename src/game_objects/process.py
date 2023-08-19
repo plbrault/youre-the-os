@@ -155,6 +155,11 @@ class Process(GameObject):
                 *event.get_property('position'))
         return False
 
+    def _check_if_in_motion(self):
+        if self._view.target_x is not None or self._view.target_y is not None:
+            return True
+        return False
+
     def _on_click(self):
         if self.has_cpu:
             self.yield_cpu()
@@ -162,9 +167,11 @@ class Process(GameObject):
             self.use_cpu()
 
     def update(self, current_time, events):
-        for event in events:
-            if self._check_if_clicked_on(event):
-                self._on_click()
+        if not self._check_if_in_motion():
+            for event in events:
+                if self._check_if_clicked_on(event):
+                        self._on_click()
+                        break
 
         if not self.has_ended:
             pages_in_swap = 0
