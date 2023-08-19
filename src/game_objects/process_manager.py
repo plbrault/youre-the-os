@@ -186,12 +186,12 @@ class ProcessManager(GameObject):
     def update(self, current_time, events):
         for event in events:
             if event.type == GameEventType.KEY_UP:
-                if len(event.getProperty('key')) == 1 and event.getProperty(
-                        'key') >= '0' and event.getProperty('key') <= '9':
-                    cpu_id = int(event.getProperty('key')) - 1
+                if len(event.get_property('key')) == 1 and event.get_property(
+                        'key') >= '0' and event.get_property('key') <= '9':
+                    cpu_id = int(event.get_property('key')) - 1
                     if cpu_id == -1:
                         cpu_id = 9
-                    if event.getProperty('shift'):
+                    if event.get_property('shift'):
                         cpu_id += 10
                     if cpu_id < len(self._cpu_list):
                         cpu = self._cpu_list[cpu_id]
