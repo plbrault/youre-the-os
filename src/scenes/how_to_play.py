@@ -1,6 +1,6 @@
 from os import path
+
 import pygame
-from random import randint
 
 from lib.ui.color import Color
 from game_objects.button import Button

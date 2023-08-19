@@ -1,11 +1,7 @@
-from os import path
 import pygame
-from random import randint
 
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
-from lib.game_event import GameEvent
-from lib.game_event_type import GameEventType
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.in_game_menu_dialog import InGameMenuDialog
@@ -16,8 +12,10 @@ from game_objects.uptime_manager import UptimeManager
 
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=default_difficulty['config']):
+    def __init__(self, screen, scenes, config=None):
         self._config = config
+        if self._config is None:
+            self._config = default_difficulty['config']
 
         self._current_time = 0
 
@@ -30,6 +28,9 @@ class Game(Scene):
         self._game_over = False
         self._game_over_time = None
         self._game_over_dialog = None
+
+        self._score_manager = None
+        self._uptime_manager = None
 
         super().__init__(screen, scenes)
 

@@ -1,11 +1,8 @@
 from abc import ABC, abstractmethod
-import asyncio
+
 import pygame
-import sys
 
 from lib.ui.color import Color
-from lib.game_event import GameEvent
-from lib.game_event_type import GameEventType
 from scene_manager import scene_manager
 
 

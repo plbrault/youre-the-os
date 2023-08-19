@@ -1,7 +1,3 @@
-from os import path
-import pygame
-from random import randint
-
 from difficulty_levels import difficulty_levels
 from lib.scene import Scene
 from game_objects.about_dialog import AboutDialog
@@ -19,6 +15,7 @@ class MainMenu(Scene):
         self._selected_difficulty_id = None
         self._custom_config = None
 
+        self._difficulty_selector = None
         self._custom_settings_dialog = None
         self._about_dialog = None
         self._key_binding_dialog = None
