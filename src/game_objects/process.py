@@ -9,8 +9,6 @@ from game_objects.views.process_view import ProcessView
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
-    Processes = {}
-
     def __init__(self, pid, game):
         self._pid = pid
         self._process_manager = game.process_manager
@@ -111,7 +109,7 @@ class Process(GameObject):
                 for page in self._pages:
                     event_manager.event_page_free(page.pid, page.idx)
                     self._page_manager.delete_page(page)
-                del Process.Processes[self._pid]
+                self._process_manager.del_process(self)
             else:
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
@@ -160,7 +158,7 @@ class Process(GameObject):
             for page in self._pages:
                 event_manager.event_page_free(page.pid, page.idx)
                 self._page_manager.delete_page(page)
-            del Process.Processes[self._pid]
+            self._process_manager.del_process(self)
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
@@ -168,17 +166,20 @@ class Process(GameObject):
                 *event.get_property('position'))
         return False
 
-    def on_click(self):
+    def toggle(self):
         if self.has_cpu:
             self.yield_cpu()
         else:
             self.use_cpu()
 
+    def _on_click(self):
+        self.toggle()
+
     def update(self, current_time, events):
         # pylint: disable=too-many-statements
         for event in events:
             if self._check_if_clicked_on(event):
-                self.on_click()
+                self._on_click()
 
         if not self.has_ended:
             pages_in_swap = 0

@@ -9,16 +9,12 @@ from game_objects.views.io_queue_view import IoQueueView
 
 class IoQueue(GameObject):
 
-    Instance = None
-
     def __init__(self):
         self._subscriber_queue = SimpleQueue()
         self._event_count = 0
         self._last_update_time = 0
 
         super().__init__(IoQueueView(self))
-
-        IoQueue.Instance = self
 
     def wait_for_event(self, callback):
         self._subscriber_queue.put(callback)
@@ -27,7 +23,7 @@ class IoQueue(GameObject):
     def event_count(self):
         return self._event_count
 
-    def _process_events(self):
+    def process_events(self):
         while self.event_count > 0:
             self._event_count -= 1
             callback = self._subscriber_queue.get()
@@ -38,16 +34,16 @@ class IoQueue(GameObject):
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def on_click(self):
-        self._process_events()
+    def _on_click(self):
+        self.process_events()
 
     def update(self, current_time, events):
         for event in events:
             if self._check_if_clicked_on(event):
-                self.on_click()
+                self._on_click()
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') == 'space':
-                    self._process_events()
+                    self.process_events()
 
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time

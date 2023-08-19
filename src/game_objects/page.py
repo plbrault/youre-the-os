@@ -6,8 +6,6 @@ from game_objects.views.page_view import PageView
 
 class Page(GameObject):
 
-    Pages = {}
-
     def __init__(self, pid, idx, page_manager):
         self._pid = pid
         self._idx = idx
@@ -49,18 +47,21 @@ class Page(GameObject):
             event_manager.event_page_use(self._pid, self._idx, value)
         self._in_use = value
 
+    def swap(self):
+        self._page_manager.swap_page(self)
+
     def _check_if_clicked_on(self, event):
         if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def on_click(self):
-        self._page_manager.swap_page(self)
+    def _on_click(self):
+        self.swap()
 
     def update(self, current_time, events):
         for event in events:
             if self._check_if_clicked_on(event):
-                self.on_click()
+                self._on_click()
 
         if self.in_use and self.in_swap:
             self._display_blink_color = int(current_time / 200) % 2 == 1

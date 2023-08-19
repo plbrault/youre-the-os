@@ -11,9 +11,6 @@ from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
-from game_objects.io_queue import IoQueue
-from game_objects.process import Process
-from game_objects.page import Page
 
 
 class Game(Scene):
@@ -71,27 +68,7 @@ class Game(Scene):
             self._screen.get_width() - open_in_game_menu_button.view.width - 10, 10)
         self._scene_objects.append(open_in_game_menu_button)
 
-        # for automation
-        self._script_callback = None
-        if self._script:
-            # pylint: disable=exec-used
-            num_cols = PageManager.get_num_ram_cols()
-            script_globals = {
-                'num_cpus': self._config['num_cpus'],
-                'num_ram_pages': num_cols * self._config['num_ram_rows'],
-                'num_swap_pages':
-                    num_cols * (PageManager.get_total_rows() - self._config['num_ram_rows']),
-                **{
-                    v.name: v.value
-                    for v in event_manager.etypes
-                }
-            }
-
-            exec(self._script, script_globals)
-            try:
-                self._script_callback = script_globals['run_os']
-            except KeyError:
-                pass
+        self._prepare_automation_script()
 
     @property
     def config(self):
@@ -144,6 +121,44 @@ class Game(Scene):
         event_manager.clear_events()
         return events
 
+    def _process_script_events(self):
+        for event in self._get_script_events():
+            try:
+                if event['type'] == 'io_queue':
+                    self._process_manager.io_queue.process_events()
+                elif event['type'] == 'process':
+                    self._process_manager.get_process(
+                        event['pid']).toggle()
+                elif event['type'] == 'page':
+                    self._page_manager.get_page(
+                        event['pid'], event['idx']).swap()
+            except Exception as exc: # pylint: disable=broad-exception-caught
+                print(exc.__class__.__name__, *exc.args, event, file=sys.stderr)
+
+    def _prepare_automation_script(self):
+        # pylint: disable=exec-used
+        self._script_callback = None
+        if self._script is None:
+            return
+
+        num_cols = PageManager.get_num_cols()
+        script_globals = {
+            'num_cpus': self._config['num_cpus'],
+            'num_ram_pages': num_cols * self._config['num_ram_rows'],
+            'num_swap_pages':
+                num_cols * (PageManager.get_total_rows() - self._config['num_ram_rows']),
+            **{
+                v.name: v.value
+                for v in event_manager.etypes
+            }
+        }
+
+        exec(self._script, script_globals)
+        try:
+            self._script_callback = script_globals['run_os']
+        except KeyError:
+            pass
+
     def update(self, current_time, events):
         dialog = None
 
@@ -173,17 +188,6 @@ class Game(Scene):
         if dialog is not None:
             dialog.update(current_time, events)
         else:
-            # first, the script generated events
-            for event in self._get_script_events():
-                try:
-                    if event['type'] == 'io_queue':
-                        IoQueue.Instance.on_click()
-                    elif event['type'] == 'process':
-                        Process.Processes[event['pid']].on_click()
-                    elif event['type'] == 'page':
-                        Page.Pages[(event['pid'],event['idx'])].on_click()
-                except Exception as exc: # pylint: disable=broad-exception-caught
-                    print(exc.__class__.__name__, *exc.args, event, file=sys.stderr)
-            # now, update
+            self._process_script_events()
             for game_object in self._scene_objects:
                 game_object.update(current_time, events)

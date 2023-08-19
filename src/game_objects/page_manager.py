@@ -6,13 +6,14 @@ from game_objects.page_slot import PageSlot
 
 class PageManager(GameObject):
     _TOTAL_ROWS = 11
-    _NUM_RAM_COLS = 16
+    _NUM_COLS = 16
 
     def __init__(self, game):
         self._game = game
 
         self._ram_slots = []
         self._swap_slots = []
+        self._pages = {}
 
         self._pages_in_ram_label_xy = (0, 0)
         self._swap_is_enabled = True
@@ -25,8 +26,8 @@ class PageManager(GameObject):
         return cls._TOTAL_ROWS
 
     @classmethod
-    def get_num_ram_cols(cls):
-        return cls._NUM_RAM_COLS
+    def get_num_cols(cls):
+        return cls._NUM_COLS
 
     @property
     def pages_in_ram_label_xy(self):
@@ -36,6 +37,9 @@ class PageManager(GameObject):
     def pages_in_swap_label_xy(self):
         return self._pages_in_swap_label_xy
 
+    def get_page(self, pid, idx):
+        return self._pages[(pid, idx)]
+
     def setup(self):
         self._pages_in_ram_label_xy = (
             self._game.process_manager.view.width, 120)
@@ -43,7 +47,7 @@ class PageManager(GameObject):
         num_ram_rows = self._game.config['num_ram_rows']
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
 
-        num_cols = PageManager._NUM_RAM_COLS
+        num_cols = PageManager._NUM_COLS
 
         for row in range(num_ram_rows):
             for column in range(num_cols):
@@ -91,7 +95,7 @@ class PageManager(GameObject):
                     page_created = True
                     break
         self.children.append(page)
-        Page.Pages[(page.pid, page.idx)] = page
+        self._pages[(pid, idx)] = page
         return page
 
     def swap_page(self, page):
@@ -137,4 +141,4 @@ class PageManager(GameObject):
                 ram_slot.page = None
                 break
         self.children.remove(page)
-        del Page.Pages[(page.pid, page.idx)]
+        del self._pages[(page.pid, page.idx)]

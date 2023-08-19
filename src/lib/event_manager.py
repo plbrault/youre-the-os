@@ -1,5 +1,8 @@
-# event manager to gather events from game objects and
-# dispatch them to script
+"""EventManager
+
+The event manager is used to gather events from game objects
+and dispatch them to the automation script
+"""
 
 from enum import Enum
 from types import SimpleNamespace
