@@ -150,7 +150,7 @@ class Process(GameObject):
                 self._page_manager.delete_page(page)
 
     def _check_if_clicked_on(self, event):
-        if event.type == GameEventType.MOUSE_LEFT_CLICK:
+        if event.type == GameEventType.MOUSE_LEFT_CLICK or event.type == GameEventType.MOUSE_LEFT_DRAG:
             return self.starvation_level < 6 and self._view.collides(
                 *event.get_property('position'))
         return False
