@@ -157,6 +157,7 @@ class Process(GameObject):
 
     def _check_if_in_motion(self):
         return self._view.target_x is not None or self._view.target_y is not None
+
     def _on_click(self):
         if self.has_cpu:
             self.yield_cpu()
