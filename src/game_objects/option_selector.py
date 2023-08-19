@@ -1,4 +1,3 @@
-from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.option_selector_view import OptionSelectorView
 from game_objects.button import Button

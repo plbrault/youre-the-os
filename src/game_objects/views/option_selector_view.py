@@ -1,5 +1,3 @@
-import pygame
-
 from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_SECONDARY_MEDIUM

@@ -1,10 +1,7 @@
-from os import path
 import pygame
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XLARGE, FONT_PRIMARY_XXLARGE
-
 
 class InGameMenuDialogView(Drawable):
     def __init__(self, in_game_menu_dialog):

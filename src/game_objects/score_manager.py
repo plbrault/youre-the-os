@@ -1,5 +1,3 @@
-from math import floor
-
 from lib.game_object import GameObject
 from game_objects.views.score_manager_view import ScoreManagerView
 

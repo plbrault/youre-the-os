@@ -3,7 +3,7 @@ import pygame
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XLARGE, FONT_PRIMARY_XXLARGE
+from lib.ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XXLARGE
 
 _shutdown_image = pygame.image.load(path.join('assets', 'shutdown.jpg'))
 

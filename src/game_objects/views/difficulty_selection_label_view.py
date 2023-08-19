@@ -1,6 +1,3 @@
-from os import path
-import pygame
-
 from lib.ui.color import Color
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_SECONDARY_MEDIUM

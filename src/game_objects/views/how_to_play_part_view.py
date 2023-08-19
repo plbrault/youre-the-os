@@ -1,4 +1,3 @@
-from os import path
 import pygame
 
 from lib.ui.color import Color

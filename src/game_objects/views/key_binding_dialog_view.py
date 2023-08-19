@@ -1,9 +1,8 @@
-from os import path
 import pygame
 
 from lib.drawable import Drawable
 from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_MEDIUM, FONT_SECONDARY_SMALL, FONT_SECONDARY_XSMALL, FONT_SECONDARY_XXSMALL
+from lib.ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL
 
 
 class KeyBindingDialogView(Drawable):

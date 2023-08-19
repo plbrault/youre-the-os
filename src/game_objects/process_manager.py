@@ -4,7 +4,6 @@ from random import randint
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.cpu import Cpu
-from game_objects.game_over_dialog import GameOverDialog
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView

@@ -1,6 +1,6 @@
-import pygame
-
 from abc import ABC, abstractmethod
+
+import pygame
 
 
 class Drawable(ABC):
