@@ -13,7 +13,7 @@ class ProcessManagerView(Drawable):
 
         self._idle_processes_text_surface = FONT_PRIMARY_LARGE.render(
             'Idle Processes :', False, Color.WHITE)
-        self._PROCESS_VIEW_HEIGHT = ProcessView(
+        self._process_view_height = ProcessView(
             Process(0, process_manager.game)).height
 
     @property
@@ -25,10 +25,7 @@ class ProcessManagerView(Drawable):
         return WINDOW_HEIGHT
 
     def draw(self, surface):
-        terminated_processes_text = 'User Ragequits ({0} / {1}) :'.format(
-            self._process_manager.user_terminated_process_count,
-            self._process_manager.MAX_TERMINATED_BY_USER
-        )
+        terminated_processes_text = f'User Ragequits ({self._process_manager.user_terminated_process_count} / {self._process_manager.MAX_TERMINATED_BY_USER}) :' # pylint: disable=line-too-long
 
         terminated_processes_text_surface = FONT_PRIMARY_LARGE.render(
             terminated_processes_text, False, Color.WHITE)
@@ -36,6 +33,6 @@ class ProcessManagerView(Drawable):
         surface.blit(self._idle_processes_text_surface, (50, 120))
         surface.blit(terminated_processes_text_surface, (
             50,
-            WINDOW_HEIGHT - self._PROCESS_VIEW_HEIGHT -
+            WINDOW_HEIGHT - self._process_view_height -
             terminated_processes_text_surface.get_height() - 30
         ))

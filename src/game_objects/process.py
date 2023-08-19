@@ -82,7 +82,7 @@ class Process(GameObject):
                     # Generate a number of pages between 1 and 4 with a higher
                     # probability for higher numbers
                     num_pages = round(sqrt(randint(1, 20)))
-                    for i in range(num_pages):
+                    for _ in range(num_pages):
                         self._pages.append(
                             self._page_manager.create_page(self._pid))
                 for page in self._pages:
@@ -221,6 +221,6 @@ class Process(GameObject):
                                        self.view.y - self.view.target_y)
 
         if self._is_waiting_for_page:
-            self._display_blink_color = (int(current_time / 200) % 2 == 1)
+            self._display_blink_color = int(current_time / 200) % 2 == 1
         else:
             self._display_blink_color = False

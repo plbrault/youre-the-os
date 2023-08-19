@@ -8,35 +8,35 @@ class InGameMenuDialog(GameObject):
     def __init__(self, restart_game_fn, main_menu_fn, close_menu_fn):
         super().__init__(InGameMenuDialogView(self))
 
-        self._restartButton = Button('Restart Game', restart_game_fn)
-        self._mainMenuButton = Button('Return to Main Menu', main_menu_fn)
-        self._closeMenuButton = Button('Close', close_menu_fn)
+        self._restart_button = Button('Restart Game', restart_game_fn)
+        self._main_menu_button = Button('Return to Main Menu', main_menu_fn)
+        self._close_menu_button = Button('Close', close_menu_fn)
 
-        self.children.append(self._restartButton)
-        self.children.append(self._mainMenuButton)
-        self.children.append(self._closeMenuButton)
+        self.children.append(self._restart_button)
+        self.children.append(self._main_menu_button)
+        self.children.append(self._close_menu_button)
 
-        self.button_width = self._mainMenuButton.view.width
-        self.button_height = self._mainMenuButton.view.height
+        self.button_width = self._main_menu_button.view.width
+        self.button_height = self._main_menu_button.view.height
 
-        self._restartButton.view.min_width = self.button_width
-        self._closeMenuButton.view.min_width = self.button_width
+        self._restart_button.view.min_width = self.button_width
+        self._close_menu_button.view.min_width = self.button_width
 
     def update(self, current_time, events):
-        self._restartButton.view.set_xy(
+        self._restart_button.view.set_xy(
             self.view.x + (self.view.width -
-                           self._restartButton.view.width) / 2,
+                           self._restart_button.view.width) / 2,
             self.view.y + 4
         )
-        self._mainMenuButton.view.set_xy(
+        self._main_menu_button.view.set_xy(
             self.view.x + (self.view.width -
-                           self._mainMenuButton.view.width) / 2,
-            self._restartButton.view.y + self._restartButton.view.height + 2
+                           self._main_menu_button.view.width) / 2,
+            self._restart_button.view.y + self._restart_button.view.height + 2
         )
-        self._closeMenuButton.view.set_xy(
+        self._close_menu_button.view.set_xy(
             self.view.x + (self.view.width -
-                           self._closeMenuButton.view.width) / 2,
-            self._mainMenuButton.view.y + self._mainMenuButton.view.height + 2
+                           self._close_menu_button.view.width) / 2,
+            self._main_menu_button.view.y + self._main_menu_button.view.height + 2
         )
 
         for child in self.children:

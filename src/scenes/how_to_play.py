@@ -3,9 +3,9 @@ from os import path
 import pygame
 
 from lib.ui.color import Color
+from lib.scene import Scene
 from game_objects.button import Button
 from game_objects.how_to_play_part import HowToPlayPart
-from lib.scene import Scene
 
 _parts = [
     HowToPlayPart(
@@ -76,7 +76,7 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'A process can also terminate gracefully. In that case, you can simply remove it by clicking on it.'
+            'A process can also terminate gracefully. In that case, you can simply remove it by clicking on it.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_7_0.png'))
@@ -94,7 +94,7 @@ _parts = [
     HowToPlayPart(
         [
             'When you have blocked processes, watch the I/O event bar.',
-            'Make sure to click on it when it has events, otherwise your processes will stay blocked and starve.'
+            'Make sure to click on it when it has events, otherwise your processes will stay blocked and starve.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_9_0.png')),
@@ -104,7 +104,7 @@ _parts = [
     HowToPlayPart(
         [
             'You also have to manage memory! Processes create memory pages when they run.',
-            'Pages that are currently in use appear in white. Currently unused pages appear in grey.'
+            'Pages that are currently in use appear in white. Currently unused pages appear in grey.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_10_0.png'))
@@ -122,8 +122,8 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'Processes can only use pages from RAM. A process will blink if trying to use pages that are on disk.',
-            'This is when you need to swap pages! The pages that the process is trying to access will also blink.'
+            'Processes can only use pages from RAM. A process will blink if trying to use pages that are on disk.', # pylint: disable=line-too-long
+            'This is when you need to swap pages! The pages that the process is trying to access will also blink.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_12_0.png')),
@@ -133,7 +133,7 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            "If you don\'t swap a process' pages when needed, the process will eventually starve and get killed.",
+            "If you don\'t swap a process' pages when needed, the process will eventually starve and get killed.", # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_13_0.png'))
@@ -143,7 +143,7 @@ _parts = [
     HowToPlayPart(
         [
             'Once the number of killed processes reaches 10, the user gets angry and reboots you.',
-            'The game is then over. Your goal is to survive as long as possible without getting rebooted!'
+            'The game is then over. Your goal is to survive as long as possible without getting rebooted!' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_14_0.png'))
