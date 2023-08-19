@@ -10,4 +10,5 @@ class SceneManager():
         scene.setup()
         self._current_scene = scene
 
+
 scene_manager = SceneManager()

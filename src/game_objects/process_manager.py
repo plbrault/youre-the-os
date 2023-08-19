@@ -11,6 +11,7 @@ from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
 from window_size import WINDOW_HEIGHT
 
+
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42
 
@@ -31,10 +32,12 @@ class ProcessManager(GameObject):
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
 
-        self._new_process_probability_numerator = int(game.config['new_process_probability'] * 100)
+        self._new_process_probability_numerator = int(
+            game.config['new_process_probability'] * 100)
 
         if self._new_process_probability_numerator > 0:
-            self._max_wait_between_new_processes = int(100 / self._new_process_probability_numerator * 1000)
+            self._max_wait_between_new_processes = int(
+                100 / self._new_process_probability_numerator * 1000)
         else:
             self._max_wait_between_new_processes = inf
 
@@ -102,7 +105,7 @@ class ProcessManager(GameObject):
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)
 
-    def _create_process(self, process_slot_id = None):
+    def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._MAX_PROCESSES:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
@@ -119,7 +122,8 @@ class ProcessManager(GameObject):
             self.children.append(process)
             self._alive_process_list.append(process)
 
-            process.view.set_xy(process_slot.view.x, self.view.height + process.view.height)
+            process.view.set_xy(process_slot.view.x,
+                                self.view.height + process.view.height)
             process.view.target_y = process_slot.view.y
 
             return True

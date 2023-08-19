@@ -6,6 +6,7 @@ from lib.drawable import Drawable
 from lib.ui.fonts import FONT_SECONDARY_SMALL
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
+
 class HowToPlayPartView(Drawable):
     def __init__(self, how_to_play_part):
         self._how_to_play_part = how_to_play_part
@@ -13,7 +14,8 @@ class HowToPlayPartView(Drawable):
 
         self._text_surfaces = list(
             map(
-                lambda text: FONT_SECONDARY_SMALL.render(text, True, Color.BLACK),
+                lambda text: FONT_SECONDARY_SMALL.render(
+                    text, True, Color.BLACK),
                 how_to_play_part.text
             )
         )
@@ -30,8 +32,11 @@ class HowToPlayPartView(Drawable):
 
     def draw(self, surface):
         surface.blit(self._images[self._how_to_play_part.current_image_id], (
-            self.x + (self.width - self._images[self._how_to_play_part.current_image_id].get_width()) / 2,
-            (self.height - 65 - self._images[self._how_to_play_part.current_image_id].get_height()) / 2
+            self.x +
+            (self.width -
+             self._images[self._how_to_play_part.current_image_id].get_width()) / 2,
+            (self.height - 65 -
+             self._images[self._how_to_play_part.current_image_id].get_height()) / 2
         ))
 
         pygame.draw.rect(

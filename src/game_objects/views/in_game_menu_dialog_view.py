@@ -5,6 +5,7 @@ from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XLARGE, FONT_PRIMARY_XXLARGE
 
+
 class InGameMenuDialogView(Drawable):
     def __init__(self, in_game_menu_dialog):
         self._in_game_menu_dialog = in_game_menu_dialog
@@ -19,5 +20,7 @@ class InGameMenuDialogView(Drawable):
         return 3 * self._in_game_menu_dialog.button_height + 12
 
     def draw(self, surface):
-        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)
+        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
+            self.x, self.y, self.width, self.height), border_radius=3)
+        pygame.draw.rect(surface, (70, 70, 70), pygame.Rect(
+            self.x + 2, self.y + 2, self.width - 4, self.height - 4), border_radius=3)

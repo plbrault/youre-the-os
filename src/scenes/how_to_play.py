@@ -151,6 +151,7 @@ _parts = [
     )
 ]
 
+
 class HowToPlay(Scene):
     def __init__(self, screen, scenes):
         super().__init__(screen, scenes, background_color=Color.LIGHT_GREY)

@@ -1,6 +1,7 @@
 from lib.game_object import GameObject
 from game_objects.views.process_slot_view import ProcessSlotView
 
+
 class ProcessSlot(GameObject):
     def __init__(self):
         self._process = None

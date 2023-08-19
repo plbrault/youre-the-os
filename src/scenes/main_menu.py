@@ -12,6 +12,7 @@ from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
 
+
 class MainMenu(Scene):
     def __init__(self, screen, scenes):
         super().__init__(screen, scenes)
@@ -36,7 +37,8 @@ class MainMenu(Scene):
         )
         self._scene_objects.append(difficulty_selection_label)
 
-        difficulty_level_names = list(map(lambda difficulty_level: difficulty_level['name'], difficulty_levels))
+        difficulty_level_names = list(
+            map(lambda difficulty_level: difficulty_level['name'], difficulty_levels))
         difficulty_level_names.append('Custom')
         self._difficulty_selector = OptionSelector(difficulty_level_names, 1)
         self._difficulty_selector.view.set_xy(
@@ -59,7 +61,8 @@ class MainMenu(Scene):
         )
         self._scene_objects.append(how_to_play_button)
 
-        key_binding_button = Button('Key Bindings', self._open_key_binding_dialog)
+        key_binding_button = Button(
+            'Key Bindings', self._open_key_binding_dialog)
         key_binding_button.view.set_xy(
             how_to_play_button.view.x + how_to_play_button.view.width + 20,
             self._screen.get_height() - key_binding_button.view.height - 100
@@ -83,7 +86,8 @@ class MainMenu(Scene):
         if self._selected_difficulty_id == len(difficulty_levels):
             self._open_custom_settings_dialog()
         else:
-            self._start_game(difficulty_levels[self._difficulty_selector.selected_option_id]['config'])
+            self._start_game(
+                difficulty_levels[self._difficulty_selector.selected_option_id]['config'])
 
     def _open_custom_settings_dialog(self):
         self._custom_settings_dialog = CustomSettingsDialog(
@@ -110,7 +114,8 @@ class MainMenu(Scene):
         self._about_dialog = None
 
     def _open_key_binding_dialog(self):
-        self._key_binding_dialog = KeyBindingDialog(self._close_key_binding_dialog)
+        self._key_binding_dialog = KeyBindingDialog(
+            self._close_key_binding_dialog)
         self._key_binding_dialog.view.set_xy(
             self._screen.get_width() / 2 - self._key_binding_dialog.view.width / 2,
             self._screen.get_height() / 2 - self._key_binding_dialog.view.height / 2
@@ -126,10 +131,10 @@ class MainMenu(Scene):
         self._key_binding_dialog = None
 
     def _start_game(self, config):
-            if self._custom_settings_dialog is not None:
-                self._custom_config = self._custom_settings_dialog.config
-            self._scenes['game'].config = config
-            self._scenes['game'].start()
+        if self._custom_settings_dialog is not None:
+            self._custom_config = self._custom_settings_dialog.config
+        self._scenes['game'].config = config
+        self._scenes['game'].start()
 
     def _start_how_to_play(self):
         self._scenes['how_to_play'].start()

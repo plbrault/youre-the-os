@@ -8,6 +8,7 @@ from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 from scene_manager import scene_manager
 
+
 class Scene(ABC):
     def __init__(self, screen, scenes, background_color=Color.BLACK):
         self._screen = screen

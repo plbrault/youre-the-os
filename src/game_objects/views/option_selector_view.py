@@ -4,6 +4,7 @@ from lib.drawable import Drawable
 from lib.ui.color import Color
 from lib.ui.fonts import FONT_SECONDARY_MEDIUM
 
+
 class OptionSelectorView(Drawable):
     def __init__(self, option_selector):
         self._option_selector = option_selector
@@ -14,12 +15,15 @@ class OptionSelectorView(Drawable):
         self._option_surfaces = []
         longest_option_id = 0
         for i, option in enumerate(self._option_selector.options):
-            self._option_surfaces.append(FONT_SECONDARY_MEDIUM.render(option.upper(), False, Color.WHITE))
+            self._option_surfaces.append(FONT_SECONDARY_MEDIUM.render(
+                option.upper(), False, Color.WHITE))
             if len(option) > len(self._option_selector.options[longest_option_id]):
                 longest_option_id = i
 
-        self._max_text_width = self._option_surfaces[longest_option_id].get_width()
-        self._text_height = self._option_surfaces[longest_option_id].get_height()
+        self._max_text_width = self._option_surfaces[longest_option_id].get_width(
+        )
+        self._text_height = self._option_surfaces[longest_option_id].get_height(
+        )
 
     @property
     def min_width(self):
@@ -33,7 +37,8 @@ class OptionSelectorView(Drawable):
     def width(self):
         return max(
             self.min_width,
-            self._max_text_width + self._option_selector.previous_button.view.width + self._option_selector.next_button.view.width + 40
+            self._max_text_width + self._option_selector.previous_button.view.width +
+            self._option_selector.next_button.view.width + 40
         )
 
     @property

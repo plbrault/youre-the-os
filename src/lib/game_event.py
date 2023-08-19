@@ -1,5 +1,5 @@
 class GameEvent():
-    def __init__(self, type, properties = {}):
+    def __init__(self, type, properties={}):
         self._type = type
         self._properties = properties
 

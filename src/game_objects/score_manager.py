@@ -5,6 +5,7 @@ from game_objects.views.score_manager_view import ScoreManagerView
 
 _UPDATE_INTERVAL = 100
 
+
 class ScoreManager(GameObject):
 
     def __init__(self, game):

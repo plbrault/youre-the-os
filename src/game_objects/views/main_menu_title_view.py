@@ -8,6 +8,7 @@ from window_size import WINDOW_WIDTH
 
 _icon_image = pygame.image.load(path.join('assets', 'icon.png'))
 
+
 class MainMenuTitleView(Drawable):
     def __init__(self, main_menu_title):
         self._main_menu_title = main_menu_title
@@ -27,5 +28,7 @@ class MainMenuTitleView(Drawable):
         return self._icon.get_height() + self._text.get_height() + 20
 
     def draw(self, surface):
-        surface.blit(self._icon, (self.x + (self.width - self._icon.get_width()) / 2, self.y))
-        surface.blit(self._text, (self.x + (self.width - self._text.get_width()) / 2, self.y + self._icon.get_height() + 20))
+        surface.blit(self._icon, (self.x + (self.width -
+                     self._icon.get_width()) / 2, self.y))
+        surface.blit(self._text, (self.x + (self.width - self._text.get_width()
+                                            ) / 2, self.y + self._icon.get_height() + 20))

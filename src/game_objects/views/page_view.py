@@ -4,10 +4,12 @@ from lib.ui.color import Color
 from lib.drawable import Drawable
 from lib.ui.fonts import FONT_SECONDARY_XXXSMALL
 
+
 class PageView(Drawable):
     def __init__(self, page):
         self._page = page
-        self._pid_text_surface = FONT_SECONDARY_XXXSMALL.render('PID ' + str(self._page.pid), False, Color.BLACK)
+        self._pid_text_surface = FONT_SECONDARY_XXXSMALL.render(
+            'PID ' + str(self._page.pid), False, Color.BLACK)
         super().__init__()
 
     @property
@@ -24,5 +26,6 @@ class PageView(Drawable):
             color = Color.BLUE
         elif self._page.in_use:
             color = Color.WHITE
-        pygame.draw.rect(surface, color, pygame.Rect(self._x, self._y, self.width, self.height))
+        pygame.draw.rect(surface, color, pygame.Rect(
+            self._x, self._y, self.width, self.height))
         surface.blit(self._pid_text_surface, (self._x + 1, self._y + 5))
