@@ -1,11 +1,12 @@
 import asyncio
 from os import path
-import pygame
 import sys
 
-from scenes.game import Game
+import pygame
+
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
+from scenes.game import Game
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
 from scene_manager import scene_manager
@@ -42,7 +43,6 @@ FPS = 60
 async def main():
     mouse_down = False
     shift_down = False
-    number_keys = list(map(str, range(0, 10)))
 
     while True:
         events = []
