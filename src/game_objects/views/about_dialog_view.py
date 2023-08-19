@@ -6,7 +6,7 @@ from lib.ui.color import Color
 from lib.ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL, FONT_SECONDARY_XSMALL
 
 
-class aboutDIalogView(Drawable):
+class AboutDialogView(Drawable):
     def __init__(self, about_dialog):
         self.about_dialog = about_dialog
         super().__init__()
