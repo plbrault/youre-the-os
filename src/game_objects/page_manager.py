@@ -77,7 +77,7 @@ class PageManager(GameObject):
             for swap_slot in self._swap_slots:
                 if not swap_slot.has_page:
                     swap_slot.page = page
-                    page._in_swap = True
+                    page.in_swap = True
                     page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
                     page_created = True
                     break
@@ -101,7 +101,7 @@ class PageManager(GameObject):
                         ram_slot.page = page
                         page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
                         break
-                page._in_swap = False
+                page.in_swap = False
         else:
             for swap_slot in self._swap_slots:
                 if not swap_slot.has_page:
@@ -117,7 +117,7 @@ class PageManager(GameObject):
                         swap_slot.page = page
                         page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
                         break
-                page._in_swap = True
+                page.in_swap = True
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:

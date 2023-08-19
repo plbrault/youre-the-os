@@ -10,21 +10,21 @@ class GameOverDialog(GameObject):
         self.score = score
         super().__init__(GameOverDialogView(self))
 
-        self._playAgainButton = Button('Play Again', restart_game_fn)
-        self._mainMenuButton = Button('Main Menu', main_menu_fn)
+        self._play_again_button = Button('Play Again', restart_game_fn)
+        self._main_menu_button = Button('Main Menu', main_menu_fn)
 
-        self.children.append(self._playAgainButton)
-        self.children.append(self._mainMenuButton)
+        self.children.append(self._play_again_button)
+        self.children.append(self._main_menu_button)
 
     def update(self, current_time, events):
-        self._playAgainButton.view.set_xy(
+        self._play_again_button.view.set_xy(
             self.view.x + (self.view.width / 2) -
-            self._playAgainButton.view.width - 10,
-            self.view.y + self.view.height - self._playAgainButton.view.height - 20
+            self._play_again_button.view.width - 10,
+            self.view.y + self.view.height - self._play_again_button.view.height - 20
         )
-        self._mainMenuButton.view.set_xy(
+        self._main_menu_button.view.set_xy(
             self.view.x + (self.view.width / 2) + 10,
-            self.view.y + self.view.height - self._playAgainButton.view.height - 20
+            self.view.y + self.view.height - self._play_again_button.view.height - 20
         )
 
         for child in self.children:

@@ -26,6 +26,10 @@ class Page(GameObject):
     def in_swap(self):
         return self._in_swap
 
+    @in_swap.setter
+    def in_swap(self, value):
+        self._in_swap = value
+
     @property
     def display_blink_color(self):
         return self._display_blink_color
