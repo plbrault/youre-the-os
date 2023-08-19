@@ -1,11 +1,10 @@
 
-name: CI
+name: pylint
 on: [push]
 
 
 jobs:
-
-  install-dependencies:
+  pylint:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,13 +13,7 @@ jobs:
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
         command: sync --dev
-
-  pylint:
-    runs-on: ubuntu-latest
-    needs: install-dependencies
-
-    steps:
-    - name: Pylint
+    - name: Build
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
         command:  run pylint
