@@ -8,6 +8,7 @@ pygame = "*"
 
 [dev-packages]
 pygbag = "*"
+pylint = "*"
 
 [requires]
 python_version = "3.11"
