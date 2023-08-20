@@ -140,5 +140,9 @@ class PageManager(GameObject):
             if ram_slot.page == page:
                 ram_slot.page = None
                 break
+        for swap_slot in self._swap_slots:
+            if swap_slot.page == page:
+                swap_slot.page = None
+                break
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
