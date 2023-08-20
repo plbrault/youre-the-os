@@ -94,7 +94,7 @@ class RunOs:
             handler = getattr(self, f"handle_{event.etype}", None)
             if handler is not None:
                 handler(event)
-        return self._event_queue()
+        return self._event_queue
 
     #
     # implement those below

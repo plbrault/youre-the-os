@@ -61,4 +61,9 @@ difficulty_levels = [
     _insane_difficulty
 ]
 
+difficulty_levels_map = {
+    l['name'].lower(): l
+    for l in difficulty_levels
+}
+
 default_difficulty = _normal_difficulty

@@ -14,12 +14,14 @@ from game_objects.uptime_manager import UptimeManager
 
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=None, script=None):
+    # pylint: disable=too-many-arguments
+    def __init__(self, screen, scenes, config=None, script=None, standalone=False):
         self._config = config
         if self._config is None:
             self._config = default_difficulty['config']
         self._script = script
         self._script_callback = None
+        self._standalone = standalone
 
         self._current_time = 0
 
@@ -63,10 +65,11 @@ class Game(Scene):
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._scene_objects.append(self._uptime_manager)
 
-        open_in_game_menu_button = Button('Menu', self._open_in_game_menu)
-        open_in_game_menu_button.view.set_xy(
-            self._screen.get_width() - open_in_game_menu_button.view.width - 10, 10)
-        self._scene_objects.append(open_in_game_menu_button)
+        if not self._standalone:
+            open_in_game_menu_button = Button('Menu', self._open_in_game_menu)
+            open_in_game_menu_button.view.set_xy(
+                self._screen.get_width() - open_in_game_menu_button.view.width - 10, 10)
+            self._scene_objects.append(open_in_game_menu_button)
 
         self._prepare_automation_script()
 
@@ -171,7 +174,8 @@ class Game(Scene):
                         self._uptime_manager.uptime_text,
                         self._score_manager.score,
                         self.setup,
-                        self._return_to_main_menu)
+                        self._return_to_main_menu,
+                        self._standalone)
                     self._game_over_dialog.view.set_xy(
                         (self._screen.get_width() -
                          self._game_over_dialog.view.width) / 2,
