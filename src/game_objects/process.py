@@ -161,10 +161,13 @@ class Process(GameObject):
             self._process_manager.del_process(self)
 
     def _check_if_clicked_on(self, event):
-        if event.type == GameEventType.MOUSE_LEFT_CLICK:
+        if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):
             return self.starvation_level < 6 and self._view.collides(
                 *event.get_property('position'))
         return False
+
+    def _check_if_in_motion(self):
+        return self._view.target_x is not None or self._view.target_y is not None
 
     def toggle(self):
         if self.has_cpu:
@@ -177,9 +180,10 @@ class Process(GameObject):
 
     def update(self, current_time, events):
         # pylint: disable=too-many-statements
-        for event in events:
-            if self._check_if_clicked_on(event):
-                self._on_click()
+        if not self._check_if_in_motion():
+            for event in events:
+                if self._check_if_clicked_on(event):
+                    self._on_click()
 
         if not self.has_ended:
             pages_in_swap = 0
