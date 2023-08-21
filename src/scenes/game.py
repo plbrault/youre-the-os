@@ -66,7 +66,8 @@ class Game(Scene):
         self._scene_objects.append(self._uptime_manager)
 
         if not self._standalone:
-            self._open_in_game_menu_button = Button('Menu', self._open_in_game_menu, key_bind='escape')
+            self._open_in_game_menu_button = Button(
+                'Menu', self._open_in_game_menu, key_bind='escape')
             self._open_in_game_menu_button.view.set_xy(
                 self._screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
             self._scene_objects.append(self._open_in_game_menu_button)
