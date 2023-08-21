@@ -18,7 +18,7 @@ Also available on [itch.io](https://drfreckles42.itch.io/youre-the-os).
 
 ## Usage
 
-**Install dependencies:** 
+**Install dependencies:**
 
 ```bash
 pipenv sync --dev
@@ -38,7 +38,7 @@ pipenv run web
 
 **Run with an automated script:**
 
-_(Implemented by @Wiguwbe)_
+_(Implemented by [@Wiguwbe](https://github.com/Wiguwbe))_
 
 ```bash
 pipenv run auto <script.py> [args]
