@@ -1,5 +1,6 @@
 from math import inf
 from random import randint
+import re
 
 from lib import event_manager
 from lib.game_event_type import GameEventType
@@ -10,6 +11,8 @@ from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
 from window_size import WINDOW_HEIGHT
+
+_NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(10)))
 
 class ProcessManager(GameObject):
     _MAX_PROCESSES = 42
@@ -196,9 +199,8 @@ class ProcessManager(GameObject):
     def update(self, current_time, events):
         for event in events:
             if event.type == GameEventType.KEY_UP:
-                if len(event.get_property('key')) == 1 and event.get_property(
-                        'key') >= '0' and event.get_property('key') <= '9':
-                    cpu_id = int(event.get_property('key')) - 1
+                if event.get_property('key') in _NUM_KEYS:
+                    cpu_id = int(re.search(r'\d', event.get_property('key')).group()) - 1
                     if cpu_id == -1:
                         cpu_id = 9
                     if event.get_property('shift'):
