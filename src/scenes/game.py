@@ -98,8 +98,8 @@ class Game(Scene):
                 (self._screen.get_height() - self._in_game_menu_dialog.view.height) / 2)
             # Must be before menu button as both handles same key,
             # otherwise close will detect menu as open in same cycle
-            menu_buttom_index = self._scene_objects.index(self._open_in_game_menu_button)
-            self._scene_objects.insert(menu_buttom_index, self._in_game_menu_dialog)
+            menu_button_index = self._scene_objects.index(self._open_in_game_menu_button)
+            self._scene_objects.insert(menu_button_index, self._in_game_menu_dialog)
 
     def _close_in_game_menu(self):
         if self._in_game_menu_dialog:

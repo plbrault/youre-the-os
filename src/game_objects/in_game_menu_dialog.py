@@ -22,22 +22,18 @@ class InGameMenuDialog(GameObject):
         self._restart_button.view.min_width = self.button_width
         self._close_menu_button.view.min_width = self.button_width
 
-    def update(self, current_time, events):
-        self._restart_button.view.set_xy(
-            self.view.x + (self.view.width -
-                           self._restart_button.view.width) / 2,
-            self.view.y + 4
-        )
-        self._main_menu_button.view.set_xy(
-            self.view.x + (self.view.width -
-                           self._main_menu_button.view.width) / 2,
-            self._restart_button.view.y + self._restart_button.view.height + 2
-        )
-        self._close_menu_button.view.set_xy(
-            self.view.x + (self.view.width -
-                           self._close_menu_button.view.width) / 2,
-            self._main_menu_button.view.y + self._main_menu_button.view.height + 2
-        )
+    @property
+    def restart_button(self):
+        return self._restart_button
 
+    @property
+    def main_menu_button(self):
+        return self._main_menu_button
+
+    @property
+    def close_menu_button(self):
+        return self._close_menu_button
+
+    def update(self, current_time, events):
         for child in self.children:
             child.update(current_time, events)
