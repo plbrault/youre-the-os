@@ -2,6 +2,7 @@ from math import inf
 from random import randint
 import re
 
+from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.cpu import Cpu
@@ -26,6 +27,7 @@ class ProcessManager(GameObject):
         self._process_slots = None
         self._user_terminated_process_slots = None
         self._io_queue = None
+        self._processes = None
 
         self._next_pid = None
         self._last_new_process_check = None
@@ -64,12 +66,19 @@ class ProcessManager(GameObject):
     def user_terminated_process_count(self):
         return self._user_terminated_process_count
 
+    def get_process(self, pid):
+        return self._processes[pid]
+
+    def del_process(self, process):
+        del self._processes[process.pid]
+
     def setup(self):
         self._cpu_list = []
         self._alive_process_list = []
         self._process_slots = []
         self._user_terminated_process_slots = []
         self._io_queue = IoQueue()
+        self._processes = {}
 
         self._next_pid = 1
         self._last_new_process_check = 0
@@ -127,6 +136,8 @@ class ProcessManager(GameObject):
                                 self.view.height + process.view.height)
             process.view.target_y = process_slot.view.y
 
+            event_manager.event_process_new(pid)
+            self._processes[pid] = process
             return True
         return False
 

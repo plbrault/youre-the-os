@@ -1,11 +1,14 @@
+from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
 
 
 class Page(GameObject):
-    def __init__(self, pid, page_manager):
+
+    def __init__(self, pid, idx, page_manager):
         self._pid = pid
+        self._idx = idx
         self._page_manager = page_manager
 
         self._in_use = False
@@ -17,6 +20,10 @@ class Page(GameObject):
     @property
     def pid(self):
         return self._pid
+
+    @property
+    def idx(self):
+        return self._idx
 
     @property
     def in_use(self):
@@ -36,7 +43,12 @@ class Page(GameObject):
 
     @in_use.setter
     def in_use(self, value):
+        if self._in_use != value:
+            event_manager.event_page_use(self._pid, self._idx, value)
         self._in_use = value
+
+    def swap(self):
+        self._page_manager.swap_page(self)
 
     def _check_if_clicked_on(self, event):
         if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
@@ -44,7 +56,7 @@ class Page(GameObject):
         return False
 
     def _on_click(self):
-        self._page_manager.swap_page(self)
+        self.swap()
 
     def update(self, current_time, events):
         for event in events:

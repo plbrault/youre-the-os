@@ -1,23 +1,33 @@
+from lib import event_manager
 from lib.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 
-
 class PageManager(GameObject):
     _TOTAL_ROWS = 11
+    _NUM_COLS = 16
 
     def __init__(self, game):
         self._game = game
 
         self._ram_slots = []
         self._swap_slots = []
+        self._pages = {}
 
         self._pages_in_ram_label_xy = (0, 0)
         self._swap_is_enabled = True
         self._pages_in_swap_label_xy = None
 
         super().__init__(PageManagerView(self))
+
+    @classmethod
+    def get_total_rows(cls):
+        return cls._TOTAL_ROWS
+
+    @classmethod
+    def get_num_cols(cls):
+        return cls._NUM_COLS
 
     @property
     def pages_in_ram_label_xy(self):
@@ -27,6 +37,9 @@ class PageManager(GameObject):
     def pages_in_swap_label_xy(self):
         return self._pages_in_swap_label_xy
 
+    def get_page(self, pid, idx):
+        return self._pages[(pid, idx)]
+
     def setup(self):
         self._pages_in_ram_label_xy = (
             self._game.process_manager.view.width, 120)
@@ -34,7 +47,7 @@ class PageManager(GameObject):
         num_ram_rows = self._game.config['num_ram_rows']
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
 
-        num_cols = 16
+        num_cols = PageManager._NUM_COLS
 
         for row in range(num_ram_rows):
             for column in range(num_cols):
@@ -64,8 +77,8 @@ class PageManager(GameObject):
         else:
             self._swap_is_enabled = False
 
-    def create_page(self, pid):
-        page = Page(pid, self)
+    def create_page(self, pid, idx):
+        page = Page(pid, idx, self)
         page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
@@ -82,6 +95,7 @@ class PageManager(GameObject):
                     page_created = True
                     break
         self.children.append(page)
+        self._pages[(pid, idx)] = page
         return page
 
     def swap_page(self, page):
@@ -102,6 +116,7 @@ class PageManager(GameObject):
                         page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
                         break
                 page.in_swap = False
+                event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
         else:
             for swap_slot in self._swap_slots:
                 if not swap_slot.has_page:
@@ -118,6 +133,7 @@ class PageManager(GameObject):
                         page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
                         break
                 page.in_swap = True
+                event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
@@ -129,3 +145,4 @@ class PageManager(GameObject):
                 swap_slot.page = None
                 break
         self.children.remove(page)
+        del self._pages[(page.pid, page.idx)]

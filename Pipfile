@@ -16,5 +16,6 @@ python_version = "3.11"
 
 [scripts]
 desktop = "python ./run-desktop.py"
+auto = "python ./run-auto.py"
 web = "python ./run-web.py"
 pylint = "pylint ./src"

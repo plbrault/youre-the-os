@@ -1,5 +1,7 @@
+import sys
 import pygame
 
+from lib import event_manager
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
 from game_objects.button import Button
@@ -12,10 +14,14 @@ from game_objects.uptime_manager import UptimeManager
 
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=None):
+    # pylint: disable=too-many-arguments
+    def __init__(self, screen, scenes, config=None, script=None, standalone=False):
         self._config = config
         if self._config is None:
             self._config = default_difficulty['config']
+        self._script = script
+        self._script_callback = None
+        self._standalone = standalone
 
         self._current_time = 0
 
@@ -59,10 +65,12 @@ class Game(Scene):
         self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
         self._scene_objects.append(self._uptime_manager)
 
-        self._open_in_game_menu_button = Button('Menu', self._open_in_game_menu, key_bind='escape')
-        self._open_in_game_menu_button.view.set_xy(
-            self._screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
-        self._scene_objects.append(self._open_in_game_menu_button)
+        if not self._standalone:
+            self._open_in_game_menu_button = Button(
+                'Menu', self._open_in_game_menu, key_bind='escape')
+            self._open_in_game_menu_button.view.set_xy(
+                self._screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
+            self._scene_objects.append(self._open_in_game_menu_button)
 
     @property
     def config(self):
@@ -110,6 +118,47 @@ class Game(Scene):
     def _return_to_main_menu(self):
         self._scenes['main_menu'].start()
 
+    def _get_script_events(self):
+        if self._script_callback is None:
+            return []
+        events = self._script_callback(event_manager.get_events())
+        event_manager.clear_events()
+        return events
+
+    def _process_script_events(self):
+        for event in self._get_script_events():
+            try:
+                if event['type'] == 'io_queue':
+                    self._process_manager.io_queue.process_events()
+                elif event['type'] == 'process':
+                    self._process_manager.get_process(
+                        event['pid']).toggle()
+                elif event['type'] == 'page':
+                    self._page_manager.get_page(
+                        event['pid'], event['idx']).swap()
+            except Exception as exc: # pylint: disable=broad-exception-caught
+                print(exc.__class__.__name__, *exc.args, event, file=sys.stderr)
+
+    def _prepare_automation_script(self):
+        # pylint: disable=exec-used
+        self._script_callback = None
+        if self._script is None:
+            return
+
+        num_cols = PageManager.get_num_cols()
+        script_globals = {
+            'num_cpus': self._config['num_cpus'],
+            'num_ram_pages': num_cols * self._config['num_ram_rows'],
+            'num_swap_pages':
+                num_cols * (PageManager.get_total_rows() - self._config['num_ram_rows']),
+        }
+
+        exec(self._script, script_globals)
+        try:
+            self._script_callback = script_globals['run_os']
+        except KeyError:
+            pass
+
     def update(self, current_time, events):
         dialog = None
 
@@ -126,7 +175,8 @@ class Game(Scene):
                         self._uptime_manager.uptime_text,
                         self._score_manager.score,
                         self.setup,
-                        self._return_to_main_menu)
+                        self._return_to_main_menu,
+                        self._standalone)
                     self._game_over_dialog.view.set_xy(
                         (self._screen.get_width() -
                          self._game_over_dialog.view.width) / 2,
@@ -139,5 +189,6 @@ class Game(Scene):
         if dialog is not None:
             dialog.update(current_time, events)
         else:
+            self._process_script_events()
             for game_object in self._scene_objects:
                 game_object.update(current_time, events)
