@@ -1,4 +1,4 @@
-_easy_difficulty = { 
+_easy_difficulty = {
     'config': {
         'name': 'Easy',
         'num_cpus': 4,

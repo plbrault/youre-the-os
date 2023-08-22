@@ -3,7 +3,7 @@ import pygame
 
 from lib import event_manager
 from lib.scene import Scene
-from difficulty_levels import default_difficulty, difficulty_levels
+from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.in_game_menu_dialog import InGameMenuDialog
