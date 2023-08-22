@@ -18,6 +18,8 @@ class GameOverDialogView(Drawable):
             'YOU GOT REBOOTED!', False, Color.WHITE)
         self._uptime_text_surface = FONT_PRIMARY_LARGE.render(
             'UPTIME: ' + game_over_dialog.uptime, False, Color.WHITE)
+        self._difficulty_text_surface = FONT_PRIMARY_LARGE.render(
+            'DIFFICULTY: ' + game_over_dialog.difficulty, False, Color.WHITE)
         self._score_text_surface = FONT_PRIMARY_LARGE.render(
             'SCORE: ' + str(game_over_dialog.score), False, Color.WHITE)
 
@@ -54,6 +56,15 @@ class GameOverDialogView(Drawable):
             self._uptime_text_surface,
             (self.x +
              20,
+             self.y +
+             self._main_text_surface.get_height() +
+             self._image.get_height() +
+             80))
+        surface.blit(
+            self._difficulty_text_surface,
+            (self.x +
+            (self.width - self._difficulty_text_surface.get_width()) /
+             2,
              self.y +
              self._main_text_surface.get_height() +
              self._image.get_height() +

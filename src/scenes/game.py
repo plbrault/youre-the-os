@@ -173,6 +173,7 @@ class Game(Scene):
                 if self._game_over_dialog is None:
                     self._game_over_dialog = GameOverDialog(
                         self._uptime_manager.uptime_text,
+                        self._config['name'],
                         self._score_manager.score,
                         self.setup,
                         self._return_to_main_menu,
