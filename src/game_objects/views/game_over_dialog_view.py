@@ -62,9 +62,9 @@ class GameOverDialogView(Drawable):
              80))
         surface.blit(
             self._difficulty_text_surface,
-            (self.width -
-             self.x / 2 +
-             80, # Absolute weird way to measure middle, oops :p
+            (self.x +
+            (self.width - self._difficulty_text_surface.get_width()) /
+             2,
              self.y +
              self._main_text_surface.get_height() +
              self._image.get_height() +
