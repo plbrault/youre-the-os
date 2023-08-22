@@ -3,7 +3,7 @@ import pygame
 
 from lib import event_manager
 from lib.scene import Scene
-from difficulty_levels import default_difficulty
+from difficulty_levels import default_difficulty, difficulty_levels
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.in_game_menu_dialog import InGameMenuDialog
@@ -173,6 +173,7 @@ class Game(Scene):
                 if self._game_over_dialog is None:
                     self._game_over_dialog = GameOverDialog(
                         self._uptime_manager.uptime_text,
+                        self._config['name'],
                         self._score_manager.score,
                         self.setup,
                         self._return_to_main_menu,

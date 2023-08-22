@@ -54,6 +54,7 @@ class CustomSettingsDialog(GameObject):
     @property
     def config(self):
         config = {
+            'name': 'Custom',
             'num_cpus': int(
                 self._num_cpus_selector.selected_option),
             'num_processes_at_startup': int(

@@ -1,6 +1,6 @@
-_easy_difficulty = {
-    'name': 'Easy',
+_easy_difficulty = { 
     'config': {
+        'name': 'Easy',
         'num_cpus': 4,
         'num_processes_at_startup': 14,
         'num_ram_rows': 8,
@@ -10,8 +10,8 @@ _easy_difficulty = {
 }
 
 _normal_difficulty = {
-    'name': 'Normal',
     'config': {
+        'name': 'Normal',
         'num_cpus': 4,
         'num_processes_at_startup': 14,
         'num_ram_rows': 5,
@@ -21,8 +21,8 @@ _normal_difficulty = {
 }
 
 _hard_difficulty = {
-    'name': 'Hard',
     'config': {
+        'name': 'Hard',
         'num_cpus': 8,
         'num_processes_at_startup': 28,
         'num_ram_rows': 6,
@@ -32,8 +32,8 @@ _hard_difficulty = {
 }
 
 _harder_difficulty = {
-    'name': 'Harder',
     'config': {
+        'name': 'Harder',
         'num_cpus': 12,
         'num_processes_at_startup': 35,
         'num_ram_rows': 6,
@@ -43,8 +43,8 @@ _harder_difficulty = {
 }
 
 _insane_difficulty = {
-    'name': 'Insane',
     'config': {
+        'name': 'Insane',
         'num_cpus': 16,
         'num_processes_at_startup': 42,
         'num_ram_rows': 4,
@@ -62,7 +62,7 @@ difficulty_levels = [
 ]
 
 difficulty_levels_map = {
-    l['name'].lower(): l
+    l['config']['name'].lower(): l
     for l in difficulty_levels
 }
 

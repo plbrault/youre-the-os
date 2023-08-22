@@ -34,7 +34,7 @@ class MainMenu(Scene):
         self._scene_objects.append(difficulty_selection_label)
 
         difficulty_level_names = list(
-            map(lambda difficulty_level: difficulty_level['name'], difficulty_levels))
+            map(lambda difficulty_level: difficulty_level['config']['name'], difficulty_levels))
         difficulty_level_names.append('Custom')
         self._difficulty_selector = OptionSelector(difficulty_level_names, 1)
         self._difficulty_selector.view.set_xy(
