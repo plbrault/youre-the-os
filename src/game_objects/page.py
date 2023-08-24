@@ -1,4 +1,3 @@
-from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
