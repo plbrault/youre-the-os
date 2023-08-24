@@ -143,6 +143,8 @@ class Process(GameObject):
         event_manager.event_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _on_io_event(self):
+        if self.has_ended:
+            return
         self._set_waiting_for_io(False)
         event_manager.event_process_wait_io(self.pid, self.is_waiting_for_io)
 
