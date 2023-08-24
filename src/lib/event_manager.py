@@ -22,7 +22,8 @@ etypes = Enum('_et', [
     'PROC_WAIT_IO',
     'PROC_WAIT_PAGE',
     'PROC_TERM',
-    'PROC_KILL'
+    'PROC_KILL',
+    'PROC_END'
 ])
 
 
@@ -103,6 +104,11 @@ def event_process_cpu(pid, cpu):
     add_event(etypes.PROC_CPU, {
         'pid': pid,
         'cpu': cpu
+    })
+
+def event_process_end(pid):
+    add_event(etypes.PROC_END, {
+        'pid': pid
     })
 
 

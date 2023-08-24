@@ -72,6 +72,8 @@ class Game(Scene):
                 self._screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
             self._scene_objects.append(self._open_in_game_menu_button)
 
+        self._prepare_automation_script()
+
     @property
     def config(self):
         return self._config
