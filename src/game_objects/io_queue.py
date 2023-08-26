@@ -28,6 +28,7 @@ class IoQueue(GameObject):
             self._event_count -= 1
             callback = self._subscriber_queue.get()
             callback()
+        event_manager.event_io_queue(self.event_count)
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:

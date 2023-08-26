@@ -94,7 +94,8 @@ class Process(GameObject):
     def yield_cpu(self):
         if self.has_cpu:
             self._has_cpu = False
-            event_manager.event_process_cpu(self._pid, self._has_cpu)
+            if not self.has_ended:
+                event_manager.event_process_cpu(self._pid, self._has_cpu)
             self._current_state_duration = 0
             for cpu in self._process_manager.cpu_list:
                 if cpu.process == self:
@@ -110,6 +111,7 @@ class Process(GameObject):
                     event_manager.event_page_free(page.pid, page.idx)
                     self._page_manager.delete_page(page)
                 self._process_manager.del_process(self)
+                event_manager.event_process_end(self.pid)
             else:
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
@@ -131,14 +133,20 @@ class Process(GameObject):
     def _set_waiting_for_page(self, waiting_for_page):
         def update_fn():
             self._is_waiting_for_page = waiting_for_page
+        if waiting_for_page != self.is_waiting_for_page:
+            event_manager.event_process_wait_page(self.pid, waiting_for_page)
         self._update_blocking_condition(update_fn)
 
     def _wait_for_io(self):
         self._set_waiting_for_io(True)
         self._process_manager.io_queue.wait_for_event(self._on_io_event)
+        event_manager.event_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _on_io_event(self):
+        if self.has_ended:
+            return
         self._set_waiting_for_io(False)
+        event_manager.event_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
@@ -150,7 +158,6 @@ class Process(GameObject):
 
     def _terminate_by_user(self):
         if self._process_manager.terminate_process(self, True):
-            event_manager.event_process_killed(self._pid)
             self._has_ended = True
             self._set_waiting_for_io(False)
             self._set_waiting_for_page(False)
@@ -159,6 +166,7 @@ class Process(GameObject):
                 event_manager.event_page_free(page.pid, page.idx)
                 self._page_manager.delete_page(page)
             self._process_manager.del_process(self)
+            event_manager.event_process_killed(self._pid)
 
     def _check_if_clicked_on(self, event):
         if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):

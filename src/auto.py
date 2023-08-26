@@ -90,13 +90,19 @@ def parse_arguments():
     # get base difficulty level
     config = difficulty_levels.default_difficulty['config']
     if args.difficulty is not None:
-        config = difficulty_levels.difficulty_levels_map[args.difficulty]
+        config = difficulty_levels.difficulty_levels_map[args.difficulty]['config']
 
     # set custom fields
     for key in config.keys():
-        val = getattr(args, key)
+        try:
+            val = getattr(args, key)
+        except AttributeError:
+            # key is in config but is not configurable
+            continue
         if val is not None:
-            difficulty_config[key] = val
+            config[key] = val
+            # on change, difficulty is now Custom
+            config['name'] = "Custom"
 
     return args.filename, config
 

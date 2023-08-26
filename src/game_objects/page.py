@@ -1,4 +1,3 @@
-from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
@@ -43,8 +42,6 @@ class Page(GameObject):
 
     @in_use.setter
     def in_use(self, value):
-        if self._in_use != value:
-            event_manager.event_page_use(self._pid, self._idx, value)
         self._in_use = value
 
     def swap(self):
