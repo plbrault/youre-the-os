@@ -187,7 +187,6 @@ class Process(GameObject):
         self.toggle()
 
     def update(self, current_time, events):
-        # pylint: disable=too-many-statements
         if not self._check_if_in_motion():
             for event in events:
                 if self._check_if_clicked_on(event):
