@@ -4,7 +4,6 @@ from game_objects.views.game_over_dialog_view import GameOverDialogView
 
 
 class GameOverDialog(GameObject):
-    # pylint: disable=too-many-arguments
     def __init__(self, uptime, difficulty, score, restart_game_fn, main_menu_fn, standalone=False):
         self.uptime = uptime
         self.score = score

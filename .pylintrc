@@ -309,8 +309,8 @@ min-public-methods=2
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when caught.
-overgeneral-exceptions=BaseException,
-                       Exception
+overgeneral-exceptions=builtins.BaseException,
+                       builtins.Exception
 
 
 [FORMAT]
@@ -422,7 +422,9 @@ disable=raw-checker-failed,
         missing-class-docstring,
         missing-function-docstring,
         too-many-instance-attributes,
-        too-many-branches
+        too-many-branches,
+        too-many-arguments,
+        too-many-statements
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

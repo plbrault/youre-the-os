@@ -14,7 +14,6 @@ from game_objects.uptime_manager import UptimeManager
 
 
 class Game(Scene):
-    # pylint: disable=too-many-arguments
     def __init__(self, screen, scenes, config=None, script=None, standalone=False):
         self._config = config
         if self._config is None:
