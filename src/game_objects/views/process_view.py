@@ -95,8 +95,8 @@ class ProcessView(Drawable):
                 min(
                     (self.width - 4),
                     (self.width - 4)
-                        - (5 - self._process.current_state_duration)
-                        * (self.width - 4) / 5,
+                        - (5000 - self._process.current_state_duration)
+                        * (self.width - 4) / 5000,
                 ),
                 2
             ))

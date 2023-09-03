@@ -1,4 +1,4 @@
-from math import sqrt
+from math import floor, sqrt
 from random import randint
 
 from lib import event_manager
@@ -21,6 +21,7 @@ class Process(GameObject):
         self._starvation_level = 1
 
         self._last_update_time = 0
+        self._last_event_check_time = 0
         self._current_state_duration = 0
 
         self._display_blink_color = False
@@ -191,6 +192,11 @@ class Process(GameObject):
         self.toggle()
 
     def update(self, current_time, events):
+        self._current_state_duration += current_time - self._last_update_time
+        self._last_update_time = current_time
+
+        current_state_duration_seconds = floor(self._current_state_duration / 1000)
+
         if not self._check_if_in_motion():
             for event in events:
                 if self._check_if_clicked_on(event):
@@ -204,10 +210,8 @@ class Process(GameObject):
                         pages_in_swap += 1
             self._set_waiting_for_page(pages_in_swap > 0)
 
-            if current_time >= self._last_update_time + 1000:
-                self._last_update_time = current_time
-
-                self._current_state_duration += 1
+            if current_time >= self._last_event_check_time + 1000:
+                self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
                     if randint(1, 100) <= self._io_probability_numerator:
@@ -218,14 +222,14 @@ class Process(GameObject):
                         new_page.in_use = True
                         event_manager.event_page_new(
                             new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
-                    elif self._current_state_duration >= 1 and randint(1, 100) == 1:
+                    elif current_state_duration_seconds >= 1 and randint(1, 100) == 1:
                         self._terminate_gracefully()
-                    elif self._current_state_duration == 5:
+                    elif current_state_duration_seconds == 5:
                         self._starvation_level = 0
                         event_manager.event_process_starvation(self._pid, self._starvation_level)
 
                 else:
-                    if self._current_state_duration > 0 and self._current_state_duration % 10 == 0:
+                    if current_state_duration_seconds > 0 and current_state_duration_seconds % 10 == 0:
                         if self._starvation_level < 5:
                             self._starvation_level += 1
                             event_manager.event_process_starvation(
