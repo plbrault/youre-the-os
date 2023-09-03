@@ -38,8 +38,10 @@ class Process(GameObject):
         self._starvation_level = 1
 
         self._last_update_time = game.current_time
-        self._last_event_check_time = 0
-        self._current_state_duration = 0
+        self._last_event_check_time = self._last_update_time
+        self._last_state_change_time = self._last_update_time
+            # Last time process state changed between running, idle or blocked
+        self._last_starvation_level_change_time = self._last_update_time
 
         self._display_blink_color = False
 
@@ -84,7 +86,7 @@ class Process(GameObject):
 
     @property
     def current_state_duration(self):
-        return self._current_state_duration
+        return self._last_update_time - self._last_state_change_time
 
     @property
     def is_progressing_to_happiness(self):
@@ -105,7 +107,7 @@ class Process(GameObject):
                     event_manager.event_process_cpu(self._pid, self._has_cpu)
                     break
             if self.has_cpu:
-                self._current_state_duration = 0
+                self._last_state_change_time = self._last_update_time
                 for slot in self._process_manager.process_slots:
                     if slot.process == self:
                         slot.process = None
@@ -129,7 +131,7 @@ class Process(GameObject):
                 self._is_on_io_cooldown = False
             if not self.has_ended:
                 event_manager.event_process_cpu(self._pid, self._has_cpu)
-            self._current_state_duration = 0
+            self._last_state_change_time = self._last_update_time
             for cpu in self._process_manager.cpu_list:
                 if cpu.process == self:
                     cpu.process = None
@@ -156,7 +158,7 @@ class Process(GameObject):
         was_blocked = self.is_blocked
         update_fn()
         if was_blocked != self.is_blocked:
-            self._current_state_duration = 0
+            self._last_state_change_time = self._last_update_time
 
     def _set_waiting_for_io(self, waiting_for_io):
         def update_fn():
@@ -221,10 +223,7 @@ class Process(GameObject):
         self.toggle()
 
     def update(self, current_time, events):
-        self._current_state_duration += current_time - self._last_update_time
         self._last_update_time = current_time
-
-        current_state_duration_seconds = floor(self._current_state_duration / 1000)
 
         if not self._check_if_in_motion():
             for event in events:
@@ -240,26 +239,11 @@ class Process(GameObject):
             self._set_waiting_for_page(pages_in_swap > 0)
 
             if current_time >= self._last_event_check_time + 1000:
-                # TEMP
-                if self.has_cpu and self.starvation_level > 0:
-                    print(
-                        str(self._pid) + ' |'
-                        + str(current_time) + ' |'
-                        + str(self._has_cpu) + ' |'
-                        + str(self._is_waiting_for_io) + ' |'
-                        + str(self._is_waiting_for_page) + ' |'
-                        + str(self._has_ended) + ' |'
-                        + str(self._starvation_level) + ' |'
-                        + str(self._display_blink_color) + ' |'
-                        + str(self._current_state_duration) + ' |'
-                        + str(current_state_duration_seconds) + ' |'
-                        + str(len(self._pages))
-                    )
-                ######
                 self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
-                    if current_state_duration_seconds >= 5 and self._starvation_level > 0:
+                    if current_time - self._last_state_change_time >= 5000:
+                        self._last_starvation_level_change_time = current_time
                         self._starvation_level = 0
                         event_manager.event_process_starvation(self._pid, self._starvation_level)
                     if (
@@ -273,18 +257,17 @@ class Process(GameObject):
                         new_page.in_use = True
                         event_manager.event_page_new(
                             new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
-                    if current_state_duration_seconds >= 1 and randint(1, 100) == 1:
+                    if current_time - self._last_state_change_time >= 1000 and randint(1, 100) == 1:
                         self._terminate_gracefully()
 
-                else:
-                    if (current_state_duration_seconds > 0
-                        and current_state_duration_seconds % 10 == 0):
-                        if self._starvation_level < 5:
-                            self._starvation_level += 1
-                            event_manager.event_process_starvation(
-                                self._pid, self._starvation_level)
-                        else:
-                            self._terminate_by_user()
+                elif current_time >= self._last_starvation_level_change_time + 10000:
+                    self._last_starvation_level_change_time = current_time
+                    if self._starvation_level < 5:
+                        self._starvation_level += 1
+                        event_manager.event_process_starvation(
+                            self._pid, self._starvation_level)
+                    else:
+                        self._terminate_by_user()
 
         if self.view.target_x is not None:
             if self.view.x == self.view.target_x:
