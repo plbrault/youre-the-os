@@ -19,7 +19,7 @@ class GameOverDialogView(Drawable):
         self._uptime_text_surface = FONT_PRIMARY_LARGE.render(
             'UPTIME: ' + game_over_dialog.uptime, False, Color.WHITE)
         self._difficulty_text_surface = FONT_PRIMARY_LARGE.render(
-            'DIFFICULTY: ' + game_over_dialog.difficulty, False, Color.WHITE)
+            'DIFFICULTY: ' + game_over_dialog.difficulty.upper(), False, Color.WHITE)
         self._score_text_surface = FONT_PRIMARY_LARGE.render(
             'SCORE: ' + str(game_over_dialog.score), False, Color.WHITE)
 
