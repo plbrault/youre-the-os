@@ -64,6 +64,7 @@ async def main():
     while True:
         events = []
         mouse_event_added = False
+        mouse_drag_event = None
 
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -72,6 +73,10 @@ async def main():
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                 mouse_down = False
+                if mouse_event_added and mouse_drag_event:
+                    events.remove(mouse_drag_event)
+                    mouse_event_added = False
+                    mouse_drag_event = None
                 if not mouse_event_added:
                     events.append(
                         GameEvent(
@@ -90,11 +95,10 @@ async def main():
                             'key': pygame.key.name(
                                 event.key), 'shift': shift_down}))
             elif event.type == pygame.MOUSEMOTION and mouse_down and not mouse_event_added:
-                events.append(
-                    GameEvent(
-                        GameEventType.MOUSE_LEFT_DRAG, {
-                            'position': event.pos}))
+                event = GameEvent(GameEventType.MOUSE_LEFT_DRAG, {'position': event.pos})
+                events.append(event)
                 mouse_event_added = True
+                mouse_drag_event = event
 
         scene_manager.current_scene.update(pygame.time.get_ticks(), events)
         scene_manager.current_scene.render()
