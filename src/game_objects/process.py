@@ -23,8 +23,8 @@ class Process(GameObject):
 
         self._last_update_time = game.current_time
         self._last_event_check_time = self._last_update_time
+        # Last time process state changed between running, idle or blocked
         self._last_state_change_time = self._last_update_time
-            # Last time process state changed between running, idle or blocked
         self._last_starvation_level_change_time = self._last_update_time
 
         self._display_blink_color = False
