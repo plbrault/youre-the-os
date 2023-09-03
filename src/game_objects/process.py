@@ -6,6 +6,22 @@ from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
+###### TEMP
+print(
+    'PID |'
+    + 'current_time |'
+    + 'has_cpu |'
+    + 'is_waiting_for_io |'
+    + 'is_waiting_for_page |'
+    + 'has_ended |'
+    + 'starvation_level |'
+    + 'display_blink_color |'
+    + 'current_state_duration |'
+    + 'current_state_duration_seconds |'
+    + 'num_pages'
+)
+######
+
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
@@ -224,10 +240,26 @@ class Process(GameObject):
             self._set_waiting_for_page(pages_in_swap > 0)
 
             if current_time >= self._last_event_check_time + 1000:
+                # TEMP
+                if self.has_cpu and self.starvation_level > 0:
+                    print(
+                        str(self._pid) + ' |'
+                        + str(current_time) + ' |'
+                        + str(self._has_cpu) + ' |'
+                        + str(self._is_waiting_for_io) + ' |'
+                        + str(self._is_waiting_for_page) + ' |'
+                        + str(self._has_ended) + ' |'
+                        + str(self._starvation_level) + ' |'
+                        + str(self._display_blink_color) + ' |'
+                        + str(self._current_state_duration) + ' |'
+                        + str(current_state_duration_seconds) + ' |'
+                        + str(len(self._pages))
+                    )
+                ######
                 self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
-                    if current_state_duration_seconds == 5:
+                    if current_state_duration_seconds >= 5 and self._starvation_level > 0:
                         self._starvation_level = 0
                         event_manager.event_process_starvation(self._pid, self._starvation_level)
                     if (
