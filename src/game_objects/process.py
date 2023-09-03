@@ -238,7 +238,8 @@ class Process(GameObject):
                         event_manager.event_process_starvation(self._pid, self._starvation_level)
 
                 else:
-                    if current_state_duration_seconds > 0 and current_state_duration_seconds % 10 == 0:
+                    if (current_state_duration_seconds > 0
+                        and current_state_duration_seconds % 10 == 0):
                         if self._starvation_level < 5:
                             self._starvation_level += 1
                             event_manager.event_process_starvation(
