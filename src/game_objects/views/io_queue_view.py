@@ -21,7 +21,7 @@ class IoQueueView(Drawable):
     def draw(self, surface):
         color = Color.LIGHT_GREY
         if self._io_queue.event_count > 0:
-            color = Color.TEAL
+            color = Color.WHITE if self._io_queue.display_blink_color else Color.TEAL
         pygame.draw.rect(surface, color, pygame.Rect(
             self._x, self._y, self.width, self.height))
         text_surface = FONT_SECONDARY_XXSMALL.render(
