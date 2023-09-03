@@ -34,7 +34,10 @@ class CustomSettingsDialog(GameObject):
         self.children.append(self._new_process_probability_selector)
 
         self._io_probability_selector = OptionSelector(
-            [str(i) + ' %' for i in range(0, 55, 5)])
+            ['0 %', '1 %']
+            +
+            [str(i) + ' %' for i in range(5, 55, 5)]
+        )
         self._io_probability_selector.selected_option = str(
             int(self._config['io_probability'] * 100)) + ' %'
         self.children.append(self._io_probability_selector)
@@ -63,8 +66,10 @@ class CustomSettingsDialog(GameObject):
                 self._num_ram_rows_selector.selected_option),
             'new_process_probability': self._new_process_probability_selector.selected_option_id *
             0.05,
-            'io_probability': self._io_probability_selector.selected_option_id *
-            0.05}
+            'io_probability': [
+                0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5
+            ][self._io_probability_selector.selected_option_id]
+        }
         return config
 
     def update(self, current_time, events):
