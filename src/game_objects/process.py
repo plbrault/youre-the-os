@@ -227,6 +227,9 @@ class Process(GameObject):
                 self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
+                    if current_state_duration_seconds == 5:
+                        self._starvation_level = 0
+                        event_manager.event_process_starvation(self._pid, self._starvation_level)
                     if (
                         not self._is_on_io_cooldown
                         and randint(1, 100) <= self._io_probability_numerator
@@ -238,11 +241,8 @@ class Process(GameObject):
                         new_page.in_use = True
                         event_manager.event_page_new(
                             new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
-                    elif current_state_duration_seconds >= 1 and randint(1, 100) == 1:
+                    if current_state_duration_seconds >= 1 and randint(1, 100) == 1:
                         self._terminate_gracefully()
-                    elif current_state_duration_seconds == 5:
-                        self._starvation_level = 0
-                        event_manager.event_process_starvation(self._pid, self._starvation_level)
 
                 else:
                     if (current_state_duration_seconds > 0
