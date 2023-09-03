@@ -1,4 +1,4 @@
-from math import floor, sqrt
+from math import sqrt
 from random import randint
 
 from lib import event_manager
