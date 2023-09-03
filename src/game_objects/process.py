@@ -21,7 +21,7 @@ class Process(GameObject):
         self._has_ended = False
         self._starvation_level = 1
 
-        self._last_update_time = 0
+        self._last_update_time = game.current_time
         self._last_event_check_time = 0
         self._current_state_duration = 0
 
