@@ -69,6 +69,15 @@ class Process(GameObject):
     def current_state_duration(self):
         return self._current_state_duration
 
+    @property
+    def is_progressing_to_happiness(self):
+        return (
+            self.has_cpu
+            and self.starvation_level > 0
+            and not self.is_blocked
+            and not self.has_ended
+        )
+
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
