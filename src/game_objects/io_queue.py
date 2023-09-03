@@ -60,7 +60,6 @@ class IoQueue(GameObject):
                     self._event_count + 1, self._subscriber_queue.qsize())
                 event_manager.event_io_queue(self._event_count)
 
+        self._display_blink_color = False
         if self._event_count > 0:
-            self._display_blink_color = int(current_time / 500) % 2 == 1
-        else:
-            self._display_blink_color = False
+            self._display_blink_color = int(current_time / 333) % 2 == 1
