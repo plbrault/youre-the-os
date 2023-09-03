@@ -87,3 +87,16 @@ class ProcessView(Drawable):
 
         if self._process.is_waiting_for_io:
             surface.blit(_waiting_for_io_emoji, (self._x + 27, self._y + 32))
+
+        if self._process.has_cpu and not self._process.is_blocked and not self._process.has_ended:
+            pygame.draw.rect(surface, Color.BLUE, pygame.Rect(
+                self._x + 2,
+                self._y + self.height - 4,
+                min(
+                    (self.width - 4),
+                    (self.width - 4)
+                        - (5 - self._process.current_state_duration)
+                        * (self.width - 4) / 5,
+                ),
+                2
+            ))

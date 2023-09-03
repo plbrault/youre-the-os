@@ -64,6 +64,10 @@ class Process(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
 
+    @property
+    def current_state_duration(self):
+        return self._current_state_duration
+
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
