@@ -5,7 +5,7 @@ _easy_difficulty = {
         'num_processes_at_startup': 14,
         'num_ram_rows': 8,
         'new_process_probability': 0.05,
-        'io_probability': 0.05
+        'io_probability': 0.01
     }
 }
 
@@ -16,7 +16,7 @@ _normal_difficulty = {
         'num_processes_at_startup': 14,
         'num_ram_rows': 5,
         'new_process_probability': 0.05,
-        'io_probability': 0.1
+        'io_probability': 0.05
     }
 }
 
