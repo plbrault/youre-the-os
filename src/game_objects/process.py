@@ -16,6 +16,7 @@ class Process(GameObject):
 
         self._has_cpu = False
         self._is_waiting_for_io = False
+        self._is_on_io_cooldown = False
         self._is_waiting_for_page = False
         self._has_ended = False
         self._starvation_level = 1
@@ -108,6 +109,8 @@ class Process(GameObject):
     def yield_cpu(self):
         if self.has_cpu:
             self._has_cpu = False
+            if not self.is_waiting_for_io:
+                self._is_on_io_cooldown = False
             if not self.has_ended:
                 event_manager.event_process_cpu(self._pid, self._has_cpu)
             self._current_state_duration = 0
@@ -153,6 +156,7 @@ class Process(GameObject):
 
     def _wait_for_io(self):
         self._set_waiting_for_io(True)
+        self._is_on_io_cooldown = True
         self._process_manager.io_queue.wait_for_event(self._on_io_event)
         event_manager.event_process_wait_io(self.pid, self.is_waiting_for_io)
 
@@ -223,7 +227,10 @@ class Process(GameObject):
                 self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
-                    if randint(1, 100) <= self._io_probability_numerator:
+                    if (
+                        not self._is_on_io_cooldown
+                        and randint(1, 100) <= self._io_probability_numerator
+                    ):
                         self._wait_for_io()
                     if len(self._pages) < 4 and randint(1, 20) == 1:
                         new_page = self._page_manager.create_page(self._pid, len(self._pages))
