@@ -6,22 +6,6 @@ from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
 
-###### TEMP
-print(
-    'PID |'
-    + 'current_time |'
-    + 'has_cpu |'
-    + 'is_waiting_for_io |'
-    + 'is_waiting_for_page |'
-    + 'has_ended |'
-    + 'starvation_level |'
-    + 'display_blink_color |'
-    + 'current_state_duration |'
-    + 'current_state_duration_seconds |'
-    + 'num_pages'
-)
-######
-
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
