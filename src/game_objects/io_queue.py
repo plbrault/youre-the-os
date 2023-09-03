@@ -14,6 +14,8 @@ class IoQueue(GameObject):
         self._event_count = 0
         self._last_update_time = 0
 
+        self._display_blink_color = False
+
         super().__init__(IoQueueView(self))
 
     def wait_for_event(self, callback):
@@ -22,6 +24,10 @@ class IoQueue(GameObject):
     @property
     def event_count(self):
         return self._event_count
+
+    @property
+    def display_blink_color(self):
+        return self._display_blink_color
 
     def process_events(self):
         while self.event_count > 0:
@@ -53,3 +59,7 @@ class IoQueue(GameObject):
                 self._event_count = randint(
                     self._event_count + 1, self._subscriber_queue.qsize())
                 event_manager.event_io_queue(self._event_count)
+
+        self._display_blink_color = False
+        if self._event_count > 0:
+            self._display_blink_color = int(current_time / 333) % 2 == 1
