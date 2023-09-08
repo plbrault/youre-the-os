@@ -16,6 +16,7 @@ class Scene(ABC):
 
     @property
     def current_time(self):
+        print('!!!')
         return pygame.time.get_ticks()
 
     def start(self):

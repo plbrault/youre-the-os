@@ -23,6 +23,8 @@ class Game(Scene):
         self._standalone = standalone
 
         self._current_time = 0
+        self._paused_since = None
+        self._total_paused_time = 0
 
         self._process_manager = None
         self._page_manager = None
@@ -96,6 +98,23 @@ class Game(Scene):
     @property
     def page_manager(self):
         return self._page_manager
+
+    @Scene.current_time.getter
+    def current_time(self): # pylint: disable=invalid-overridden-method
+        return super().current_time - self._total_paused_time
+
+    @property
+    def is_paused(self):
+        return self._paused_since is not None
+
+    def _pause(self):
+        if not self._paused_since:
+            self._paused_since = self.current_time
+
+    def _unpause(self):
+        if self._paused_since:
+            self._paused_since = None
+            self._total_paused_time += self.current_time - self._paused_since
 
     def _open_in_game_menu(self):
         if self._in_game_menu_dialog is None:
