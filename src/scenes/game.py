@@ -1,5 +1,4 @@
 import sys
-import pygame
 
 from lib import event_manager
 from lib.scene import Scene
@@ -110,8 +109,7 @@ class Game(Scene):
     def current_time(self): # pylint: disable=invalid-overridden-method
         if self.is_paused:
             return self._paused_since
-        else:
-            return super().current_time - self._total_paused_time
+        return super().current_time - self._total_paused_time
 
     def _pause(self):
         if not self._paused_since:
