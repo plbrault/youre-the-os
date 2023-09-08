@@ -43,6 +43,9 @@ class Game(Scene):
         super().__init__(screen, scenes)
 
     def setup(self):
+        self._paused_since = None
+        self._total_paused_time = 0
+
         self._scene_objects = []
 
         self._in_game_menu_dialog = None
@@ -116,8 +119,9 @@ class Game(Scene):
 
     def _unpause(self):
         if self._paused_since:
-            self._total_paused_time += self.current_time - self._paused_since
+            paused_since = self._paused_since
             self._paused_since = None
+            self._total_paused_time += self.current_time - paused_since
 
     def _open_in_game_menu(self):
         if self._in_game_menu_dialog is None:
