@@ -1,5 +1,4 @@
 import sys
-import pygame
 
 from lib import event_manager
 from lib.scene import Scene
@@ -23,6 +22,8 @@ class Game(Scene):
         self._standalone = standalone
 
         self._current_time = 0
+        self._paused_since = None
+        self._total_paused_time = 0
 
         self._process_manager = None
         self._page_manager = None
@@ -41,6 +42,9 @@ class Game(Scene):
         super().__init__(screen, scenes)
 
     def setup(self):
+        self._paused_since = None
+        self._total_paused_time = 0
+
         self._scene_objects = []
 
         self._in_game_menu_dialog = None
@@ -61,7 +65,7 @@ class Game(Scene):
         self._score_manager = ScoreManager(self)
         self._scene_objects.append(self._score_manager)
 
-        self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
+        self._uptime_manager = UptimeManager(self)
         self._scene_objects.append(self._uptime_manager)
 
         if not self._standalone:
@@ -97,9 +101,29 @@ class Game(Scene):
     def page_manager(self):
         return self._page_manager
 
+    @property
+    def is_paused(self):
+        return self._paused_since is not None
+
+    @Scene.current_time.getter
+    def current_time(self): # pylint: disable=invalid-overridden-method
+        if self.is_paused:
+            return self._paused_since
+        return super().current_time - self._total_paused_time
+
+    def _pause(self):
+        if not self._paused_since:
+            self._paused_since = self.current_time
+
+    def _unpause(self):
+        if self._paused_since:
+            paused_since = self._paused_since
+            self._paused_since = None
+            self._total_paused_time += self.current_time - paused_since
+
     def _open_in_game_menu(self):
         if self._in_game_menu_dialog is None:
-            self._uptime_manager.pause()
+            self._pause()
             self._in_game_menu_dialog = InGameMenuDialog(
                 self.setup, self._return_to_main_menu, self._close_in_game_menu)
             self._in_game_menu_dialog.view.set_xy(
@@ -112,9 +136,9 @@ class Game(Scene):
 
     def _close_in_game_menu(self):
         if self._in_game_menu_dialog:
+            self._unpause()
             self._scene_objects.remove(self._in_game_menu_dialog)
             self._in_game_menu_dialog = None
-            self._uptime_manager.resume()
 
     def _return_to_main_menu(self):
         self._scenes['main_menu'].start()

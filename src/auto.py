@@ -144,7 +144,7 @@ async def main():
             if event.type == pygame.QUIT:
                 sys.exit()
 
-        scene_manager.current_scene.update(pygame.time.get_ticks(), [])
+        scene_manager.current_scene.update(scene_manager.current_scene.current_time, [])
         scene_manager.current_scene.render()
 
         clock.tick(FPS)
