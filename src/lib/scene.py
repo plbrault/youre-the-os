@@ -13,13 +13,15 @@ class Scene(ABC):
         self._background_color = background_color
         self._is_started = False
         self._scene_objects = []
+        self._start_time = 0
+
+    def start(self):
+        self._start_time = pygame.time.get_ticks()
+        scene_manager.start_scene(self)
 
     @property
     def current_time(self):
-        return pygame.time.get_ticks()
-
-    def start(self):
-        scene_manager.start_scene(self)
+        return pygame.time.get_ticks() - self._start_time
 
     @abstractmethod
     def setup(self):

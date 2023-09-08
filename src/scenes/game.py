@@ -63,7 +63,7 @@ class Game(Scene):
         self._score_manager = ScoreManager(self)
         self._scene_objects.append(self._score_manager)
 
-        self._uptime_manager = UptimeManager(self, pygame.time.get_ticks())
+        self._uptime_manager = UptimeManager(self)
         self._scene_objects.append(self._uptime_manager)
 
         if not self._standalone:
