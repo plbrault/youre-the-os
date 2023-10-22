@@ -1,9 +1,12 @@
-from difficulty_levels import default_difficulty
+from lib.constants import (
+    MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
+    MAX_PROCESSES_AT_STARTUP, MIN_RAM_ROWS, MAX_RAM_ROWS
+)
 from lib.game_object import GameObject
+from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.option_selector import OptionSelector
 from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
-
 
 class CustomSettingsDialog(GameObject):
 
@@ -16,15 +19,18 @@ class CustomSettingsDialog(GameObject):
             self._config = default_difficulty['config']
 
         self._num_cpus_selector = OptionSelector(
-            [str(i) for i in range(1, 17)], self._config['num_cpus'] - 1)
+            [str(i) for i in range(MIN_CPU_COUNT, MAX_CPU_COUNT + 1)], self._config['num_cpus'] - 1)
         self.children.append(self._num_cpus_selector)
 
         self._num_processes_selector = OptionSelector(
-            [str(i) for i in range(1, 43)], self._config['num_processes_at_startup'] - 1)
+            [str(i) for i in range(MIN_PROCESSES_AT_STARTUP, MAX_PROCESSES_AT_STARTUP + 1)],
+            self._config['num_processes_at_startup'] - 1
+        )
         self.children.append(self._num_processes_selector)
 
         self._num_ram_rows_selector = OptionSelector(
-            [str(i) for i in range(1, 12)], self._config['num_ram_rows'] - 1)
+            [str(i) for i in range(MIN_RAM_ROWS, MAX_RAM_ROWS + 1)],
+            self._config['num_ram_rows'] - 1)
         self.children.append(self._num_ram_rows_selector)
 
         self._new_process_probability_selector = OptionSelector(

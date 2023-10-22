@@ -1,3 +1,4 @@
+from lib.constants import ONE_SECOND
 from lib.game_object import GameObject
 from game_objects.views.score_manager_view import ScoreManagerView
 
@@ -33,7 +34,7 @@ class ScoreManager(GameObject):
             points_per_second -= stats['blocked_active_process_count'] * 50
             points_per_second -= stats['io_event_count'] * 20
 
-            points = points_per_second / (1000 / _UPDATE_INTERVAL)
+            points = points_per_second / (ONE_SECOND / _UPDATE_INTERVAL)
             self._score = max(self._score + points, 0)
 
             if stats['user_terminated_process_count'] != self._user_terminated_process_count:

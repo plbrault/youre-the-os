@@ -13,7 +13,6 @@ from scene_manager import scene_manager
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 
-
 def compile_auto_script():
     if len(sys.argv) == 1:
         return None
@@ -28,7 +27,6 @@ def compile_auto_script():
     except (SyntaxError, ValueError):
         print('Compilation failed, ignoring argument', file=sys.stderr)
         return None
-
 
 pygame.init()
 pygame.font.init()
@@ -56,6 +54,7 @@ clock = pygame.time.Clock()
 
 FPS = 60
 
+LEFT_MOUSE_BUTTON = 1
 
 async def main():
     mouse_down = False
@@ -67,11 +66,11 @@ async def main():
         mouse_drag_event = None
 
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT_MOUSE_BUTTON:
                 mouse_down = True
             elif event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == LEFT_MOUSE_BUTTON:
                 mouse_down = False
                 if mouse_event_added and mouse_drag_event:
                     events.remove(mouse_drag_event)
