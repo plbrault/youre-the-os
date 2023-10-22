@@ -198,7 +198,8 @@ class Process(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):
-            return self._view.collides(*event.get_property('position'))
+            return self.starvation_level < DEAD_STARVATION_LEVEL and self._view.collides(
+                *event.get_property('position'))
         return False
 
     def _check_if_in_motion(self):
@@ -304,17 +305,16 @@ class Process(GameObject):
 
     def update(self, current_time, events):
         self._last_update_time = current_time
+        self._handle_events(events)
 
         if not self.has_ended:
-            self._handle_events(events)
             self._handle_pages_in_swap()
             if current_time >= self._last_event_check_time + ONE_SECOND:
                 self._last_event_check_time = current_time
-                if self.has_cpu and not self.is_blocked:
-                    self._update_starvation_level(current_time)
-                    self._handle_io_probability()
-                    self._handle_new_page_probability()
-                    self._handle_graceful_termination_probability(current_time)
+                self._update_starvation_level(current_time)
+                self._handle_io_probability()
+                self._handle_new_page_probability()
+                self._handle_graceful_termination_probability(current_time)
 
         self._handle_movement_animation()
         self._handle_blinking_animation(current_time)
