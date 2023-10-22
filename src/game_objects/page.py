@@ -2,6 +2,7 @@ from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
 from game_objects.views.page_view import PageView
 
+_BLINKING_INTERVAL_MS = 200
 
 class Page(GameObject):
 
@@ -61,6 +62,6 @@ class Page(GameObject):
                 self._on_click()
 
         if self.in_use and self.in_swap:
-            self._display_blink_color = int(current_time / 200) % 2 == 1
+            self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:
             self._display_blink_color = False
