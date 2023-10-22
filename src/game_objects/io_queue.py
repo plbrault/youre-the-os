@@ -68,7 +68,14 @@ class IoQueue(GameObject):
                 if event.get_property('key') == 'space':
                     self.process_events()
 
-        if current_time >= self._last_update_time + 1000:
+        if (
+            self._event_count < len(self._subscriber_queue)
+            and current_time >= self._subscriber_queue[self._event_count].waiting_since + 5000
+        ):
+            self._last_update_time = current_time
+            self._event_count += 1
+
+        elif current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
 
             if self._event_count < len(self._subscriber_queue) and randint(1, 3) == 3:
