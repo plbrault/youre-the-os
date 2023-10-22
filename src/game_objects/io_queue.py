@@ -85,7 +85,7 @@ class IoQueue(GameObject):
 
             if (
                 self._event_count < len(self._subscriber_queue)
-                and randint(1, _EVENT_PROBABILITY_DENOMINATOR) == _EVENT_PROBABILITY_DENOMINATOR
+                and randint(1, _EVENT_PROBABILITY_DENOMINATOR) == 1
             ):
                 self._event_count = randint(
                     self._event_count + 1, len(self._subscriber_queue)
