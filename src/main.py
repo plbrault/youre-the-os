@@ -100,8 +100,14 @@ async def main():
                 mouse_event_added = True
                 mouse_drag_event = event
 
-        scene_manager.current_scene.update(scene_manager.current_scene.current_time, events)
-        scene_manager.current_scene.render()
+        scene = scene_manager.current_scene
+
+        scene.update(scene_manager.current_scene.current_time, events)
+        if scene != scene_manager.current_scene:
+            scene = scene_manager.current_scene
+            scene_manager.current_scene.update(scene_manager.current_scene.current_time, [])
+
+        scene.render()
 
         clock.tick(FPS)
 
