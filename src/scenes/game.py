@@ -1,5 +1,6 @@
 import sys
 
+from lib.constants import ONE_SECOND
 from lib import event_manager
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
@@ -191,7 +192,7 @@ class Game(Scene):
             dialog = self._in_game_menu_dialog
         elif self._game_over:
             display_game_over_dialog = self._game_over_time is not None and current_time - \
-                self._game_over_time > 1000
+                self._game_over_time > ONE_SECOND
             if self._game_over_time is None:
                 self._game_over_time = current_time
             elif display_game_over_dialog:

@@ -2,6 +2,7 @@ from math import inf
 from random import randint
 import re
 
+from lib.constants import ONE_SECOND
 from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
@@ -40,7 +41,7 @@ class ProcessManager(GameObject):
 
         if self._new_process_probability_numerator > 0:
             self._max_wait_between_new_processes = int(
-                100 / self._new_process_probability_numerator * 1000)
+                100 / self._new_process_probability_numerator * ONE_SECOND)
         else:
             self._max_wait_between_new_processes = inf
 
@@ -229,7 +230,7 @@ class ProcessManager(GameObject):
             self._last_new_process_check = current_time
             self._last_process_creation = current_time
             self._create_process()
-        elif current_time - self._last_new_process_check >= 1000:
+        elif current_time - self._last_new_process_check >= ONE_SECOND:
             self._last_new_process_check = current_time
             if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
                     self._last_process_creation >= self._max_wait_between_new_processes:

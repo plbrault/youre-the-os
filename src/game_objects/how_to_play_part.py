@@ -1,10 +1,11 @@
+from lib.constants import ONE_SECOND
 from lib.game_object import GameObject
 from game_objects.views.how_to_play_part_view import HowToPlayPartView
 
 
 class HowToPlayPart(GameObject):
 
-    def __init__(self, text, images, animation_interval=1000):
+    def __init__(self, text, images, animation_interval=ONE_SECOND):
         self._text = text
         self._images = images
         self._animation_interval = animation_interval

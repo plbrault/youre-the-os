@@ -1,6 +1,7 @@
 from math import sqrt
 from random import randint
 
+from lib.constants import ONE_SECOND
 from lib import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
@@ -222,7 +223,7 @@ class Process(GameObject):
                         pages_in_swap += 1
             self._set_waiting_for_page(pages_in_swap > 0)
 
-            if current_time >= self._last_event_check_time + 1000:
+            if current_time >= self._last_event_check_time + ONE_SECOND:
                 self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
@@ -241,10 +242,10 @@ class Process(GameObject):
                         new_page.in_use = True
                         event_manager.event_page_new(
                             new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
-                    if current_time - self._last_state_change_time >= 1000 and randint(1, 100) == 1:
+                    if current_time - self._last_state_change_time >= ONE_SECOND and randint(1, 100) == 1:
                         self._terminate_gracefully()
 
-                elif current_time >= self._last_starvation_level_change_time + 10000:
+                elif current_time >= self._last_starvation_level_change_time + 10 * ONE_SECOND:
                     self._last_starvation_level_change_time = current_time
                     if self._starvation_level < 5:
                         self._starvation_level += 1
