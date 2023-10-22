@@ -2,7 +2,7 @@ from math import inf
 from random import randint
 import re
 
-from lib.constants import ONE_SECOND
+from lib.constants import MAX_PROCESSES, ONE_SECOND
 from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
@@ -15,9 +15,10 @@ from window_size import WINDOW_HEIGHT
 
 _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(10)))
 
-class ProcessManager(GameObject):
-    _MAX_PROCESSES = 42
+_NUM_PROCESS_SLOT_ROWS = 6
+_NUM_PROCESS_SLOT_COLUMNS = 7
 
+class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
 
     def __init__(self, game):
@@ -99,8 +100,8 @@ class ProcessManager(GameObject):
         io_queue.view.set_xy(50, 10)
         self.children.append(io_queue)
 
-        for row in range(6):
-            for column in range(7):
+        for row in range(_NUM_PROCESS_SLOT_ROWS):
+            for column in range(_NUM_PROCESS_SLOT_COLUMNS):
                 process_slot = ProcessSlot()
                 x = 50 + column * process_slot.view.width + column * 5
                 y = 155 + row * process_slot.view.height + row * 5
@@ -117,7 +118,7 @@ class ProcessManager(GameObject):
         self.children.extend(self._user_terminated_process_slots)
 
     def _create_process(self, process_slot_id=None):
-        if len(self._alive_process_list) < self._MAX_PROCESSES:
+        if len(self._alive_process_list) < MAX_PROCESSES:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
