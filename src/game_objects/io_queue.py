@@ -1,4 +1,4 @@
-from queue import SimpleQueue
+from collections import deque
 from random import randint
 
 from lib import event_manager
@@ -6,7 +6,7 @@ from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.io_queue_view import IoQueueView
 
-class IoEventWaiter:
+class _IoEventWaiter:
     def __init__(self, current_time, callback):
         self._waiting_since = current_time
         self._callback = callback
@@ -24,7 +24,7 @@ class IoQueue(GameObject):
     def __init__(self, process_manager):
         self._process_manager = process_manager
 
-        self._subscriber_queue = SimpleQueue()
+        self._subscriber_queue = deque([])
         self._event_count = 0
         self._last_update_time = 0
 
@@ -33,7 +33,9 @@ class IoQueue(GameObject):
         super().__init__(IoQueueView(self))
 
     def wait_for_event(self, callback):
-        self._subscriber_queue.put(IoEventWaiter(self._process_manager.game.current_time, callback))
+        self._subscriber_queue.append(
+            _IoEventWaiter(self._process_manager.game.current_time, callback)
+        )
 
     @property
     def event_count(self):
@@ -46,7 +48,7 @@ class IoQueue(GameObject):
     def process_events(self):
         while self.event_count > 0:
             self._event_count -= 1
-            callback = self._subscriber_queue.get().callback
+            callback = self._subscriber_queue.popleft().callback
             callback()
         event_manager.event_io_queue(self.event_count)
 
@@ -69,9 +71,10 @@ class IoQueue(GameObject):
         if current_time >= self._last_update_time + 1000:
             self._last_update_time = current_time
 
-            if self._event_count < self._subscriber_queue.qsize() and randint(1, 3) == 3:
+            if self._event_count < len(self._subscriber_queue) and randint(1, 3) == 3:
                 self._event_count = randint(
-                    self._event_count + 1, self._subscriber_queue.qsize())
+                    self._event_count + 1, len(self._subscriber_queue)
+                )
                 event_manager.event_io_queue(self._event_count)
 
         self._display_blink_color = False
