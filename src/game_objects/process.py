@@ -239,7 +239,8 @@ class Process(GameObject):
                         self._starvation_level = 0
                         event_manager.event_process_starvation(self._pid, self._starvation_level)
                     if (
-                        not self._is_on_io_cooldown
+                        not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+                        and not self._is_on_io_cooldown
                         and randint(1, 100) <= self._io_probability_numerator
                     ):
                         self._wait_for_io()
