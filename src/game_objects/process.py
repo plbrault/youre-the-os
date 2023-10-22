@@ -1,11 +1,16 @@
 from math import sqrt
 from random import randint
 
-from lib.constants import ONE_SECOND
+from lib.constants import ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 from lib import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
+
+_STARVATION_LEVEL_DURATION_MS = 10000
+_TIME_TO_UNSTARVE_MS = 5000
+_NEW_PAGE_PROBABILITY_DENOMINATOR = 20
+_BLINKING_INTERVAL_MS = 200
 
 class Process(GameObject):
     _ANIMATION_SPEED = 35
@@ -182,7 +187,7 @@ class Process(GameObject):
             self._has_ended = True
             self._set_waiting_for_io(False)
             self._set_waiting_for_page(False)
-            self._starvation_level = 6
+            self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
                 event_manager.event_page_free(page.pid, page.idx)
                 self._page_manager.delete_page(page)
@@ -191,7 +196,7 @@ class Process(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):
-            return self.starvation_level < 6 and self._view.collides(
+            return self.starvation_level < DEAD_STARVATION_LEVEL and self._view.collides(
                 *event.get_property('position'))
         return False
 
@@ -227,7 +232,7 @@ class Process(GameObject):
                 self._last_event_check_time = current_time
 
                 if self.has_cpu and not self.is_blocked:
-                    if current_time - self._last_state_change_time >= 5000:
+                    if current_time - self._last_state_change_time >= _TIME_TO_UNSTARVE_MS:
                         self._last_starvation_level_change_time = current_time
                         self._starvation_level = 0
                         event_manager.event_process_starvation(self._pid, self._starvation_level)
@@ -236,7 +241,7 @@ class Process(GameObject):
                         and randint(1, 100) <= self._io_probability_numerator
                     ):
                         self._wait_for_io()
-                    if len(self._pages) < 4 and randint(1, 20) == 1:
+                    if len(self._pages) < MAX_PAGES_PER_PROCESS and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1:
                         new_page = self._page_manager.create_page(self._pid, len(self._pages))
                         self._pages.append(new_page)
                         new_page.in_use = True
@@ -245,9 +250,9 @@ class Process(GameObject):
                     if current_time - self._last_state_change_time >= ONE_SECOND and randint(1, 100) == 1:
                         self._terminate_gracefully()
 
-                elif current_time >= self._last_starvation_level_change_time + 10 * ONE_SECOND:
+                elif current_time >= self._last_starvation_level_change_time + _STARVATION_LEVEL_DURATION_MS:
                     self._last_starvation_level_change_time = current_time
-                    if self._starvation_level < 5:
+                    if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
                         self._starvation_level += 1
                         event_manager.event_process_starvation(
                             self._pid, self._starvation_level)
@@ -277,6 +282,6 @@ class Process(GameObject):
                                        self.view.y - self.view.target_y)
 
         if self._is_waiting_for_page:
-            self._display_blink_color = int(current_time / 200) % 2 == 1
+            self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:
             self._display_blink_color = False
