@@ -75,7 +75,8 @@ class IoQueue(GameObject):
 
         if (
             self._event_count < len(self._subscriber_queue)
-            and current_time >= self._subscriber_queue[self._event_count].waiting_since + _MAX_WAITING_TIME
+            and current_time >=
+                self._subscriber_queue[self._event_count].waiting_since + _MAX_WAITING_TIME
         ):
             self._last_update_time = current_time
             self._event_count += 1

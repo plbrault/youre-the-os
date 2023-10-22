@@ -1,7 +1,9 @@
 from math import sqrt
 from random import randint
 
-from lib.constants import ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from lib.constants import (
+    ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+)
 from lib import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
@@ -241,16 +243,25 @@ class Process(GameObject):
                         and randint(1, 100) <= self._io_probability_numerator
                     ):
                         self._wait_for_io()
-                    if len(self._pages) < MAX_PAGES_PER_PROCESS and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1:
+                    if (
+                        len(self._pages) < MAX_PAGES_PER_PROCESS
+                        and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
+                    ):
                         new_page = self._page_manager.create_page(self._pid, len(self._pages))
                         self._pages.append(new_page)
                         new_page.in_use = True
                         event_manager.event_page_new(
                             new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
-                    if current_time - self._last_state_change_time >= ONE_SECOND and randint(1, 100) == 1:
+                    if (
+                        current_time - self._last_state_change_time
+                            >= ONE_SECOND and randint(1, 100) == 1
+                    ):
                         self._terminate_gracefully()
 
-                elif current_time >= self._last_starvation_level_change_time + _STARVATION_LEVEL_DURATION_MS:
+                elif (
+                    current_time >=
+                        self._last_starvation_level_change_time + _STARVATION_LEVEL_DURATION_MS
+                ):
                     self._last_starvation_level_change_time = current_time
                     if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
                         self._starvation_level += 1
