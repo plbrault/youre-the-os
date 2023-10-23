@@ -222,9 +222,10 @@ class Process(GameObject):
 
     def _handle_pages_in_swap(self):
         pages_in_swap = 0
-        for page in self._pages:
-            if page.in_swap:
-                pages_in_swap += 1
+        if self.has_cpu:
+            for page in self._pages:
+                if page.in_swap:
+                    pages_in_swap += 1
         self._set_waiting_for_page(pages_in_swap > 0)
 
     def _update_starvation_level(self, current_time):
