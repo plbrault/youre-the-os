@@ -53,7 +53,8 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'Over time, idle processes will go through 6 starvation levels.'
+            'Over time, idle processes will go through 6 starvation levels. Each starvation level is represented by a different color and emoji.', # pylint: disable=line-too-long
+            'Assigning a process to a CPU will allow it to go back to the first starvation level after a certain time.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_5_0.png')),
@@ -66,8 +67,8 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'Starvation levels help you know which processes have been idle the longest.',
-            'When a process stays idle for too long, the user becomes impatient and kills it.'
+            'Starvation levels help you know which processes have been idle the longest. When a process stays idle for too long,', # pylint: disable=line-too-long
+            'the user becomes impatient and kills it. Your job is to avoid this by swapping processes in and out of CPUs.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_6_0.png')),
@@ -85,7 +86,7 @@ _parts = [
     HowToPlayPart(
         [
             'Sometimes, a running process becomes blocked because it is waiting for an I/O event.',
-            'Blocked processes waste CPU time. It is a good idea to remove them from their CPU.',
+            'Blocked processes waste CPU time. It is a good idea to remove them from their CPU until they are unblocked.', # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_8_0.png'))
@@ -94,7 +95,7 @@ _parts = [
     HowToPlayPart(
         [
             'When you have blocked processes, watch the I/O event bar.',
-            'Make sure to click on it when it has events, otherwise your processes will stay blocked and starve.' # pylint: disable=line-too-long
+            'Make sure to click on it when it has events, otherwise your blocked processes will stay blocked until they starve.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_9_0.png')),
