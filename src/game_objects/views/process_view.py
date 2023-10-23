@@ -1,3 +1,4 @@
+from datetime import datetime
 from os import path
 import pygame
 
@@ -24,6 +25,11 @@ _starvation_emojis = [
     pygame.image.load(path.join('assets', 'cold_face_emoji.png')),
     pygame.image.load(path.join('assets', 'skull_emoji.png')),
 ]
+
+today = datetime.today().date()
+if today.month == 10 and today.day == 31:
+    _starvation_emojis[0] = pygame.image.load(
+        path.join('assets', 'jack_o_lantern_emoji.png'))
 
 _gracefully_terminated_emoji = pygame.image.load(
     path.join('assets', 'smiling_face_with_halo_emoji.png'))
