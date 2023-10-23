@@ -198,18 +198,18 @@ class Process(GameObject):
 
     def _check_if_clicked_on(self, event):
         if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):
-            return self.starvation_level < DEAD_STARVATION_LEVEL and self._view.collides(
-                *event.get_property('position'))
+            return self._view.collides(*event.get_property('position'))
         return False
 
     def _check_if_in_motion(self):
         return self._view.target_x is not None or self._view.target_y is not None
 
     def toggle(self):
-        if self.has_cpu:
-            self.yield_cpu()
-        else:
-            self.use_cpu()
+        if self.starvation_level < DEAD_STARVATION_LEVEL:
+            if self.has_cpu:
+                self.yield_cpu()
+            else:
+                self.use_cpu()
 
     def _on_click(self):
         self.toggle()
