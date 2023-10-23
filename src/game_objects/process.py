@@ -214,63 +214,68 @@ class Process(GameObject):
     def _on_click(self):
         self.toggle()
 
-    def update(self, current_time, events):
-        self._last_update_time = current_time
-
+    def _handle_events(self, events):
         if not self._check_if_in_motion():
             for event in events:
                 if self._check_if_clicked_on(event):
                     self._on_click()
 
-        if not self.has_ended:
-            pages_in_swap = 0
-            if self.has_cpu:
-                for page in self._pages:
-                    if page.in_swap:
-                        pages_in_swap += 1
-            self._set_waiting_for_page(pages_in_swap > 0)
+    def _handle_pages_in_swap(self):
+        pages_in_swap = 0
+        if self.has_cpu:
+            for page in self._pages:
+                if page.in_swap:
+                    pages_in_swap += 1
+        self._set_waiting_for_page(pages_in_swap > 0)
 
-            if current_time >= self._last_event_check_time + ONE_SECOND:
-                self._last_event_check_time = current_time
+    def _update_starvation_level(self, current_time):
+        if self.has_cpu and not self.is_blocked:
+            if current_time - self._last_state_change_time >= _TIME_TO_UNSTARVE_MS:
+                self._last_starvation_level_change_time = current_time
+                self._starvation_level = 0
+                event_manager.event_process_starvation(self._pid, self._starvation_level)
+        elif (
+            current_time >=
+                self._last_starvation_level_change_time + _STARVATION_LEVEL_DURATION_MS
+        ):
+            self._last_starvation_level_change_time = current_time
+            if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
+                self._starvation_level += 1
+                event_manager.event_process_starvation(
+                    self._pid, self._starvation_level)
+            else:
+                self._terminate_by_user()
 
-                if self.has_cpu and not self.is_blocked:
-                    if current_time - self._last_state_change_time >= _TIME_TO_UNSTARVE_MS:
-                        self._last_starvation_level_change_time = current_time
-                        self._starvation_level = 0
-                        event_manager.event_process_starvation(self._pid, self._starvation_level)
-                    if (
-                        not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
-                        and not self._is_on_io_cooldown
-                        and randint(1, 100) <= self._io_probability_numerator
-                    ):
-                        self._wait_for_io()
-                    if (
-                        len(self._pages) < MAX_PAGES_PER_PROCESS
-                        and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
-                    ):
-                        new_page = self._page_manager.create_page(self._pid, len(self._pages))
-                        self._pages.append(new_page)
-                        new_page.in_use = True
-                        event_manager.event_page_new(
-                            new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
-                    if (
-                        current_time - self._last_state_change_time
-                            >= ONE_SECOND and randint(1, 100) == 1
-                    ):
-                        self._terminate_gracefully()
+    def _handle_io_probability(self):
+        if self.has_cpu and not self.is_blocked:
+            if (
+                not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+                and not self._is_on_io_cooldown
+                and randint(1, 100) <= self._io_probability_numerator
+            ):
+                self._wait_for_io()
 
-                elif (
-                    current_time >=
-                        self._last_starvation_level_change_time + _STARVATION_LEVEL_DURATION_MS
-                ):
-                    self._last_starvation_level_change_time = current_time
-                    if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
-                        self._starvation_level += 1
-                        event_manager.event_process_starvation(
-                            self._pid, self._starvation_level)
-                    else:
-                        self._terminate_by_user()
+    def _handle_new_page_probability(self):
+        if self.has_cpu and not self.is_blocked:
+            if (
+                len(self._pages) < MAX_PAGES_PER_PROCESS
+                and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
+            ):
+                new_page = self._page_manager.create_page(self._pid, len(self._pages))
+                self._pages.append(new_page)
+                new_page.in_use = True
+                event_manager.event_page_new(
+                    new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
 
+    def _handle_graceful_termination_probability(self, current_time):
+        if self.has_cpu and not self.is_blocked:
+            if (
+                current_time - self._last_state_change_time
+                    >= ONE_SECOND and randint(1, 100) == 1
+            ):
+                self._terminate_gracefully()
+
+    def _handle_movement_animation(self):
         if self.view.target_x is not None:
             if self.view.x == self.view.target_x:
                 self.view.target_x = None
@@ -293,7 +298,24 @@ class Process(GameObject):
                     self.view.y -= min(self._ANIMATION_SPEED,
                                        self.view.y - self.view.target_y)
 
+    def _handle_blinking_animation(self, current_time):
         if self._is_waiting_for_page:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:
             self._display_blink_color = False
+
+    def update(self, current_time, events):
+        self._last_update_time = current_time
+        self._handle_events(events)
+
+        if not self.has_ended:
+            self._handle_pages_in_swap()
+            if current_time >= self._last_event_check_time + ONE_SECOND:
+                self._last_event_check_time = current_time
+                self._update_starvation_level(current_time)
+                self._handle_io_probability()
+                self._handle_new_page_probability()
+                self._handle_graceful_termination_probability(current_time)
+
+        self._handle_movement_animation()
+        self._handle_blinking_animation(current_time)
