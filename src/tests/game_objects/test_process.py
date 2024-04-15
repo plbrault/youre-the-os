@@ -115,5 +115,13 @@ class TestProcess:
             assert game.process_manager.cpu_list[i].process.pid == i + 2
         assert game.process_manager.cpu_list[3].process == None
 
+    def test_yield_cpu_when_already_idle(self, game):
+        process = Process(1, game)
+
+        process.yield_cpu()
+        assert process.has_cpu == False
+        for i in range(0, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process == None
+
     
 
