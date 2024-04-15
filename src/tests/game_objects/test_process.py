@@ -1,4 +1,5 @@
 import pytest
+from lib.constants import MAX_PAGES_PER_PROCESS
 from lib.random import Random
 
 from game_objects.process import Process
@@ -144,6 +145,22 @@ class TestProcess:
         process.use_cpu()
 
         assert game.page_manager.get_page(1, 0).pid == 1
-        for i in range(1, 4):
+        for i in range(1, MAX_PAGES_PER_PROCESS):
             with pytest.raises(KeyError):
                 game.page_manager.get_page(1, i)
+
+    def test_max_page_creation(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process = Process(1, game)
+
+        with pytest.raises(KeyError):
+            game.page_manager.get_page(1, 0)
+
+        process.use_cpu()
+
+        for i in range(1, MAX_PAGES_PER_PROCESS):
+            assert game.page_manager.get_page(1, i).pid == 1
+        with pytest.raises(KeyError):
+            game.page_manager.get_page(1, 4)
+        
