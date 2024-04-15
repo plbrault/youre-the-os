@@ -1,5 +1,5 @@
 from math import sqrt
-from random import randint
+from lib.random import randint
 
 from lib.constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS

@@ -1,5 +1,5 @@
 from collections import deque
-from random import randint
+from lib.random import randint
 
 from lib.constants import ONE_SECOND
 from lib import event_manager

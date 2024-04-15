@@ -1,4 +1,5 @@
 import pytest
+from lib.random import Random
 
 from game_objects.process import Process
 
@@ -132,7 +133,9 @@ class TestProcess:
         process.toggle()
         assert process.has_cpu == False
 
-    def test_page_creation(self, game, monkeypatch):
+    def test_min_page_creation(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
         process = Process(1, game)
 
         with pytest.raises(KeyError):
@@ -141,3 +144,6 @@ class TestProcess:
         process.use_cpu()
 
         assert game.page_manager.get_page(1, 0).pid == 1
+        for i in range(1, 4):
+            with pytest.raises(KeyError):
+                game.page_manager.get_page(1, i)

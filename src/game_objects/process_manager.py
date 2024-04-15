@@ -1,5 +1,5 @@
 from math import inf
-from random import randint
+from lib.random import randint
 import re
 
 from lib.constants import MAX_PROCESSES, ONE_SECOND
