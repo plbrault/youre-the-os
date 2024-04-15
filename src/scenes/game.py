@@ -22,7 +22,6 @@ class Game(Scene):
         self._script_callback = None
         self._standalone = standalone
 
-        self._current_time = 0
         self._paused_since = None
         self._total_paused_time = 0
 
