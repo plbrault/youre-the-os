@@ -72,4 +72,35 @@ class TestProcess:
         assert game.process_manager.cpu_list[0].process.pid == 2
         assert game.process_manager.cpu_list[1].process == process
         for i in range(2, game.config['num_cpus']):
-            assert game.process_manager.cpu_list[i].process == None        
+            assert game.process_manager.cpu_list[i].process == None   
+
+    def test_use_cpu_when_all_cpus_are_unavailable(self, game):
+        process = Process(1, game)
+
+        assert process.has_cpu == False
+        for i in range(0, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process == None
+
+        for i in range(0, game.config['num_cpus']):
+            game.process_manager.cpu_list[i].process = Process(i + 2, game)
+
+        process.use_cpu()
+
+        assert process.has_cpu == False
+        for i in range(0, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process.pid == i + 2
+
+    def test_yield_cpu(self, game):
+        process = Process(1, game)
+
+        for i in range(0, game.config['num_cpus'] - 1):
+            game.process_manager.cpu_list[i].process = Process(i + 2, game)
+
+        process.use_cpu()
+
+        process.yield_cpu()
+        assert process.has_cpu == False
+        for i in range(0, game.config['num_cpus'] - 1):
+            assert game.process_manager.cpu_list[i].process.pid == i + 2
+        assert game.process_manager.cpu_list[3].process == None
+
