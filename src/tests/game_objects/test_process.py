@@ -1,5 +1,5 @@
 import pytest
-from lib.constants import MAX_PAGES_PER_PROCESS
+from lib.constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 from lib.random import Random
 
 from game_objects.process import Process
@@ -26,7 +26,7 @@ class TestProcess:
     def test_starvation_when_idle(self, game):
         process = Process(1, game)
 
-        for i in range(0, 5):
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
             process.update(i * self.starvation_interval, [])
             assert process.starvation_level == i + 1
 
@@ -36,14 +36,14 @@ class TestProcess:
 
         process = Process(1, game)
 
-        for i in range(0, 5):
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
             process.update(i * self.starvation_interval, [])
 
-        assert process.starvation_level == 5
+        assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
-        process.update(6 * self.starvation_interval, [])
+        process.update(DEAD_STARVATION_LEVEL * self.starvation_interval, [])
 
-        assert process.starvation_level == 6
+        assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
 
     def test_use_cpu_when_first_cpu_is_available(self, game):
@@ -163,4 +163,3 @@ class TestProcess:
             assert game.page_manager.get_page(1, i).pid == 1
         with pytest.raises(KeyError):
             game.page_manager.get_page(1, 4)
-        
