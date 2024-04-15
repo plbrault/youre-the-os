@@ -66,6 +66,12 @@ pipenv run web archive
 pipenv run pylint
 ```
 
+**Run unit tests:**
+
+```bash
+pipenv run pytest
+```
+
 ## License
 
 Copyright (c) 2023 Pier-Luc Brault <pier-luc@brault.me>
