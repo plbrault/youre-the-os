@@ -48,9 +48,28 @@ class TestProcess:
         process = Process(1, game)
 
         assert process.has_cpu == False
-        assert game.process_manager.cpu_list[0].process == None
+        for i in range(0, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process == None
 
         process.use_cpu()
 
         assert process.has_cpu == True
         assert game.process_manager.cpu_list[0].process == process
+        for i in range(1, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process == None        
+
+    def test_use_cpu_when_first_cpu_is_unavailable(self, game):
+        process = Process(1, game)
+
+        assert process.has_cpu == False
+        for i in range(0, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process == None
+
+        game.process_manager.cpu_list[0].process = Process(2, game)
+        process.use_cpu()
+
+        assert process.has_cpu == True
+        assert game.process_manager.cpu_list[0].process.pid == 2
+        assert game.process_manager.cpu_list[1].process == process
+        for i in range(2, game.config['num_cpus']):
+            assert game.process_manager.cpu_list[i].process == None        
