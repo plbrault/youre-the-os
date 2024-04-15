@@ -134,7 +134,7 @@ class TestProcess:
         process.toggle()
         assert process.has_cpu == False
 
-    def test_min_page_creation(self, game, monkeypatch):
+    def test_use_cpu_min_page_creation(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -149,7 +149,7 @@ class TestProcess:
             with pytest.raises(KeyError):
                 game.page_manager.get_page(1, i)
 
-    def test_max_page_creation(self, game, monkeypatch):
+    def test_use_cpu_max_page_creation(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -163,3 +163,19 @@ class TestProcess:
             assert game.page_manager.get_page(1, i).pid == 1
         with pytest.raises(KeyError):
             game.page_manager.get_page(1, 4)
+
+    def test_use_cpu_when_already_has_pages(self, game, monkeypatch):
+        process = Process(1, game)
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        process.use_cpu()
+        
+        process.yield_cpu()
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+        process.use_cpu()
+
+        assert game.page_manager.get_page(1, 0).pid == 1
+        for i in range(1, MAX_PAGES_PER_PROCESS):
+            with pytest.raises(KeyError):
+                game.page_manager.get_page(1, i)
