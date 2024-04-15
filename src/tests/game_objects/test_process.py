@@ -180,7 +180,7 @@ class TestProcess:
             with pytest.raises(KeyError):
                 game.page_manager.get_page(1, i)
 
-    def test_use_cpu_sets_pages_in_use(self, game, monkeypatch):
+    def test_use_cpu_sets_pages_to_in_use(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -194,7 +194,7 @@ class TestProcess:
         for i in range(0, MAX_PAGES_PER_PROCESS):
             assert game.page_manager.get_page(1, i).in_use == True
 
-    def test_use_cpu_sets_pages_not_in_use(self, game, monkeypatch):
+    def test_use_cpu_sets_pages_to_not_in_use(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
