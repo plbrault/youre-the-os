@@ -43,3 +43,14 @@ class TestProcess:
 
         assert process.starvation_level == 6
         assert process.has_ended == True
+
+    def test_use_cpu_when_first_cpu_is_available(self, game):
+        process = Process(1, game)
+
+        assert process.has_cpu == False
+        assert game.process_manager.cpu_list[0].process == None
+
+        process.use_cpu()
+
+        assert process.has_cpu == True
+        assert game.process_manager.cpu_list[0].process == process
