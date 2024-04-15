@@ -123,5 +123,11 @@ class TestProcess:
         for i in range(0, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
 
-    
+    def test_toggle(self, game):
+        process = Process(1, game)
 
+        process.toggle()
+        assert process.has_cpu == True
+
+        process.toggle()
+        assert process.has_cpu == False
