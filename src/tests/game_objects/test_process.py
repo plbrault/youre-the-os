@@ -131,3 +131,13 @@ class TestProcess:
 
         process.toggle()
         assert process.has_cpu == False
+
+    def test_page_creation(self, game, monkeypatch):
+        process = Process(1, game)
+
+        with pytest.raises(KeyError):
+            game.page_manager.get_page(1, 0)
+
+        process.use_cpu()
+
+        assert game.page_manager.get_page(1, 0).pid == 1
