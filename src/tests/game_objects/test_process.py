@@ -171,13 +171,17 @@ class TestProcess:
     def test_unstarvation(self, game):
         process = Process(1, game)
 
-        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
-            process.update(i * self.starvation_interval, [])
+        current_time = 0
+
+        for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
+            current_time += self.starvation_interval
+            process.update(current_time, [])
 
         process.use_cpu()
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
         
-        process.update(self.time_to_unstarve, [])
+        current_time += self.time_to_unstarve
+        process.update(current_time, [])
         assert process.starvation_level == 0
 
     def test_use_cpu_min_page_creation(self, game, monkeypatch):
