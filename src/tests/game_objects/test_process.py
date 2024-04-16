@@ -270,3 +270,40 @@ class TestProcess:
         assert process.is_blocked == True
         assert process.is_waiting_for_page == True
         assert process.is_waiting_for_io == False
+
+    def test_set_page_to_swap_before_running(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+    
+        process = Process(1, game)
+
+        process.use_cpu()
+        process.yield_cpu()
+
+        game.page_manager.get_page(1, 0).swap()
+        assert game.page_manager.get_page(1, 0).in_swap == True
+
+        process.use_cpu()
+
+        process.update(0, [])
+
+        assert process.is_blocked == True
+        assert process.is_waiting_for_page == True
+        assert process.is_waiting_for_io == False
+
+    def test_remove_page_from_swap_while_running(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+    
+        process = Process(1, game)
+
+        process.use_cpu()
+        
+        game.page_manager.get_page(1, 0).swap()
+        process.update(0, [])
+        assert process.is_blocked == True
+
+        game.page_manager.get_page(1, 0).swap()
+        process.update(0, [])
+
+        assert process.is_blocked == False
+        assert process.is_waiting_for_page == False
+        assert process.is_waiting_for_io == False
