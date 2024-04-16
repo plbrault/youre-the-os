@@ -256,8 +256,17 @@ class TestProcess:
             assert game.page_manager.get_page(1, i).in_use == False
 
     def test_set_page_to_swap_while_running(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+    
         process = Process(1, game)
 
         process.use_cpu()
         
-        #game.
+        game.page_manager.get_page(1, 0).swap()
+        assert game.page_manager.get_page(1, 0).in_swap == True
+
+        process.update(0, [])
+
+        assert process.is_blocked == True
+        assert process.is_waiting_for_page == True
+        assert process.is_waiting_for_io == False
