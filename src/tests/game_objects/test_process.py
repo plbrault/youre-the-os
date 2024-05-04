@@ -328,6 +328,8 @@ class TestProcess:
 
     def test_starvation_while_waiting_for_page(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
+        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
 
         process = Process(1, game)
 
@@ -340,3 +342,8 @@ class TestProcess:
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
             process.update(i * self.starvation_interval, [])
             assert process.starvation_level == i + 1
+
+        process.update(LAST_ALIVE_STARVATION_LEVEL * self.starvation_interval, [])
+        assert process.starvation_level == DEAD_STARVATION_LEVEL
+        assert process.has_ended == True
+        
