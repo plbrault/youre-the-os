@@ -13,6 +13,27 @@ class TestProcess:
     def time_to_unstarve(self):
         return 5000
 
+    @pytest.fixture
+    def game(self, game, monkeypatch):
+        """
+        Overrides game fixture defined in src/tests/conftest.py.
+        """
+        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
+        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
+        return game
+
+    @pytest.fixture
+    def game_custom_config(self, game_custom_config, monkeypatch):
+        """
+        Overrides game_custom_config fixture defined in src/tests/conftest.py.
+        """
+        def create_game(game_config):
+            game = game_custom_config(game_config)
+            monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
+            monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
+            return game
+        return create_game
+
     def test_initial_property_values(self, game):
         process = Process(1, game)
 
@@ -34,10 +55,7 @@ class TestProcess:
             process.update(i * self.starvation_interval, [])
             assert process.starvation_level == i + 1
 
-    def test_max_starvation(self, game, monkeypatch):
-        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
-        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
-
+    def test_max_starvation(self, game):
         process = Process(1, game)
 
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
@@ -353,8 +371,6 @@ class TestProcess:
 
     def test_starvation_while_waiting_for_page(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
-        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
 
         process = Process(1, game)
 
@@ -434,8 +450,6 @@ class TestProcess:
         })
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
-        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
 
         process = Process(1, game)
 
@@ -593,8 +607,6 @@ class TestProcess:
             'graceful_termination_probability': 0.01
         })
 
-        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
-        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
