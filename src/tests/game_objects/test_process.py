@@ -423,4 +423,30 @@ class TestProcess:
         process.update(LAST_ALIVE_STARVATION_LEVEL * self.starvation_interval, [])
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
+        assert process.is_blocked == False
+        assert process.is_waiting_for_io == False
+
+    def test_process_unblocks_when_io_event_is_processed(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0.1
+        })
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, game)
+
+        process.use_cpu()
+        process.update(1000, [])
+        assert process.is_waiting_for_io == True
+
+        game.process_manager.io_queue.update(1000, [])
+        game.process_manager.io_queue.process_events()
+
+        assert process.is_blocked == False
+        assert process.is_waiting_for_io == False
         
