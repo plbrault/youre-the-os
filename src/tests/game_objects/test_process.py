@@ -63,7 +63,7 @@ class TestProcess:
         assert game.process_manager.cpu_list[0].process == process
         for i in range(1, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
-        
+
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
@@ -83,12 +83,12 @@ class TestProcess:
         assert game.process_manager.cpu_list[0].process.pid == 2
         assert game.process_manager.cpu_list[1].process == process
         for i in range(2, game.config['num_cpus']):
-            assert game.process_manager.cpu_list[i].process == None   
+            assert game.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
-        assert process.has_ended == False            
+        assert process.has_ended == False
 
     def test_use_cpu_when_all_cpus_are_unavailable(self, game):
         process = Process(1, game)
@@ -109,7 +109,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
-        assert process.has_ended == False            
+        assert process.has_ended == False
 
     def test_use_cpu_when_already_using_cpu(self, game):
         process = Process(1, game)
@@ -125,7 +125,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
-        assert process.has_ended == False            
+        assert process.has_ended == False
 
     def test_yield_cpu(self, game):
         process = Process(1, game)
@@ -144,7 +144,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
-        assert process.has_ended == False        
+        assert process.has_ended == False
 
     def test_yield_cpu_when_already_idle(self, game):
         process = Process(1, game)
@@ -157,7 +157,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
-        assert process.has_ended == False            
+        assert process.has_ended == False
 
     def test_toggle(self, game):
         process = Process(1, game)
@@ -179,7 +179,7 @@ class TestProcess:
 
         process.use_cpu()
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
-        
+
         current_time += self.time_to_unstarve
         process.update(current_time, [])
         assert process.starvation_level == 0
@@ -219,7 +219,7 @@ class TestProcess:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
         process.use_cpu()
-        
+
         process.yield_cpu()
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
@@ -257,11 +257,11 @@ class TestProcess:
 
     def test_set_page_to_swap_while_running(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-    
+
         process = Process(1, game)
 
         process.use_cpu()
-        
+
         game.page_manager.get_page(1, 0).swap()
         assert game.page_manager.get_page(1, 0).in_swap == True
 
@@ -273,7 +273,7 @@ class TestProcess:
 
     def test_set_page_to_swap_before_running(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-    
+
         process = Process(1, game)
 
         process.use_cpu()
@@ -292,11 +292,11 @@ class TestProcess:
 
     def test_remove_page_from_swap_while_running(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-    
+
         process = Process(1, game)
 
         process.use_cpu()
-        
+
         game.page_manager.get_page(1, 0).swap()
         process.update(0, [])
         assert process.is_blocked == True
