@@ -665,6 +665,26 @@ class TestProcess:
         process.update(2000, [])
         assert process.is_waiting_for_io == True
 
+    def test_movement_animation(self, game):
+        process = Process(1, game)
+
+        target_x = 500
+        target_y = 1000
+
+        process.view.x = 0
+        process.view.y = 0
+        process.view.target_x = target_x
+        process.view.target_y = target_y
+
+        counter = 0
+        while process.view.target_x != None or process.view.target_y != None:
+            counter += 1
+            process.update(counter, [])
+            assert counter < 100 # prevents infinite loop if test fails
+
+        assert process.view.x == target_x
+        assert process.view.y == target_y
+
     def test_click_when_idle(self, game):
         process = Process(1, game)
 
@@ -730,5 +750,3 @@ class TestProcess:
         process.update(2000, [mouse_click_event])
 
         assert process.view.target_y <= -process.view.height
-
-# valider que les pages sont supprimées quand un process est terminé
