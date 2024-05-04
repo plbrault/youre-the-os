@@ -491,4 +491,41 @@ class TestProcess:
         assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
         assert process1.is_waiting_for_io == False
         assert process2.is_waiting_for_io == True
+
+    def test_io_cooldown(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0.1,
+            'graceful_termination_probability': 0,
+        })
+
+        process1 = Process(1, game)
+        process2 = Process(2, game)
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process1.use_cpu()
+        process1.update(1000, [])
+        assert process1.is_waiting_for_io == True
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process2.use_cpu()
+        process2.update(1000, [])
+        assert process2.is_waiting_for_io == False
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        game.process_manager.io_queue.update(1000, [])
+        game.process_manager.io_queue.process_events()
+        assert process1.is_waiting_for_io == False
+
+        process1.update(2000, [])
+        process2.update(2000, [])
+        assert process1.is_waiting_for_io == False
+        assert process2.is_waiting_for_io == True
         
