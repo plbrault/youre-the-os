@@ -624,7 +624,10 @@ class TestProcess:
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
+
         assert process.has_cpu == True
+        assert process.view.target_x == game.process_manager.cpu_list[0].view.x
+        assert process.view.target_y == game.process_manager.cpu_list[0].view.y
 
     def test_click_during_moving_animation(self, game):
         process = Process(1, game)
