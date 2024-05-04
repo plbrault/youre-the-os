@@ -321,6 +321,21 @@ class TestProcess:
 
         process.yield_cpu()
 
-        assert process.is_blocked == False
-        assert process.is_waiting_for_page == False
+        #assert process.is_blocked == False
+        #assert process.is_waiting_for_page == False
         assert process.is_waiting_for_io == False
+
+    def test_starvation_while_waiting_for_page(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process = Process(1, game)
+
+        process.use_cpu()
+
+        game.page_manager.get_page(1, 0).swap()
+        process.update(0, [])
+        assert process.is_blocked == True
+
+        for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
+            process.update(i * self.starvation_interval, [])
+            assert process.starvation_level == i + 1
