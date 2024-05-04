@@ -1,5 +1,7 @@
 import pytest
 from lib.constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from lib.game_event import GameEvent
+from lib.game_event_type import GameEventType
 from lib.random import Random
 
 from game_objects.process import Process
@@ -616,4 +618,37 @@ class TestProcess:
 
         assert process.has_ended == True
         assert process.starvation_level == 0
+
+    def test_click_when_idle(self, game):
+        process = Process(1, game)
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        process.update(1000, [mouse_click_event])
+        assert process.has_cpu == True
+
+    def test_click_during_moving_animation(self, game):
+        process = Process(1, game)
+        process.use_cpu()
+
+        assert process.has_cpu == True
+        assert process.view.y != process.view.target_y
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        process.update(1000, [mouse_click_event])
+        assert process.has_cpu == True
+
+    def test_click_when_running(self, game):
+        process = Process(1, game)
+        process.use_cpu()
+
+        assert process.has_cpu == True
+
+        process.view.x = process.view.target_x
+        process.view.y = process.view.target_y
+        process.view.target_x = None
+        process.view.target_y = None
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        process.update(1000, [mouse_click_event])
+        assert process.has_cpu == False
         
