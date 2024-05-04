@@ -658,4 +658,31 @@ class TestProcess:
         assert process.has_cpu == False
         assert process.view.target_x == game.process_manager.process_slots[0].view.x
         assert process.view.target_y == game.process_manager.process_slots[0].view.y
-        
+
+    def test_click_when_gracefully_terminated(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0,
+            'graceful_termination_probability': 0.01
+        })
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, game)
+        process.use_cpu()
+        process.update(1000, [])
+        process.view.x = process.view.target_x
+        process.view.y = process.view.target_y
+        process.view.target_x = process.view.target_y = None
+
+        assert process.has_ended == True
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        process.update(2000, [mouse_click_event])
+
+        assert process.view.target_y <= -process.view.height
+
+# valider que les pages sont supprimées quand un process est terminé
