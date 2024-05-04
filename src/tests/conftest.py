@@ -28,7 +28,8 @@ def game(Game, screen):
         'num_processes_at_startup': 14,
         'num_ram_rows': 8,
         'new_process_probability': 0,
-        'io_probability': 0
+        'io_probability': 0,
+        'graceful_termination_probability': 0
     }
     game = Game(screen, None, game_config)
     game.setup()

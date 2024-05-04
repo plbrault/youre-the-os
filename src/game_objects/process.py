@@ -41,6 +41,9 @@ class Process(GameObject):
 
         self._io_probability_numerator = int(
             game.config['io_probability'] * 100)
+        self._graceful_termination_probability_numerator = int(
+            game.config['graceful_termination_probability'] * 100
+        )
 
         super().__init__(ProcessView(self))
 
@@ -271,7 +274,8 @@ class Process(GameObject):
         if self.has_cpu and not self.is_blocked:
             if (
                 current_time - self._last_state_change_time
-                    >= ONE_SECOND and randint(1, 100) == 1
+                    >= ONE_SECOND
+                    and randint(1, 100) <= self._graceful_termination_probability_numerator
             ):
                 self._terminate_gracefully()
 
