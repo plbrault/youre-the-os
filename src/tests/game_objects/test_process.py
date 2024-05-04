@@ -337,7 +337,7 @@ class TestProcess:
 
         game.page_manager.get_page(1, 0).swap()
         process.update(0, [])
-        assert process.is_blocked == True
+        assert process.is_waiting_for_page == True
 
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
             process.update(i * self.starvation_interval, [])
@@ -371,7 +371,7 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.is_waiting_for_page == False
 
-    def test_process_no_io_event(self, game_custom_config, monkeypatch):
+    def test_process_continues_when_no_io_event(self, game_custom_config, monkeypatch):
         game = game_custom_config({
             'name': 'Test Config',
             'num_cpus': 4,
@@ -413,7 +413,6 @@ class TestProcess:
 
         process.use_cpu()
         process.update(1000, [])
-        assert process.is_blocked == True
         assert process.is_waiting_for_io == True
 
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
