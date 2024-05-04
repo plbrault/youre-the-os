@@ -750,3 +750,15 @@ class TestProcess:
         process.update(2000, [mouse_click_event])
 
         assert process.view.target_y <= -process.view.height
+
+    def test_blinking_animation(self, game):
+        process = Process(1, game)
+
+        process.use_cpu()
+        game.page_manager.get_page(1, 0).swap()
+
+        previous_blink_value = process.display_blink_color
+        for i in range(1, 5):
+            process.update(i * 200, [])
+            assert process.display_blink_color != previous_blink_value
+            previous_blink_value = process.display_blink_color
