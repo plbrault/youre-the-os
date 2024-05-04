@@ -33,3 +33,11 @@ def game(Game, screen):
     game = Game(screen, None, game_config)
     game.setup()
     return game
+
+@pytest.fixture
+def game_custom_config(screen, Game):
+    def create_game(game_config):
+        game = Game(screen, None, game_config)
+        game.setup()
+        return game
+    return create_game
