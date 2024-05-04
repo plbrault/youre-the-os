@@ -642,6 +642,7 @@ class TestProcess:
 
     def test_click_when_running(self, game):
         process = Process(1, game)
+        game.process_manager.cpu_list[0].process = Process(2, game) # to force process to use a CPU with a different x position than itself
         process.use_cpu()
 
         assert process.has_cpu == True
@@ -653,5 +654,8 @@ class TestProcess:
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
+
         assert process.has_cpu == False
+        assert process.view.target_x == game.process_manager.process_slots[0].view.x
+        assert process.view.target_y == game.process_manager.process_slots[0].view.y
         
