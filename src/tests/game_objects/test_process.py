@@ -525,7 +525,7 @@ class TestProcess:
             'num_ram_rows': 8,
             'new_process_probability': 0,
             'io_probability': 0.1,
-            'graceful_termination_probability': 0,
+            'graceful_termination_probability': 0
         })
 
         process1 = Process(1, game)
@@ -562,7 +562,7 @@ class TestProcess:
             'num_ram_rows': 8,
             'new_process_probability': 0,
             'io_probability': 0.1,
-            'graceful_termination_probability': 0,
+            'graceful_termination_probability': 0
         })
 
         process = Process(1, game)
@@ -581,4 +581,27 @@ class TestProcess:
         process.use_cpu()
         process.update(2000, [])
         assert process.is_waiting_for_io == True
+
+    def test_graceful_termination(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0,
+            'graceful_termination_probability': 0.01
+        })
+
+        monkeypatch.setattr(game.process_manager, 'terminate_process', lambda process, by_user: True)
+        monkeypatch.setattr(game.process_manager, 'del_process', lambda process: None)
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, game)
+        process.use_cpu()
+
+        process.update(1000, [])
+
+        assert process.has_ended == True
+        assert process.starvation_level == 0
         
