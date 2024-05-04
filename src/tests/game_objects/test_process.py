@@ -204,6 +204,27 @@ class TestProcess:
         process.update(current_time, [])
         assert process.starvation_level == 0
 
+    def test_graceful_termination(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0,
+            'graceful_termination_probability': 0.01
+        })
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, game)
+        process.use_cpu()
+
+        process.update(1000, [])
+
+        assert process.has_ended == True
+        assert process.starvation_level == 0        
+
     def test_use_cpu_min_page_creation(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
@@ -389,6 +410,52 @@ class TestProcess:
         process.update(LAST_ALIVE_STARVATION_LEVEL * self.starvation_interval, [])
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
+
+    def test_page_deletion_when_process_is_killed(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process = Process(1, game)
+
+        process.use_cpu()
+        game.page_manager.get_page(1, 0).swap()
+
+        for i in range(1, DEAD_STARVATION_LEVEL):
+            process.update(i * self.starvation_interval, [])
+        assert process.has_ended == True
+
+        with pytest.raises(KeyError):
+            for i in range(1, 5):
+                game.page_manager.get_page(1, i)
+
+    def test_page_deletion_when_process_is_gracefully_terminated(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0,
+            'graceful_termination_probability': 0.01
+        })
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process = Process(1, game)
+        process.use_cpu()
+        process.update(1000, [])
+        assert process.has_ended == False
+        assert game.page_manager.get_page(1, 0).pid == 1
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process.update(2000, [])
+
+        assert process.has_ended == True
+        assert process.starvation_level == 0
+
+        with pytest.raises(KeyError):
+            for i in range(0, 5):
+                game.page_manager.get_page(1, i)
 
     def test_process_blocks_for_io_event(self, game_custom_config, monkeypatch):
         game = game_custom_config({
@@ -597,27 +664,6 @@ class TestProcess:
         process.use_cpu()
         process.update(2000, [])
         assert process.is_waiting_for_io == True
-
-    def test_graceful_termination(self, game_custom_config, monkeypatch):
-        game = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0,
-            'graceful_termination_probability': 0.01
-        })
-
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-
-        process = Process(1, game)
-        process.use_cpu()
-
-        process.update(1000, [])
-
-        assert process.has_ended == True
-        assert process.starvation_level == 0
 
     def test_click_when_idle(self, game):
         process = Process(1, game)
