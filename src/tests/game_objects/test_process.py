@@ -448,4 +448,42 @@ class TestProcess:
 
         assert process.is_blocked == False
         assert process.is_waiting_for_io == False
+
+    def test_no_io_event_at_last_alive_starvation_level(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0.1
+        })
+
+        process1 = Process(1, game)
+        process2 = Process(2, game)
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        current_time = 0
+        for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
+            current_time += self.starvation_interval
+            process1.update(current_time, [])
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process1.use_cpu()
+        process2.use_cpu()
+
+        assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+        assert process2.starvation_level == 1
+        assert process1.is_waiting_for_io == False
+        assert process2.is_waiting_for_io == False
+
+        current_time += 1000
+        process1.update(current_time, [])
+        process2.update(current_time, [])
+
+        assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+        assert process1.is_waiting_for_io == False
+        assert process2.is_waiting_for_io == True
         
