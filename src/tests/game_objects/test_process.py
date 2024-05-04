@@ -307,3 +307,20 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.is_waiting_for_page == False
         assert process.is_waiting_for_io == False
+
+    def test_yield_cpu_while_waiting_for_page(self, game, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process = Process(1, game)
+
+        process.use_cpu()
+
+        game.page_manager.get_page(1, 0).swap()
+        process.update(0, [])
+        assert process.is_blocked == True
+
+        process.yield_cpu()
+
+        assert process.is_blocked == False
+        assert process.is_waiting_for_page == False
+        assert process.is_waiting_for_io == False
