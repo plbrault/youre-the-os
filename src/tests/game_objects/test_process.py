@@ -214,6 +214,31 @@ class TestProcess:
         with pytest.raises(KeyError):
             game.page_manager.get_page(1, 4)
 
+    def test_new_page_creation_while_running(self, game, monkeypatch):
+        process = Process(1, game)
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process.use_cpu()
+
+        assert game.page_manager.get_page(1, 0).pid == 1
+        with pytest.raises(KeyError):
+            game.page_manager.get_page(1, 1)
+
+        process.update(1000, [])
+
+        assert game.page_manager.get_page(1, 0).pid == 1
+        assert game.page_manager.get_page(1, 1).pid == 1
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        process.update(2000, [])
+
+        assert game.page_manager.get_page(1, 0).pid == 1
+        assert game.page_manager.get_page(1, 1).pid == 1
+        with pytest.raises(KeyError):
+            game.page_manager.get_page(1, 2)
+
     def test_use_cpu_when_already_has_pages(self, game, monkeypatch):
         process = Process(1, game)
 
