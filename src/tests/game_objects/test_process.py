@@ -317,12 +317,13 @@ class TestProcess:
 
         game.page_manager.get_page(1, 0).swap()
         process.update(0, [])
-        assert process.is_blocked == True
+        assert process.is_waiting_for_page == True
 
         process.yield_cpu()
+        process.update(0, [])
 
-        #assert process.is_blocked == False
-        #assert process.is_waiting_for_page == False
+        assert process.is_blocked == False
+        assert process.is_waiting_for_page == False
         assert process.is_waiting_for_io == False
 
     def test_starvation_while_waiting_for_page(self, game, monkeypatch):
