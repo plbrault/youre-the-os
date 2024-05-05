@@ -12,7 +12,7 @@ class Button(GameObject):
         self.text = text
         self._action_fn = action_fn
         self._key_bind = key_bind
-        super().__init__(ButtonView(self))
+        super().__init__(view_class(self))
 
         self._disabled = False
 

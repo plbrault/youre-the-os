@@ -33,23 +33,24 @@ class SortButtonView(Drawable):
         return self._text_surface.get_height() + 24
 
     def draw(self, surface):
-        background_color = Color.ALMOST_BLACK
-        text_surface = self._text_surface
+        if self._button.visible:
+            background_color = Color.ALMOST_BLACK
+            text_surface = self._text_surface
 
-        if self._button.disabled:
-            background_color = Color.DARK_GREY
-            text_surface = self._text_surface_disabled
+            if self._button.disabled:
+                background_color = Color.DARK_GREY
+                text_surface = self._text_surface_disabled
 
-        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
-            self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(
-            surface,
-            background_color,
-            pygame.Rect(
-                self.x + 2,
-                self.y + 2,
-                self.width - 4,
-                self.height - 4),
-            border_radius=3)
-        surface.blit(text_surface, (self.x + (self.width -
-                     text_surface.get_width()) / 2, self.y + 12))
+            pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
+                self.x, self.y, self.width, self.height), border_radius=3)
+            pygame.draw.rect(
+                surface,
+                background_color,
+                pygame.Rect(
+                    self.x + 2,
+                    self.y + 2,
+                    self.width - 4,
+                    self.height - 4),
+                border_radius=3)
+            surface.blit(text_surface, (self.x + (self.width -
+                        text_surface.get_width()) / 2, self.y + 12))
