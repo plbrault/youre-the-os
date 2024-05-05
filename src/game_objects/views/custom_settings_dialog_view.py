@@ -30,7 +30,7 @@ class CustomSettingsDialogView(Drawable):
 
     @property
     def height(self):
-        return 460
+        return 520
 
     @property
     def label_height(self):
