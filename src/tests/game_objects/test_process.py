@@ -223,7 +223,7 @@ class TestProcess:
         process.update(1000, [])
 
         assert process.has_ended == True
-        assert process.starvation_level == 0        
+        assert process.starvation_level == 0
 
     def test_use_cpu_min_page_creation(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -687,6 +687,7 @@ class TestProcess:
 
     def test_click_when_idle(self, game):
         process = Process(1, game)
+        process.view.set_xy(1000, 500)
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
@@ -697,6 +698,7 @@ class TestProcess:
 
     def test_click_during_moving_animation(self, game):
         process = Process(1, game)
+        process.view.set_xy(1000, 500)
         process.use_cpu()
 
         assert process.has_cpu == True
@@ -773,8 +775,6 @@ class TestProcess:
         game.page_manager.get_page(1, 0).swap()
         process.update(2000, [])
 
-        previous_blink_value = process.display_blink_color
         for i in range(1, 5):
             process.update(i * 200, [])
-            assert process.display_blink_color == previous_blink_value
-            previous_blink_value = process.display_blink_color
+            assert process.display_blink_color == False
