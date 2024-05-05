@@ -116,3 +116,18 @@ class TestPage:
         for i in range(1, 5):
             page.update(i * 200, [])
             assert page.display_blink_color == False
+
+    def test_blinking_animation_deactivation_after_removing_from_swap_and_use(self, page_manager):
+        page = Page(1, 1, page_manager)
+        page.in_use = True
+        page.in_swap = True
+
+        page.update(1000, [])
+        page.update(1200, [])
+
+        page.in_swap = False
+        page.in_use = False
+
+        for i in range(1, 5):
+            page.update(i * 200, [])
+            assert page.display_blink_color == False
