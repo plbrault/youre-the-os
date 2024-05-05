@@ -17,9 +17,6 @@ class Scene(ABC):
         self._is_started = False
         self._scene_objects = []
 
-    def start(self):
-        self.scene_manager.start_scene(self)
-
     @property
     def name(self):
         return self._name

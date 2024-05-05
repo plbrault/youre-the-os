@@ -217,7 +217,7 @@ class HowToPlay(Scene):
             self._scene_objects.append(self._next_button)
 
     def _return_to_main_menu(self):
-        self.scenes['main_menu'].start()
+        self.scene_manager.start_scene('main_menu')
 
     def update(self, current_time, events):
         for game_object in self._scene_objects:

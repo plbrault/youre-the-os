@@ -125,11 +125,11 @@ class MainMenu(Scene):
     def _start_game(self, config):
         if self._custom_settings_dialog is not None:
             self._custom_config = self._custom_settings_dialog.config
-        self.scenes['game'].config = config
-        self.scenes['game'].start()
+        self.scene_manager.get_scene('game').config = config
+        self.scene_manager.start_scene('game')
 
     def _start_how_to_play(self):
-        self.scenes['how_to_play'].start()
+        self.scene_manager.start_scene('how_to_play')
 
     def update(self, current_time, events):
         if self._about_dialog is not None:

@@ -7,12 +7,14 @@ import pygame
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.window_config import WindowConfig
-from engine.scene_manager import scene_manager
+from engine.scene_manager import SceneManager
 from scenes.game import Game
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
 from game_info import TITLE
 from window_size import WINDOW_SIZE
+
+scene_manager = SceneManager()
 
 pygame.init()
 pygame.font.init()
@@ -29,23 +31,23 @@ scenes = {}
 
 game_scene = Game()
 game_scene.screen = screen
-game_scene.scene_manager = scene_manager
 game_scene.scenes = scenes
+scene_manager.add_scene(game_scene)
 scenes['game'] = game_scene
 
 main_menu_scene = MainMenu()
 main_menu_scene.screen = screen
-main_menu_scene.scene_manager = scene_manager
 main_menu_scene.scenes = scenes
+scene_manager.add_scene(main_menu_scene)
 scenes['main_menu'] = main_menu_scene
 
 how_to_play_scene = HowToPlay()
 how_to_play_scene.screen = screen
-how_to_play_scene.scene_manager = scene_manager
 how_to_play_scene.scenes = scenes
+scene_manager.add_scene(how_to_play_scene)
 scenes['how_to_play'] = how_to_play_scene
 
-main_menu_scene.start()
+scene_manager.start_scene('main_menu')
 
 clock = pygame.time.Clock()
 

@@ -141,7 +141,7 @@ class Game(Scene):
             self._in_game_menu_dialog = None
 
     def _return_to_main_menu(self):
-        self.scenes['main_menu'].start()
+        self.scene_manager.start_scene('main_menu')
 
     def _get_script_events(self):
         if self._script_callback is None:
