@@ -1,8 +1,8 @@
 import pygame
 
-from lib.ui.color import Color
+from ui.color import Color
 from lib.drawable import Drawable
-from lib.ui.fonts import FONT_SECONDARY_SMALL
+from ui.fonts import FONT_SECONDARY_SMALL
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 

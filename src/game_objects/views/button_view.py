@@ -1,8 +1,8 @@
 import pygame
 
 from lib.drawable import Drawable
-from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_LARGE
+from ui.color import Color
+from ui.fonts import FONT_PRIMARY_LARGE
 
 
 class ButtonView(Drawable):

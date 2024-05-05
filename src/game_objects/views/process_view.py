@@ -3,8 +3,8 @@ from os import path
 import pygame
 
 from lib.drawable import Drawable
-from lib.ui.color import Color
-from lib.ui.fonts import FONT_SECONDARY_XXSMALL
+from ui.color import Color
+from ui.fonts import FONT_SECONDARY_XXSMALL
 
 _starvation_colors = [
     Color.GREEN,

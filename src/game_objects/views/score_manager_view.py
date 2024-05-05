@@ -1,6 +1,6 @@
 from lib.drawable import Drawable
-from lib.ui.color import Color
-from lib.ui.fonts import FONT_PRIMARY_MEDIUM
+from ui.color import Color
+from ui.fonts import FONT_PRIMARY_MEDIUM
 
 
 class ScoreManagerView(Drawable):
