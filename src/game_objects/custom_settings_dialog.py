@@ -91,7 +91,8 @@ class CustomSettingsDialog(GameObject):
 
     def update(self, current_time, events):
         self._num_processes_at_startup_selector.in_error = (
-            self._num_processes_at_startup_selector.selected_option_id> self._max_processes_selector.selected_option_id
+            self._num_processes_at_startup_selector.selected_option_id
+            > self._max_processes_selector.selected_option_id
         )
         self._max_processes_selector.in_error = self._num_processes_at_startup_selector.in_error
         self._start_button.disabled = self._max_processes_selector.in_error
