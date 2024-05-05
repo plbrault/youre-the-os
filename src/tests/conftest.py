@@ -31,14 +31,16 @@ def game(Game, screen):
         'io_probability': 0,
         'graceful_termination_probability': 0
     }
-    game = Game(screen, None, game_config)
+    game = Game(game_config)
+    game.screen = screen
     game.setup()
     return game
 
 @pytest.fixture
 def game_custom_config(screen, Game):
     def create_game(game_config):
-        game = Game(screen, None, game_config)
+        game = Game(game_config)
+        game.screen = screen
         game.setup()
         return game
     return create_game
