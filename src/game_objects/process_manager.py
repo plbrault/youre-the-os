@@ -1,7 +1,7 @@
 from math import inf
 import re
 
-from constants import ONE_SECOND
+from constants import ONE_SECOND, ONE_MINUTE
 import event_manager
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
@@ -20,7 +20,7 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 3000
 
 class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
