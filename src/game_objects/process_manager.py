@@ -20,7 +20,7 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 3000
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
 
 class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
