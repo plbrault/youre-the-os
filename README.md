@@ -6,7 +6,7 @@ Make sure not to leave processes idling for too long, or the user will get reall
 
 You can play the game here: [https://plbrault.github.io/youre-the-os](https://plbrault.github.io/youre-the-os)
 
-Also available on [itch.io](https://drfreckles42.itch.io/youre-the-os).
+Also available on [itch.io](https://plbrault.itch.io/youre-the-os).
 
 ![In-game screenshot](readme-assets/in_game_screenshot.png)
 
