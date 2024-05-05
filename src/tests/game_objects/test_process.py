@@ -775,8 +775,6 @@ class TestProcess:
         game.page_manager.get_page(1, 0).swap()
         process.update(2000, [])
 
-        previous_blink_value = process.display_blink_color
         for i in range(1, 5):
             process.update(i * 200, [])
-            assert process.display_blink_color == previous_blink_value
-            previous_blink_value = process.display_blink_color
+            assert process.display_blink_color == False

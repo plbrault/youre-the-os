@@ -59,4 +59,60 @@ class TestPage:
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (page.view.x, page.view.y) })
         page.update(1000, [mouse_click_event])
-        
+
+    def test_click_wnen_in_swap(self, page_manager, monkeypatch):
+        page_arg = None
+
+        def swap_page_mock(page):
+            nonlocal page_arg
+            page_arg = page
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+
+        page = Page(1, 1, page_manager)
+        page.in_swap = True
+        page.view.set_xy(1000, 500)
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (page.view.x, page.view.y) })
+        page.update(1000, [mouse_click_event])
+
+        assert page_arg == page
+
+    def test_blinking_animation(self, page_manager):
+        page = Page(1, 1, page_manager)
+        page.in_use = True
+        page.in_swap = True
+
+        previous_blink_value = page.display_blink_color
+        for i in range(1, 5):
+            page.update(i * 200, [])
+            assert page.display_blink_color != previous_blink_value
+            previous_blink_value = page.display_blink_color
+
+    def test_blinking_animation_deactivation_after_stopping_use(self, page_manager):
+        page = Page(1, 1, page_manager)
+        page.in_use = True
+        page.in_swap = True
+
+        page.update(1000, [])
+        page.update(1200, [])
+
+        page.in_use = False
+
+        for i in range(1, 5):
+            page.update(i * 200, [])
+            assert page.display_blink_color == False
+
+    def test_blinking_animation_deactivation_after_removing_from_swap(self, page_manager):
+        page = Page(1, 1, page_manager)
+        page.in_use = True
+        page.in_swap = True
+
+        page.update(1000, [])
+        page.update(1200, [])
+
+        page.in_swap = False
+
+        for i in range(1, 5):
+            page.update(i * 200, [])
+            assert page.display_blink_color == False

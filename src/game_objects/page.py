@@ -31,7 +31,7 @@ class Page(GameObject):
 
     @in_use.setter
     def in_use(self, value):
-        self._in_use = value    
+        self._in_use = value
 
     @property
     def in_swap(self):
