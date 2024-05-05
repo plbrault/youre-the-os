@@ -55,7 +55,11 @@ class CustomSettingsDialog(GameObject):
         self.children.append(self._io_probability_selector)
 
         self._graceful_termination_selector = OptionSelector(['Yes', 'No'])
-        self._graceful_termination_selector.selected_option = 'Yes'
+        self._graceful_termination_selector.selected_option = (
+            'Yes'
+            if self._config['graceful_termination_probability'] > 0
+            else 'No'
+        )
         self.children.append(self._graceful_termination_selector)
 
         selector_width = self._new_process_probability_selector.view.width
