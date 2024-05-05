@@ -6,13 +6,9 @@ provided from the command line.
 
 import asyncio
 from os import path
-import sys
 import argparse
 
-import pygame
-
 from engine.game_manager import GameManager
-from engine.scene_manager import SceneManager
 from engine.window_config import WindowConfig
 from scenes.game import Game
 from game_info import TITLE

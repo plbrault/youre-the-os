@@ -1,6 +1,7 @@
 import asyncio
-import pygame
 from typing import Union
+
+import pygame
 
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
@@ -118,7 +119,9 @@ class GameManager():
             scene.update(self._scene_manager.current_scene.current_time, events)
             if scene != self._scene_manager.current_scene:
                 scene = self._scene_manager.current_scene
-                self._scene_manager.current_scene.update(self._scene_manager.current_scene.current_time, [])
+                self._scene_manager.current_scene.update(
+                    self._scene_manager.current_scene.current_time, []
+                )
 
             scene.render()
 

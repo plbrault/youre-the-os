@@ -1,5 +1,6 @@
-from pygame import Surface
 from typing import Union
+
+from pygame import Surface
 
 from engine.scene import Scene
 
