@@ -75,7 +75,8 @@ class CustomSettingsDialog(GameObject):
             'io_probability': [
                 0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5
             ][self._io_probability_selector.selected_option_id],
-            'graceful_termination_probability': default_difficulty['config']['graceful_termination_probability'],
+            'graceful_termination_probability':
+                default_difficulty['config']['graceful_termination_probability'],
         }
         return config
 
