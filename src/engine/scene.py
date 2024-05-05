@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 
 import pygame
 
+from engine.scene_manager import scene_manager
 from ui.color import Color
-from scene_manager import scene_manager
 
 
 class Scene(ABC):

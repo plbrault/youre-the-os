@@ -11,8 +11,8 @@ import argparse
 
 import pygame
 
+from engine.scene_manager import scene_manager
 from scenes.game import Game
-from scene_manager import scene_manager
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 import difficulty_levels
