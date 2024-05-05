@@ -3,10 +3,10 @@ from os import path
 
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
+from game_info import TITLE
 from scenes.game import Game
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
-from game_info import TITLE
 from window_size import WINDOW_SIZE
 
 async def main():
