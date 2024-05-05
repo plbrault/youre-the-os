@@ -13,8 +13,10 @@ class CustomSettingsDialogView(Drawable):
             'Custom Settings', True, Color.WHITE)
         self._num_cpus_label_text = FONT_SECONDARY_MEDIUM.render(
             '# CPUs', True, Color.WHITE)
-        self._num_processes_label_text = FONT_SECONDARY_MEDIUM.render(
+        self._num_processes_at_startup_label_text = FONT_SECONDARY_MEDIUM.render(
             '# Processes at startup', True, Color.WHITE)
+        self._max_processes_label_text = FONT_SECONDARY_MEDIUM.render(
+            'Max # Processes', True, Color.WHITE)
         self._num_ram_rows_label_text = FONT_SECONDARY_MEDIUM.render(
             '# RAM Rows', True, Color.WHITE)
         self._new_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
@@ -76,8 +78,10 @@ class CustomSettingsDialogView(Drawable):
         surface.blit(self._title_text, (self.x + (self.width -
                      self._title_text.get_width()) / 2, self.y + 20))
         surface.blit(self._num_cpus_label_text, (self.x + 20, self.num_cpus_y))
-        surface.blit(self._num_processes_label_text,
+        surface.blit(self._num_processes_at_startup_label_text,
                      (self.x + 20, self.num_processes_at_startup_y))
+        surface.blit(self._max_processes_label_text,
+                     (self.x + 20, self.max_processes_y))
         surface.blit(self._num_ram_rows_label_text,
                      (self.x + 20, self.num_ram_rows_y))
         surface.blit(self._new_process_probability_label_text,
