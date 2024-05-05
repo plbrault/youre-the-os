@@ -7,10 +7,10 @@ import pygame
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.window_config import WindowConfig
+from engine.scene_manager import scene_manager
 from scenes.game import Game
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
-from scene_manager import scene_manager
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 
