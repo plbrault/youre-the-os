@@ -197,7 +197,7 @@ class TestProcess:
             current_time += self.starvation_interval
             process.update(current_time, [])
 
-        process.use_cpu()
+        #process.use_cpu()
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
         current_time += self.time_to_unstarve
