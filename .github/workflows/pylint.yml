@@ -1,0 +1,23 @@
+
+name: pylint
+on: [pull_request]
+
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pipenv'
+    - name: Install dependencies
+      uses: VaultVulp/action-pipenv@v2.0.1
+      with:
+        command: sync --dev
+    - name: Run pylint
+      uses: VaultVulp/action-pipenv@v2.0.1
+      with:
+        command:  run pylint
