@@ -75,7 +75,8 @@ class CustomSettingsDialog(GameObject):
                 self._num_cpus_selector.selected_option),
             'num_processes_at_startup': int(
                 self._num_processes_at_startup_selector.selected_option),
-            'max_processes': MAX_PROCESSES,
+            'max_processes': int(
+                self._max_processes_selector.selected_option),
             'num_ram_rows': int(
                 self._num_ram_rows_selector.selected_option),
             'new_process_probability': self._new_process_probability_selector.selected_option_id *
