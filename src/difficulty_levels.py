@@ -1,8 +1,11 @@
+from constants import MAX_PROCESSES
+
 _easy_difficulty = {
     'config': {
         'name': 'Easy',
         'num_cpus': 4,
         'num_processes_at_startup': 14,
+        'max_processes': MAX_PROCESSES,
         'num_ram_rows': 8,
         'new_process_probability': 0.05,
         'io_probability': 0.01,
@@ -14,6 +17,7 @@ _normal_difficulty = {
     'config': {
         'name': 'Normal',
         'num_cpus': 4,
+        'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 14,
         'num_ram_rows': 5,
         'new_process_probability': 0.05,
@@ -26,6 +30,7 @@ _hard_difficulty = {
     'config': {
         'name': 'Hard',
         'num_cpus': 8,
+        'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 28,
         'num_ram_rows': 6,
         'new_process_probability': 0.1,
@@ -38,6 +43,7 @@ _harder_difficulty = {
     'config': {
         'name': 'Harder',
         'num_cpus': 12,
+        'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 35,
         'num_ram_rows': 6,
         'new_process_probability': 0.2,
@@ -50,6 +56,7 @@ _insane_difficulty = {
     'config': {
         'name': 'Insane',
         'num_cpus': 16,
+        'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 42,
         'num_ram_rows': 4,
         'new_process_probability': 1,

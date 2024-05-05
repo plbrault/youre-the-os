@@ -7,6 +7,7 @@ class Color:
     DARK_RED = (139, 0, 0)
     DARKER_RED = (80, 0, 0)
     GREEN = (0, 255, 0)
+    GREY = (128, 128, 128)
     LIGHT_BLUE = (176, 216, 230)
     LIGHT_GREY = (211, 211, 211)
     ORANGE = (255, 165, 0)

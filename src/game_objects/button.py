@@ -11,6 +11,16 @@ class Button(GameObject):
         self._key_bind = key_bind
         super().__init__(ButtonView(self))
 
+        self._disabled = False
+
+    @property
+    def disabled(self):
+        return self._disabled
+
+    @disabled.setter
+    def disabled(self, value: bool):
+        self._disabled = value
+
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
             return self._view.collides(*event.get_property('position'))
@@ -22,6 +32,7 @@ class Button(GameObject):
         self._action_fn()
 
     def update(self, current_time, events):
-        for event in events:
-            if self._check_if_clicked_on(event):
-                self._on_click()
+        if not self._disabled:
+            for event in events:
+                if self._check_if_clicked_on(event):
+                    self._on_click()
