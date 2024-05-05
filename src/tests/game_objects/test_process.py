@@ -223,7 +223,7 @@ class TestProcess:
         process.update(1000, [])
 
         assert process.has_ended == True
-        assert process.starvation_level == 0        
+        assert process.starvation_level == 0
 
     def test_use_cpu_min_page_creation(self, game, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
