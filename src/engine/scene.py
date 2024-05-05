@@ -9,7 +9,6 @@ from ui.color import Color
 class Scene(ABC):
     scene_manager: SceneManager
     screen: pygame.Surface
-    scenes: dict
     background_color = Color.BLACK
 
     def __init__(self, name):
