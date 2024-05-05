@@ -18,6 +18,8 @@ Also available on [itch.io](https://drfreckles42.itch.io/youre-the-os).
 
 ## Usage
 
+***The main branch can be unstable. For a stable version, checkout a release tag.***
+
 **Install dependencies:**
 
 ```bash
