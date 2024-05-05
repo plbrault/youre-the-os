@@ -20,6 +20,8 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+
 class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
 
@@ -121,7 +123,8 @@ class ProcessManager(GameObject):
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)
 
-        self._sort_processes_button.view.set_xy(364, 116)
+        self._sort_processes_button.view.set_xy(220, 121)
+        self._sort_processes_button.visible = False
         self.children.append(self._sort_processes_button)
 
     def _create_process(self, process_slot_id=None):
@@ -219,6 +222,11 @@ class ProcessManager(GameObject):
         }
 
     def update(self, current_time, events):
+        if (
+            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
+            and not self._sort_processes_button.visible
+        ):
+            self._sort_processes_button.visible = True
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:

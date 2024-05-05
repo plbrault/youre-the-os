@@ -17,6 +17,10 @@ class UptimeManager(GameObject):
         super().__init__(UptimeManagerView(self))
 
     @property
+    def uptime_ms(self):
+        return self._uptime
+
+    @property
     def uptime_text(self):
         return self._uptime_text
 

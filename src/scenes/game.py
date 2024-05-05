@@ -102,6 +102,10 @@ class Game(Scene):
         return self._page_manager
 
     @property
+    def uptime_manager(self):
+        return self._uptime_manager
+
+    @property
     def is_paused(self):
         return self._paused_since is not None
 
