@@ -1,11 +1,11 @@
 from math import inf
-from lib.random import randint
 import re
 
 from lib.constants import MAX_PROCESSES, ONE_SECOND
 from lib import event_manager
 from lib.game_event_type import GameEventType
 from lib.game_object import GameObject
+from lib.random import randint
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
