@@ -46,7 +46,7 @@ pipenv run auto <script.py> [args]
 pipenv run auto --help
 ```
 
-See `automated_example.py` for more info on API.
+See `automated_skeleton.py` for more info on API.
 
 **Build web version without running:**
 

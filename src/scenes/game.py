@@ -1,7 +1,7 @@
 import sys
 
 from constants import ONE_SECOND
-from lib import event_manager
+import event_manager
 from lib.scene import Scene
 from difficulty_levels import default_difficulty
 from game_objects.button import Button

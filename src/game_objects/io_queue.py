@@ -2,7 +2,7 @@ from collections import deque
 from lib.random import randint
 
 from constants import ONE_SECOND
-from lib import event_manager
+import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.io_queue_view import IoQueueView

@@ -4,7 +4,7 @@ from lib.random import randint
 from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 )
-from lib import event_manager
+import event_manager
 from lib.game_object import GameObject
 from lib.game_event_type import GameEventType
 from game_objects.views.process_view import ProcessView
