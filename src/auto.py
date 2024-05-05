@@ -11,7 +11,9 @@ import argparse
 
 import pygame
 
-from engine.scene_manager import scene_manager
+from engine.game_manager import GameManager
+from engine.scene_manager import SceneManager
+from engine.window_config import WindowConfig
 from scenes.game import Game
 from game_info import TITLE
 from window_size import WINDOW_SIZE
@@ -117,38 +119,15 @@ def compile_auto_script(source_file):
 source_filename, difficulty_config = parse_arguments()
 compiled_script = compile_auto_script(source_filename)
 
-pygame.init()
-pygame.font.init()
-
-screen = pygame.display.set_mode(WINDOW_SIZE)
-
-icon = pygame.image.load(path.join('assets', 'icon.png'))
-pygame.display.set_caption(TITLE)
-pygame.display.set_icon(icon)
-
-scenes = {}
-
-game_scene = Game(screen, scenes, difficulty_config, compiled_script, True)
-scenes['game'] = game_scene
-
-game_scene.start()
-
-clock = pygame.time.Clock()
-
-FPS = 60
-
 async def main():
+    game_manager = GameManager()
+    game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                sys.exit()
+    game_scene = Game(difficulty_config, compiled_script, True)
 
-        scene_manager.current_scene.update(scene_manager.current_scene.current_time, [])
-        scene_manager.current_scene.render()
+    game_manager.add_scene(game_scene)
+    game_manager.startup_scene = game_scene
 
-        clock.tick(FPS)
-
-        await asyncio.sleep(0)
+    await game_manager.play(ignore_events=True)
 
 asyncio.run(main())
