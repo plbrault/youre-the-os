@@ -687,6 +687,7 @@ class TestProcess:
 
     def test_click_when_idle(self, game):
         process = Process(1, game)
+        process.view.set_xy(1000, 500)
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
@@ -697,6 +698,7 @@ class TestProcess:
 
     def test_click_during_moving_animation(self, game):
         process = Process(1, game)
+        process.view.set_xy(1000, 500)
         process.use_cpu()
 
         assert process.has_cpu == True
