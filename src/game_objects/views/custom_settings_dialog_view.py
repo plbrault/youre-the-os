@@ -43,8 +43,12 @@ class CustomSettingsDialogView(Drawable):
         return self.num_cpus_y + self.label_height + 30
 
     @property
-    def num_ram_rows_y(self):
+    def max_processes_y(self):
         return self.num_processes_y + self.label_height + 30
+
+    @property
+    def num_ram_rows_y(self):
+        return self.max_processes_y + self.label_height + 30
 
     @property
     def new_process_probability_y(self):

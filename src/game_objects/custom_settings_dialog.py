@@ -1,6 +1,6 @@
 from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
-    MAX_PROCESSES_AT_STARTUP, MIN_RAM_ROWS, MAX_RAM_ROWS
+    MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS
 )
 from engine.game_object import GameObject
 from difficulty_levels import default_difficulty
@@ -22,11 +22,17 @@ class CustomSettingsDialog(GameObject):
             [str(i) for i in range(MIN_CPU_COUNT, MAX_CPU_COUNT + 1)], self._config['num_cpus'] - 1)
         self.children.append(self._num_cpus_selector)
 
-        self._num_processes_selector = OptionSelector(
+        self._num_processes_at_startup_selector = OptionSelector(
             [str(i) for i in range(MIN_PROCESSES_AT_STARTUP, MAX_PROCESSES_AT_STARTUP + 1)],
             self._config['num_processes_at_startup'] - 1
         )
-        self.children.append(self._num_processes_selector)
+        self.children.append(self._num_processes_at_startup_selector)
+
+        self._max_processes_selector = OptionSelector(
+            [str(i) for i in range(MIN_PROCESSES_AT_STARTUP, MAX_PROCESSES + 1)],
+            self._config['max_processes'] - 1
+        )
+        self.children.append(self._max_processes_selector)
 
         self._num_ram_rows_selector = OptionSelector(
             [str(i) for i in range(MIN_RAM_ROWS, MAX_RAM_ROWS + 1)],
@@ -50,7 +56,8 @@ class CustomSettingsDialog(GameObject):
 
         selector_width = self._new_process_probability_selector.view.width
         self._num_cpus_selector.view.min_width = selector_width
-        self._num_processes_selector.view.min_width = selector_width
+        self._num_processes_at_startup_selector.view.min_width = selector_width
+        self._max_processes_selector.view.min_width = selector_width
         self._num_ram_rows_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
 
@@ -67,7 +74,8 @@ class CustomSettingsDialog(GameObject):
             'num_cpus': int(
                 self._num_cpus_selector.selected_option),
             'num_processes_at_startup': int(
-                self._num_processes_selector.selected_option),
+                self._num_processes_at_startup_selector.selected_option),
+            'max_processes': MAX_PROCESSES,
             'num_ram_rows': int(
                 self._num_ram_rows_selector.selected_option),
             'new_process_probability': self._new_process_probability_selector.selected_option_id *
@@ -86,10 +94,15 @@ class CustomSettingsDialog(GameObject):
             self.view.num_cpus_y +
             (self.view.label_height - self._num_cpus_selector.view.height) / 2
         )
-        self._num_processes_selector.view.set_xy(
-            self.view.x + self.view.width - self._num_processes_selector.view.width - 20,
+        self._num_processes_at_startup_selector.view.set_xy(
+            self.view.x + self.view.width - self._num_processes_at_startup_selector.view.width - 20,
             self.view.num_processes_y +
-            (self.view.label_height - self._num_processes_selector.view.height) / 2
+            (self.view.label_height - self._num_processes_at_startup_selector.view.height) / 2
+        )
+        self._max_processes_selector.view.set_xy(
+            self.view.x + self.view.width - self._max_processes_selector.view.width - 20,
+            self.view.max_processes_y +
+            (self.view.label_height - self._max_processes_selector.view.height) / 2
         )
         self._num_ram_rows_selector.view.set_xy(
             self.view.x + self.view.width - self._num_ram_rows_selector.view.width - 20,

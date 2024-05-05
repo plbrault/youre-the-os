@@ -1,7 +1,7 @@
 from math import inf
 import re
 
-from constants import MAX_PROCESSES, ONE_SECOND
+from constants import ONE_SECOND
 import event_manager
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
@@ -118,7 +118,7 @@ class ProcessManager(GameObject):
         self.children.extend(self._user_terminated_process_slots)
 
     def _create_process(self, process_slot_id=None):
-        if len(self._alive_process_list) < MAX_PROCESSES:
+        if len(self._alive_process_list) < self._game.config['max_processes']:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
