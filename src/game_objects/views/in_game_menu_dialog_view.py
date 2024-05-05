@@ -1,7 +1,7 @@
 import pygame
 
-from lib.drawable import Drawable
-from lib.ui.color import Color
+from engine.drawable import Drawable
+from ui.color import Color
 
 class InGameMenuDialogView(Drawable):
     def __init__(self, in_game_menu_dialog):

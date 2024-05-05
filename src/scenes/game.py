@@ -1,8 +1,8 @@
 import sys
 
-from lib.constants import ONE_SECOND
-from lib import event_manager
-from lib.scene import Scene
+from constants import ONE_SECOND
+import event_manager
+from engine.scene import Scene
 from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog

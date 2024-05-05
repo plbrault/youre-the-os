@@ -1,5 +1,5 @@
-from lib import event_manager
-from lib.game_object import GameObject
+import event_manager
+from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
 from game_objects.page_slot import PageSlot

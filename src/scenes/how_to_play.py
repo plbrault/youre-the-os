@@ -2,8 +2,8 @@ from os import path
 
 import pygame
 
-from lib.ui.color import Color
-from lib.scene import Scene
+from ui.color import Color
+from engine.scene import Scene
 from game_objects.button import Button
 from game_objects.how_to_play_part import HowToPlayPart
 

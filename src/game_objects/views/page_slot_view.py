@@ -1,4 +1,4 @@
-from lib.drawable import Drawable
+from engine.drawable import Drawable
 
 
 class PageSlotView(Drawable):

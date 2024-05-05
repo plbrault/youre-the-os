@@ -1,8 +1,8 @@
 import pygame
 
-from lib.drawable import Drawable
-from lib.ui.fonts import FONT_SECONDARY_MEDIUM, FONT_PRIMARY_XXLARGE
-from lib.ui.color import Color
+from engine.drawable import Drawable
+from ui.fonts import FONT_SECONDARY_MEDIUM, FONT_PRIMARY_XXLARGE
+from ui.color import Color
 
 class CustomSettingsDialogView(Drawable):
     def __init__(self, custom_settings_dialog):
