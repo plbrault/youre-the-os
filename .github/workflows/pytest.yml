@@ -9,10 +9,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v5
+    - uses: actions/cache@v3
       with:
-        python-version: '3.11'
-        cache: 'pipenv'    
+        path: ./.venv
+        key: ${{ runner.os }}-venv-${{ hashFiles('./Pipfile.lock') }}
     - name: Install dependencies
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
