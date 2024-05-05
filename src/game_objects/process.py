@@ -1,5 +1,4 @@
 from math import sqrt
-from engine.random import randint
 
 from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
@@ -7,6 +6,7 @@ from constants import (
 import event_manager
 from engine.game_object import GameObject
 from engine.game_event_type import GameEventType
+from engine.random import randint
 from game_objects.views.process_view import ProcessView
 
 _STARVATION_LEVEL_DURATION_MS = 10000

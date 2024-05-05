@@ -1,10 +1,10 @@
 from collections import deque
-from engine.random import randint
 
 from constants import ONE_SECOND
 import event_manager
 from engine.game_object import GameObject
 from engine.game_event_type import GameEventType
+from engine.random import randint
 from game_objects.views.io_queue_view import IoQueueView
 
 _MAX_WAITING_TIME = 5000

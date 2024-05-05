@@ -1,10 +1,9 @@
 import pygame
 
-from ui.color import Color
 from engine.drawable import Drawable
+from ui.color import Color
 from ui.fonts import FONT_SECONDARY_SMALL
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
-
 
 class HowToPlayPartView(Drawable):
     def __init__(self, how_to_play_part):

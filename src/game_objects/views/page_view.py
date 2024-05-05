@@ -1,7 +1,7 @@
 import pygame
 
-from ui.color import Color
 from engine.drawable import Drawable
+from ui.color import Color
 from ui.fonts import FONT_SECONDARY_XXXSMALL
 
 
