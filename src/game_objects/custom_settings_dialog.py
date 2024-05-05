@@ -1,8 +1,8 @@
-from lib.constants import (
+from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
     MAX_PROCESSES_AT_STARTUP, MIN_RAM_ROWS, MAX_RAM_ROWS
 )
-from lib.game_object import GameObject
+from engine.game_object import GameObject
 from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.option_selector import OptionSelector
@@ -74,7 +74,9 @@ class CustomSettingsDialog(GameObject):
             0.05,
             'io_probability': [
                 0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5
-            ][self._io_probability_selector.selected_option_id]
+            ][self._io_probability_selector.selected_option_id],
+            'graceful_termination_probability':
+                default_difficulty['config']['graceful_termination_probability'],
         }
         return config
 

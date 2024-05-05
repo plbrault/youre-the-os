@@ -1,4 +1,4 @@
-from lib.game_object import GameObject
+from engine.game_object import GameObject
 from game_objects.button import Button
 from game_objects.views.game_over_dialog_view import GameOverDialogView
 

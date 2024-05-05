@@ -1,8 +1,8 @@
 import sys
 
-from lib.constants import ONE_SECOND
-from lib import event_manager
-from lib.scene import Scene
+from constants import ONE_SECOND
+import event_manager
+from engine.scene import Scene
 from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
@@ -14,7 +14,7 @@ from game_objects.uptime_manager import UptimeManager
 
 
 class Game(Scene):
-    def __init__(self, screen, scenes, config=None, script=None, standalone=False):
+    def __init__(self, config=None, script=None, standalone=False):
         self._config = config
         if self._config is None:
             self._config = default_difficulty['config']
@@ -39,7 +39,7 @@ class Game(Scene):
 
         self._open_in_game_menu_button = None
 
-        super().__init__(screen, scenes)
+        super().__init__('game')
 
     def setup(self):
         self._paused_since = None
@@ -72,7 +72,7 @@ class Game(Scene):
             self._open_in_game_menu_button = Button(
                 'Menu', self._open_in_game_menu, key_bind='escape')
             self._open_in_game_menu_button.view.set_xy(
-                self._screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
+                self.screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
             self._scene_objects.append(self._open_in_game_menu_button)
 
         self._prepare_automation_script()
@@ -127,8 +127,8 @@ class Game(Scene):
             self._in_game_menu_dialog = InGameMenuDialog(
                 self.setup, self._return_to_main_menu, self._close_in_game_menu)
             self._in_game_menu_dialog.view.set_xy(
-                (self._screen.get_width() - self._in_game_menu_dialog.view.width) / 2,
-                (self._screen.get_height() - self._in_game_menu_dialog.view.height) / 2)
+                (self.screen.get_width() - self._in_game_menu_dialog.view.width) / 2,
+                (self.screen.get_height() - self._in_game_menu_dialog.view.height) / 2)
             # Must be before menu button as both handles same key,
             # otherwise close will detect menu as open in same cycle
             menu_button_index = self._scene_objects.index(self._open_in_game_menu_button)
@@ -141,7 +141,7 @@ class Game(Scene):
             self._in_game_menu_dialog = None
 
     def _return_to_main_menu(self):
-        self._scenes['main_menu'].start()
+        self.scene_manager.start_scene('main_menu')
 
     def _get_script_events(self):
         if self._script_callback is None:
@@ -204,9 +204,9 @@ class Game(Scene):
                         self._return_to_main_menu,
                         self._standalone)
                     self._game_over_dialog.view.set_xy(
-                        (self._screen.get_width() -
+                        (self.screen.get_width() -
                          self._game_over_dialog.view.width) / 2,
-                        (self._screen.get_height() -
+                        (self.screen.get_height() -
                          self._game_over_dialog.view.height) / 2
                     )
                     self._scene_objects.append(self._game_over_dialog)

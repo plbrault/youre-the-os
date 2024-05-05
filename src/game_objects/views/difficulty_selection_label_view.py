@@ -1,6 +1,6 @@
-from lib.ui.color import Color
-from lib.drawable import Drawable
-from lib.ui.fonts import FONT_SECONDARY_MEDIUM
+from engine.drawable import Drawable
+from ui.color import Color
+from ui.fonts import FONT_SECONDARY_MEDIUM
 
 
 class DifficultySelectionLabelView(Drawable):

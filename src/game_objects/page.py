@@ -1,5 +1,5 @@
-from lib.game_event_type import GameEventType
-from lib.game_object import GameObject
+from engine.game_event_type import GameEventType
+from engine.game_object import GameObject
 from game_objects.views.page_view import PageView
 
 _BLINKING_INTERVAL_MS = 200
@@ -29,6 +29,10 @@ class Page(GameObject):
     def in_use(self):
         return self._in_use
 
+    @in_use.setter
+    def in_use(self, value):
+        self._in_use = value
+
     @property
     def in_swap(self):
         return self._in_swap
@@ -40,10 +44,6 @@ class Page(GameObject):
     @property
     def display_blink_color(self):
         return self._display_blink_color
-
-    @in_use.setter
-    def in_use(self, value):
-        self._in_use = value
 
     def swap(self):
         self._page_manager.swap_page(self)
