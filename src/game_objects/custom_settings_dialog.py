@@ -54,12 +54,17 @@ class CustomSettingsDialog(GameObject):
             int(self._config['io_probability'] * 100)) + ' %'
         self.children.append(self._io_probability_selector)
 
+        self._graceful_termination_selector = OptionSelector(['Yes', 'No'])
+        self._graceful_termination_selector.selected_option = 'Yes'
+        self.children.append(self._graceful_termination_selector)
+
         selector_width = self._new_process_probability_selector.view.width
         self._num_cpus_selector.view.min_width = selector_width
         self._num_processes_at_startup_selector.view.min_width = selector_width
         self._max_processes_selector.view.min_width = selector_width
         self._num_ram_rows_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
+        self._graceful_termination_selector.view.min_width = selector_width
 
         self._start_button = Button('Start', start_fn)
         self.children.append(self._start_button)
@@ -84,8 +89,11 @@ class CustomSettingsDialog(GameObject):
             'io_probability': [
                 0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5
             ][self._io_probability_selector.selected_option_id],
-            'graceful_termination_probability':
-                default_difficulty['config']['graceful_termination_probability'],
+            'graceful_termination_probability': (
+                default_difficulty['config']['graceful_termination_probability']
+                if self._graceful_termination_selector.selected_option == 'Yes'
+                else 0
+            ),
         }
         return config
 
@@ -128,6 +136,11 @@ class CustomSettingsDialog(GameObject):
             self.view.x + self.view.width - self._io_probability_selector.view.width - 20,
             self.view.io_probability_y +
             (self.view.label_height - self._io_probability_selector.view.height) / 2
+        )
+        self._graceful_termination_selector.view.set_xy(
+            self.view.x + self.view.width - self._graceful_termination_selector.view.width - 20,
+            self.view.graceful_termination_y +
+            (self.view.label_height - self._graceful_termination_selector.view.height) / 2
         )
         self._start_button.view.set_xy(
             self.view.x + (self.view.width / 2) -

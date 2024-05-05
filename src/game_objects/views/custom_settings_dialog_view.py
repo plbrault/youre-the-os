@@ -23,14 +23,16 @@ class CustomSettingsDialogView(Drawable):
             'New Process Probability', True, Color.WHITE)
         self._io_probability_label_text = FONT_SECONDARY_MEDIUM.render(
             'I/O Probability', True, Color.WHITE)
+        self._graceful_termination_label_text = FONT_SECONDARY_MEDIUM.render(
+            'Enable Graceful Termination', True, Color.WHITE)
 
     @property
     def width(self):
-        return 520
+        return 560
 
     @property
     def height(self):
-        return 520
+        return 580
 
     @property
     def label_height(self):
@@ -60,6 +62,10 @@ class CustomSettingsDialogView(Drawable):
     def io_probability_y(self):
         return self.new_process_probability_y + self.label_height + 30
 
+    @property
+    def graceful_termination_y(self):
+        return self.io_probability_y + self.label_height + 30
+
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
             self.x, self.y, self.width, self.height), border_radius=3)
@@ -88,3 +94,5 @@ class CustomSettingsDialogView(Drawable):
                      (self.x + 20, self.new_process_probability_y))
         surface.blit(self._io_probability_label_text,
                      (self.x + 20, self.io_probability_y))
+        surface.blit(self._graceful_termination_label_text,
+                    (self.x + 20, self.graceful_termination_y))
