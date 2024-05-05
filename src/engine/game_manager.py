@@ -101,15 +101,17 @@ class GameManager():
                 mouse_drag_event = event
         return events
 
-    async def _main_loop(self):
+    async def _main_loop(self, ignore_events=False):
         clock = pygame.time.Clock()
 
         while True:
             events = self._get_events()
-
             for event in events:
                 if event.type == GameEventType.QUIT:
                     return
+
+            if ignore_events:
+                events = []
 
             scene = self._scene_manager.current_scene
 
@@ -124,10 +126,10 @@ class GameManager():
 
             await asyncio.sleep(0)
 
-    async def play(self):
+    async def play(self, ignore_events=False):
         self._init_pygame()
         self._init_screen()
         if self.startup_scene is None:
             raise ValueError('Property `startup_scene` needs to be set.')
         self._scene_manager.start_scene(self.startup_scene)
-        await self._main_loop()
+        await self._main_loop(ignore_events)
