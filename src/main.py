@@ -6,6 +6,7 @@ import pygame
 
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
+from engine.window_config import WindowConfig
 from scenes.game import Game
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
@@ -16,10 +17,12 @@ from window_size import WINDOW_SIZE
 pygame.init()
 pygame.font.init()
 
-screen = pygame.display.set_mode(WINDOW_SIZE)
+window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-icon = pygame.image.load(path.join('assets', 'icon.png'))
-pygame.display.set_caption(TITLE)
+screen = pygame.display.set_mode(window_config.size)
+
+icon = pygame.image.load(window_config.icon_path)
+pygame.display.set_caption(window_config.title)
 pygame.display.set_icon(icon)
 
 scenes = {}
