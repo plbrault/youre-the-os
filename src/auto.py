@@ -1,4 +1,5 @@
-"""Entrypoint to run game with automated script
+"""
+Entry point to run the game with an automated script.
 
 This just runs the Game scene, with the difficulty and script
 provided from the command line.
