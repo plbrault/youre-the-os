@@ -6,11 +6,13 @@ import event_manager
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from engine.random import randint
+from game_objects.button import Button
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
+from game_objects.sort_button import SortButton
 from window_size import WINDOW_HEIGHT
 
 _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(10)))
@@ -45,6 +47,8 @@ class ProcessManager(GameObject):
                 100 / self._new_process_probability_numerator * ONE_SECOND)
         else:
             self._max_wait_between_new_processes = inf
+
+        self._sort_processes_button = SortButton(self)
 
         super().__init__(ProcessManagerView(self))
 
@@ -117,6 +121,9 @@ class ProcessManager(GameObject):
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)
 
+        self._sort_processes_button.view.set_xy(364, 116)
+        self.children.append(self._sort_processes_button)
+
     def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._game.config['max_processes']:
             if process_slot_id is None:
@@ -170,6 +177,19 @@ class ProcessManager(GameObject):
             self._alive_process_list.remove(process)
 
         return can_terminate
+
+    def sort_idle_processes(self):
+        idle_processes = [process for process in self._alive_process_list if not process.has_cpu]
+        idle_processes.sort(
+            key=lambda process: (
+                process.starvation_level if not process.is_blocked else process.starvation_level - 10
+            ),
+            reverse=True
+        )
+        for i, process in enumerate(idle_processes):
+            process_slot = self._process_slots[i]
+            process_slot.process = process
+            process.view.set_target_xy(process_slot.view.x, process_slot.view.y)
 
     def get_current_stats(self):
         process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]

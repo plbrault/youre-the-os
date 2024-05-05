@@ -1,8 +1,10 @@
 from abc import ABC
 
+from engine.drawable import Drawable
+
 
 class GameObject(ABC):
-    def __init__(self, view):
+    def __init__(self, view: Drawable):
         self._view = view
         self._children = []
 
