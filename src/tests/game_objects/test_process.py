@@ -1,5 +1,5 @@
 import pytest
-from lib.constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 from lib.game_event import GameEvent
 from lib.game_event_type import GameEventType
 from lib.random import Random

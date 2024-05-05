@@ -1,7 +1,7 @@
 from math import sqrt
 from lib.random import randint
 
-from lib.constants import (
+from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 )
 from lib import event_manager

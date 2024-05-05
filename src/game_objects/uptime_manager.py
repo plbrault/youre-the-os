@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from lib.constants import ONE_SECOND
+from constants import ONE_SECOND
 from lib.game_object import GameObject
 from game_objects.views.uptime_manager_view import UptimeManagerView
 

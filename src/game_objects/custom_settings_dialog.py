@@ -1,4 +1,4 @@
-from lib.constants import (
+from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
     MAX_PROCESSES_AT_STARTUP, MIN_RAM_ROWS, MAX_RAM_ROWS
 )
