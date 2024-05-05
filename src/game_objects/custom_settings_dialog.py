@@ -96,7 +96,7 @@ class CustomSettingsDialog(GameObject):
         )
         self._num_processes_at_startup_selector.view.set_xy(
             self.view.x + self.view.width - self._num_processes_at_startup_selector.view.width - 20,
-            self.view.num_processes_y +
+            self.view.num_processes_at_startup_y +
             (self.view.label_height - self._num_processes_at_startup_selector.view.height) / 2
         )
         self._max_processes_selector.view.set_xy(
