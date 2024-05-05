@@ -1,10 +1,10 @@
 
-name: pylint
+name: pytest
 on: [pull_request]
 
 
 jobs:
-  pylint:
+  pytest:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,4 +20,4 @@ jobs:
     - name: Run pylint
       uses: VaultVulp/action-pipenv@v2.0.1
       with:
-        command:  run pylint
+        command:  run pytest
