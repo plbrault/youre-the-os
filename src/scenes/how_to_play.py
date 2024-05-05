@@ -154,8 +154,10 @@ _parts = [
 
 
 class HowToPlay(Scene):
-    def __init__(self, screen, scenes):
-        super().__init__(screen, scenes, background_color=Color.LIGHT_GREY)
+    def __init__(self):
+        super().__init__('how_to_play')
+
+        self.background_color=Color.LIGHT_GREY
 
         self._parts = []
         self._current_part_id = 0
@@ -173,14 +175,14 @@ class HowToPlay(Scene):
         self._previous_button = Button('<', self._go_to_previous_part)
         self._previous_button.view.set_xy(
             52,
-            self._screen.get_height() - 78
+            self.screen.get_height() - 78
         )
         self._scene_objects.append(self._previous_button)
 
         self._next_button = Button('>', self._go_to_next_part)
         self._next_button.view.set_xy(
-            self._screen.get_width() - self._next_button.view.width - 52,
-            self._screen.get_height() - 78
+            self.screen.get_width() - self._next_button.view.width - 52,
+            self.screen.get_height() - 78
         )
         self._scene_objects.append(self._next_button)
 
@@ -215,7 +217,7 @@ class HowToPlay(Scene):
             self._scene_objects.append(self._next_button)
 
     def _return_to_main_menu(self):
-        self._scenes['main_menu'].start()
+        self.scenes['main_menu'].start()
 
     def update(self, current_time, events):
         for game_object in self._scene_objects:

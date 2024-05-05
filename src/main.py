@@ -27,13 +27,22 @@ pygame.display.set_icon(icon)
 
 scenes = {}
 
-game_scene = Game(screen, scenes)
+game_scene = Game()
+game_scene.screen = screen
+game_scene.scene_manager = scene_manager
+game_scene.scenes = scenes
 scenes['game'] = game_scene
 
-main_menu_scene = MainMenu(screen, scenes)
+main_menu_scene = MainMenu()
+main_menu_scene.screen = screen
+main_menu_scene.scene_manager = scene_manager
+main_menu_scene.scenes = scenes
 scenes['main_menu'] = main_menu_scene
 
-how_to_play_scene = HowToPlay(screen, scenes)
+how_to_play_scene = HowToPlay()
+how_to_play_scene.screen = screen
+how_to_play_scene.scene_manager = scene_manager
+how_to_play_scene.scenes = scenes
 scenes['how_to_play'] = how_to_play_scene
 
 main_menu_scene.start()
