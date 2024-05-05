@@ -90,6 +90,11 @@ class CustomSettingsDialog(GameObject):
         return config
 
     def update(self, current_time, events):
+        self._num_processes_at_startup_selector.in_error = (
+            self._num_processes_at_startup_selector.selected_option_id> self._max_processes_selector.selected_option_id
+        )
+        self._max_processes_selector.in_error = self._num_processes_at_startup_selector.in_error
+
         self._num_cpus_selector.view.set_xy(
             self.view.x + self.view.width - self._num_cpus_selector.view.width - 20,
             self.view.num_cpus_y +

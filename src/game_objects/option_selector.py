@@ -5,10 +5,12 @@ from game_objects.button import Button
 
 class OptionSelector(GameObject):
 
-    def __init__(self, options, default_option_id=0):
+    def __init__(self, options: [str], default_option_id=0):
         self._options = options
         self._selected_option_id = default_option_id
         super().__init__(OptionSelectorView(self))
+
+        self._in_error = False
 
         self._previous_button = Button('<', self._select_previous_option)
         self._children.append(self._previous_button)
@@ -25,7 +27,7 @@ class OptionSelector(GameObject):
         return self._selected_option_id
 
     @selected_option_id.setter
-    def selected_option_id(self, value):
+    def selected_option_id(self, value: int):
         self._selected_option_id = value
 
     @property
@@ -33,8 +35,16 @@ class OptionSelector(GameObject):
         return self._options[self.selected_option_id]
 
     @selected_option.setter
-    def selected_option(self, value):
+    def selected_option(self, value: str):
         self.selected_option_id = self._options.index(value)
+
+    @property
+    def in_error(self):
+        return self._in_error
+
+    @in_error.setter
+    def in_error(self, value: bool):
+        self._in_error = value
 
     @property
     def previous_button(self):
