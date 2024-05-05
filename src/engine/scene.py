@@ -1,21 +1,22 @@
 from abc import ABC, abstractmethod
-
 import pygame
 
-from engine.scene_manager import scene_manager
 from ui.color import Color
 
 
 class Scene(ABC):
-    def __init__(self, screen, scenes, background_color=Color.BLACK):
-        self._screen = screen
-        self._scenes = scenes
-        self._background_color = background_color
+    scene_manager = None
+    screen: pygame.Surface
+    background_color = Color.BLACK
+
+    def __init__(self, name):
+        self._name = name
         self._is_started = False
         self._scene_objects = []
 
-    def start(self):
-        scene_manager.start_scene(self)
+    @property
+    def name(self):
+        return self._name
 
     @property
     def current_time(self):
@@ -30,9 +31,9 @@ class Scene(ABC):
         pass
 
     def render(self):
-        self._screen.fill(self._background_color)
+        self.screen.fill(self.background_color)
 
         for game_object in self._scene_objects:
-            game_object.render(self._screen)
+            game_object.render(self.screen)
 
         pygame.display.flip()
