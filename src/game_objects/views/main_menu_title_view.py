@@ -2,7 +2,7 @@ from os import path
 import pygame
 
 from game_info import TITLE
-from lib.drawable import Drawable
+from engine.drawable import Drawable
 from ui.fonts import FONT_PRIMARY_XXLARGE
 from window_size import WINDOW_WIDTH
 

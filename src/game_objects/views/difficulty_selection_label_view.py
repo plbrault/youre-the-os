@@ -1,5 +1,5 @@
 from ui.color import Color
-from lib.drawable import Drawable
+from engine.drawable import Drawable
 from ui.fonts import FONT_SECONDARY_MEDIUM
 
 

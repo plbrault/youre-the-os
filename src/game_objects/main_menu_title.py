@@ -1,4 +1,4 @@
-from lib.game_object import GameObject
+from engine.game_object import GameObject
 from game_objects.views.main_menu_title_view import MainMenuTitleView
 
 

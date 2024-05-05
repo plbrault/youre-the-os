@@ -1,7 +1,7 @@
 import pygame
 
 from game_info import TITLE, VERSION, COPYRIGHT_YEAR
-from lib.drawable import Drawable
+from engine.drawable import Drawable
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL, FONT_SECONDARY_XSMALL
 

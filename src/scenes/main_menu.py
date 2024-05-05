@@ -1,5 +1,5 @@
 from difficulty_levels import difficulty_levels
-from lib.scene import Scene
+from engine.scene import Scene
 from game_objects.about_dialog import AboutDialog
 from game_objects.button import Button
 from game_objects.custom_settings_dialog import CustomSettingsDialog

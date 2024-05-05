@@ -3,9 +3,9 @@ import re
 
 from constants import MAX_PROCESSES, ONE_SECOND
 import event_manager
-from lib.game_event_type import GameEventType
-from lib.game_object import GameObject
-from lib.random import randint
+from engine.game_event_type import GameEventType
+from engine.game_object import GameObject
+from engine.random import randint
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process

@@ -1,5 +1,5 @@
 from constants import ONE_SECOND
-from lib.game_object import GameObject
+from engine.game_object import GameObject
 from game_objects.views.how_to_play_part_view import HowToPlayPartView
 
 

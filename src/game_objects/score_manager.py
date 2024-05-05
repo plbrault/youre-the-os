@@ -1,5 +1,5 @@
 from constants import ONE_SECOND
-from lib.game_object import GameObject
+from engine.game_object import GameObject
 from game_objects.views.score_manager_view import ScoreManagerView
 
 _UPDATE_INTERVAL = 100
