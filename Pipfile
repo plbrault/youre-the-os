@@ -10,6 +10,7 @@ pygame = "*"
 pygbag = "*"
 pylint = "*"
 autopep8 = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.11"
