@@ -189,6 +189,8 @@ class ProcessManager(GameObject):
             ),
             reverse=True
         )
+        for process_slot in self._process_slots:
+            process_slot.process = None
         for i, process in enumerate(idle_processes):
             process_slot = self._process_slots[i]
             process_slot.process = process
