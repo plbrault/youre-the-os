@@ -6,7 +6,6 @@ import event_manager
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from engine.random import randint
-from game_objects.button import Button
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
@@ -185,7 +184,9 @@ class ProcessManager(GameObject):
         idle_processes = [process for process in self._alive_process_list if not process.has_cpu]
         idle_processes.sort(
             key=lambda process: (
-                process.starvation_level if not process.is_blocked else process.starvation_level - 10
+                process.starvation_level
+                if not process.is_blocked
+                else process.starvation_level - 10
             ),
             reverse=True
         )

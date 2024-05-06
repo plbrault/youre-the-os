@@ -20,7 +20,8 @@ class KeyBindingDialogView(Drawable):
             FONT_SECONDARY_SMALL.render('SPACEBAR', True, Color.WHITE),
             FONT_SECONDARY_SMALL.render('1-9', True, Color.WHITE),
             FONT_SECONDARY_SMALL.render('0', True, Color.WHITE),
-            FONT_SECONDARY_SMALL.render('SHIFT + 1-6', True, Color.WHITE)
+            FONT_SECONDARY_SMALL.render('SHIFT + 1-6', True, Color.WHITE),
+            FONT_SECONDARY_SMALL.render('S', True, Color.WHITE),
         ]
 
         self._binding_explanations = [
@@ -39,7 +40,12 @@ class KeyBindingDialogView(Drawable):
             FONT_SECONDARY_SMALL.render(
                 'Remove process from a CPU between #11 and #16',
                 True,
-                Color.WHITE)]
+                Color.WHITE),
+            FONT_SECONDARY_SMALL.render(
+                'Sort Processes (once Sort button is available)',
+                True,
+                Color.WHITE),
+        ]
 
     @property
     def width(self):
@@ -47,7 +53,7 @@ class KeyBindingDialogView(Drawable):
 
     @property
     def height(self):
-        return 400
+        return 420
 
     def draw(self, surface):
         y = self.y + 40

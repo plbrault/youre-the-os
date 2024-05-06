@@ -8,7 +8,9 @@ from game_objects.views.button_view import ButtonView
 
 class Button(GameObject):
 
-    def __init__(self, text, action_fn, *, key_bind: str = '', view_class: Type[Drawable] = ButtonView):
+    def __init__(self, text, action_fn,
+                 *, key_bind: str = '', view_class: Type[Drawable] = ButtonView
+        ):
         self.text = text
         self._action_fn = action_fn
         self._key_bind = key_bind
