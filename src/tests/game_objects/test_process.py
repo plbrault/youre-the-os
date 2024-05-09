@@ -819,13 +819,16 @@ class TestProcess:
 
         assert process6.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
 
-        process4.update((LAST_ALIVE_STARVATION_LEVEL - 2) * self.starvation_interval + 100, [])
-        process5.update((LAST_ALIVE_STARVATION_LEVEL - 2) * self.starvation_interval + 200, [])
+        process4.update((LAST_ALIVE_STARVATION_LEVEL - 3) * self.starvation_interval + 100, [])
+        process5.update((LAST_ALIVE_STARVATION_LEVEL - 3) * self.starvation_interval + 200, [])
+        assert process4.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
+        assert process5.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
         process6.use_cpu()
-        process6.update((LAST_ALIVE_STARVATION_LEVEL - 1) * self.starvation_interval + ONE_SECOND, [])
+        process6.update((LAST_ALIVE_STARVATION_LEVEL - 2) * self.starvation_interval + ONE_SECOND, [])
         assert process6.is_waiting_for_io
+        assert process6.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
 
         process7.use_cpu()
 
