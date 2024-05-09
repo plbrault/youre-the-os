@@ -99,7 +99,6 @@ class Process(GameObject):
         Returns:
             int: The sort key.
         """
-        print(self.pid, self._last_update_time - self._last_starvation_level_change_time)
         if self.has_cpu:
             return float('inf')
         if self.is_blocked:
