@@ -1,5 +1,5 @@
 import pytest
-from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS, ONE_SECOND
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
@@ -779,15 +779,28 @@ class TestProcess:
             process.update(i * 200, [])
             assert process.display_blink_color == False
 
-    def test_sort_key(self, game):
+    def test_sort_key(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0.1,
+            'graceful_termination_probability': 0.01
+        })
+
         process1 = Process(1, game)
         process2 = Process(2, game)
         process3 = Process(3, game)
         process4 = Process(4, game)
         process5 = Process(5, game)
+        process6 = Process(6, game)
+        process7 = Process(7, game)
 
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
             process1.update(i * self.starvation_interval, [])
+            process6.update(i * self.starvation_interval, [])
 
         assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
@@ -805,10 +818,20 @@ class TestProcess:
         process4.update(self.starvation_interval / 3, [])
         process5.update(self.starvation_interval / 2, [])
 
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        process6.use_cpu()
+        process6.update(ONE_SECOND, [])
+        process6.yield_cpu()
+        assert process6.is_waiting_for_io
+
+        process7.use_cpu()
+
         assert process1.sort_key < process2.sort_key
         assert process1.sort_key < process3.sort_key
         assert process1.sort_key < process4.sort_key
         assert process1.sort_key < process5.sort_key
         assert process2.sort_key == process3.sort_key
-        assert process3.sort_key > process4.sort_key
-        assert process4.sort_key > process5.sort_key
+        assert process4.sort_key < process3.sort_key
+        assert process5.sort_key < process4.sort_key
+        assert process5.sort_key < process6.sort_key
+        assert process6.sort_key < process7.sort_key
