@@ -103,7 +103,8 @@ class Process(GameObject):
             return float('inf')
         if self.is_blocked:
             return (LAST_ALIVE_STARVATION_LEVEL + 1) * 10000
-        return self.starvation_level * 10000 + (self._last_update_time - self._last_state_change_time)
+        return int((LAST_ALIVE_STARVATION_LEVEL - self.starvation_level) * 10000
+                + (self._last_update_time - self._last_starvation_level_change_time))
 
     def use_cpu(self):
         if not self.has_cpu:
