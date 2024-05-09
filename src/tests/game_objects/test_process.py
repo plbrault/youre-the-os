@@ -778,3 +778,37 @@ class TestProcess:
         for i in range(1, 5):
             process.update(i * 200, [])
             assert process.display_blink_color == False
+
+    def test_sort_key(self, game):
+        process1 = Process(1, game)
+        process2 = Process(2, game)
+        process3 = Process(3, game)
+        process4 = Process(4, game)
+        process5 = Process(5, game)
+
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
+            process1.update(i * self.starvation_interval, [])
+
+        assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL - 2):
+            process2.update(i * self.starvation_interval, [])
+            process3.update(i * self.starvation_interval, [])
+            process4.update(i * self.starvation_interval, [])
+            process5.update(i * self.starvation_interval, [])
+
+        assert process2.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
+        assert process3.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
+        assert process4.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
+        assert process5.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
+
+        process4.update(self.starvation_interval / 3, [])
+        process5.update(self.starvation_interval / 2, [])
+
+        assert process1.sort_key > process2.sort_key
+        assert process1.sort_key > process3.sort_key
+        assert process1.sort_key > process4.sort_key
+        assert process1.sort_key > process5.sort_key
+        assert process2.sort_key == process3.sort_key
+        assert process3.sort_key < process4.sort_key
+        assert process4.sort_key < process5.sort_key
