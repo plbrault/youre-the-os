@@ -819,8 +819,8 @@ class TestProcess:
 
         assert process6.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
 
-        process4.update(self.starvation_interval / 3, [])
-        process5.update(self.starvation_interval / 2, [])
+        process4.update((LAST_ALIVE_STARVATION_LEVEL - 2) * self.starvation_interval + 100, [])
+        process5.update((LAST_ALIVE_STARVATION_LEVEL - 2) * self.starvation_interval + 200, [])
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
         process6.use_cpu()
