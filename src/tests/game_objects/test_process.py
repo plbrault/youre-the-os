@@ -476,7 +476,7 @@ class TestProcess:
         process.update(0, [])
         assert process.is_waiting_for_io == False
 
-        process.update(1000, [])
+        process.update(ONE_SECOND, [])
 
         assert process.is_blocked == True
         assert process.is_waiting_for_io == True
@@ -800,7 +800,6 @@ class TestProcess:
 
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
             process1.update(i * self.starvation_interval, [])
-            process6.update(i * self.starvation_interval, [])
 
         assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
@@ -814,6 +813,11 @@ class TestProcess:
         assert process3.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
         assert process4.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
         assert process5.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
+
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL - 1):
+            process6.update(i * self.starvation_interval, [])
+
+        assert process6.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
 
         process4.update(self.starvation_interval / 3, [])
         process5.update(self.starvation_interval / 2, [])

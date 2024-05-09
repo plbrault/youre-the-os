@@ -92,6 +92,19 @@ class Process(GameObject):
             and not self.has_ended
         )
 
+    @property
+    def sort_key(self):
+        """Sort key to be used by the `sort_idle_processes` method in the `ProcessManager` class.
+
+        Returns:
+            int: The sort key.
+        """
+        if self.has_cpu:
+            return float('inf')
+        if self.is_blocked:
+            return (LAST_ALIVE_STARVATION_LEVEL + 1) * 10000
+        return self.starvation_level * 10000 + (self._last_update_time - self._last_state_change_time)
+
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
