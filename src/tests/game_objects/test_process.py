@@ -805,10 +805,10 @@ class TestProcess:
         process4.update(self.starvation_interval / 3, [])
         process5.update(self.starvation_interval / 2, [])
 
-        assert process1.sort_key > process2.sort_key
-        assert process1.sort_key > process3.sort_key
-        assert process1.sort_key > process4.sort_key
-        assert process1.sort_key > process5.sort_key
+        assert process1.sort_key < process2.sort_key
+        assert process1.sort_key < process3.sort_key
+        assert process1.sort_key < process4.sort_key
+        assert process1.sort_key < process5.sort_key
         assert process2.sort_key == process3.sort_key
-        assert process3.sort_key < process4.sort_key
-        assert process4.sort_key < process5.sort_key
+        assert process3.sort_key > process4.sort_key
+        assert process4.sort_key > process5.sort_key
