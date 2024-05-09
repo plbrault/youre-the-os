@@ -787,7 +787,7 @@ class TestProcess:
             'num_ram_rows': 8,
             'new_process_probability': 0,
             'io_probability': 0.1,
-            'graceful_termination_probability': 0.01
+            'graceful_termination_probability': 0
         })
 
         process1 = Process(1, game)
@@ -824,8 +824,7 @@ class TestProcess:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
         process6.use_cpu()
-        process6.update(ONE_SECOND, [])
-        process6.yield_cpu()
+        process6.update((LAST_ALIVE_STARVATION_LEVEL - 1) * self.starvation_interval + ONE_SECOND, [])
         assert process6.is_waiting_for_io
 
         process7.use_cpu()

@@ -325,6 +325,7 @@ class Process(GameObject):
         self._last_update_time = current_time
         self._handle_events(events)
 
+
         if not self.has_ended:
             self._handle_pages_in_swap()
             if current_time >= self._last_event_check_time + ONE_SECOND:
