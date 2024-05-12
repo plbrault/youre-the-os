@@ -1,5 +1,5 @@
 import pytest
-from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS, ONE_SECOND
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
@@ -215,6 +215,7 @@ class TestProcess:
             'graceful_termination_probability': 0.01
         })
 
+        # Cause the random number generator to always provoke graceful termination
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -226,6 +227,7 @@ class TestProcess:
         assert process.starvation_level == 0
 
     def test_use_cpu_min_page_creation(self, game, monkeypatch):
+        # Make sure that the minimum number of pages will be created
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -241,6 +243,7 @@ class TestProcess:
                 game.page_manager.get_page(1, i)
 
     def test_use_cpu_max_page_creation(self, game, monkeypatch):
+        # Make sure that the maximum number of pages will be created
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -258,6 +261,8 @@ class TestProcess:
     def test_new_page_creation_while_running(self, game, monkeypatch):
         process = Process(1, game)
 
+        # Should cause the creation of a single page when the process starts running,
+        # and then the creation a new page when the process is updated
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process.use_cpu()
@@ -271,6 +276,7 @@ class TestProcess:
         assert game.page_manager.get_page(1, 0).pid == 1
         assert game.page_manager.get_page(1, 1).pid == 1
 
+        # Should prevent the creation of a new page when the process is updated again
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process.update(2000, [])
@@ -283,11 +289,13 @@ class TestProcess:
     def test_use_cpu_when_already_has_pages(self, game, monkeypatch):
         process = Process(1, game)
 
+        # Should cause the creation of a single page when the process is run for the first time
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
         process.use_cpu()
 
         process.yield_cpu()
 
+        # Should prevent the creation of new pages when the process is run again
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
         process.use_cpu()
 
@@ -297,6 +305,7 @@ class TestProcess:
                 game.page_manager.get_page(1, i)
 
     def test_use_cpu_sets_pages_to_in_use(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -311,6 +320,7 @@ class TestProcess:
             assert game.page_manager.get_page(1, i).in_use == True
 
     def test_yield_cpu_sets_pages_to_not_in_use(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -322,6 +332,7 @@ class TestProcess:
             assert game.page_manager.get_page(1, i).in_use == False
 
     def test_set_page_to_swap_while_running(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -338,6 +349,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
 
     def test_set_page_to_swap_before_running(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -357,6 +369,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
 
     def test_remove_page_from_swap_while_running(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -375,6 +388,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
 
     def test_yield_cpu_while_waiting_for_page(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -393,6 +407,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
 
     def test_starvation_while_waiting_for_page(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -412,6 +427,7 @@ class TestProcess:
         assert process.has_ended == True
 
     def test_page_deletion_when_process_is_killed(self, game, monkeypatch):
+        # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -438,6 +454,8 @@ class TestProcess:
             'graceful_termination_probability': 0.01
         })
 
+        # Should prevent graceful termination
+        # Should also cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -446,6 +464,7 @@ class TestProcess:
         assert process.has_ended == False
         assert game.page_manager.get_page(1, 0).pid == 1
 
+        # Should cause graceful termination
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process.update(2000, [])
@@ -468,6 +487,7 @@ class TestProcess:
             'graceful_termination_probability': 0
         })
 
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -476,7 +496,7 @@ class TestProcess:
         process.update(0, [])
         assert process.is_waiting_for_io == False
 
-        process.update(1000, [])
+        process.update(ONE_SECOND, [])
 
         assert process.is_blocked == True
         assert process.is_waiting_for_io == True
@@ -493,6 +513,7 @@ class TestProcess:
             'graceful_termination_probability': 0
         })
 
+        # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process = Process(1, game)
@@ -518,6 +539,7 @@ class TestProcess:
             'graceful_termination_probability': 0
         })
 
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -547,6 +569,7 @@ class TestProcess:
             'graceful_termination_probability': 0
         })
 
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -575,13 +598,13 @@ class TestProcess:
         process1 = Process(1, game)
         process2 = Process(2, game)
 
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-
         current_time = 0
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
             current_time += self.starvation_interval
             process1.update(current_time, [])
 
+        # Cause the random number generator to always provoke an I/O event
+        # (excepted in tested case)
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process1.use_cpu()
@@ -614,18 +637,21 @@ class TestProcess:
         process1 = Process(1, game)
         process2 = Process(2, game)
 
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process1.use_cpu()
         process1.update(1000, [])
         assert process1.is_waiting_for_io == True
 
+        # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process2.use_cpu()
         process2.update(1000, [])
         assert process2.is_waiting_for_io == False
 
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         game.process_manager.io_queue.update(1000, [])
@@ -650,6 +676,7 @@ class TestProcess:
 
         process = Process(1, game)
 
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process.use_cpu()
@@ -737,6 +764,7 @@ class TestProcess:
             'io_probability': 0,
             'graceful_termination_probability': 0.01
         })
+        # Cause the random number generator to always provoke graceful termination
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, game)
@@ -778,3 +806,90 @@ class TestProcess:
         for i in range(1, 5):
             process.update(i * 200, [])
             assert process.display_blink_color == False
+
+    def test_sort_key(self, game_custom_config, monkeypatch):
+        game = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0.1,
+            'graceful_termination_probability': 0
+        })
+
+        process_lowest_starvation = Process(1, game)
+        process_medium_starvation_1 = Process(3, game)
+        process_medium_starvation_2 = Process(4, game)
+        process_medium_starvation_plus_one_second = Process(5, game)
+        process_highest_starvation = Process(2, game)
+        process_blocked = Process(6, game)        
+
+        # Cause the random number generator to never provoke an I/O event
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        time = 0
+
+        for i in range(2):
+            time += self.starvation_interval
+            process_highest_starvation.update(time, [])
+            process_medium_starvation_1.update(time, [])
+            process_medium_starvation_2.update(time, [])
+            process_medium_starvation_plus_one_second.update(time, [])
+            process_blocked.update(time, [])
+
+        process_lowest_starvation.use_cpu()
+        process_lowest_starvation.update(time, [])
+        process_lowest_starvation.yield_cpu()
+
+        time += ONE_SECOND
+        process_medium_starvation_plus_one_second.update(time, [])
+
+        time += self.starvation_interval - ONE_SECOND
+        process_highest_starvation.update(time, [])
+        process_blocked.update(time, [])
+
+        time += ONE_SECOND
+        # Cause the random number generator to always provoke an I/O event
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        process_blocked.use_cpu()
+        process_blocked.update(time, [])
+        # Cause the random number generator to never provoke an I/O event
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+        process_blocked.yield_cpu()
+        process_blocked.update(time, [])
+
+        time += self.starvation_interval - ONE_SECOND
+        process_highest_starvation.update(time, [])
+
+        assert process_lowest_starvation.starvation_level == 0
+        assert process_medium_starvation_1.starvation_level == 3
+        assert process_medium_starvation_2.starvation_level == 3
+        assert process_medium_starvation_plus_one_second.starvation_level == 3
+        assert process_highest_starvation.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+        assert process_blocked.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
+
+        assert not process_lowest_starvation.is_blocked
+        assert not process_medium_starvation_1.is_blocked
+        assert not process_medium_starvation_2.is_blocked
+        assert not process_medium_starvation_plus_one_second.is_blocked
+        assert not process_highest_starvation.is_blocked
+        assert process_blocked.is_blocked
+
+        assert not process_lowest_starvation.has_cpu
+        assert not process_medium_starvation_1.has_cpu
+        assert not process_medium_starvation_2.has_cpu
+        assert not process_medium_starvation_plus_one_second.has_cpu
+        assert not process_highest_starvation.has_cpu
+        assert not process_blocked.has_cpu
+
+        assert process_highest_starvation.sort_key < process_medium_starvation_plus_one_second.sort_key
+        assert process_medium_starvation_plus_one_second.sort_key < process_medium_starvation_1.sort_key
+        assert process_medium_starvation_1.sort_key == process_medium_starvation_2.sort_key
+        assert process_medium_starvation_2.sort_key < process_lowest_starvation.sort_key
+        assert process_lowest_starvation.sort_key < process_blocked.sort_key
+
+
+
+
+
