@@ -819,66 +819,58 @@ class TestProcess:
         })
 
         process_lowest_starvation = Process(1, game)
-        process_highest_starvation = Process(2, game)
         process_medium_starvation_1 = Process(3, game)
         process_medium_starvation_2 = Process(4, game)
         process_medium_starvation_plus_one_second = Process(5, game)
         process_second_highest_starvation_blocked = Process(6, game)
-        process_second_highest_starvation_running = Process(7, game)
+        process_highest_starvation = Process(2, game)
 
+        # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
-        for i in range(LAST_STARVATION_LEVEL - 2):
-            pass
+        time = 0
 
-        """        process1 = Process(1, game)
-        process2 = Process(2, game)
-        process3 = Process(3, game)
-        process4 = Process(4, game)
-        process5 = Process(5, game)
-        process6 = Process(6, game)
-        process7 = Process(7, game)
+        for i in range(2):
+            time += self.starvation_interval
+            process_highest_starvation.update(time, [])
+            process_medium_starvation_1.update(time, [])
+            process_medium_starvation_2.update(time, [])
+            process_medium_starvation_plus_one_second.update(time, [])
+            process_second_highest_starvation_blocked.update(time, [])
 
-        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
-            process1.update(i * self.starvation_interval, [])
+        process_lowest_starvation.use_cpu()
+        process_lowest_starvation.update(time, [])
+        process_lowest_starvation.yield_cpu()
 
-        assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+        time += ONE_SECOND
+        process_medium_starvation_plus_one_second.update(time, [])
 
-        for i in range(0, LAST_ALIVE_STARVATION_LEVEL - 2):
-            process2.update(i * self.starvation_interval, [])
-            process3.update(i * self.starvation_interval, [])
-            process4.update(i * self.starvation_interval, [])
-            process5.update(i * self.starvation_interval, [])
+        time += self.starvation_interval - ONE_SECOND
+        process_highest_starvation.update(time, [])
+        process_second_highest_starvation_blocked.update(time, [])
 
-        assert process2.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
-        assert process3.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
-        assert process4.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
-        assert process5.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
-
-        for i in range(0, LAST_ALIVE_STARVATION_LEVEL - 1):
-            process6.update(i * self.starvation_interval, [])
-
-        assert process6.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
-
-        process4.update((LAST_ALIVE_STARVATION_LEVEL - 3) * self.starvation_interval + 100, [])
-        process5.update((LAST_ALIVE_STARVATION_LEVEL - 3) * self.starvation_interval + 200, [])
-        assert process4.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
-        assert process5.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 2
-
+        time += ONE_SECOND
+        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-        process6.use_cpu()
-        process6.update((LAST_ALIVE_STARVATION_LEVEL - 2) * self.starvation_interval + ONE_SECOND, [])
-        assert process6.is_waiting_for_io
-        assert process6.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
+        process_second_highest_starvation_blocked.use_cpu()
+        process_second_highest_starvation_blocked.update(time, [])
+        # Cause the random number generator to never provoke an I/O event
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+        process_second_highest_starvation_blocked.yield_cpu()
+        process_second_highest_starvation_blocked.update(time, [])
 
-        process7.use_cpu()
+        time += self.starvation_interval - ONE_SECOND
+        process_highest_starvation.update(time, [])
 
-        assert process1.sort_key < process2.sort_key
-        assert process1.sort_key < process3.sort_key
-        assert process1.sort_key < process4.sort_key
-        assert process1.sort_key < process5.sort_key
-        assert process2.sort_key == process3.sort_key
-        assert process4.sort_key < process3.sort_key
-        assert process5.sort_key < process4.sort_key
-        assert process5.sort_key < process6.sort_key
-        assert process6.sort_key < process7.sort_key """
+        assert process_lowest_starvation.starvation_level == 0
+        assert process_medium_starvation_1.starvation_level == 3
+        assert process_medium_starvation_2.starvation_level == 3
+        assert process_medium_starvation_plus_one_second.starvation_level == 3
+        assert process_second_highest_starvation_blocked.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
+        assert process_highest_starvation.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+        assert process_second_highest_starvation_blocked.is_blocked
+
+
+
+
+
