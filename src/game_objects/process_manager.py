@@ -182,14 +182,7 @@ class ProcessManager(GameObject):
 
     def sort_idle_processes(self):
         idle_processes = [process for process in self._alive_process_list if not process.has_cpu]
-        idle_processes.sort(
-            key=lambda process: (
-                process.starvation_level
-                if not process.is_blocked
-                else process.starvation_level - 10
-            ),
-            reverse=True
-        )
+        idle_processes.sort(key = lambda process: process.sort_key)
         for process_slot in self._process_slots:
             process_slot.process = None
         for i, process in enumerate(idle_processes):
