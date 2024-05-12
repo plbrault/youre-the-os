@@ -876,6 +876,15 @@ class TestProcess:
         assert process_second_highest_starvation_blocked.is_blocked
         assert not process_highest_starvation.is_blocked
 
+        assert not process_lowest_starvation.has_cpu
+        assert not process_medium_starvation_1.has_cpu
+        assert not process_medium_starvation_2.has_cpu
+        assert not process_medium_starvation_plus_one_second.has_cpu
+        assert not process_second_highest_starvation_blocked.has_cpu
+        assert not process_highest_starvation.has_cpu
+
+        
+
 
 
 
