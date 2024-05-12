@@ -869,13 +869,12 @@ class TestProcess:
         assert process_second_highest_starvation_blocked.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
         assert process_highest_starvation.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
-        assert not process_lowest_starvation_level.blocked
-        assert not process_medium_starvation_1.blocked
-        assert not process_medium_starvation_2.blocked
-        assert not process_medium_starvation_plus_one_second.blocked
-        assert process_second_highest_starvation_blocked.blocked
-        assert not process_second_highest_starvation_blocked.blocked
-        assert not process_highest_starvation.blocked
+        assert not process_lowest_starvation.is_blocked
+        assert not process_medium_starvation_1.is_blocked
+        assert not process_medium_starvation_2.is_blocked
+        assert not process_medium_starvation_plus_one_second.is_blocked
+        assert process_second_highest_starvation_blocked.is_blocked
+        assert not process_highest_starvation.is_blocked
 
 
 
