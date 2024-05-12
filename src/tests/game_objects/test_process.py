@@ -822,8 +822,8 @@ class TestProcess:
         process_medium_starvation_1 = Process(3, game)
         process_medium_starvation_2 = Process(4, game)
         process_medium_starvation_plus_one_second = Process(5, game)
-        process_second_highest_starvation_blocked = Process(6, game)
         process_highest_starvation = Process(2, game)
+        process_blocked = Process(6, game)        
 
         # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
@@ -836,7 +836,7 @@ class TestProcess:
             process_medium_starvation_1.update(time, [])
             process_medium_starvation_2.update(time, [])
             process_medium_starvation_plus_one_second.update(time, [])
-            process_second_highest_starvation_blocked.update(time, [])
+            process_blocked.update(time, [])
 
         process_lowest_starvation.use_cpu()
         process_lowest_starvation.update(time, [])
@@ -847,17 +847,17 @@ class TestProcess:
 
         time += self.starvation_interval - ONE_SECOND
         process_highest_starvation.update(time, [])
-        process_second_highest_starvation_blocked.update(time, [])
+        process_blocked.update(time, [])
 
         time += ONE_SECOND
         # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-        process_second_highest_starvation_blocked.use_cpu()
-        process_second_highest_starvation_blocked.update(time, [])
+        process_blocked.use_cpu()
+        process_blocked.update(time, [])
         # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-        process_second_highest_starvation_blocked.yield_cpu()
-        process_second_highest_starvation_blocked.update(time, [])
+        process_blocked.yield_cpu()
+        process_blocked.update(time, [])
 
         time += self.starvation_interval - ONE_SECOND
         process_highest_starvation.update(time, [])
@@ -866,24 +866,28 @@ class TestProcess:
         assert process_medium_starvation_1.starvation_level == 3
         assert process_medium_starvation_2.starvation_level == 3
         assert process_medium_starvation_plus_one_second.starvation_level == 3
-        assert process_second_highest_starvation_blocked.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
         assert process_highest_starvation.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+        assert process_blocked.starvation_level == LAST_ALIVE_STARVATION_LEVEL - 1
 
         assert not process_lowest_starvation.is_blocked
         assert not process_medium_starvation_1.is_blocked
         assert not process_medium_starvation_2.is_blocked
         assert not process_medium_starvation_plus_one_second.is_blocked
-        assert process_second_highest_starvation_blocked.is_blocked
         assert not process_highest_starvation.is_blocked
+        assert process_blocked.is_blocked
 
         assert not process_lowest_starvation.has_cpu
         assert not process_medium_starvation_1.has_cpu
         assert not process_medium_starvation_2.has_cpu
         assert not process_medium_starvation_plus_one_second.has_cpu
-        assert not process_second_highest_starvation_blocked.has_cpu
         assert not process_highest_starvation.has_cpu
+        assert not process_blocked.has_cpu
 
-        
+        assert process_highest_starvation.sort_key < process_medium_starvation_plus_one_second.sort_key
+        assert process_medium_starvation_plus_one_second.sort_key < process_medium_starvation_1.sort_key
+        assert process_medium_starvation_1.sort_key == process_medium_starvation_2.sort_key
+        assert process_medium_starvation_2.sort_key < process_lowest_starvation.sort_key
+        assert process_lowest_starvation.sort_key < process_blocked.sort_key
 
 
 
