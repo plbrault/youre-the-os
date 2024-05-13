@@ -261,11 +261,6 @@ class ProcessManager(GameObject):
         }
 
     def update(self, current_time, events):
-        if (
-            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
-            and not self._sort_processes_button.visible
-        ):
-            self._sort_processes_button.visible = True
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:
@@ -305,6 +300,16 @@ class ProcessManager(GameObject):
                 self._create_process()
                 self._last_process_creation = current_time
 
+        if (
+            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
+            and not self._sort_processes_button.visible
+        ):
+            self._sort_processes_button.visible = True
+
+        self._sort_processes_button.disabled = self._sort_in_progress
+        if self._sort_in_progress:
+            self._continue_sorting()
+
         for game_object in self.children:
             game_object.update(current_time, events)
             if (
@@ -313,9 +318,3 @@ class ProcessManager(GameObject):
                 and game_object.view.y <= -game_object.view.height
             ):
                 self.children.remove(game_object)
-
-        if self._sort_in_progress:
-            self._sort_processes_button.disabled = True
-            self._continue_sorting()
-        else:
-            self._sort_processes_button.disabled = False                
