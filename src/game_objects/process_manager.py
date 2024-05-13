@@ -19,7 +19,7 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6# * ONE_MINUTE
 
 class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
@@ -39,6 +39,7 @@ class ProcessManager(GameObject):
         self._last_process_creation = None
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
+        self._sort_in_progress = False
 
         self._new_process_probability_numerator = int(
             game.config['new_process_probability'] * 100)
@@ -181,6 +182,10 @@ class ProcessManager(GameObject):
         return can_terminate
 
     def sort_idle_processes(self):
+        self._sort_in_progress = True
+        self._continue_sorting()
+
+    def _continue_sorting(self):
         idle_processes = [process for process in self._alive_process_list if not process.has_cpu]
         idle_processes.sort(key = lambda process: process.sort_key)
         for process_slot in self._process_slots:
@@ -189,6 +194,7 @@ class ProcessManager(GameObject):
             process_slot = self._process_slots[i]
             process_slot.process = process
             process.view.set_target_xy(process_slot.view.x, process_slot.view.y)
+        self._sort_in_progress = False
 
     def get_current_stats(self):
         process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
@@ -261,6 +267,9 @@ class ProcessManager(GameObject):
                     self._last_process_creation >= self._max_wait_between_new_processes:
                 self._create_process()
                 self._last_process_creation = current_time
+
+        if self._sort_in_progress:
+            self._continue_sorting()
 
         for game_object in self.children:
             game_object.update(current_time, events)
