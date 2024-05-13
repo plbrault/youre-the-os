@@ -194,6 +194,14 @@ class ProcessManager(GameObject):
         self._continue_sorting()
 
     def _continue_sorting(self):
+        """
+        This method creates the visual illusion that the next recursion of the quicksort algorithm is performed
+        on the idle processes. In reality, the algorithm is always performed from the beginning, and stops as soon
+        as a recursion that actually changes the array has happened. This way, the intended in-game result is achieved
+        while avoiding the need to keep track of the algorithm's state, and a correct end result is ensured even when
+        the idle process list changes between recursions.
+        """
+
         idle_processes = [slot.process for slot in self._process_slots if slot.process is not None]
 
         for process in idle_processes:
@@ -213,16 +221,10 @@ class ProcessManager(GameObject):
                 else:
                     return left + middle + right
 
-        idle_processes = simulate_next_sort_step(idle_processes)
-
-        """for sublist_size in range(2, len(idle_processes) + 1):
-            sublist = idle_processes[:sublist_size]
-            if not _is_sorted(sublist):
-                sublist.sort(key=lambda process: process.sort_key)
-                for i in range(sublist_size):
-                    idle_processes[i] = sublist[i]
-                break
-        """
+        if _is_sorted(idle_processes):
+            self._sort_in_progress = False
+        else:
+            idle_processes = simulate_next_sort_step(idle_processes)
 
         for process_slot in self._process_slots:
             process_slot.process = None
@@ -230,9 +232,6 @@ class ProcessManager(GameObject):
             process_slot = self._process_slots[i]
             process_slot.process = process
             process.view.set_target_xy(process_slot.view.x, process_slot.view.y)
-
-        if _is_sorted(idle_processes):
-            self._sort_in_progress = False
 
     def get_current_stats(self):
         process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
