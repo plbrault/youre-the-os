@@ -106,6 +106,11 @@ class Process(GameObject):
         return int((LAST_ALIVE_STARVATION_LEVEL - self.starvation_level) * 100000
                 - (self._last_update_time - self._last_starvation_level_change_time))
 
+    @property
+    def is_in_motion(self):
+        return ((self._view.target_x is not None or self._view.target_y is not None)
+            and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))        
+
     def use_cpu(self):
         if not self.has_cpu:
             for cpu in self._process_manager.cpu_list:
@@ -218,9 +223,6 @@ class Process(GameObject):
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def _check_if_in_motion(self):
-        return self._view.target_x is not None or self._view.target_y is not None
-
     def toggle(self):
         if self.starvation_level < DEAD_STARVATION_LEVEL:
             if self.has_cpu:
@@ -232,7 +234,7 @@ class Process(GameObject):
         self.toggle()
 
     def _handle_events(self, events):
-        if not self._check_if_in_motion():
+        if not self.is_in_motion:
             for event in events:
                 if self._check_if_clicked_on(event):
                     self._on_click()

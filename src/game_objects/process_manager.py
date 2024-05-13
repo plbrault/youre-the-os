@@ -21,6 +21,12 @@ _NUM_PROCESS_SLOT_COLUMNS = 7
 
 _UPTIME_MS_TO_SHOW_SORT_BUTTON = 6# * ONE_MINUTE
 
+def _is_sorted(process_list: [Process]):
+    for i in range(len(process_list) - 1):
+        if process_list[i].sort_key > process_list[i + 1].sort_key:
+            return False
+    return True
+
 class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
 
@@ -186,15 +192,29 @@ class ProcessManager(GameObject):
         self._continue_sorting()
 
     def _continue_sorting(self):
-        idle_processes = [process for process in self._alive_process_list if not process.has_cpu]
-        idle_processes.sort(key = lambda process: process.sort_key)
+        idle_processes = [slot.process for slot in self._process_slots if slot.process is not None]
+
+        for process in idle_processes:
+            if process.is_in_motion:
+                return
+
+        for sublist_size in range(2, len(idle_processes) + 1):
+            sublist = idle_processes[:sublist_size]
+            if not _is_sorted(sublist):
+                sublist.sort(key=lambda process: process.sort_key)
+                for i in range(sublist_size):
+                    idle_processes[i] = sublist[i]
+                break
+
         for process_slot in self._process_slots:
             process_slot.process = None
         for i, process in enumerate(idle_processes):
             process_slot = self._process_slots[i]
             process_slot.process = process
             process.view.set_target_xy(process_slot.view.x, process_slot.view.y)
-        self._sort_in_progress = False
+
+        if _is_sorted(idle_processes):
+            self._sort_in_progress = False
 
     def get_current_stats(self):
         process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
@@ -268,9 +288,6 @@ class ProcessManager(GameObject):
                 self._create_process()
                 self._last_process_creation = current_time
 
-        if self._sort_in_progress:
-            self._continue_sorting()
-
         for game_object in self.children:
             game_object.update(current_time, events)
             if (
@@ -279,3 +296,9 @@ class ProcessManager(GameObject):
                 and game_object.view.y <= -game_object.view.height
             ):
                 self.children.remove(game_object)
+
+        if self._sort_in_progress:
+            self._sort_processes_button.disabled = True
+            self._continue_sorting()
+        else:
+            self._sort_processes_button.disabled = False                
