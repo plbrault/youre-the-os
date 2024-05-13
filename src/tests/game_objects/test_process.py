@@ -49,6 +49,7 @@ class TestProcess:
         assert process.display_blink_color == False
         assert process.current_state_duration == 0
         assert process.is_progressing_to_happiness == False
+        assert process.is_in_motion == False
 
     def test_starvation_when_idle(self, game):
         process = Process(1, game)
@@ -703,6 +704,8 @@ class TestProcess:
         process.view.target_x = target_x
         process.view.target_y = target_y
 
+        assert process.is_in_motion
+
         counter = 0
         while process.view.target_x != None or process.view.target_y != None:
             counter += 1
@@ -711,6 +714,7 @@ class TestProcess:
 
         assert process.view.x == target_x
         assert process.view.y == target_y
+        assert not process.is_in_motion
 
     def test_click_when_idle(self, game):
         process = Process(1, game)

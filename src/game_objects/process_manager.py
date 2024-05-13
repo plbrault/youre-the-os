@@ -20,6 +20,15 @@ _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
 _UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_MIN_SORT_COOLDOWN_MS = 100
+
+def _is_sorted(process_list: [Process]):
+    if len(process_list) <= 1:
+        return True
+    for i in range(len(process_list) - 1):
+        if process_list[i].sort_key > process_list[i + 1].sort_key:
+            return False
+    return True
 
 class ProcessManager(GameObject):
     MAX_TERMINATED_BY_USER = 10
@@ -36,9 +45,11 @@ class ProcessManager(GameObject):
 
         self._next_pid = None
         self._last_new_process_check = None
-        self._last_process_creation = None
+        self._last_process_creation_time = None
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
+        self._sort_in_progress = False
+        self._last_sort_time = 0
 
         self._new_process_probability_numerator = int(
             game.config['new_process_probability'] * 100)
@@ -89,7 +100,7 @@ class ProcessManager(GameObject):
 
         self._next_pid = 1
         self._last_new_process_check = 0
-        self._last_process_creation = 0
+        self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
 
         for i in range(self._game.config['num_cpus']):
@@ -181,8 +192,42 @@ class ProcessManager(GameObject):
         return can_terminate
 
     def sort_idle_processes(self):
-        idle_processes = [process for process in self._alive_process_list if not process.has_cpu]
-        idle_processes.sort(key = lambda process: process.sort_key)
+        self._sort_in_progress = True
+        self._last_sort_time = self._game.current_time
+        self._continue_sorting()
+
+    def _continue_sorting(self):
+        """
+        This method creates the visual illusion that the next recursion of the quicksort algorithm
+        is performed on the idle processes. In reality, the algorithm is always performed from the
+        beginning, and stops as soon as a recursion that actually changes the array has happened.
+        This way, the intended in-game result is achieved while avoiding the need to keep track of
+        the algorithm's state, and a correct end result is ensured even when the idle process list
+        changes between recursions.
+        """
+
+        idle_processes = [slot.process for slot in self._process_slots if slot.process is not None]
+
+        for process in idle_processes:
+            if process.is_in_motion:
+                return
+
+        def simulate_next_sort_step(arr: [Process]):
+            if len(arr) <= 1:
+                return arr
+            pivot = arr[len(arr) // 2]
+            left = [process for process in arr if process.sort_key < pivot.sort_key]
+            middle = [process for process in arr if process.sort_key == pivot.sort_key]
+            right = [process for process in arr if process.sort_key > pivot.sort_key]
+            if (left + middle + right) == arr:
+                return simulate_next_sort_step(left) + middle + simulate_next_sort_step(right)
+            return left + middle + right
+
+        if _is_sorted(idle_processes):
+            self._sort_in_progress = False
+        else:
+            idle_processes = simulate_next_sort_step(idle_processes)
+
         for process_slot in self._process_slots:
             process_slot.process = None
         for i, process in enumerate(idle_processes):
@@ -218,11 +263,6 @@ class ProcessManager(GameObject):
         }
 
     def update(self, current_time, events):
-        if (
-            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
-            and not self._sort_processes_button.visible
-        ):
-            self._sort_processes_button.visible = True
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:
@@ -253,14 +293,27 @@ class ProcessManager(GameObject):
         if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - \
                 self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
-            self._last_process_creation = current_time
+            self._last_process_creation_time = current_time
             self._create_process()
         elif current_time - self._last_new_process_check >= ONE_SECOND:
             self._last_new_process_check = current_time
             if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
-                    self._last_process_creation >= self._max_wait_between_new_processes:
+                    self._last_process_creation_time >= self._max_wait_between_new_processes:
                 self._create_process()
-                self._last_process_creation = current_time
+                self._last_process_creation_time = current_time
+
+        if (
+            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
+            and not self._sort_processes_button.visible
+        ):
+            self._sort_processes_button.visible = True
+
+        self._sort_processes_button.disabled = (
+            self._sort_in_progress
+            or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
+        )
+        if self._sort_in_progress:
+            self._continue_sorting()
 
         for game_object in self.children:
             game_object.update(current_time, events)
