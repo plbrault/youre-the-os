@@ -20,6 +20,7 @@ _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
 _UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 #* ONE_MINUTE
+_MIN_SORT_COOLDOWN_MS = 100
 
 def _is_sorted(process_list: [Process]):
     if len(process_list) <= 1:
@@ -44,10 +45,11 @@ class ProcessManager(GameObject):
 
         self._next_pid = None
         self._last_new_process_check = None
-        self._last_process_creation = None
+        self._last_process_creation_time = None
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
         self._sort_in_progress = False
+        self._last_sort_time = 0
 
         self._new_process_probability_numerator = int(
             game.config['new_process_probability'] * 100)
@@ -98,7 +100,7 @@ class ProcessManager(GameObject):
 
         self._next_pid = 1
         self._last_new_process_check = 0
-        self._last_process_creation = 0
+        self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
 
         for i in range(self._game.config['num_cpus']):
@@ -191,6 +193,7 @@ class ProcessManager(GameObject):
 
     def sort_idle_processes(self):
         self._sort_in_progress = True
+        self._last_sort_time = self._game.current_time
         self._continue_sorting()
 
     def _continue_sorting(self):
@@ -291,14 +294,14 @@ class ProcessManager(GameObject):
         if self._next_pid <= self._game.config['num_processes_at_startup'] and current_time - \
                 self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
-            self._last_process_creation = current_time
+            self._last_process_creation_time = current_time
             self._create_process()
         elif current_time - self._last_new_process_check >= ONE_SECOND:
             self._last_new_process_check = current_time
             if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
-                    self._last_process_creation >= self._max_wait_between_new_processes:
+                    self._last_process_creation_time >= self._max_wait_between_new_processes:
                 self._create_process()
-                self._last_process_creation = current_time
+                self._last_process_creation_time = current_time
 
         if (
             self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
@@ -306,7 +309,10 @@ class ProcessManager(GameObject):
         ):
             self._sort_processes_button.visible = True
 
-        self._sort_processes_button.disabled = self._sort_in_progress
+        self._sort_processes_button.disabled = (
+            self._sort_in_progress
+            or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
+        )
         if self._sort_in_progress:
             self._continue_sorting()
 
