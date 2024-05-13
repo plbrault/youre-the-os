@@ -19,9 +19,11 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 #* ONE_MINUTE
 
 def _is_sorted(process_list: [Process]):
+    if len(process_list) <= 1:
+        return True
     for i in range(len(process_list) - 1):
         if process_list[i].sort_key > process_list[i + 1].sort_key:
             return False
@@ -198,13 +200,29 @@ class ProcessManager(GameObject):
             if process.is_in_motion:
                 return
 
-        for sublist_size in range(2, len(idle_processes) + 1):
+        def simulate_next_sort_step(arr: [Process]):
+            if len(arr) <= 1:
+                return arr
+            else:
+                pivot = arr[len(arr) // 2]
+                left = [process for process in arr if process.sort_key < pivot.sort_key]
+                middle = [process for process in arr if process.sort_key == pivot.sort_key]
+                right = [process for process in arr if process.sort_key > pivot.sort_key]
+                if (left + middle + right) == arr:
+                    return simulate_next_sort_step(left) + middle + simulate_next_sort_step(right)
+                else:
+                    return left + middle + right
+
+        idle_processes = simulate_next_sort_step(idle_processes)
+
+        """for sublist_size in range(2, len(idle_processes) + 1):
             sublist = idle_processes[:sublist_size]
             if not _is_sorted(sublist):
                 sublist.sort(key=lambda process: process.sort_key)
                 for i in range(sublist_size):
                     idle_processes[i] = sublist[i]
                 break
+        """
 
         for process_slot in self._process_slots:
             process_slot.process = None
