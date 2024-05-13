@@ -198,11 +198,12 @@ class ProcessManager(GameObject):
 
     def _continue_sorting(self):
         """
-        This method creates the visual illusion that the next recursion of the quicksort algorithm is performed
-        on the idle processes. In reality, the algorithm is always performed from the beginning, and stops as soon
-        as a recursion that actually changes the array has happened. This way, the intended in-game result is achieved
-        while avoiding the need to keep track of the algorithm's state, and a correct end result is ensured even when
-        the idle process list changes between recursions.
+        This method creates the visual illusion that the next recursion of the quicksort algorithm
+        is performed on the idle processes. In reality, the algorithm is always performed from the
+        beginning, and stops as soon as a recursion that actually changes the array has happened.
+        This way, the intended in-game result is achieved while avoiding the need to keep track of
+        the algorithm's state, and a correct end result is ensured even when the idle process list
+        changes between recursions.
         """
 
         idle_processes = [slot.process for slot in self._process_slots if slot.process is not None]
@@ -214,15 +215,13 @@ class ProcessManager(GameObject):
         def simulate_next_sort_step(arr: [Process]):
             if len(arr) <= 1:
                 return arr
-            else:
-                pivot = arr[len(arr) // 2]
-                left = [process for process in arr if process.sort_key < pivot.sort_key]
-                middle = [process for process in arr if process.sort_key == pivot.sort_key]
-                right = [process for process in arr if process.sort_key > pivot.sort_key]
-                if (left + middle + right) == arr:
-                    return simulate_next_sort_step(left) + middle + simulate_next_sort_step(right)
-                else:
-                    return left + middle + right
+            pivot = arr[len(arr) // 2]
+            left = [process for process in arr if process.sort_key < pivot.sort_key]
+            middle = [process for process in arr if process.sort_key == pivot.sort_key]
+            right = [process for process in arr if process.sort_key > pivot.sort_key]
+            if (left + middle + right) == arr:
+                return simulate_next_sort_step(left) + middle + simulate_next_sort_step(right)
+            return left + middle + right
 
         if _is_sorted(idle_processes):
             self._sort_in_progress = False

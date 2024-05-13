@@ -109,7 +109,7 @@ class Process(GameObject):
     @property
     def is_in_motion(self):
         return ((self._view.target_x is not None or self._view.target_y is not None)
-            and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))        
+            and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
 
     def use_cpu(self):
         if not self.has_cpu:
