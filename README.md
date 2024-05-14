@@ -84,7 +84,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-## Asset Copyrights and Licenses
+## Asset Licenses
 
 * The game icon/logo is a modified version of an image created by [Muhammat Sukirman](https://thenounproject.com/creator/zero_wing/) and is published under the [Creative Commons Attribution License 3.0](https://creativecommons.org/licenses/by/3.0/).
 * Emojis used in the game are from [OpenMoji](https://openmoji.org/). They are published under the [Creative Commons Attribution-ShareAlike License 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
