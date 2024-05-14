@@ -15,7 +15,7 @@ class MainMenuTitleView(Drawable):
         super().__init__()
 
         original_size_icon = _icon_image
-        self._icon = pygame.transform.scale(original_size_icon, (200, 200))
+        self._icon = pygame.transform.scale(original_size_icon, (200, 175))
 
         self._text = FONT_PRIMARY_XXLARGE.render(TITLE, True, (61, 154, 226))
 
