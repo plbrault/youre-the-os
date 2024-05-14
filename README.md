@@ -74,7 +74,7 @@ pipenv run pylint
 pipenv run pytest
 ```
 
-## License
+## Code License
 
 Copyright (c) 2023 Pier-Luc Brault <pier-luc@brault.me>
 
