@@ -86,7 +86,7 @@ You should have received a copy of the GNU General Public License along with thi
 
 ## Asset Licenses
 
-* Emojis used in the game are from [OpenMoji](https://openmoji.org/). They are published under the [Creative Commons Attribution-ShareAlike License 4.0](https://creativecommons.org/licenses/by-sa/4.0/#).
-* The image used in the Game Over screen is by [Aleksandar Cvetanović](https://pixabay.com/fr/users/lemonsandtea-10190089/) and is published under the [Pixabay License](https://pixabay.com/service/license/).
-* The game icon was created by user [itim2101](https://www.flaticon.com/authors/itim2101) on [Flaticon](https://www.flaticon.com/) and is published under the [Flaticon license](https://www.freepikcompany.com/legal#nav-flaticon-agreement).
+* The game icon/logo is a modified version of an image by [Muhammat Sukirman](https://thenounproject.com/creator/zero_wing/) published under the [Creative Commons Attribution License 3.0](https://creativecommons.org/licenses/by/3.0/).
+* Emojis used in the game are from [OpenMoji](https://openmoji.org/). They are published under the [Creative Commons Attribution-ShareAlike License 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+* The image used in the Game Over screen is by [Aleksandar Cvetanović](https://pixabay.com/fr/users/lemonsandtea-10190089/). It was published on Pixabay prior to January 2019, and as such, is available under the [Creative Commons Zero (CC0) License](https://creativecommons.org/publicdomain/zero/1.0/?ref=chooser-v1) according to Pixabay's Terms of Service.
 * The primary font used in the game is named *VT323*, and was designed by Peter Hull. The secondary font is named *Victor Mono* and was designed by Rune Bjørnerås. Both are published under the [Open Font License](https://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web).
