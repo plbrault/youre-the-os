@@ -5,7 +5,7 @@ from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL
 
 
-class KeyBindingDialogView(Drawable):
+class HokeyDialogView(Drawable):
     def __init__(self, about_dialog):
         self.about_dialog = about_dialog
         super().__init__()
