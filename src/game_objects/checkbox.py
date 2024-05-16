@@ -1,7 +1,7 @@
 from game_objects.button import Button
 from game_objects.views.checkbox_view import CheckboxView
 
-class AutosortCheckbox(Button):
+class Checkbox(Button):
     def __init__(self, label_text: str = '',
                  *,
                  on_toggle_fn: Callable(bool) = lambda checked: pass
