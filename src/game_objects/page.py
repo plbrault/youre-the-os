@@ -45,7 +45,7 @@ class Page(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
 
-    def swap(self, swap_whole_row : bool):
+    def swap(self, swap_whole_row : bool = False):
         self._page_manager.swap_page(self, swap_whole_row)
 
     def _check_if_clicked_on(self, event):

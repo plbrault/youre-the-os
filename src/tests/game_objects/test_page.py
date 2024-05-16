@@ -33,10 +33,12 @@ class TestPage:
 
     def test_swap(self, page_manager, monkeypatch):
         page_arg = None
+        swap_whole_row_arg = None
 
-        def swap_page_mock(page):
-            nonlocal page_arg
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal page_arg, swap_whole_row_arg
             page_arg = page
+            swap_whole_row_arg = swap_whole_row
 
         monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
 
@@ -44,28 +46,34 @@ class TestPage:
         page.swap()
 
         assert page_arg == page
+        assert not swap_whole_row_arg
 
     def test_click_when_not_in_swap(self, page_manager, monkeypatch):
         page_arg = None
+        swap_whole_row_arg = None
 
-        def swap_page_mock(page):
-            nonlocal page_arg
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal page_arg, swap_whole_row_arg
             page_arg = page
+            swap_whole_row_arg = swap_whole_row
 
         monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
 
         page = Page(1, 1, page_manager)
         page.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (page.view.x, page.view.y) })
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                      { 'position': (page.view.x, page.view.y), 'shift': False })
         page.update(1000, [mouse_click_event])
 
     def test_click_wnen_in_swap(self, page_manager, monkeypatch):
         page_arg = None
+        swap_whole_row_arg = None
 
-        def swap_page_mock(page):
-            nonlocal page_arg
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal page_arg, swap_whole_row_arg
             page_arg = page
+            swap_whole_row_arg = swap_whole_row
 
         monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
 
@@ -73,7 +81,8 @@ class TestPage:
         page.in_swap = True
         page.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (page.view.x, page.view.y) })
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                      {'position': (page.view.x, page.view.y), 'shift': False })
         page.update(1000, [mouse_click_event])
 
         assert page_arg == page
