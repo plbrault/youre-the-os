@@ -56,7 +56,7 @@ class MainMenu(Scene):
         self._scene_objects.append(how_to_play_button)
 
         key_binding_button = Button(
-            'Key Bindings', self._open_key_binding_dialog)
+            'Hotkeys', self._open_key_binding_dialog)
         key_binding_button.view.set_xy(
             how_to_play_button.view.x + how_to_play_button.view.width + 20,
             self.screen.get_height() - key_binding_button.view.height - 100
