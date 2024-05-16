@@ -23,10 +23,30 @@ class AboutDialogView(Drawable):
             Color.WHITE)
         self._license_url_text = FONT_SECONDARY_XSMALL.render(
             '<https://www.gnu.org/licenses/gpl-3.0.html>', True, Color.WHITE)
-        self._asset_license_text = FONT_SECONDARY_XSMALL.render(
-            'Game assets are published under their own licenses.', True, Color.WHITE)
-        self._asset_license_details_text = FONT_SECONDARY_XSMALL.render(
-            'See <https://github.com/plbrault/youre-the-os> for details.', True, Color.WHITE)
+        self._asset_credits_title = FONT_SECONDARY_XSMALL.render(
+            'Asset Credits:', True, Color.WHITE)
+        self._asset_credits = [
+            FONT_SECONDARY_XSMALL.render(
+                'Game icon/logo: original image by Muhammat Sukirman (CC BY 3.0).',
+                True,
+                Color.WHITE),
+            FONT_SECONDARY_XSMALL.render(
+                'VT323 font by Peter Hull (SIL Open Font License).',
+                True,
+                Color.WHITE),
+            FONT_SECONDARY_XSMALL.render(
+                'Victor Mono font by Rune Bjørnerås (SIL Open Font License).',
+                True,
+                Color.WHITE),
+            FONT_SECONDARY_XSMALL.render(
+                'All emojis are from OpenMoji.org (CC BY-SA 4.0).',
+                True,
+                Color.WHITE),
+            FONT_SECONDARY_XSMALL.render(
+                'Image in Game Over screen is by Aleksandar Cvetanović (CC0).',
+                True,
+                Color.WHITE),
+        ]
 
     @property
     def width(self):
@@ -34,7 +54,7 @@ class AboutDialogView(Drawable):
 
     @property
     def height(self):
-        return 460
+        return 540
 
     def draw(self, surface):
         y = self.y + 40
@@ -81,14 +101,15 @@ class AboutDialogView(Drawable):
         ))
 
         y += self._license_url_text.get_height() + 40
-        surface.blit(self._asset_license_text, (
-            self.x + (self.width - self._asset_license_text.get_width()) / 2,
+        surface.blit(self._asset_credits_title, (
+            self.x + (self.width - self._asset_credits_title.get_width()) / 2,
             y
         ))
 
-        y += self._asset_license_text.get_height() + 10
-        surface.blit(self._asset_license_details_text, (
-            self.x + (self.width -
-                      self._asset_license_details_text.get_width()) / 2,
-            y
-        ))
+        y += self._asset_credits_title.get_height() + 10
+        for text in self._asset_credits:
+            surface.blit(text, (
+                self.x + (self.width - text.get_width()) / 2,
+                y
+            ))
+            y += text.get_height() + 5
