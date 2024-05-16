@@ -1,7 +1,7 @@
 from collections import deque
 
 from constants import ONE_SECOND
-import event_manager
+import game_monitor
 from engine.game_object import GameObject
 from engine.game_event_type import GameEventType
 from engine.random import randint
@@ -55,7 +55,7 @@ class IoQueue(GameObject):
             self._event_count -= 1
             callback = self._subscriber_queue.popleft().callback
             callback()
-        event_manager.event_io_queue(self.event_count)
+        game_monitor.event_io_queue(self.event_count)
 
     def _check_if_clicked_on(self, event):
         if event.type == GameEventType.MOUSE_LEFT_CLICK:
@@ -91,7 +91,7 @@ class IoQueue(GameObject):
                 self._event_count = randint(
                     self._event_count + 1, len(self._subscriber_queue)
                 )
-                event_manager.event_io_queue(self._event_count)
+                game_monitor.event_io_queue(self._event_count)
 
         self._display_blink_color = False
         if self._event_count > 0:

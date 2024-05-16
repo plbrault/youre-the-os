@@ -2,7 +2,7 @@ from math import inf
 import re
 
 from constants import ONE_SECOND, ONE_MINUTE
-import event_manager
+import game_monitor
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from engine.random import randint
@@ -158,7 +158,7 @@ class ProcessManager(GameObject):
                                 self.view.height + process.view.height)
             process.view.target_y = process_slot.view.y
 
-            event_manager.event_process_new(pid)
+            game_monitor.event_process_new(pid)
             self._processes[pid] = process
             return True
         return False
