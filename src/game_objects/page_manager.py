@@ -1,4 +1,4 @@
-import event_manager
+import game_monitor
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
@@ -121,7 +121,7 @@ class PageManager(GameObject):
                     page.view.set_xy(target_slot.view.x, target_slot.view.y)
                     break
             page.in_swap = not page.in_swap
-            event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
+            game_monitor.event_page_swap(page.pid, page.idx, page.in_swap)
             if swap_whole_row:
                 slots_on_same_row = [
                     slot

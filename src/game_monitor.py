@@ -1,7 +1,7 @@
-"""EventManager
+"""GameMonitor
 
-The event manager is used to gather events from game objects
-and dispatch them to the automation script
+The game monitor is used to gather events from game objects
+and dispatch them to the automation script.
 """
 
 from enum import Enum

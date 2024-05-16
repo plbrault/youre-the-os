@@ -1,7 +1,7 @@
 import sys
 
 from constants import ONE_SECOND
-import event_manager
+import game_monitor
 from engine.scene import Scene
 from difficulty_levels import default_difficulty
 from game_objects.button import Button
@@ -150,8 +150,8 @@ class Game(Scene):
     def _get_script_events(self):
         if self._script_callback is None:
             return []
-        events = self._script_callback(event_manager.get_events())
-        event_manager.clear_events()
+        events = self._script_callback(game_monitor.get_events())
+        game_monitor.clear_events()
         return events
 
     def _process_script_events(self):
