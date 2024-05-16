@@ -67,7 +67,7 @@ class TestPage:
         page.update(1000, [mouse_click_event])
 
         assert page_arg == page
-        assert not swap_whole_row_arg        
+        assert not swap_whole_row_arg
 
     def test_click_wnen_in_swap(self, page_manager, monkeypatch):
         page_arg = None
@@ -89,6 +89,7 @@ class TestPage:
         page.update(1000, [mouse_click_event])
 
         assert page_arg == page
+        assert not swap_whole_row_arg
 
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)
