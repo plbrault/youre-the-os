@@ -14,13 +14,14 @@ class KeyBindingDialogView(Drawable):
             'Key Bindings', True, Color.WHITE)
 
         self._explanation_text = FONT_SECONDARY_SMALL.render(
-            'You can also use the following keys instead of the mouse:', True, Color.WHITE)
+            'Step up your game by using these hotkeys:', True, Color.WHITE)
 
         self._binding_keys = [
             FONT_SECONDARY_SMALL.render('SPACEBAR', True, Color.WHITE),
             FONT_SECONDARY_SMALL.render('1-9', True, Color.WHITE),
             FONT_SECONDARY_SMALL.render('0', True, Color.WHITE),
             FONT_SECONDARY_SMALL.render('SHIFT + 1-6', True, Color.WHITE),
+            FONT_SECONDARY_SMALL.render('SHIFT + Click', True, Color.WHITE),
             FONT_SECONDARY_SMALL.render('S', True, Color.WHITE),
         ]
 
@@ -42,6 +43,10 @@ class KeyBindingDialogView(Drawable):
                 True,
                 Color.WHITE),
             FONT_SECONDARY_SMALL.render(
+                'Swap a whole row of RAM pages at once',
+                True,
+                Color.WHITE),
+            FONT_SECONDARY_SMALL.render(
                 'Sort Processes (once Sort button is available)',
                 True,
                 Color.WHITE),
@@ -53,7 +58,7 @@ class KeyBindingDialogView(Drawable):
 
     @property
     def height(self):
-        return 420
+        return 440
 
     def draw(self, surface):
         y = self.y + 40
