@@ -98,42 +98,28 @@ class PageManager(GameObject):
         self._pages[(pid, idx)] = page
         return page
 
-    def swap_page(self, page):
+    def swap_page(self, page : Page, swap_whole_row : bool):
+        source_slots = self._swap_slots if page.in_swap else self._ram_slots
+        target_slots = self._ram_slots if page.in_swap else self._swap_slots
+
         can_swap = False
-        if page.in_swap:
-            for ram_slot in self._ram_slots:
-                if not ram_slot.has_page:
-                    can_swap = True
+
+        for ram_slot in target_slots:
+            if not ram_slot.has_page:
+                can_swap = True
+                break
+        if can_swap:
+            for source_slot in source_slots:
+                if source_slot.page == page:
+                    source_slot.page = None
                     break
-            if can_swap:
-                for swap_slot in self._swap_slots:
-                    if swap_slot.page == page:
-                        swap_slot.page = None
-                        break
-                for ram_slot in self._ram_slots:
-                    if not ram_slot.has_page:
-                        ram_slot.page = page
-                        page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
-                        break
-                page.in_swap = False
-                event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
-        else:
-            for swap_slot in self._swap_slots:
-                if not swap_slot.has_page:
-                    can_swap = True
+            for target_slot in target_slots:
+                if not target_slot.has_page:
+                    target_slot.page = page
+                    page.view.set_xy(target_slot.view.x, target_slot.view.y)
                     break
-            if can_swap:
-                for ram_slot in self._ram_slots:
-                    if ram_slot.page == page:
-                        ram_slot.page = None
-                        break
-                for swap_slot in self._swap_slots:
-                    if not swap_slot.has_page:
-                        swap_slot.page = page
-                        page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
-                        break
-                page.in_swap = True
-                event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
+            page.in_swap = not page.in_swap
+            event_manager.event_page_swap(page.pid, page.idx, page.in_swap)
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
