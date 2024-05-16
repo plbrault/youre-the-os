@@ -11,7 +11,7 @@ class HokeyDialogView(Drawable):
         super().__init__()
 
         self._title_text = FONT_PRIMARY_XXLARGE.render(
-            'Key Bindings', True, Color.WHITE)
+            'Hotkeys', True, Color.WHITE)
 
         self._explanation_text = FONT_SECONDARY_SMALL.render(
             'Step up your game by using these hotkeys:', True, Color.WHITE)
