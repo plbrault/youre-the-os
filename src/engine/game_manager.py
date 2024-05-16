@@ -68,22 +68,8 @@ class GameManager():
         mouse_drag_event = None
 
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == _LEFT_MOUSE_BUTTON:
-                self._mouse_down = True
-            elif event.type == pygame.QUIT:
+            if event.type == pygame.QUIT:
                 events.append(GameEvent(GameEventType.QUIT, {}))
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == _LEFT_MOUSE_BUTTON:
-                self._mouse_down = False
-                if mouse_event_added and mouse_drag_event:
-                    events.remove(mouse_drag_event)
-                    mouse_event_added = False
-                    mouse_drag_event = None
-                if not mouse_event_added:
-                    events.append(
-                        GameEvent(
-                            GameEventType.MOUSE_LEFT_CLICK, {
-                                'position': event.pos}))
-                    mouse_event_added = True
             elif event.type == pygame.KEYDOWN:
                 if pygame.key.name(event.key).endswith('shift'):
                     self._shift_down = True
@@ -95,8 +81,23 @@ class GameManager():
                         GameEventType.KEY_UP, {
                             'key': pygame.key.name(
                                 event.key), 'shift': self._shift_down}))
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == _LEFT_MOUSE_BUTTON:
+                self._mouse_down = True
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == _LEFT_MOUSE_BUTTON:
+                self._mouse_down = False
+                if mouse_event_added and mouse_drag_event:
+                    events.remove(mouse_drag_event)
+                    mouse_event_added = False
+                    mouse_drag_event = None
+                if not mouse_event_added:
+                    events.append(
+                        GameEvent(
+                            GameEventType.MOUSE_LEFT_CLICK, {
+                                'position': event.pos, 'shift': self._shift_down }))
+                    mouse_event_added = True
             elif event.type == pygame.MOUSEMOTION and self._mouse_down and not mouse_event_added:
-                event = GameEvent(GameEventType.MOUSE_LEFT_DRAG, {'position': event.pos})
+                event = GameEvent(GameEventType.MOUSE_LEFT_DRAG,
+                                  {'position': event.pos, 'shift': self._shift_down})
                 events.append(event)
                 mouse_event_added = True
                 mouse_drag_event = event

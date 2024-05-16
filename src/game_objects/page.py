@@ -45,21 +45,21 @@ class Page(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
 
-    def swap(self):
-        self._page_manager.swap_page(self)
+    def swap(self, swap_whole_row : bool = False):
+        self._page_manager.swap_page(self, swap_whole_row)
 
     def _check_if_clicked_on(self, event):
         if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def _on_click(self):
-        self.swap()
+    def _on_click(self, shift_down : bool):
+        self.swap(shift_down)
 
     def update(self, current_time, events):
         for event in events:
             if self._check_if_clicked_on(event):
-                self._on_click()
+                self._on_click(event.get_property('shift'))
 
         if self.in_use and self.in_swap:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
