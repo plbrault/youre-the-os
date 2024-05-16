@@ -8,6 +8,9 @@ from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
 
+# TEMP
+from game_objects.checkbox import Checkbox
+
 
 class MainMenu(Scene):
     def __init__(self):
@@ -22,6 +25,11 @@ class MainMenu(Scene):
 
     def setup(self):
         self._scene_objects = []
+
+        # TEMP
+        checkbox = Checkbox()
+        self._scene_objects.append(checkbox)
+        ####
 
         title = MainMenuTitle()
         title.view.set_xy(0, 50)
