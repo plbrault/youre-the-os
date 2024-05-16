@@ -24,18 +24,18 @@ class AboutDialogView(Drawable):
         self._license_url_text = FONT_SECONDARY_XSMALL.render(
             '<https://www.gnu.org/licenses/gpl-3.0.html>', True, Color.WHITE)
         self._asset_credits_title = FONT_SECONDARY_XSMALL.render(
-            'Asset Credits:', True, Color.WHITE)
+            'Asset Credits and Licenses:', True, Color.WHITE)
         self._asset_credits = [
             FONT_SECONDARY_XSMALL.render(
                 'Game icon/logo: original image by Muhammat Sukirman (CC BY 3.0).',
                 True,
                 Color.WHITE),
             FONT_SECONDARY_XSMALL.render(
-                'VT323 font by Peter Hull (SIL Open Font License).',
+                'Primary font: VT323 by Peter Hull (SIL Open Font License).',
                 True,
                 Color.WHITE),
             FONT_SECONDARY_XSMALL.render(
-                'Victor Mono font by Rune Bjørnerås (SIL Open Font License).',
+                'Secondary font: Victor Mono by Rune Bjørnerås (SIL Open Font License).',
                 True,
                 Color.WHITE),
             FONT_SECONDARY_XSMALL.render(
@@ -43,7 +43,7 @@ class AboutDialogView(Drawable):
                 True,
                 Color.WHITE),
             FONT_SECONDARY_XSMALL.render(
-                'Image in Game Over screen is by Aleksandar Cvetanović (CC0).',
+                'Image in the "YOU GOT REBOOTED!" dialog is by Aleksandar Cvetanović (CC0).',
                 True,
                 Color.WHITE),
         ]
