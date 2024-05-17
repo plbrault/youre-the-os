@@ -139,13 +139,13 @@ class ProcessManager(GameObject):
         self._sort_processes_button.visible = False
         self.children.append(self._sort_processes_button)
 
-        self._autosort_checkbox = Checkbox('Auto-Sort')
-        self._autosort_checkbox.view.set_xy(
+        self._auto_sort_checkbox = Checkbox('Auto-Sort')
+        self._auto_sort_checkbox.view.set_xy(
             self._sort_processes_button.view.x + self._sort_processes_button.view.width + 10,
             self._sort_processes_button.view.y
-                + (self._sort_processes_button.view.height - self._autosort_checkbox.view.height) // 2
+                + (self._sort_processes_button.view.height - self._auto_sort_checkbox.view.height) // 2
         )
-        self.children.append(self._autosort_checkbox)
+        self.children.append(self._auto_sort_checkbox)
 
     def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._game.config['max_processes']:
@@ -207,8 +207,8 @@ class ProcessManager(GameObject):
         self._continue_sorting()
 
     @property
-    def _autosort_enabled(self):
-        return self._autosort_checkbox.checked
+    def _auto_sort_enabled(self):
+        return self._auto_sort_checkbox.checked
 
     def _continue_sorting(self):
         """
@@ -323,16 +323,16 @@ class ProcessManager(GameObject):
             self._sort_processes_button.visible = True
         if (
             self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX
-            and not self._autosort_checkbox.visible
+            and not self._auto_sort_checkbox.visible
         ):
-            self._autosort_checkbox.visible = True
+            self._auto_sort_checkbox.visible = True
 
         self._sort_processes_button.disabled = (
             self._sort_in_progress
             or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
-            or self._autosort_enabled
+            or self._auto_sort_enabled
         )
-        if self._sort_in_progress:
+        if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
 
         for game_object in self.children:
