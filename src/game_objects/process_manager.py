@@ -6,6 +6,7 @@ import game_monitor
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from engine.random import randint
+from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
@@ -19,7 +20,8 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6# * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 12# * ONE_MINUTE
 _MIN_SORT_COOLDOWN_MS = 100
 
 def _is_sorted(process_list: [Process]):
@@ -137,6 +139,14 @@ class ProcessManager(GameObject):
         self._sort_processes_button.visible = False
         self.children.append(self._sort_processes_button)
 
+        self._autosort_checkbox = Checkbox('Auto-Sort')
+        self._autosort_checkbox.view.set_xy(
+            self._sort_processes_button.view.x + self._sort_processes_button.view.width + 10,
+            self._sort_processes_button.view.y
+                + (self._sort_processes_button.view.height - self._autosort_checkbox.view.height) // 2
+        )
+        self.children.append(self._autosort_checkbox)
+
     def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._game.config['max_processes']:
             if process_slot_id is None:
@@ -195,6 +205,10 @@ class ProcessManager(GameObject):
         self._sort_in_progress = True
         self._last_sort_time = self._game.current_time
         self._continue_sorting()
+
+    @property
+    def _autosort_enabled(self):
+        return self._autosort_checkbox.checked
 
     def _continue_sorting(self):
         """
