@@ -1,3 +1,4 @@
+from engine.game_object import GameObject
 from game_objects.button import Button
 from game_objects.views.sort_button_view import SortButtonView
 
@@ -19,11 +20,7 @@ class SortButton(Button):
         self._blinking = self._blinking_hidden = False
         self._process_manager.sort_idle_processes()
 
-    @property
-    def visible(self):
-        return self._visible
-
-    @visible.setter
+    @GameObject.visible.setter
     def visible(self, value: bool):
         self._visible = value
         self._blinking_hidden = False
@@ -33,6 +30,13 @@ class SortButton(Button):
         else:
             self._blinking = False
             self._became_visible_at = 0
+
+    @Button.disabled.setter
+    def disabled(self, value: bool):
+        super(SortButton, SortButton).disabled.__set__(self, value)
+        if value:
+            self._blinking = False
+            self._blinking_hidden = False
 
     @property
     def blinking_hidden(self):

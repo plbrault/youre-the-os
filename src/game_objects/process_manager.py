@@ -6,6 +6,7 @@ import game_monitor
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from engine.random import randint
+from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process import Process
@@ -20,6 +21,7 @@ _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
 _UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 12 * ONE_MINUTE
 _MIN_SORT_COOLDOWN_MS = 100
 
 def _is_sorted(process_list: [Process]):
@@ -42,6 +44,8 @@ class ProcessManager(GameObject):
         self._user_terminated_process_slots = None
         self._io_queue = None
         self._processes = None
+        self._sort_processes_button = None
+        self._auto_sort_checkbox = None
 
         self._next_pid = None
         self._last_new_process_check = None
@@ -59,8 +63,6 @@ class ProcessManager(GameObject):
                 100 / self._new_process_probability_numerator * ONE_SECOND)
         else:
             self._max_wait_between_new_processes = inf
-
-        self._sort_processes_button = SortButton(self)
 
         super().__init__(ProcessManagerView(self))
 
@@ -133,9 +135,20 @@ class ProcessManager(GameObject):
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)
 
+        self._sort_processes_button = SortButton(self)
         self._sort_processes_button.view.set_xy(220, 121)
         self._sort_processes_button.visible = False
         self.children.append(self._sort_processes_button)
+
+        self._auto_sort_checkbox = Checkbox('Auto-Sort')
+        self._auto_sort_checkbox.visible = False
+        self._auto_sort_checkbox.view.set_xy(
+            self._sort_processes_button.view.x + self._sort_processes_button.view.width + 10,
+            self._sort_processes_button.view.y
+                + (self._sort_processes_button.view.height
+                   - self._auto_sort_checkbox.view.height) // 2
+        )
+        self.children.append(self._auto_sort_checkbox)
 
     def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._game.config['max_processes']:
@@ -195,6 +208,10 @@ class ProcessManager(GameObject):
         self._sort_in_progress = True
         self._last_sort_time = self._game.current_time
         self._continue_sorting()
+
+    @property
+    def _auto_sort_enabled(self):
+        return self._auto_sort_checkbox.checked
 
     def _continue_sorting(self):
         """
@@ -307,12 +324,18 @@ class ProcessManager(GameObject):
             and not self._sort_processes_button.visible
         ):
             self._sort_processes_button.visible = True
+        if (
+            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX
+            and not self._auto_sort_checkbox.visible
+        ):
+            self._auto_sort_checkbox.visible = True
 
         self._sort_processes_button.disabled = (
             self._sort_in_progress
             or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
+            or self._auto_sort_enabled
         )
-        if self._sort_in_progress:
+        if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
 
         for game_object in self.children:

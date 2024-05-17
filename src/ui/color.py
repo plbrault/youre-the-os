@@ -10,6 +10,7 @@ class Color:
     GREY = (128, 128, 128)
     LIGHT_BLUE = (176, 216, 230)
     LIGHT_GREY = (211, 211, 211)
+    LIME_GREEN = (177, 204, 51)
     ORANGE = (255, 165, 0)
     YELLOW = (255, 255, 0)
     RED = (255, 0, 0)
