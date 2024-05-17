@@ -20,8 +20,8 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6# * ONE_MINUTE
-_UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 12# * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
+_UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 12 * ONE_MINUTE
 _MIN_SORT_COOLDOWN_MS = 100
 
 def _is_sorted(process_list: [Process]):
@@ -140,6 +140,7 @@ class ProcessManager(GameObject):
         self.children.append(self._sort_processes_button)
 
         self._auto_sort_checkbox = Checkbox('Auto-Sort')
+        self._auto_sort_checkbox.visible = False
         self._auto_sort_checkbox.view.set_xy(
             self._sort_processes_button.view.x + self._sort_processes_button.view.width + 10,
             self._sort_processes_button.view.y
