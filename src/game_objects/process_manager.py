@@ -321,10 +321,16 @@ class ProcessManager(GameObject):
             and not self._sort_processes_button.visible
         ):
             self._sort_processes_button.visible = True
+        if (
+            self.game.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX
+            and not self._autosort_checkbox.visible
+        ):
+            self._autosort_checkbox.visible = True
 
         self._sort_processes_button.disabled = (
             self._sort_in_progress
             or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
+            or self._autosort_enabled
         )
         if self._sort_in_progress:
             self._continue_sorting()
