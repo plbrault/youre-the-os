@@ -44,6 +44,8 @@ class ProcessManager(GameObject):
         self._user_terminated_process_slots = None
         self._io_queue = None
         self._processes = None
+        self._sort_processes_button = None
+        self._auto_sort_checkbox = None
 
         self._next_pid = None
         self._last_new_process_check = None
@@ -61,8 +63,6 @@ class ProcessManager(GameObject):
                 100 / self._new_process_probability_numerator * ONE_SECOND)
         else:
             self._max_wait_between_new_processes = inf
-
-        self._sort_processes_button = SortButton(self)
 
         super().__init__(ProcessManagerView(self))
 
@@ -135,6 +135,7 @@ class ProcessManager(GameObject):
             self._user_terminated_process_slots.append(process_slot)
         self.children.extend(self._user_terminated_process_slots)
 
+        self._sort_processes_button = SortButton(self)
         self._sort_processes_button.view.set_xy(220, 121)
         self._sort_processes_button.visible = False
         self.children.append(self._sort_processes_button)
@@ -144,7 +145,8 @@ class ProcessManager(GameObject):
         self._auto_sort_checkbox.view.set_xy(
             self._sort_processes_button.view.x + self._sort_processes_button.view.width + 10,
             self._sort_processes_button.view.y
-                + (self._sort_processes_button.view.height - self._auto_sort_checkbox.view.height) // 2
+                + (self._sort_processes_button.view.height
+                   - self._auto_sort_checkbox.view.height) // 2
         )
         self.children.append(self._auto_sort_checkbox)
 
