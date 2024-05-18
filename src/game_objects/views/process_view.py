@@ -55,26 +55,6 @@ class ProcessView(Drawable):
     def height(self):
         return 64
 
-    @property
-    def target_x(self):
-        return self._target_x
-
-    @target_x.setter
-    def target_x(self, target_x):
-        self._target_x = target_x
-
-    @property
-    def target_y(self):
-        return self._target_y
-
-    @target_y.setter
-    def target_y(self, target_y):
-        self._target_y = target_y
-
-    def set_target_xy(self, target_x, target_y):
-        self.target_x = target_x
-        self.target_y = target_y
-
     def draw(self, surface):
         if self._process.has_ended and self._process.starvation_level == 0:
             color = Color.LIGHT_BLUE
