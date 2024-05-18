@@ -1,5 +1,3 @@
-import pygame
-
 from engine.drawable import Drawable
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_MEDIUM
