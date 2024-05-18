@@ -23,6 +23,7 @@ _NUM_PROCESS_SLOT_COLUMNS = 7
 _UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 #* ONE_MINUTE
 _UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 3000#12 * ONE_MINUTE
 _MIN_SORT_COOLDOWN_MS = 100
+_AUTO_SORT_CHECKBOX_ANIMATION_SPEED = 30
 
 def _is_sorted(process_list: [Process]):
     if len(process_list) <= 1:
@@ -345,6 +346,8 @@ class ProcessManager(GameObject):
         )
         if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
+
+        self._auto_sort_checkbox.view.move_towards_target_xy(_AUTO_SORT_CHECKBOX_ANIMATION_SPEED)
 
         for game_object in self.children:
             game_object.update(current_time, events)
