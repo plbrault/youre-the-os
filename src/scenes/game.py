@@ -75,9 +75,14 @@ class Game(Scene):
         )
         self._scene_objects.append(self._uptime_manager)
 
-        self._difficulty_label = Label(self._config['name'].upper())
+        self._difficulty_label = Label('Difficulty : ' + self._config['name'].upper())
         self._difficulty_label.view.set_xy(
-            (self._uptime_manager.view.x + self._score_manager.view.x + self._difficulty_label.view.width) // 2,
+            (
+                self._uptime_manager.view.x
+                + self._uptime_manager.view.width
+                + self._score_manager.view.x
+                - self._difficulty_label.view.width
+            ) // 2,
             self._score_manager.view.y
         )
         self._scene_objects.append(self._difficulty_label)
