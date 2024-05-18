@@ -27,5 +27,4 @@ class ScoreManagerView(Drawable):
                     '09'),
                 False,
                 Color.WHITE),
-            (840,
-             10))
+            (self.x, self.y))
