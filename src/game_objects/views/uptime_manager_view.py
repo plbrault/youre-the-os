@@ -25,7 +25,4 @@ class UptimeManagerView(Drawable):
                 self._uptime_manager.uptime_text,
                 False,
                 Color.WHITE),
-            (512 -
-             self.width /
-             2,
-             10))
+            (self.x, self.y))

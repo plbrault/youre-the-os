@@ -7,6 +7,7 @@ from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.in_game_menu_dialog import InGameMenuDialog
+from game_objects.label import Label
 from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
@@ -36,6 +37,7 @@ class Game(Scene):
 
         self._score_manager = None
         self._uptime_manager = None
+        self._difficulty_label = None
 
         self._open_in_game_menu_button = None
 
@@ -63,10 +65,22 @@ class Game(Scene):
         self._scene_objects.append(self._page_manager)
 
         self._score_manager = ScoreManager(self)
+        self._score_manager.view.set_xy(840, 10)
         self._scene_objects.append(self._score_manager)
 
         self._uptime_manager = UptimeManager(self)
+        self._uptime_manager.view.set_xy(
+            512 - self._uptime_manager.view.width // 2,
+            10
+        )
         self._scene_objects.append(self._uptime_manager)
+
+        self._difficulty_label = Label(self._config['name'].upper())
+        self._difficulty_label.view.set_xy(
+            (self._uptime_manager.view.x + self._score_manager.view.x) // 2,
+            self._score_manager.view.y
+        )
+        self._scene_objects.append(self._difficulty_label)
 
         if not self._standalone:
             self._open_in_game_menu_button = Button(
