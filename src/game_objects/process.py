@@ -295,29 +295,6 @@ class Process(GameObject):
             ):
                 self._terminate_gracefully()
 
-    def _handle_movement_animation(self):
-        if self.view.target_x is not None:
-            if self.view.x == self.view.target_x:
-                self.view.target_x = None
-            else:
-                if self.view.x < self.view.target_x:
-                    self.view.x += min(self._ANIMATION_SPEED,
-                                       self.view.target_x - self.view.x)
-                if self.view.x > self.view.target_x:
-                    self.view.x -= min(self._ANIMATION_SPEED,
-                                       self.view.x - self.view.target_x)
-
-        if self.view.target_y is not None:
-            if self.view.y == self.view.target_y:
-                self.view.target_y = None
-            else:
-                if self.view.y < self.view.target_y:
-                    self.view.y += min(self._ANIMATION_SPEED,
-                                       self.view.target_y - self.view.y)
-                if self.view.y > self.view.target_y:
-                    self.view.y -= min(self._ANIMATION_SPEED,
-                                       self.view.y - self.view.target_y)
-
     def _handle_blinking_animation(self, current_time):
         if self._is_waiting_for_page:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
@@ -328,7 +305,6 @@ class Process(GameObject):
         self._last_update_time = current_time
         self._handle_events(events)
 
-
         if not self.has_ended:
             self._handle_pages_in_swap()
             if current_time >= self._last_event_check_time + ONE_SECOND:
@@ -338,5 +314,5 @@ class Process(GameObject):
                 self._handle_new_page_probability()
                 self._handle_graceful_termination_probability(current_time)
 
-        self._handle_movement_animation()
+        self.view.move_towards_target_xy(self._ANIMATION_SPEED)
         self._handle_blinking_animation(current_time)
