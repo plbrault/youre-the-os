@@ -43,7 +43,7 @@ class HokeyDialogView(Drawable):
                 True,
                 Color.WHITE),
             FONT_SECONDARY_SMALL.render(
-                'Swap a whole row of RAM pages at once',
+                'Swap a whole row of memory pages at once',
                 True,
                 Color.WHITE),
             FONT_SECONDARY_SMALL.render(
