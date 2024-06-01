@@ -10,7 +10,6 @@ from engine.random import randint
 from game_objects.views.process_view import ProcessView
 
 _STARVATION_LEVEL_DURATION_MS = 10000
-_TIME_TO_UNSTARVE_MS = 5000
 _NEW_PAGE_PROBABILITY_DENOMINATOR = 20
 _BLINKING_INTERVAL_MS = 200
 
@@ -22,7 +21,7 @@ class Process(GameObject):
         self._process_manager = game.process_manager
         self._page_manager = game.page_manager
 
-        self._has_cpu = False
+        self._cpu = None
         self._is_waiting_for_io = False
         self._is_on_io_cooldown = False
         self._is_waiting_for_page = False
@@ -52,8 +51,12 @@ class Process(GameObject):
         return self._pid
 
     @property
+    def cpu(self):
+        return self._cpu
+
+    @property
     def has_cpu(self):
-        return self._has_cpu
+        return self._cpu is not None
 
     @property
     def is_waiting_for_io(self):
@@ -116,9 +119,9 @@ class Process(GameObject):
             for cpu in self._process_manager.cpu_list:
                 if not cpu.has_process:
                     cpu.process = self
-                    self._has_cpu = True
+                    self._cpu = cpu
                     self.view.set_target_xy(cpu.view.x, cpu.view.y)
-                    game_monitor.event_process_cpu(self._pid, self._has_cpu)
+                    game_monitor.event_process_cpu(self._pid, self.has_cpu)
                     break
             if self.has_cpu:
                 self._last_state_change_time = self._last_update_time
@@ -140,16 +143,13 @@ class Process(GameObject):
 
     def yield_cpu(self):
         if self.has_cpu:
-            self._has_cpu = False
+            self._cpu.process = None
+            self._cpu = None
             if not self.is_waiting_for_io:
                 self._is_on_io_cooldown = False
             if not self.has_ended:
-                game_monitor.event_process_cpu(self._pid, self._has_cpu)
+                game_monitor.event_process_cpu(self._pid, self.has_cpu)
             self._last_state_change_time = self._last_update_time
-            for cpu in self._process_manager.cpu_list:
-                if cpu.process == self:
-                    cpu.process = None
-                    break
             for page in self._pages:
                 page.in_use = False
                 game_monitor.event_page_use(page.pid, page.idx, page.in_use)
@@ -249,7 +249,7 @@ class Process(GameObject):
 
     def _update_starvation_level(self, current_time):
         if self.has_cpu and not self.is_blocked:
-            if current_time - self._last_state_change_time >= _TIME_TO_UNSTARVE_MS:
+            if current_time - self._last_state_change_time >= self.cpu.time_to_process_happiness:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
                 game_monitor.event_process_starvation(self._pid, self._starvation_level)
