@@ -17,7 +17,7 @@ class Cpu(GameObject):
 
     @property
     def time_for_process_happiness(self):
-        return self._time_for_process_happiness    
+        return self._time_for_process_happiness
 
     @property
     def has_process(self):
