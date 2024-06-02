@@ -21,6 +21,8 @@ class CustomSettingsDialogView(Drawable):
             '# RAM Rows', True, Color.WHITE)
         self._new_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
             'New Process Probability', True, Color.WHITE)
+        self._priority_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
+            'Priority Process Probability', True, Color.WHITE)
         self._io_probability_label_text = FONT_SECONDARY_MEDIUM.render(
             'I/O Probability', True, Color.WHITE)
         self._graceful_termination_label_text = FONT_SECONDARY_MEDIUM.render(
@@ -32,7 +34,7 @@ class CustomSettingsDialogView(Drawable):
 
     @property
     def height(self):
-        return 580
+        return 630
 
     @property
     def label_height(self):
@@ -59,8 +61,12 @@ class CustomSettingsDialogView(Drawable):
         return self.num_ram_rows_y + self.label_height + 30
 
     @property
-    def io_probability_y(self):
+    def priority_process_probability_y(self):
         return self.new_process_probability_y + self.label_height + 30
+
+    @property
+    def io_probability_y(self):
+        return self.priority_process_probability_y + self.label_height + 30
 
     @property
     def graceful_termination_y(self):
@@ -92,6 +98,8 @@ class CustomSettingsDialogView(Drawable):
                      (self.x + 20, self.num_ram_rows_y))
         surface.blit(self._new_process_probability_label_text,
                      (self.x + 20, self.new_process_probability_y))
+        surface.blit(self._priority_process_probability_label_text,
+                     (self.x + 20, self.priority_process_probability_y))
         surface.blit(self._io_probability_label_text,
                      (self.x + 20, self.io_probability_y))
         surface.blit(self._graceful_termination_label_text,

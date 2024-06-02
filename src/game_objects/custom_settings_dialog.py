@@ -45,6 +45,15 @@ class CustomSettingsDialog(GameObject):
             int(self._config['new_process_probability'] * 100)) + ' %'
         self.children.append(self._new_process_probability_selector)
 
+        self._priority_process_probability_selector = OptionSelector(
+            ['0 %', '1 %', '2 %']
+            +
+            [str(i) + ' %' for i in range(5, 105, 5)]
+        )
+        self._new_process_probability_selector.selected_option = str(
+            int(self._config['new_process_probability'] * 100)) + ' %'
+        self.children.append(self._priority_process_probability_selector)
+
         self._io_probability_selector = OptionSelector(
             ['0 %', '1 %']
             +
@@ -136,6 +145,13 @@ class CustomSettingsDialog(GameObject):
             self.view.new_process_probability_y +
             (self.view.label_height -
              self._new_process_probability_selector.view.height) / 2
+        )
+        self._priority_process_probability_selector.view.set_xy(
+            self.view.x + self.view.width -
+            self._priority_process_probability_selector.view.width - 20,
+            self.view.priority_process_probability_y +
+            (self.view.label_height -
+             self._priority_process_probability_selector.view.height) / 2
         )
         self._io_probability_selector.view.set_xy(
             self.view.x + self.view.width - self._io_probability_selector.view.width - 20,
