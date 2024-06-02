@@ -64,7 +64,7 @@ _insane_difficulty = {
         'num_processes_at_startup': 42,
         'num_ram_rows': 4,
         'new_process_probability': 1,
-        'priority_process_probability': 0.2,
+        'priority_process_probability': 0.1,
         'io_probability': 0.3,
         'graceful_termination_probability': 0.01
     }
