@@ -9,6 +9,7 @@ from engine.random import randint
 from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
+from game_objects.high_priority_process import HighPriorityProcess
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
