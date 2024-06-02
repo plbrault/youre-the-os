@@ -90,6 +90,7 @@ class CustomSettingsDialog(GameObject):
                 self._num_ram_rows_selector.selected_option),
             'new_process_probability': self._new_process_probability_selector.selected_option_id *
             0.05,
+            'priority_process_probability': 0.02,
             'io_probability': [
                 0, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5
             ][self._io_probability_selector.selected_option_id],
