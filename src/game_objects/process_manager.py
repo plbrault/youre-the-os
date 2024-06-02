@@ -179,7 +179,7 @@ class ProcessManager(GameObject):
                                 self.view.height + process.view.height)
             process.view.target_y = process_slot.view.y
 
-            game_monitor.event_process_new(pid)
+            game_monitor.notify_process_new(pid)
             self._processes[pid] = process
             return True
         return False

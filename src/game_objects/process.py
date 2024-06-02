@@ -131,7 +131,7 @@ class Process(GameObject):
                     cpu.process = self
                     self._cpu = cpu
                     self.view.set_target_xy(cpu.view.x, cpu.view.y)
-                    game_monitor.event_process_cpu(self._pid, self.has_cpu)
+                    game_monitor.notify_process_cpu(self._pid, self.has_cpu)
                     break
             if self.has_cpu:
                 self._last_state_change_time = self._last_update_time
@@ -146,10 +146,10 @@ class Process(GameObject):
                     for i in range(num_pages):
                         page = self._page_manager.create_page(self._pid, i)
                         self._pages.append(page)
-                        game_monitor.event_page_new(page.pid, page.idx, page.in_swap, page.in_use)
+                        game_monitor.notify_page_new(page.pid, page.idx, page.in_swap, page.in_use)
                 for page in self._pages:
                     page.in_use = True
-                    game_monitor.event_page_use(page.pid, page.idx, page.in_use)
+                    game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
 
     def yield_cpu(self):
         if self.has_cpu:
@@ -158,19 +158,19 @@ class Process(GameObject):
             if not self.is_waiting_for_io:
                 self._is_on_io_cooldown = False
             if not self.has_ended:
-                game_monitor.event_process_cpu(self._pid, self.has_cpu)
+                game_monitor.notify_process_cpu(self._pid, self.has_cpu)
             self._last_state_change_time = self._last_update_time
             for page in self._pages:
                 page.in_use = False
-                game_monitor.event_page_use(page.pid, page.idx, page.in_use)
+                game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
             if self.has_ended:
                 if self.starvation_level == 0:
                     self.view.target_y = -self.view.height
                 for page in self._pages:
-                    game_monitor.event_page_free(page.pid, page.idx)
+                    game_monitor.notify_page_free(page.pid, page.idx)
                     self._page_manager.delete_page(page)
                 self._process_manager.del_process(self)
-                game_monitor.event_process_end(self.pid)
+                game_monitor.notify_process_end(self.pid)
             else:
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
@@ -193,24 +193,24 @@ class Process(GameObject):
         def update_fn():
             self._is_waiting_for_page = waiting_for_page
         if waiting_for_page != self.is_waiting_for_page:
-            game_monitor.event_process_wait_page(self.pid, waiting_for_page)
+            game_monitor.notify_process_wait_page(self.pid, waiting_for_page)
         self._update_blocking_condition(update_fn)
 
     def _wait_for_io(self):
         self._set_waiting_for_io(True)
         self._is_on_io_cooldown = True
         self._process_manager.io_queue.wait_for_event(self._on_io_event)
-        game_monitor.event_process_wait_io(self.pid, self.is_waiting_for_io)
+        game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _on_io_event(self):
         if self.has_ended:
             return
         self._set_waiting_for_io(False)
-        game_monitor.event_process_wait_io(self.pid, self.is_waiting_for_io)
+        game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
-            game_monitor.event_process_terminated(self._pid)
+            game_monitor.notify_process_terminated(self._pid)
             self._has_ended = True
             self._set_waiting_for_io(False)
             self._set_waiting_for_page(False)
@@ -223,10 +223,10 @@ class Process(GameObject):
             self._set_waiting_for_page(False)
             self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
-                game_monitor.event_page_free(page.pid, page.idx)
+                game_monitor.notify_page_free(page.pid, page.idx)
                 self._page_manager.delete_page(page)
             self._process_manager.del_process(self)
-            game_monitor.event_process_killed(self._pid)
+            game_monitor.notify_process_killed(self._pid)
 
     def _check_if_clicked_on(self, event):
         if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):
@@ -262,12 +262,12 @@ class Process(GameObject):
             if current_time - self._last_state_change_time >= self.cpu.time_for_process_happiness:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
-                game_monitor.event_process_starvation(self._pid, self._starvation_level)
+                game_monitor.notify_process_starvation(self._pid, self._starvation_level)
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
                 self._starvation_level += 1
-                game_monitor.event_process_starvation(
+                game_monitor.notify_process_starvation(
                     self._pid, self._starvation_level)
             else:
                 self._terminate_by_user()
@@ -290,7 +290,7 @@ class Process(GameObject):
                 new_page = self._page_manager.create_page(self._pid, len(self._pages))
                 self._pages.append(new_page)
                 new_page.in_use = True
-                game_monitor.event_page_new(
+                game_monitor.notify_page_new(
                     new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
 
     def _handle_graceful_termination_probability(self, current_time):

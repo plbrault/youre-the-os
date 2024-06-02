@@ -110,4 +110,3 @@ class ProcessView(Drawable):
                 progress_bar_width,
                 progress_bar_height
             ))
-            
