@@ -3,11 +3,11 @@ from game_objects.views.cpu_view import CpuView
 
 
 class Cpu(GameObject):
-    def __init__(self, cpu_id, *, _time_to_process_happiness=5000):
+    def __init__(self, cpu_id, *, _time_for_process_happiness=5000):
         self._cpu_id = cpu_id
         self._process = None
 
-        self._time_to_process_happiness = _time_to_process_happiness
+        self._time_for_process_happiness = _time_for_process_happiness
 
         super().__init__(CpuView(self))
 
@@ -16,8 +16,8 @@ class Cpu(GameObject):
         return self._cpu_id
 
     @property
-    def time_to_process_happiness(self):
-        return self._time_to_process_happiness    
+    def time_for_process_happiness(self):
+        return self._time_for_process_happiness    
 
     @property
     def has_process(self):

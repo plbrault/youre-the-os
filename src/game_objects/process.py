@@ -249,7 +249,7 @@ class Process(GameObject):
 
     def _update_starvation_level(self, current_time):
         if self.has_cpu and not self.is_blocked:
-            if current_time - self._last_state_change_time >= self.cpu.time_to_process_happiness:
+            if current_time - self._last_state_change_time >= self.cpu.time_for_process_happiness:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
                 game_monitor.event_process_starvation(self._pid, self._starvation_level)
