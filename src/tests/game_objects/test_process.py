@@ -920,3 +920,50 @@ class TestProcess:
         assert process_medium_starvation_1.sort_key == process_medium_starvation_2.sort_key
         assert process_medium_starvation_2.sort_key < process_lowest_starvation.sort_key
         assert process_lowest_starvation.sort_key < process_blocked.sort_key
+
+    def test_sort_key_different_time_between_starvation_levels(self, game_custom_config, monkeypatch):
+        stage = game_custom_config({
+            'name': 'Test Config',
+            'num_cpus': 4,
+            'num_processes_at_startup': 14,
+            'num_ram_rows': 8,
+            'new_process_probability': 0,
+            'io_probability': 0.1,
+            'graceful_termination_probability': 0
+        })
+
+        process_1 = Process(1, stage, time_between_starvation_levels=10000)
+        process_2 = Process(2, stage, time_between_starvation_levels=10000)
+        process_3 = Process(3, stage, time_between_starvation_levels=8000)
+
+        process_1.update(5000, [])
+        process_2.update(8000, [])
+        process_3.update(7000, [])
+
+        assert process_3.sort_key < process_2.sort_key
+        assert process_2.sort_key < process_1.sort_key
+
+        process_1.update(10000, [])
+        process_2.update(10000, [])
+        process_3.update(8000, [])
+
+        process_1.update(18000, [])
+        process_2.update(17000, [])
+        process_3.update(15999, [])
+
+        assert process_1.starvation_level == 2
+        assert process_2.starvation_level == 2
+        assert process_3.starvation_level == 2
+
+        assert process_1.sort_key < process_2.sort_key
+        assert process_3.sort_key < process_2.sort_key
+
+        process_1.update(20000, [])
+        process_2.update(20000, [])
+
+        assert process_1.starvation_level == 3
+        assert process_2.starvation_level == 3
+        assert process_3.starvation_level == 2
+
+        assert process_1.sort_key == process_2.sort_key
+        assert process_1.sort_key < process_3.sort_key
