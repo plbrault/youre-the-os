@@ -920,8 +920,3 @@ class TestProcess:
         assert process_medium_starvation_1.sort_key == process_medium_starvation_2.sort_key
         assert process_medium_starvation_2.sort_key < process_lowest_starvation.sort_key
         assert process_lowest_starvation.sort_key < process_blocked.sort_key
-
-
-
-
-
