@@ -157,7 +157,7 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'Once the number of killed processes reaches 10, the user gets really angry and reboots you.',
+            'Once the number of killed processes reaches 10, the user gets really angry and reboots you.', # pylint: disable=line-too-long
             'The game is then over. Your goal is to survive as long as possible without getting rebooted!' # pylint: disable=line-too-long
         ],
         [
