@@ -36,6 +36,7 @@ class TestProcess:
         process = Process(1, game)
 
         assert process.pid == 1
+        assert process.cpu == None
         assert process.has_cpu == False
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
@@ -70,6 +71,7 @@ class TestProcess:
     def test_use_cpu_when_first_cpu_is_available(self, game):
         process = Process(1, game)
 
+        assert process.cpu == None
         assert process.has_cpu == False
         for i in range(0, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
@@ -77,6 +79,7 @@ class TestProcess:
         process.use_cpu()
 
         assert process.has_cpu == True
+        assert process.cpu == game.process_manager.cpu_list[0]
         assert game.process_manager.cpu_list[0].process == process
         for i in range(1, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
@@ -89,6 +92,7 @@ class TestProcess:
     def test_use_cpu_when_first_cpu_is_unavailable(self, game):
         process = Process(1, game)
 
+        assert process.cpu == None
         assert process.has_cpu == False
         for i in range(0, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
@@ -97,6 +101,7 @@ class TestProcess:
         process.use_cpu()
 
         assert process.has_cpu == True
+        assert process.cpu == game.process_manager.cpu_list[1]
         assert game.process_manager.cpu_list[0].process.pid == 2
         assert game.process_manager.cpu_list[1].process == process
         for i in range(2, game.config['num_cpus']):
@@ -110,6 +115,7 @@ class TestProcess:
     def test_use_cpu_when_all_cpus_are_unavailable(self, game):
         process = Process(1, game)
 
+        assert process.cpu == None
         assert process.has_cpu == False
         for i in range(0, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
@@ -119,6 +125,7 @@ class TestProcess:
 
         process.use_cpu()
 
+        assert process.cpu == None
         assert process.has_cpu == False
         for i in range(0, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process.pid == i + 2
@@ -134,6 +141,7 @@ class TestProcess:
         process.use_cpu()
         process.use_cpu()
 
+        assert process.cpu == game.process_manager.cpu_list[0]
         assert process.has_cpu == True
         assert game.process_manager.cpu_list[0].process == process
         for i in range(1, game.config['num_cpus']):
@@ -153,6 +161,7 @@ class TestProcess:
         process.use_cpu()
 
         process.yield_cpu()
+        assert process.cpu == None
         assert process.has_cpu == False
         for i in range(0, game.config['num_cpus'] - 1):
             assert game.process_manager.cpu_list[i].process.pid == i + 2
@@ -167,6 +176,7 @@ class TestProcess:
         process = Process(1, game)
 
         process.yield_cpu()
+        assert process.cpu == None
         assert process.has_cpu == False
         for i in range(0, game.config['num_cpus']):
             assert game.process_manager.cpu_list[i].process == None
@@ -180,9 +190,11 @@ class TestProcess:
         process = Process(1, game)
 
         process.toggle()
+        assert process.cpu != None
         assert process.has_cpu == True
 
         process.toggle()
+        assert process.cpu == None
         assert process.has_cpu == False
 
     def test_unstarvation(self, game):
