@@ -7,10 +7,6 @@ from engine.random import Random
 from game_objects.process import Process
 
 class TestProcess:
-    @property
-    def starvation_interval(self):
-        return 10000
-
     @pytest.fixture
     def game(self, game, monkeypatch):
         """
@@ -36,6 +32,7 @@ class TestProcess:
         process = Process(1, game)
 
         assert process.pid == 1
+        assert process.time_between_starvation_levels == 10000
         assert process.cpu == None
         assert process.has_cpu == False
         assert process.is_waiting_for_io == False
@@ -52,21 +49,34 @@ class TestProcess:
         process = Process(1, game)
 
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
-            process.update(i * self.starvation_interval, [])
+            process.update(i * process.time_between_starvation_levels, [])
             assert process.starvation_level == i + 1
 
     def test_max_starvation(self, game):
         process = Process(1, game)
 
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
-            process.update(i * self.starvation_interval, [])
+            process.update(i * process.time_between_starvation_levels, [])
 
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
-        process.update(DEAD_STARVATION_LEVEL * self.starvation_interval, [])
+        process.update(DEAD_STARVATION_LEVEL * process.time_between_starvation_levels, [])
 
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
+
+    def test_starvation_with_custom_time_between_starvation_levels(self, game):
+        default_value = Process(1, game).time_between_starvation_levels
+
+        process = Process(
+            2,
+            game,
+            time_between_starvation_levels=default_value / 2
+        )
+
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
+            process.update(i * process.time_between_starvation_levels, [])
+            assert process.starvation_level == i + 1
 
     def test_use_cpu_when_first_cpu_is_available(self, game):
         process = Process(1, game)
@@ -203,7 +213,7 @@ class TestProcess:
         current_time = 0
 
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
-            current_time += self.starvation_interval
+            current_time += process.time_between_starvation_levels
             process.update(current_time, [])
 
         process.use_cpu()
@@ -428,10 +438,10 @@ class TestProcess:
         assert process.is_waiting_for_page == True
 
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
-            process.update(i * self.starvation_interval, [])
+            process.update(i * process.time_between_starvation_levels, [])
             assert process.starvation_level == i + 1
 
-        process.update(LAST_ALIVE_STARVATION_LEVEL * self.starvation_interval, [])
+        process.update(LAST_ALIVE_STARVATION_LEVEL * process.time_between_starvation_levels, [])
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
 
@@ -445,7 +455,7 @@ class TestProcess:
         game.page_manager.get_page(1, 0).swap()
 
         for i in range(1, DEAD_STARVATION_LEVEL):
-            process.update(i * self.starvation_interval, [])
+            process.update(i * process.time_between_starvation_levels, [])
         assert process.has_ended == True
 
         with pytest.raises(KeyError):
@@ -558,10 +568,10 @@ class TestProcess:
         assert process.is_waiting_for_io == True
 
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
-            process.update(i * self.starvation_interval, [])
+            process.update(i * process.time_between_starvation_levels, [])
             assert process.starvation_level == i + 1
 
-        process.update(LAST_ALIVE_STARVATION_LEVEL * self.starvation_interval, [])
+        process.update(LAST_ALIVE_STARVATION_LEVEL * process.time_between_starvation_levels, [])
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
         assert process.is_blocked == False
@@ -609,7 +619,7 @@ class TestProcess:
 
         current_time = 0
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
-            current_time += self.starvation_interval
+            current_time += process1.time_between_starvation_levels
             process1.update(current_time, [])
 
         # Cause the random number generator to always provoke an I/O event
@@ -835,7 +845,7 @@ class TestProcess:
         process_medium_starvation_2 = Process(4, game)
         process_medium_starvation_plus_one_second = Process(5, game)
         process_highest_starvation = Process(2, game)
-        process_blocked = Process(6, game)        
+        process_blocked = Process(6, game)
 
         # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
@@ -843,7 +853,7 @@ class TestProcess:
         time = 0
 
         for i in range(2):
-            time += self.starvation_interval
+            time += process_highest_starvation.time_between_starvation_levels
             process_highest_starvation.update(time, [])
             process_medium_starvation_1.update(time, [])
             process_medium_starvation_2.update(time, [])
@@ -857,7 +867,7 @@ class TestProcess:
         time += ONE_SECOND
         process_medium_starvation_plus_one_second.update(time, [])
 
-        time += self.starvation_interval - ONE_SECOND
+        time += process_highest_starvation.time_between_starvation_levels - ONE_SECOND
         process_highest_starvation.update(time, [])
         process_blocked.update(time, [])
 
@@ -871,7 +881,7 @@ class TestProcess:
         process_blocked.yield_cpu()
         process_blocked.update(time, [])
 
-        time += self.starvation_interval - ONE_SECOND
+        time += process_highest_starvation.time_between_starvation_levels - ONE_SECOND
         process_highest_starvation.update(time, [])
 
         assert process_lowest_starvation.starvation_level == 0

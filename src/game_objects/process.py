@@ -9,17 +9,17 @@ from engine.game_event_type import GameEventType
 from engine.random import randint
 from game_objects.views.process_view import ProcessView
 
-_STARVATION_LEVEL_DURATION_MS = 10000
 _NEW_PAGE_PROBABILITY_DENOMINATOR = 20
 _BLINKING_INTERVAL_MS = 200
 
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
-    def __init__(self, pid, game):
+    def __init__(self, pid, game, *, time_between_starvation_levels=10000):
         self._pid = pid
         self._process_manager = game.process_manager
         self._page_manager = game.page_manager
+        self._time_between_starvation_levels = time_between_starvation_levels
 
         self._cpu = None
         self._is_waiting_for_io = False
@@ -49,6 +49,10 @@ class Process(GameObject):
     @property
     def pid(self):
         return self._pid
+
+    @property
+    def time_between_starvation_levels(self):
+        return self._time_between_starvation_levels
 
     @property
     def cpu(self):
@@ -255,7 +259,7 @@ class Process(GameObject):
                 game_monitor.event_process_starvation(self._pid, self._starvation_level)
         elif (
             current_time >=
-                self._last_starvation_level_change_time + _STARVATION_LEVEL_DURATION_MS
+                self._last_starvation_level_change_time + self.time_between_starvation_levels
         ):
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
