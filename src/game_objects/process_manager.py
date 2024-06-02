@@ -9,6 +9,7 @@ from engine.random import randint
 from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
+from game_objects.priority_process import PriorityProcess
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
@@ -169,7 +170,11 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process = Process(pid, self._stage)
+            process_cls = Process
+            if randint(1, 100) <= int(self._stage.config['priority_process_probability'] * 100):
+                process_cls = PriorityProcess
+            process = process_cls(pid, self._stage)
+
             process_slot = self.process_slots[process_slot_id]
             process_slot.process = process
             self.children.append(process)

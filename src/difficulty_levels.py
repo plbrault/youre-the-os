@@ -8,6 +8,7 @@ _easy_difficulty = {
         'max_processes': MAX_PROCESSES,
         'num_ram_rows': 8,
         'new_process_probability': 0.05,
+        'priority_process_probability': 0.01,
         'io_probability': 0.01,
         'graceful_termination_probability': 0.01
     }
@@ -21,6 +22,7 @@ _normal_difficulty = {
         'num_processes_at_startup': 14,
         'num_ram_rows': 5,
         'new_process_probability': 0.05,
+        'priority_process_probability': 0.02,
         'io_probability': 0.05,
         'graceful_termination_probability': 0.01
     }
@@ -34,6 +36,7 @@ _hard_difficulty = {
         'num_processes_at_startup': 28,
         'num_ram_rows': 6,
         'new_process_probability': 0.1,
+        'priority_process_probability': 0.05,
         'io_probability': 0.1,
         'graceful_termination_probability': 0.01
     }
@@ -47,6 +50,7 @@ _harder_difficulty = {
         'num_processes_at_startup': 35,
         'num_ram_rows': 6,
         'new_process_probability': 0.2,
+        'priority_process_probability': 0.1,
         'io_probability': 0.2,
         'graceful_termination_probability': 0.01
     }
@@ -60,6 +64,7 @@ _insane_difficulty = {
         'num_processes_at_startup': 42,
         'num_ram_rows': 4,
         'new_process_probability': 1,
+        'priority_process_probability': 0.1,
         'io_probability': 0.3,
         'graceful_termination_probability': 0.01
     }

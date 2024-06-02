@@ -73,7 +73,7 @@ class ProcessView(Drawable):
         surface.blit(self._pid_text_surface, (self._x + 28, self._y + 5))
 
         if self._process.is_waiting_for_io:
-            surface.blit(_waiting_for_io_emoji, (self._x + 27, self._y + 32))
+            surface.blit(_waiting_for_io_emoji, (self._x + 32, self._y + 32))
 
         if self._process.is_progressing_to_happiness:
             progress_bar_width = min(
