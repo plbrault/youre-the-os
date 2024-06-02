@@ -33,6 +33,7 @@ class TestProcess:
 
         assert process.pid == 1
         assert process.time_between_starvation_levels == 10000
+        assert process.current_starvation_level_duration == 0
         assert process.cpu == None
         assert process.has_cpu == False
         assert process.is_waiting_for_io == False
@@ -77,6 +78,15 @@ class TestProcess:
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
             process.update(i * process.time_between_starvation_levels, [])
             assert process.starvation_level == i + 1
+
+    def test_current_starvation_level_duration(self, game):
+        process = Process(1, game)
+
+        assert process.current_starvation_level_duration == 0
+        process.update(process.time_between_starvation_levels / 2, [])
+        assert process.current_starvation_level_duration == process.time_between_starvation_levels / 2
+        process.update(process.time_between_starvation_levels, [])
+        assert process.current_starvation_level_duration == 0
 
     def test_use_cpu_when_first_cpu_is_available(self, game):
         process = Process(1, game)
