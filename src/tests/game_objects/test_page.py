@@ -7,8 +7,8 @@ from game_objects.page_manager import PageManager
 
 class TestPage:
     @pytest.fixture
-    def page_manager(self, game):
-        return PageManager(game)
+    def page_manager(self, stage):
+        return PageManager(stage)
 
     def test_initial_property_values(self, page_manager):
         page = Page(1, 1, page_manager)

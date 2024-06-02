@@ -4,7 +4,7 @@ from os import path
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
 from game_info import TITLE
-from scenes.game import Game
+from scenes.stage import Stage
 from scenes.how_to_play import HowToPlay
 from scenes.main_menu import MainMenu
 from window_size import WINDOW_SIZE
@@ -13,7 +13,7 @@ async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    game_scene = Game()
+    game_scene = Stage()
     main_menu_scene = MainMenu()
     how_to_play_scene = HowToPlay()
 

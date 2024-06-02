@@ -14,11 +14,11 @@ class ProcessManagerView(Drawable):
         self._idle_processes_text_surface = FONT_PRIMARY_LARGE.render(
             'Idle Processes :', False, Color.WHITE)
         self._process_view_height = ProcessView(
-            Process(0, process_manager.game)).height
+            Process(0, process_manager.stage)).height
 
     @property
     def width(self):
-        return WINDOW_WIDTH - self._process_manager.game.page_manager.view.width
+        return WINDOW_WIDTH - self._process_manager.stage.page_manager.view.width
 
     @property
     def height(self):

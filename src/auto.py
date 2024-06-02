@@ -1,7 +1,7 @@
 """
 Entry point to run the game with an automated script.
 
-This just runs the Game scene, with the difficulty and script
+This just runs the Stage scene, with the difficulty and script
 provided from the command line.
 """
 
@@ -11,7 +11,7 @@ import argparse
 
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
-from scenes.game import Game
+from scenes.game import Stage
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 import difficulty_levels
@@ -120,7 +120,7 @@ async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    game_scene = Game(difficulty_config, compiled_script, True)
+    game_scene = Stage(difficulty_config, compiled_script, True)
 
     game_manager.add_scene(game_scene)
     game_manager.startup_scene = game_scene

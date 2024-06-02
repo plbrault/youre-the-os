@@ -8,8 +8,8 @@ class PageManager(GameObject):
     _TOTAL_ROWS = 11
     _NUM_COLS = 16
 
-    def __init__(self, game):
-        self._game = game
+    def __init__(self, stage):
+        self._game = stage
 
         self._ram_slots = []
         self._swap_slots = []

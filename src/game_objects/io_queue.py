@@ -39,7 +39,7 @@ class IoQueue(GameObject):
 
     def wait_for_event(self, callback):
         self._subscriber_queue.append(
-            _IoEventWaiter(self._process_manager.game.current_time, callback)
+            _IoEventWaiter(self._process_manager.stage.current_time, callback)
         )
 
     @property

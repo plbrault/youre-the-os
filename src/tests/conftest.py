@@ -4,7 +4,7 @@ os.chdir('src')
 import pygame
 import pytest
 
-import scenes.game
+import scenes.stage
 from window_size import WINDOW_SIZE
 
 @pytest.fixture
@@ -17,11 +17,11 @@ def Game(monkeypatch):
     @property
     def current_time(self):
         return 0
-    monkeypatch.setattr(scenes.game.Game, 'current_time', current_time)
-    return scenes.game.Game
+    monkeypatch.setattr(scenes.stage.Game, 'current_time', current_time)
+    return scenes.stage.Game
 
 @pytest.fixture
-def game(Game, screen):
+def stage(Game, screen):
     game_config = {
         'name': 'Test Config',
         'num_cpus': 4,
@@ -31,16 +31,16 @@ def game(Game, screen):
         'io_probability': 0,
         'graceful_termination_probability': 0
     }
-    game = Game(game_config)
-    game.screen = screen
-    game.setup()
-    return game
+    stage = Game(game_config)
+    stage.screen = screen
+    stage.setup()
+    return stage
 
 @pytest.fixture
 def game_custom_config(screen, Game):
     def create_game(game_config):
-        game = Game(game_config)
-        game.screen = screen
-        game.setup()
-        return game
+        stage = Game(game_config)
+        stage.screen = screen
+        stage.setup()
+        return stage
     return create_game

@@ -7,10 +7,10 @@ from game_objects.views.uptime_manager_view import UptimeManagerView
 
 class UptimeManager(GameObject):
 
-    def __init__(self, game):
-        self._game = game
+    def __init__(self, stage):
+        self._game = stage
 
-        self._last_update_time = game.current_time
+        self._last_update_time = stage.current_time
         self._uptime = 0
         self._uptime_text = '0:00:00'
 

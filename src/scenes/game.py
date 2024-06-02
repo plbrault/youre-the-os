@@ -14,7 +14,7 @@ from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 
 
-class Game(Scene):
+class Stage(Scene):
     def __init__(self, config=None, script=None, standalone=False):
         self._config = config
         if self._config is None:
@@ -41,7 +41,7 @@ class Game(Scene):
 
         self._open_in_game_menu_button = None
 
-        super().__init__('game')
+        super().__init__('stage')
 
     def setup(self):
         self._paused_since = None

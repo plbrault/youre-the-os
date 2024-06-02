@@ -7,8 +7,8 @@ _UPDATE_INTERVAL = 100
 
 class ScoreManager(GameObject):
 
-    def __init__(self, game):
-        self._process_manager = game.process_manager
+    def __init__(self, stage):
+        self._process_manager = stage.process_manager
 
         self._score = 0
         self._last_update_time = 0
