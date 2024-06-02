@@ -11,7 +11,7 @@ import argparse
 
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
-from scenes.game import Stage
+from scenes.stage import Stage
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 import difficulty_levels
