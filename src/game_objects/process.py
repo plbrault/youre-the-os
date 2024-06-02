@@ -15,10 +15,10 @@ _BLINKING_INTERVAL_MS = 200
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
-    def __init__(self, pid, game, *, time_between_starvation_levels=10000):
+    def __init__(self, pid, stage, *, time_between_starvation_levels=10000):
         self._pid = pid
-        self._process_manager = game.process_manager
-        self._page_manager = game.page_manager
+        self._process_manager = stage.process_manager
+        self._page_manager = stage.page_manager
         self._time_between_starvation_levels = time_between_starvation_levels
 
         self._cpu = None
@@ -28,7 +28,7 @@ class Process(GameObject):
         self._has_ended = False
         self._starvation_level = 1
 
-        self._last_update_time = game.current_time
+        self._last_update_time = stage.current_time
         self._last_event_check_time = self._last_update_time
         # Last time process state changed between running, idle or blocked
         self._last_state_change_time = self._last_update_time
@@ -39,9 +39,9 @@ class Process(GameObject):
         self._pages = []
 
         self._io_probability_numerator = int(
-            game.config['io_probability'] * 100)
+            stage.config['io_probability'] * 100)
         self._graceful_termination_probability_numerator = int(
-            game.config['graceful_termination_probability'] * 100
+            stage.config['graceful_termination_probability'] * 100
         )
 
         super().__init__(ProcessView(self))

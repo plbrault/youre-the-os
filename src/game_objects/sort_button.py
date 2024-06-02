@@ -15,7 +15,7 @@ class SortButton(Button):
         self._blinking_hidden = False
 
     def _action(self):
-        self._last_pressed_at = self._process_manager.game.current_time
+        self._last_pressed_at = self._process_manager.stage.current_time
         self.disabled = True
         self._blinking = self._blinking_hidden = False
         self._process_manager.sort_idle_processes()
@@ -26,7 +26,7 @@ class SortButton(Button):
         self._blinking_hidden = False
         if self._visible:
             self._blinking = True
-            self._became_visible_at = self._process_manager.game.current_time
+            self._became_visible_at = self._process_manager.stage.current_time
         else:
             self._blinking = False
             self._became_visible_at = 0
