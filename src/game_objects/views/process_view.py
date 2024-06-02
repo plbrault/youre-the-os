@@ -56,7 +56,7 @@ class ProcessView(Drawable):
     def height(self):
         return 64
 
-    def draw(self, surface):      
+    def draw(self, surface):
         if self._process.has_ended and self._process.starvation_level == 0:
             color = Color.LIGHT_BLUE
             starvation_emoji_surface = _gracefully_terminated_emoji
