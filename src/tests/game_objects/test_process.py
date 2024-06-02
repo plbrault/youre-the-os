@@ -967,4 +967,3 @@ class TestProcess:
 
         assert process_1.sort_key == process_2.sort_key
         assert process_1.sort_key < process_3.sort_key
-        
