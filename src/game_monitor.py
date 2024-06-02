@@ -33,19 +33,19 @@ def _add_event(typ, data):
         SimpleNamespace(etype=typ.name, **data)
     )
 
-def event_io_queue(count):
+def notify_io_event_count(count):
     _add_event(EventType.IO_QUEUE, {
         'io_count': count
     })
 
-def event_page_swap(pid, idx, swap):
+def notify_page_swap(pid, idx, swap):
     _add_event(EventType.PAGE_SWAP, {
         'pid': pid,
         'idx': idx,
         'swap': swap
     })
 
-def event_page_new(pid, idx, swap, use):
+def notify_page_new(pid, idx, swap, use):
     _add_event(EventType.PAGE_NEW, {
         'pid': pid,
         'idx': idx,
@@ -53,59 +53,59 @@ def event_page_new(pid, idx, swap, use):
         'use': use
     })
 
-def event_page_use(pid, idx, use):
+def notify_page_use(pid, idx, use):
     _add_event(EventType.PAGE_USE, {
         'pid': pid,
         'idx': idx,
         'use': use
     })
 
-def event_page_free(pid, idx):
+def notify_page_free(pid, idx):
     _add_event(EventType.PAGE_FREE, {
         'pid': pid,
         'idx': idx
     })
 
-def event_process_wait_page(pid, value):
+def notify_process_wait_page(pid, value):
     _add_event(EventType.PROC_WAIT_PAGE, {
         'pid': pid,
         'waiting_for_page': value
     })
 
-def event_process_wait_io(pid, value):
+def notify_process_wait_io(pid, value):
     _add_event(EventType.PROC_WAIT_IO, {
         'pid': pid,
         'waiting_for_io': value
     })
 
-def event_process_terminated(pid):
+def notify_process_terminated(pid):
     _add_event(EventType.PROC_TERM, {
         'pid': pid
     })
 
-def event_process_killed(pid):
+def notify_process_killed(pid):
     _add_event(EventType.PROC_KILL, {
         'pid': pid
     })
 
-def event_process_starvation(pid, level):
+def notify_process_starvation(pid, level):
     _add_event(EventType.PROC_STARV, {
         'pid' : pid,
         'starvation_level': level
     })
 
-def event_process_new(pid):
+def notify_process_new(pid):
     _add_event(EventType.PROC_NEW, {
         'pid': pid
     })
 
-def event_process_cpu(pid, cpu):
+def notify_process_cpu(pid, cpu):
     _add_event(EventType.PROC_CPU, {
         'pid': pid,
         'cpu': cpu
     })
 
-def event_process_end(pid):
+def notify_process_end(pid):
     _add_event(EventType.PROC_END, {
         'pid': pid
     })

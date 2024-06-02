@@ -121,7 +121,7 @@ class PageManager(GameObject):
                     page.view.set_xy(target_slot.view.x, target_slot.view.y)
                     break
             page.in_swap = not page.in_swap
-            game_monitor.event_page_swap(page.pid, page.idx, page.in_swap)
+            game_monitor.notify_page_swap(page.pid, page.idx, page.in_swap)
             if swap_whole_row:
                 slots_on_same_row = [
                     slot
