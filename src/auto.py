@@ -120,10 +120,10 @@ async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    game_scene = Stage(difficulty_config, compiled_script, True)
+    stage_scene = Stage(difficulty_config, compiled_script, True)
 
-    game_manager.add_scene(game_scene)
-    game_manager.startup_scene = game_scene
+    game_manager.add_scene(stage_scene)
+    game_manager.startup_scene = stage_scene
 
     await game_manager.play(ignore_events=True)
 
