@@ -13,15 +13,15 @@ def screen(monkeypatch):
     return screen
 
 @pytest.fixture
-def Game(monkeypatch):
+def Stage(monkeypatch):
     @property
     def current_time(self):
         return 0
-    monkeypatch.setattr(scenes.stage.Game, 'current_time', current_time)
-    return scenes.stage.Game
+    monkeypatch.setattr(scenes.stage.Stage, 'current_time', current_time)
+    return scenes.stage.Stage
 
 @pytest.fixture
-def stage(Game, screen):
+def stage(Stage, screen):
     game_config = {
         'name': 'Test Config',
         'num_cpus': 4,
@@ -31,15 +31,15 @@ def stage(Game, screen):
         'io_probability': 0,
         'graceful_termination_probability': 0
     }
-    stage = Game(game_config)
+    stage = Stage(game_config)
     stage.screen = screen
     stage.setup()
     return stage
 
 @pytest.fixture
-def game_custom_config(screen, Game):
+def game_custom_config(screen, Stage):
     def create_game(game_config):
-        stage = Game(game_config)
+        stage = Stage(game_config)
         stage.screen = screen
         stage.setup()
         return stage
