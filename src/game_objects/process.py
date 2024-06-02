@@ -1,9 +1,11 @@
+from typing import Type
 from math import sqrt
 
 from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 )
 import game_monitor
+from engine.drawable import Drawable
 from engine.game_object import GameObject
 from engine.game_event_type import GameEventType
 from engine.random import randint
@@ -15,7 +17,8 @@ _BLINKING_INTERVAL_MS = 200
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
-    def __init__(self, pid, stage, *, time_between_starvation_levels=10000):
+    def __init__(self, pid, stage,
+                 *, time_between_starvation_levels=10000, view_class: Type[Drawable] = ProcessView):
         self._pid = pid
         self._process_manager = stage.process_manager
         self._page_manager = stage.page_manager
@@ -44,7 +47,7 @@ class Process(GameObject):
             stage.config['graceful_termination_probability'] * 100
         )
 
-        super().__init__(ProcessView(self))
+        super().__init__(view_class(self))
 
     @property
     def pid(self):
