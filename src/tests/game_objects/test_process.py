@@ -65,6 +65,19 @@ class TestProcess:
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended == True
 
+    def test_starvation_with_custom_time_between_starvation_levels(self, game):
+        default_value = Process(1, game).time_between_starvation_levels
+
+        process = Process(
+            2,
+            game,
+            time_between_starvation_levels=default_value / 2
+        )
+
+        for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
+            process.update(i * process.time_between_starvation_levels, [])
+            assert process.starvation_level == i + 1
+
     def test_use_cpu_when_first_cpu_is_available(self, game):
         process = Process(1, game)
 
