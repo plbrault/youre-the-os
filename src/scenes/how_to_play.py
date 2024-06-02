@@ -53,8 +53,8 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'Over time, idle processes will go through 6 starvation levels. Each starvation level is represented by a different color and emoji.', # pylint: disable=line-too-long
-            'Assigning a process to a CPU will allow it to go back to the first starvation level after a certain time.' # pylint: disable=line-too-long
+            'Over time, idle processes go through 6 starvation levels. Each starvation level is represented by a different color and emoji.', # pylint: disable=line-too-long
+            'Assigning a process to a CPU allows it to go back to the first starvation level after a certain time.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_5_0.png')),
@@ -72,7 +72,12 @@ _parts = [
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_6_0.png')),
-        ]
+            pygame.image.load(path.join('assets', 'how_to_play_6_1.png')),
+            pygame.image.load(path.join('assets', 'how_to_play_6_2.png')),
+            pygame.image.load(path.join('assets', 'how_to_play_6_3.png')),
+            pygame.image.load(path.join('assets', 'how_to_play_6_4.png')),
+        ],
+        animation_interval=600
     ),
     HowToPlayPart(
         [
