@@ -88,7 +88,13 @@ class Process(GameObject):
 
     @property
     def current_state_duration(self):
+        """Time in milliseconds since process state changed between running, idle or blocked."""
         return self._last_update_time - self._last_state_change_time
+
+    @property
+    def current_starvation_level_duration(self):
+        """Time in milliseconds since starvation level changed."""
+        return self._last_update_time - self._last_starvation_level_change_time
 
     @property
     def is_progressing_to_happiness(self):
@@ -257,10 +263,7 @@ class Process(GameObject):
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
                 game_monitor.event_process_starvation(self._pid, self._starvation_level)
-        elif (
-            current_time >=
-                self._last_starvation_level_change_time + self.time_between_starvation_levels
-        ):
+        elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
                 self._starvation_level += 1

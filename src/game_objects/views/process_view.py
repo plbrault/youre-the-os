@@ -2,6 +2,7 @@ from datetime import datetime
 from os import path
 import pygame
 
+from constants import LAST_ALIVE_STARVATION_LEVEL
 from engine.drawable import Drawable
 from ui.color import Color
 from ui.fonts import FONT_SECONDARY_XXSMALL
@@ -75,15 +76,38 @@ class ProcessView(Drawable):
             surface.blit(_waiting_for_io_emoji, (self._x + 27, self._y + 32))
 
         if self._process.is_progressing_to_happiness:
-            pygame.draw.rect(surface, Color.BLUE, pygame.Rect(
-                self._x + 2,
-                self._y + self.height - 4,
-                min(
+            progress_bar_width = min(
                     (self.width - 4),
                     (self.width - 4)
                         - (self._process.cpu.time_for_process_happiness
                             - self._process.current_state_duration)
                         * (self.width - 4) / self._process.cpu.time_for_process_happiness,
-                ),
-                2
+                )
+            progress_bar_height = 2
+            pygame.draw.rect(surface, Color.BLUE, pygame.Rect(
+                self._x + 2,
+                self._y + self.height - 4,
+                progress_bar_width,
+                progress_bar_height
             ))
+        elif (
+            self._process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
+            and not self._process.has_cpu
+        ):
+            progress_bar_width = (
+                self.width
+                    - 4
+                    - (
+                        self._process.current_starvation_level_duration
+                        / self._process.time_between_starvation_levels
+                    )
+                    * (self.width - 4)
+            )
+            progress_bar_height = 2
+            pygame.draw.rect(surface, Color.BLUE, pygame.Rect(
+                self._x + 2,
+                self._y + self.height - 4,
+                progress_bar_width,
+                progress_bar_height
+            ))
+            
