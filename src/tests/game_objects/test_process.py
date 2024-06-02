@@ -947,14 +947,24 @@ class TestProcess:
         process_2.update(10000, [])
         process_3.update(8000, [])
 
+        process_1.update(18000, [])
+        process_2.update(17000, [])
+        process_3.update(15999, [])
+
         assert process_1.starvation_level == 2
         assert process_2.starvation_level == 2
         assert process_3.starvation_level == 2
 
-        process_1.update(18000, [])
-        process_2.update(17000, [])
-        process_3.update(16000, [])
-
         assert process_1.sort_key < process_2.sort_key
         assert process_3.sort_key < process_2.sort_key
+
+        process_1.update(20000, [])
+        process_2.update(20000, [])
+
+        assert process_1.starvation_level == 3
+        assert process_2.starvation_level == 3
+        assert process_3.starvation_level == 2
+
+        assert process_1.sort_key == process_2.sort_key
+        assert process_1.sort_key < process_3.sort_key
         

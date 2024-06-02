@@ -119,8 +119,8 @@ class Process(GameObject):
             return float('inf')
         if self.is_blocked:
             return (LAST_ALIVE_STARVATION_LEVEL + 1) * 100000
-        return int((LAST_ALIVE_STARVATION_LEVEL - self.starvation_level) * self.time_between_starvation_levels * 10
-                - (self._last_update_time - self._last_starvation_level_change_time))
+        return int((LAST_ALIVE_STARVATION_LEVEL - self.starvation_level) * 100000
+                - (self.current_starvation_level_duration / self.time_between_starvation_levels) * 10000)
 
     @property
     def is_in_motion(self):
