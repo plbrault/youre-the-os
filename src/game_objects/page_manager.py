@@ -9,7 +9,7 @@ class PageManager(GameObject):
     _NUM_COLS = 16
 
     def __init__(self, stage):
-        self._game = stage
+        self._stage = stage
 
         self._ram_slots = []
         self._swap_slots = []
@@ -42,9 +42,9 @@ class PageManager(GameObject):
 
     def setup(self):
         self._pages_in_ram_label_xy = (
-            self._game.process_manager.view.width, 120)
+            self._stage.process_manager.view.width, 120)
 
-        num_ram_rows = self._game.config['num_ram_rows']
+        num_ram_rows = self._stage.config['num_ram_rows']
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
 
         num_cols = PageManager._NUM_COLS
@@ -52,7 +52,7 @@ class PageManager(GameObject):
         for row in range(num_ram_rows):
             for column in range(num_cols):
                 ram_slot = PageSlot()
-                x = self._game.process_manager.view.width + \
+                x = self._stage.process_manager.view.width + \
                     column * ram_slot.view.width + column * 5
                 y = 155 + row * ram_slot.view.height + row * 5
                 ram_slot.view.set_xy(x, y)
@@ -61,13 +61,13 @@ class PageManager(GameObject):
 
         if num_swap_rows > 0:
             self._pages_in_swap_label_xy = (
-                self._game.process_manager.view.width,
+                self._stage.process_manager.view.width,
                 164 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
 
             for row in range(num_swap_rows):
                 for column in range(num_cols):
                     swap_slot = PageSlot()
-                    x = self._game.process_manager.view.width + \
+                    x = self._stage.process_manager.view.width + \
                         column * ram_slot.view.width + column * 5
                     y = self._pages_in_swap_label_xy[1] + \
                         35 + row * ram_slot.view.height + row * 5
