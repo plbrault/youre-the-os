@@ -11,10 +11,6 @@ class TestProcess:
     def starvation_interval(self):
         return 10000
 
-    @property
-    def time_to_unstarve(self):
-        return 5000
-
     @pytest.fixture
     def game(self, game, monkeypatch):
         """
@@ -201,7 +197,7 @@ class TestProcess:
         process.use_cpu()
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
-        current_time += self.time_to_unstarve
+        current_time += process.cpu.time_for_process_happiness
         process.update(current_time, [])
         assert process.starvation_level == 0
 
