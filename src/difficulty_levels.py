@@ -1,8 +1,8 @@
 from constants import MAX_PROCESSES
 
 _easy_difficulty = {
+    'name': 'Easy',
     'config': {
-        'name': 'Easy',
         'num_cpus': 4,
         'num_processes_at_startup': 14,
         'max_processes': MAX_PROCESSES,
@@ -15,8 +15,8 @@ _easy_difficulty = {
 }
 
 _normal_difficulty = {
+    'name': 'Normal',
     'config': {
-        'name': 'Normal',
         'num_cpus': 4,
         'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 14,
@@ -29,8 +29,8 @@ _normal_difficulty = {
 }
 
 _hard_difficulty = {
+    'name': 'Hard',
     'config': {
-        'name': 'Hard',
         'num_cpus': 8,
         'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 28,
@@ -43,8 +43,8 @@ _hard_difficulty = {
 }
 
 _harder_difficulty = {
+    'name': 'Harder',
     'config': {
-        'name': 'Harder',
         'num_cpus': 12,
         'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 35,
@@ -57,8 +57,8 @@ _harder_difficulty = {
 }
 
 _insane_difficulty = {
-    'config': {
-        'name': 'Insane',
+    'name': 'Insane',
+    'config': {    
         'num_cpus': 16,
         'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 42,
@@ -79,8 +79,7 @@ difficulty_levels = [
 ]
 
 difficulty_levels_map = {
-    l['config']['name'].lower(): l
-    for l in difficulty_levels
+    level['name'].lower(): level for level in difficulty_levels
 }
 
 default_difficulty = _normal_difficulty

@@ -34,7 +34,7 @@ class MainMenu(Scene):
         self._scene_objects.append(difficulty_selection_label)
 
         difficulty_level_names = list(
-            map(lambda difficulty_level: difficulty_level['config']['name'], difficulty_levels))
+            map(lambda difficulty_level: difficulty_level['name'], difficulty_levels))
         difficulty_level_names.append('Custom')
         self._difficulty_selector = OptionSelector(difficulty_level_names, 1)
         self._difficulty_selector.view.set_xy(
@@ -80,8 +80,8 @@ class MainMenu(Scene):
         if self._selected_difficulty_id == len(difficulty_levels):
             self._open_custom_settings_dialog()
         else:
-            self._start_game(
-                difficulty_levels[self._difficulty_selector.selected_option_id]['config'])
+            difficulty_level = difficulty_levels[self._selected_difficulty_id]
+            self._start_game(difficulty_level)
 
     def _open_custom_settings_dialog(self):
         self._custom_settings_dialog = CustomSettingsDialog(
@@ -122,10 +122,11 @@ class MainMenu(Scene):
         self._scene_objects.remove(self._hotkey_dialog)
         self._hotkey_dialog = None
 
-    def _start_game(self, config):
+    def _start_game(self, difficulty_level):
         if self._custom_settings_dialog is not None:
             self._custom_config = self._custom_settings_dialog.config
-        self.scene_manager.get_scene('stage').config = config
+        self.scene_manager.get_scene('stage').name = 'Difficulty : ' + difficulty_level['name'].upper()
+        self.scene_manager.get_scene('stage').config = difficulty_level['config']
         self.scene_manager.start_scene('stage')
 
     def _start_how_to_play(self):

@@ -15,7 +15,9 @@ from game_objects.uptime_manager import UptimeManager
 
 
 class Stage(Scene):
-    def __init__(self, config=None, script=None, standalone=False):
+    def __init__(self, name='', config=None, script=None, standalone=False):
+        self._name = name
+
         self._config = config
         if self._config is None:
             self._config = default_difficulty['config']
@@ -37,7 +39,7 @@ class Stage(Scene):
 
         self._score_manager = None
         self._uptime_manager = None
-        self._difficulty_label = None
+        self._name_label = None
 
         self._open_in_game_menu_button = None
 
@@ -75,17 +77,17 @@ class Stage(Scene):
         )
         self._scene_objects.append(self._uptime_manager)
 
-        self._difficulty_label = Label('Difficulty : ' + self._config['name'].upper())
-        self._difficulty_label.view.set_xy(
+        self._name_label = Label(self.name)
+        self._name_label.view.set_xy(
             (
                 self._uptime_manager.view.x
                 + self._uptime_manager.view.width
                 + self._score_manager.view.x
-                - self._difficulty_label.view.width
+                - self._name_label.view.width
             ) // 2,
             self._score_manager.view.y
         )
-        self._scene_objects.append(self._difficulty_label)
+        self._scene_objects.append(self._name_label)
 
         if not self._standalone:
             self._open_in_game_menu_button = Button(
@@ -95,6 +97,14 @@ class Stage(Scene):
             self._scene_objects.append(self._open_in_game_menu_button)
 
         self._prepare_automation_script()
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
     def config(self):
@@ -221,7 +231,7 @@ class Stage(Scene):
                 if self._game_over_dialog is None:
                     self._game_over_dialog = GameOverDialog(
                         self._uptime_manager.uptime_text,
-                        self._config['name'],
+                        self.name,
                         self._score_manager.score,
                         self.setup,
                         self._return_to_main_menu,
