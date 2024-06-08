@@ -85,7 +85,10 @@ class MainMenu(Scene):
 
     def _open_custom_settings_dialog(self):
         self._custom_settings_dialog = CustomSettingsDialog(
-            lambda: self._start_game(self._custom_settings_dialog.config),
+            lambda: self._start_game({
+                'name': 'Custom',
+                'config': self._custom_settings_dialog.config
+            }),
             self._close_custom_settings_dialog,
             self._custom_config
         )
