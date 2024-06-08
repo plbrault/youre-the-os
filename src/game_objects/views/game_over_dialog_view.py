@@ -18,7 +18,8 @@ class GameOverDialogView(Drawable):
             'YOU GOT REBOOTED!', False, Color.WHITE)
         self._uptime_text_surface = FONT_PRIMARY_LARGE.render(
             'UPTIME: ' + game_over_dialog.uptime, False, Color.WHITE)
-        self._stage_name_text_surface = FONT_PRIMARY_LARGE.render(game_over_dialog.stage_name, False, Color.WHITE)
+        self._stage_name_text_surface = FONT_PRIMARY_LARGE.render(
+            game_over_dialog.stage_name.upper(), False, Color.WHITE)
         self._score_text_surface = FONT_PRIMARY_LARGE.render(
             'SCORE: ' + str(game_over_dialog.score), False, Color.WHITE)
 

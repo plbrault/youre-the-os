@@ -38,8 +38,9 @@ class SceneManager():
         if isinstance(scene, Scene):
             scene_id = scene.scene_id
         else:
-            scene_id = scene_id
-            if scene_id not in self._scenes:
-                raise ValueError('Scene needs to be added with `add_scene` prior to starting it.')
+            scene_id = scene
+        if scene_id not in self._scenes:
+            raise ValueError('Scene needs to be added with `add_scene` prior to starting it.')
+
         self._scenes[scene_id].setup()
         self._current_scene = self._scenes[scene_id]
