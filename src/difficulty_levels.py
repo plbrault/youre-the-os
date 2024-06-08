@@ -58,7 +58,7 @@ _harder_difficulty = {
 
 _insane_difficulty = {
     'name': 'Insane',
-    'config': {    
+    'config': {
         'num_cpus': 16,
         'max_processes': MAX_PROCESSES,
         'num_processes_at_startup': 42,
