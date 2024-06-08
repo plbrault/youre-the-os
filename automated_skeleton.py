@@ -301,7 +301,7 @@ class RunOs:
         event:
             .pid: id of the process
         """
-        del self.processes[event.pid]
+        proc = self.processes.pop(event.pid)
         # shouldn't need this as pages are freed before the process is killed
         for page in proc.pages:
             del self.pages[page.key]
