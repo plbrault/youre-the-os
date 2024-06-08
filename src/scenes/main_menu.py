@@ -128,7 +128,7 @@ class MainMenu(Scene):
     def _start_game(self, difficulty_level):
         if self._custom_settings_dialog is not None:
             self._custom_config = self._custom_settings_dialog.config
-        self.scene_manager.get_scene('stage').name = 'Difficulty : ' + difficulty_level['name'].upper()
+        self.scene_manager.get_scene('stage').name = 'Difficulty: ' + difficulty_level['name'].upper()
         self.scene_manager.get_scene('stage').config = difficulty_level['config']
         self.scene_manager.start_scene('stage')
 

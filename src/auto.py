@@ -87,23 +87,23 @@ def parse_arguments():
     args = parser.parse_args()
 
     # get base difficulty level
-    config = difficulty_levels.default_difficulty['config']
+    difficulty = difficulty_levels.default_difficulty.copy()
     if args.difficulty is not None:
-        config = difficulty_levels.difficulty_levels_map[args.difficulty]['config']
+        difficulty = difficulty_levels_map[args.difficulty].copy()
 
     # set custom fields
-    for key in config.keys():
+    for key in difficulty['config'].keys():
         try:
             val = getattr(args, key)
         except AttributeError:
             # key is in config but is not configurable
             continue
         if val is not None:
-            config[key] = val
+            difficulty['config'][key] = val
             # on change, difficulty is now Custom
-            config['name'] = "Custom"
+            difficulty['name'] = 'Custom'
 
-    return args.filename, config
+    return args.filename, difficulty
 
 
 def compile_auto_script(source_file):
@@ -113,14 +113,15 @@ def compile_auto_script(source_file):
         source = in_file.read()
     return compile(source, source_file, 'exec')
 
-source_filename, difficulty_config = parse_arguments()
+source_filename, difficulty = parse_arguments()
 compiled_script = compile_auto_script(source_filename)
 
 async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    stage_scene = Stage(difficulty_config, compiled_script, True)
+    stage_name = 'Difficulty: ' + difficulty['name'].upper()
+    stage_scene = Stage(stage_name, difficulty['config'], compiled_script, True)
 
     game_manager.add_scene(stage_scene)
     game_manager.startup_scene = stage_scene
