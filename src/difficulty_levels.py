@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from constants import MAX_PROCESSES
 from stage_config import StageConfig
 
 @dataclass(frozen=True)

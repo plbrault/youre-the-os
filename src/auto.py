@@ -15,7 +15,6 @@ from engine.window_config import WindowConfig
 from scenes.stage import Stage
 from game_info import TITLE
 from window_size import WINDOW_SIZE
-from difficulty_levels import default_difficulty, difficulty_levels, difficulty_levels_map
 
 def _int_range(vmin, vmax):
     def ranged_int(arg):
@@ -107,7 +106,7 @@ def parse_arguments():
                 name = 'Custom'
             )
 
-    return args.filename, difficulty
+    return args.filename, difficulty_level
 
 
 def compile_auto_script(source_file):
@@ -117,15 +116,15 @@ def compile_auto_script(source_file):
         source = in_file.read()
     return compile(source, source_file, 'exec')
 
-source_filename, difficulty = parse_arguments()
+source_filename, difficulty_level = parse_arguments()
 compiled_script = compile_auto_script(source_filename)
 
 async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    stage_name = 'Difficulty: ' + difficulty.name.upper()
-    stage_scene = Stage(stage_name, difficulty.config, compiled_script, True)
+    stage_name = 'Difficulty: ' + difficulty_level.name.upper()
+    stage_scene = Stage(stage_name, difficulty_level.config, compiled_script, True)
 
     game_manager.add_scene(stage_scene)
     game_manager.startup_scene = stage_scene
