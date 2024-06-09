@@ -1,10 +1,11 @@
 import pytest
+
 from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS, ONE_SECOND
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
-
 from game_objects.process import Process
+from stage_config import StageConfig
 
 class TestProcess:
     @pytest.fixture
@@ -17,16 +18,16 @@ class TestProcess:
         return stage
 
     @pytest.fixture
-    def game_custom_config(self, game_custom_config, monkeypatch):
+    def stage_custom_config(self, stage_custom_config, monkeypatch):
         """
-        Overrides game_custom_config fixture defined in src/tests/conftest.py.
+        Overrides stage_custom_config fixture defined in src/tests/conftest.py.
         """
-        def create_game(game_config):
-            stage = game_custom_config(game_config)
+        def create_stage(stage_config):
+            stage = stage_custom_config(stage_config)
             monkeypatch.setattr(stage.process_manager, 'terminate_process', lambda process, by_user: True)
             monkeypatch.setattr(stage.process_manager, 'del_process', lambda process: None)
             return stage
-        return create_game
+        return create_stage
 
     def test_initial_property_values(self, stage):
         process = Process(1, stage)
@@ -233,16 +234,15 @@ class TestProcess:
         process.update(current_time, [])
         assert process.starvation_level == 0
 
-    def test_graceful_termination(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0,
-            'graceful_termination_probability': 0.01
-        })
+    def test_graceful_termination(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0.01
+        ))
 
         # Cause the random number generator to always provoke graceful termination
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -472,16 +472,15 @@ class TestProcess:
             for i in range(1, 5):
                 stage.page_manager.get_page(1, i)
 
-    def test_page_deletion_when_process_is_gracefully_terminated(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0,
-            'graceful_termination_probability': 0.01
-        })
+    def test_page_deletion_when_process_is_gracefully_terminated(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0.01
+        ))
 
         # Should prevent graceful termination
         # Should also cause the creation of the maximum number of pages when the process is run
@@ -505,16 +504,15 @@ class TestProcess:
             for i in range(0, 5):
                 stage.page_manager.get_page(1, i)
 
-    def test_process_blocks_for_io_event(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_process_blocks_for_io_event(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -531,16 +529,15 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.is_waiting_for_page == False
 
-    def test_process_continues_when_no_io_event(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_process_continues_when_no_io_event(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
@@ -557,16 +554,15 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
 
-    def test_starvation_while_waiting_for_io_event(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_starvation_while_waiting_for_io_event(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -587,16 +583,15 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.is_waiting_for_io == False
 
-    def test_process_unblocks_when_io_event_is_processed(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_process_unblocks_when_io_event_is_processed(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -613,16 +608,15 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.is_waiting_for_io == False
 
-    def test_no_io_event_at_last_alive_starvation_level(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_no_io_event_at_last_alive_starvation_level(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         process1 = Process(1, stage)
         process2 = Process(2, stage)
@@ -652,16 +646,15 @@ class TestProcess:
         assert process1.is_waiting_for_io == False
         assert process2.is_waiting_for_io == True
 
-    def test_io_cooldown(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_io_cooldown(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         process1 = Process(1, stage)
         process2 = Process(2, stage)
@@ -692,16 +685,15 @@ class TestProcess:
         assert process1.is_waiting_for_io == False
         assert process2.is_waiting_for_io == True
 
-    def test_io_cooldown_deactivation(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_io_cooldown_deactivation(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         process = Process(1, stage)
 
@@ -786,16 +778,15 @@ class TestProcess:
         assert process.view.target_x == stage.process_manager.process_slots[0].view.x
         assert process.view.target_y == stage.process_manager.process_slots[0].view.y
 
-    def test_click_when_gracefully_terminated(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0,
-            'graceful_termination_probability': 0.01
-        })
+    def test_click_when_gracefully_terminated(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0.01
+        ))
         # Cause the random number generator to always provoke graceful termination
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
@@ -839,16 +830,15 @@ class TestProcess:
             process.update(i * 200, [])
             assert process.display_blink_color == False
 
-    def test_sort_key(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_sort_key(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         process_lowest_starvation = Process(1, stage)
         process_medium_starvation_1 = Process(3, stage)
@@ -921,16 +911,15 @@ class TestProcess:
         assert process_medium_starvation_2.sort_key < process_lowest_starvation.sort_key
         assert process_lowest_starvation.sort_key < process_blocked.sort_key
 
-    def test_sort_key_different_time_between_starvation_levels(self, game_custom_config, monkeypatch):
-        stage = game_custom_config({
-            'name': 'Test Config',
-            'num_cpus': 4,
-            'num_processes_at_startup': 14,
-            'num_ram_rows': 8,
-            'new_process_probability': 0,
-            'io_probability': 0.1,
-            'graceful_termination_probability': 0
-        })
+    def test_sort_key_different_time_between_starvation_levels(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
 
         process_1 = Process(1, stage, time_between_starvation_levels=10000)
         process_2 = Process(2, stage, time_between_starvation_levels=10000)
