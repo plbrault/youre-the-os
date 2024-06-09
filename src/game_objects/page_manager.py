@@ -44,7 +44,7 @@ class PageManager(GameObject):
         self._pages_in_ram_label_xy = (
             self._stage.process_manager.view.width, 120)
 
-        num_ram_rows = self._stage.config['num_ram_rows']
+        num_ram_rows = self._stage.config.num_ram_rows
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
 
         num_cols = PageManager._NUM_COLS

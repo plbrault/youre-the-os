@@ -3,7 +3,6 @@ import sys
 from constants import ONE_SECOND
 import game_monitor
 from engine.scene import Scene
-from difficulty_levels import default_difficulty
 from game_objects.button import Button
 from game_objects.game_over_dialog import GameOverDialog
 from game_objects.in_game_menu_dialog import InGameMenuDialog
@@ -12,15 +11,14 @@ from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
+from stage_config import StageConfig
 
 
 class Stage(Scene):
-    def __init__(self, name='', config=None, script=None, standalone=False):
+    def __init__(self, name='', config : StageConfig = StageConfig(), script=None, standalone=False):
         self._name = name
 
         self._config = config
-        if self._config is None:
-            self._config = default_difficulty['config']
         self._script = script
         self._script_callback = None
         self._standalone = standalone
@@ -205,10 +203,10 @@ class Stage(Scene):
 
         num_cols = PageManager.get_num_cols()
         script_globals = {
-            'num_cpus': self._config['num_cpus'],
-            'num_ram_pages': num_cols * self._config['num_ram_rows'],
+            'num_cpus': self._config.num_cpus,
+            'num_ram_pages': num_cols * self._config.num_ram_rows,
             'num_swap_pages':
-                num_cols * (PageManager.get_total_rows() - self._config['num_ram_rows']),
+                num_cols * (PageManager.get_total_rows() - self._config.num_ram_rows),
         }
 
         exec(self._script, script_globals)

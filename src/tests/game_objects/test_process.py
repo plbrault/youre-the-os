@@ -93,7 +93,7 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config['num_cpus']):
+        for i in range(0, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         process.use_cpu()
@@ -101,7 +101,7 @@ class TestProcess:
         assert process.has_cpu == True
         assert process.cpu == stage.process_manager.cpu_list[0]
         assert stage.process_manager.cpu_list[0].process == process
-        for i in range(1, stage.config['num_cpus']):
+        for i in range(1, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
@@ -114,7 +114,7 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config['num_cpus']):
+        for i in range(0, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         stage.process_manager.cpu_list[0].process = Process(2, stage)
@@ -124,7 +124,7 @@ class TestProcess:
         assert process.cpu == stage.process_manager.cpu_list[1]
         assert stage.process_manager.cpu_list[0].process.pid == 2
         assert stage.process_manager.cpu_list[1].process == process
-        for i in range(2, stage.config['num_cpus']):
+        for i in range(2, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
@@ -137,17 +137,17 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config['num_cpus']):
+        for i in range(0, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
-        for i in range(0, stage.config['num_cpus']):
+        for i in range(0, stage.config.num_cpus):
             stage.process_manager.cpu_list[i].process = Process(i + 2, stage)
 
         process.use_cpu()
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config['num_cpus']):
+        for i in range(0, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process.pid == i + 2
 
         assert process.is_waiting_for_io == False
@@ -164,7 +164,7 @@ class TestProcess:
         assert process.cpu == stage.process_manager.cpu_list[0]
         assert process.has_cpu == True
         assert stage.process_manager.cpu_list[0].process == process
-        for i in range(1, stage.config['num_cpus']):
+        for i in range(1, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
@@ -175,7 +175,7 @@ class TestProcess:
     def test_yield_cpu(self, stage):
         process = Process(1, stage)
 
-        for i in range(0, stage.config['num_cpus'] - 1):
+        for i in range(0, stage.config.num_cpus - 1):
             stage.process_manager.cpu_list[i].process = Process(i + 2, stage)
 
         process.use_cpu()
@@ -183,7 +183,7 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config['num_cpus'] - 1):
+        for i in range(0, stage.config.num_cpus - 1):
             assert stage.process_manager.cpu_list[i].process.pid == i + 2
         assert stage.process_manager.cpu_list[3].process == None
 
@@ -198,7 +198,7 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config['num_cpus']):
+        for i in range(0, stage.config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False

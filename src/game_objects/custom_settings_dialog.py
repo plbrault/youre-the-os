@@ -16,33 +16,33 @@ class CustomSettingsDialog(GameObject):
         if default_config is not None:
             config = default_config
         else:
-            config = default_difficulty['config']
+            config = default_difficulty.config
 
         self._num_cpus_selector = OptionSelector(
-            [str(i) for i in range(MIN_CPU_COUNT, MAX_CPU_COUNT + 1)], config['num_cpus'] - 1)
+            [str(i) for i in range(MIN_CPU_COUNT, MAX_CPU_COUNT + 1)], config.num_cpus - 1)
         self.children.append(self._num_cpus_selector)
 
         self._num_processes_at_startup_selector = OptionSelector(
             [str(i) for i in range(MIN_PROCESSES_AT_STARTUP, MAX_PROCESSES_AT_STARTUP + 1)],
-            config['num_processes_at_startup'] - 1
+            config.num_processes_at_startup - 1
         )
         self.children.append(self._num_processes_at_startup_selector)
 
         self._max_processes_selector = OptionSelector(
             [str(i) for i in range(MIN_PROCESSES_AT_STARTUP, MAX_PROCESSES + 1)],
-            config['max_processes'] - 1
+            config.max_processes - 1
         )
         self.children.append(self._max_processes_selector)
 
         self._num_ram_rows_selector = OptionSelector(
             [str(i) for i in range(MIN_RAM_ROWS, MAX_RAM_ROWS + 1)],
-            config['num_ram_rows'] - 1)
+            config.num_ram_rows - 1)
         self.children.append(self._num_ram_rows_selector)
 
         self._new_process_probability_selector = OptionSelector(
             [str(i) + ' %' for i in range(0, 105, 5)])
         self._new_process_probability_selector.selected_option = str(
-            int(config['new_process_probability'] * 100)) + ' %'
+            int(config.new_process_probability * 100)) + ' %'
         self.children.append(self._new_process_probability_selector)
 
         self._priority_process_probability_selector = OptionSelector(
@@ -51,7 +51,7 @@ class CustomSettingsDialog(GameObject):
             [str(i) + ' %' for i in range(5, 105, 5)]
         )
         self._priority_process_probability_selector.selected_option = str(
-            int(config['priority_process_probability'] * 100)) + ' %'
+            int(config.priority_process_probability * 100)) + ' %'
         self.children.append(self._priority_process_probability_selector)
 
         self._io_probability_selector = OptionSelector(
@@ -60,13 +60,13 @@ class CustomSettingsDialog(GameObject):
             [str(i) + ' %' for i in range(5, 55, 5)]
         )
         self._io_probability_selector.selected_option = str(
-            int(config['io_probability'] * 100)) + ' %'
+            int(config.io_probability * 100)) + ' %'
         self.children.append(self._io_probability_selector)
 
         self._graceful_termination_selector = OptionSelector(['Yes', 'No'])
         self._graceful_termination_selector.selected_option = (
             'Yes'
-            if config['graceful_termination_probability'] > 0
+            if config.graceful_termination_probability > 0
             else 'No'
         )
         self.children.append(self._graceful_termination_selector)
@@ -108,7 +108,7 @@ class CustomSettingsDialog(GameObject):
                 + [i / 100 for i in range(5, 105, 5)]
             )[self._io_probability_selector.selected_option_id],
             'graceful_termination_probability': (
-                default_difficulty['config']['graceful_termination_probability']
+                default_difficulty.config.graceful_termination_probability
                 if self._graceful_termination_selector.selected_option == 'Yes'
                 else 0
             ),
