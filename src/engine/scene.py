@@ -5,6 +5,7 @@ from ui.color import Color
 
 
 class Scene(ABC):
+    scene_manager = None
     screen: pygame.Surface
     background_color = Color.BLACK
 
