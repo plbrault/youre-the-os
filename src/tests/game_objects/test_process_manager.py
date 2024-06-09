@@ -28,11 +28,12 @@ class TestProcessManager:
         process_manager = ProcessManager(stage)
         process_manager.setup()
 
-        time = 0
+        time = 0.0
         process_count = 0
         iteration_count = 0
 
-        while process_count < 4 and iteration_count < 1000:
+        while process_count < 4 and iteration_count < 100000:
+            iteration_count += 1
             process_manager.update(int(time), [])
             time += 1 / 60
 
