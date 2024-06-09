@@ -15,7 +15,8 @@ from stage_config import StageConfig
 
 
 class Stage(Scene):
-    def __init__(self, name='', config : StageConfig = StageConfig(), script=None, standalone=False):
+    def __init__(self, name='', config : StageConfig = StageConfig(),
+                 *, script=None, standalone=False):
         self._name = name
 
         self._config = config

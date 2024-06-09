@@ -10,6 +10,7 @@ from dataclasses import replace
 from os import path
 import argparse
 
+from difficulty_levels import default_difficulty, difficulty_levels_map
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
 from scenes.stage import Stage
@@ -124,7 +125,9 @@ async def main():
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
     stage_name = 'Difficulty: ' + difficulty_level.name.upper()
-    stage_scene = Stage(stage_name, difficulty_level.config, compiled_script, True)
+    stage_scene = Stage(
+        stage_name, difficulty_level.config, script=compiled_script, standalone=True
+    )
 
     game_manager.add_scene(stage_scene)
     game_manager.startup_scene = stage_scene
