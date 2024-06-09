@@ -12,7 +12,7 @@ Also available on [itch.io](https://plbrault.itch.io/youre-the-os).
 
 ## Prerequisites
 
-* Python 3.11
+* Python 3.12
 * [pipenv](https://pypi.org/project/pipenv/)
 * An empty `.venv` directory at the root of the project
 
