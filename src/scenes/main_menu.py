@@ -1,4 +1,4 @@
-from difficulty_levels import difficulty_levels
+from difficulty_levels import DifficultyLevel, difficulty_levels
 from engine.scene import Scene
 from game_objects.about_dialog import AboutDialog
 from game_objects.button import Button
@@ -7,13 +7,14 @@ from game_objects.hotkey_dialog import HokeyDialog
 from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
+from stage_config import StageConfig
 
 
 class MainMenu(Scene):
     def __init__(self):
         super().__init__('main_menu')
         self._selected_difficulty_id = None
-        self._custom_config = None
+        self._custom_config = StageConfig()
 
         self._difficulty_selector = None
         self._custom_settings_dialog = None
@@ -85,10 +86,12 @@ class MainMenu(Scene):
 
     def _open_custom_settings_dialog(self):
         self._custom_settings_dialog = CustomSettingsDialog(
-            lambda: self._start_game({
-                'name': 'Custom',
-                'config': self._custom_settings_dialog.config
-            }),
+            lambda: self._start_game(
+                DifficultyLevel(
+                    'Custom',
+                    self._custom_settings_dialog.config
+                )
+            ),
             self._close_custom_settings_dialog,
             self._custom_config
         )

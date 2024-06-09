@@ -82,7 +82,7 @@ class CustomSettingsDialog(GameObject):
 
     @property
     def config(self):
-        return StageConfig(
+        config = StageConfig(
             num_cpus = int(self._num_cpus_selector.selected_option),
             num_processes_at_startup = int(self._num_processes_at_startup_selector.selected_option),
             max_processes = int(self._max_processes_selector.selected_option),
@@ -98,12 +98,12 @@ class CustomSettingsDialog(GameObject):
                 [0, 0.01]
                 + [i / 100 for i in range(5, 105, 5)]
             )[self._io_probability_selector.selected_option_id],
-            graceful_termination_probability = (
-                default_difficulty.config.graceful_termination_probability
-                if self._graceful_termination_selector.selected_option == 'Yes'
-                else 0
-            ),
         )
+
+        if self._graceful_termination_selector.selected_option == 'No':
+            config.graceful_termination_probability = 0
+
+        return config
 
     def update(self, current_time, events):
         self._num_processes_at_startup_selector.in_error = (
