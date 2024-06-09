@@ -6,7 +6,7 @@ provided from the command line.
 """
 
 import asyncio
-from copy import deepcopy
+from dataclasses import replace
 from os import path
 import argparse
 
@@ -15,7 +15,7 @@ from engine.window_config import WindowConfig
 from scenes.stage import Stage
 from game_info import TITLE
 from window_size import WINDOW_SIZE
-import difficulty_levels
+from difficulty_levels import default_difficulty, difficulty_levels, difficulty_levels_map
 
 def _int_range(vmin, vmax):
     def ranged_int(arg):
@@ -88,21 +88,24 @@ def parse_arguments():
     args = parser.parse_args()
 
     # get base difficulty level
-    difficulty = deepcopy(difficulty_levels.default_difficulty)
+    difficulty = default_difficulty
     if args.difficulty is not None:
-        difficulty = deepcopy(difficulty_levels_map[args.difficulty])
+        difficulty = difficulty_levels_map[args.difficulty]
 
     # set custom fields
-    for key in difficulty['config'].keys():
+    for field_name in difficulty.config.__dataclass_fields__:
         try:
-            val = getattr(args, key)
+            val = getattr(args, field_name)
         except AttributeError:
             # key is in config but is not configurable
             continue
         if val is not None:
-            difficulty['config'][key] = val
-            # on change, difficulty is now Custom
-            difficulty['name'] = 'Custom'
+            replace(
+                difficulty,
+                config = replace(difficulty.config, **{field_name: val}),
+                # on change, difficulty is now Custom
+                name = 'Custom'
+            )
 
     return args.filename, difficulty
 
@@ -121,8 +124,8 @@ async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    stage_name = 'Difficulty: ' + difficulty['name'].upper()
-    stage_scene = Stage(stage_name, difficulty['config'], compiled_script, True)
+    stage_name = 'Difficulty: ' + difficulty.name.upper()
+    stage_scene = Stage(stage_name, difficulty.config, compiled_script, True)
 
     game_manager.add_scene(stage_scene)
     game_manager.startup_scene = stage_scene
