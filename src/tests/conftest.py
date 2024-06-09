@@ -39,7 +39,7 @@ def stage(Stage, screen):
 @pytest.fixture
 def stage_custom_config(screen, Stage):
     def create_stage(stage_config):
-        stage = Stage(stage_config)
+        stage = Stage('Test Stage', stage_config)
         stage.screen = screen
         stage.setup()
         return stage
