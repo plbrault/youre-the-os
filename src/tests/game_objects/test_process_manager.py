@@ -23,4 +23,25 @@ class TestProcessManager:
         assert isinstance(process_manager.io_queue, IoQueue)
 
         assert process_manager.user_terminated_process_count == 0
+
+    def test_initial_process_creation(self, stage):
+        process_manager = ProcessManager(stage)
+        process_manager.setup()
+
+        time = 0
+        process_count = 0
+        iteration_count = 0
+
+        while process_count < 4 and iteration_count < 1000:
+            process_manager.update(int(time), [])
+            time += 1 / 60
+
+            process_count = len([
+                process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+            ])
+
+        assert process_count == 4
+
+        for i in range(1, 5):
+            assert process_manager.get_process(i).pid == i
         
