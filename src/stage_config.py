@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from constants import MAX_PROCESSES
 
-@dataclass
+@dataclass(frozen=True)
 class StageConfig:
     num_cpus: int = 4
     num_processes_at_startup: int = 14

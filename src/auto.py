@@ -6,6 +6,7 @@ provided from the command line.
 """
 
 import asyncio
+from copy import deepcopy
 from os import path
 import argparse
 
@@ -87,9 +88,9 @@ def parse_arguments():
     args = parser.parse_args()
 
     # get base difficulty level
-    difficulty = difficulty_levels.default_difficulty.copy()
+    difficulty = deepcopy(difficulty_levels.default_difficulty)
     if args.difficulty is not None:
-        difficulty = difficulty_levels_map[args.difficulty].copy()
+        difficulty = deepcopy(difficulty_levels_map[args.difficulty])
 
     # set custom fields
     for key in difficulty['config'].keys():

@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
     MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS
@@ -101,7 +103,7 @@ class CustomSettingsDialog(GameObject):
         )
 
         if self._graceful_termination_selector.selected_option == 'No':
-            config.graceful_termination_probability = 0
+            config = replace(config, graceful_termination_probability = 0)
 
         return config
 
