@@ -107,7 +107,7 @@ def parse_arguments():
                 name = 'Custom'
             )
 
-    return args.filename, difficulty_level
+    return args.filename, difficulty
 
 
 def compile_auto_script(source_file):
