@@ -109,4 +109,34 @@ class TestProcessManager:
         assert len([
                 process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
             ]) == stage_config.num_processes_at_startup + 1
-        
+
+    def test_create_new_process_at_interval(self, ready_process_manager, stage_config, monkeypatch):
+        process_manager = ready_process_manager
+
+        # Cause the random number generator to never provoke creation of new process
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        interval = int(1 / stage_config.new_process_probability * 1000)
+        assert interval > 5000
+
+        process_manager.update(5000, [])
+        assert len([
+                process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+            ]) == stage_config.num_processes_at_startup
+
+        process_manager.update(interval + 5000, [])
+        assert len([
+                process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+            ]) == stage_config.num_processes_at_startup + 1
+
+        process_manager.update(interval + 6000, [])
+        assert len([
+                process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+            ]) == stage_config.num_processes_at_startup + 1
+
+        process_manager.update(interval * 2 + 5000, [])
+        assert len([
+                process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+            ]) == stage_config.num_processes_at_startup + 2
+
+         
