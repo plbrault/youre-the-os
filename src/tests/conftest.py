@@ -5,6 +5,7 @@ import pygame
 import pytest
 
 import scenes.stage
+from stage_config import StageConfig
 from window_size import WINDOW_SIZE
 
 @pytest.fixture
@@ -22,25 +23,24 @@ def Stage(monkeypatch):
 
 @pytest.fixture
 def stage(Stage, screen):
-    game_config = {
-        'name': 'Test Config',
-        'num_cpus': 4,
-        'num_processes_at_startup': 14,
-        'num_ram_rows': 8,
-        'new_process_probability': 0,
-        'io_probability': 0,
-        'graceful_termination_probability': 0
-    }
-    stage = Stage(game_config)
+    config = StageConfig(
+        num_cpus = 4,
+        num_processes_at_startup = 14,
+        num_ram_rows = 8,
+        new_process_probability = 0,
+        io_probability = 0,
+        graceful_termination_probability = 0
+    )
+    stage = Stage('Test Stage', config)
     stage.screen = screen
     stage.setup()
     return stage
 
 @pytest.fixture
-def game_custom_config(screen, Stage):
-    def create_game(game_config):
-        stage = Stage(game_config)
+def stage_custom_config(screen, Stage):
+    def create_stage(stage_config):
+        stage = Stage('Test Stage', stage_config)
         stage.screen = screen
         stage.setup()
         return stage
-    return create_game
+    return create_stage

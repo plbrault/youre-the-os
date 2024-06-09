@@ -42,9 +42,9 @@ class Process(GameObject):
         self._pages = []
 
         self._io_probability_numerator = int(
-            stage.config['io_probability'] * 100)
+            stage.config.io_probability * 100)
         self._graceful_termination_probability_numerator = int(
-            stage.config['graceful_termination_probability'] * 100
+            stage.config.graceful_termination_probability * 100
         )
 
         super().__init__(view_class(self))

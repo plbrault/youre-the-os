@@ -25,19 +25,22 @@ class SceneManager():
             scene.screen = value
 
     def add_scene(self, scene: Scene):
-        self._scenes[scene.name] = scene
-        self._scenes[scene.name].scene_manager = self
+        self._scenes[scene.scene_id] = scene
+        self._scenes[scene.scene_id].scene_manager = self
 
-    def get_scene(self, scene_name: str):
-        if scene_name not in self._scenes:
+    def get_scene(self, scene_id: str):
+        if scene_id not in self._scenes:
             return None
-        return self._scenes[scene_name]
+        return self._scenes[scene_id]
 
     def start_scene(self, scene: Union[Scene, str]):
-        scene_name = None
+        scene_id = None
         if isinstance(scene, Scene):
-            scene_name = scene.name
+            scene_id = scene.scene_id
         else:
-            scene_name = scene
-        self._scenes[scene_name].setup()
-        self._current_scene = self._scenes[scene_name]
+            scene_id = scene
+        if scene_id not in self._scenes:
+            raise ValueError('Scene needs to be added with `add_scene` prior to starting it.')
+
+        self._scenes[scene_id].setup()
+        self._current_scene = self._scenes[scene_id]

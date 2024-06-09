@@ -59,7 +59,7 @@ class ProcessManager(GameObject):
         self._last_sort_time = 0
 
         self._new_process_probability_numerator = int(
-            stage.config['new_process_probability'] * 100)
+            stage.config.new_process_probability * 100)
 
         if self._new_process_probability_numerator > 0:
             self._max_wait_between_new_processes = int(
@@ -108,7 +108,7 @@ class ProcessManager(GameObject):
         self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
 
-        for i in range(self._stage.config['num_cpus']):
+        for i in range(self._stage.config.num_cpus):
             self.cpu_list.append(Cpu(i + 1))
 
         for i, cpu in enumerate(self.cpu_list):
@@ -160,7 +160,7 @@ class ProcessManager(GameObject):
         )
 
     def _create_process(self, process_slot_id=None):
-        if len(self._alive_process_list) < self._stage.config['max_processes']:
+        if len(self._alive_process_list) < self._stage.config.max_processes:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
@@ -171,7 +171,7 @@ class ProcessManager(GameObject):
             self._next_pid += 1
 
             process_cls = Process
-            if randint(1, 100) <= int(self._stage.config['priority_process_probability'] * 100):
+            if randint(1, 100) <= int(self._stage.config.priority_process_probability * 100):
                 process_cls = PriorityProcess
             process = process_cls(pid, self._stage)
 
@@ -320,7 +320,7 @@ class ProcessManager(GameObject):
                 self._stage.game_over = True
                 return
 
-        if self._next_pid <= self._stage.config['num_processes_at_startup'] and current_time - \
+        if self._next_pid <= self._stage.config.num_processes_at_startup and current_time - \
                 self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation_time = current_time

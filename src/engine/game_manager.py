@@ -23,11 +23,11 @@ class GameManager():
     @startup_scene.setter
     def startup_scene(self, value : Union[Scene, str]):
         if isinstance(value, Scene):
-            if not self._scene_manager.get_scene(value.name):
+            if not self._scene_manager.get_scene(value.scene_id):
                 raise ValueError('Startup scene first needs to be added with `add_scene`.')
             self._startup_scene = value
         elif isinstance(value, str):
-            scene = not self._scene_manager.get_scene(value)
+            scene = self._scene_manager.get_scene(value)
             if scene is None:
                 raise ValueError('Startup scene first needs to be added with `add_scene`.')
             self._startup_scene = scene

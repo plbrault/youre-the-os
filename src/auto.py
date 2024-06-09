@@ -6,15 +6,16 @@ provided from the command line.
 """
 
 import asyncio
+from dataclasses import replace
 from os import path
 import argparse
 
+from difficulty_levels import default_difficulty, difficulty_levels_map
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
 from scenes.stage import Stage
 from game_info import TITLE
 from window_size import WINDOW_SIZE
-import difficulty_levels
 
 def _int_range(vmin, vmax):
     def ranged_int(arg):
@@ -87,23 +88,26 @@ def parse_arguments():
     args = parser.parse_args()
 
     # get base difficulty level
-    config = difficulty_levels.default_difficulty['config']
+    difficulty = default_difficulty
     if args.difficulty is not None:
-        config = difficulty_levels.difficulty_levels_map[args.difficulty]['config']
+        difficulty = difficulty_levels_map[args.difficulty]
 
     # set custom fields
-    for key in config.keys():
+    for field_name in difficulty.config.__dataclass_fields__:
         try:
-            val = getattr(args, key)
+            val = getattr(args, field_name)
         except AttributeError:
             # key is in config but is not configurable
             continue
         if val is not None:
-            config[key] = val
-            # on change, difficulty is now Custom
-            config['name'] = "Custom"
+            replace(
+                difficulty,
+                config = replace(difficulty.config, **{field_name: val}),
+                # on change, difficulty is now Custom
+                name = 'Custom'
+            )
 
-    return args.filename, config
+    return args.filename, difficulty
 
 
 def compile_auto_script(source_file):
@@ -113,14 +117,17 @@ def compile_auto_script(source_file):
         source = in_file.read()
     return compile(source, source_file, 'exec')
 
-source_filename, difficulty_config = parse_arguments()
+source_filename, difficulty_level = parse_arguments()
 compiled_script = compile_auto_script(source_filename)
 
 async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    stage_scene = Stage(difficulty_config, compiled_script, True)
+    stage_name = 'Difficulty: ' + difficulty_level.name.upper()
+    stage_scene = Stage(
+        stage_name, difficulty_level.config, script=compiled_script, standalone=True
+    )
 
     game_manager.add_scene(stage_scene)
     game_manager.startup_scene = stage_scene
