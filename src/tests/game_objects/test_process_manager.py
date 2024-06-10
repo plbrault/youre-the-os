@@ -147,26 +147,18 @@ class TestProcessManager:
         )
         assert new_process_slot not in process_manager.process_slots
 
-    """def test_terminate_process_not_by_user(self, ready_process_manager):
+    def test_terminate_active_process_not_by_user(self, ready_process_manager):
         process_manager = ready_process_manager
 
         process = process_manager.get_process(1)
-        process_slot = next(
-            process_slot for process_slot
-                in process_manager.process_slots if process_slot.process == process
-        )
+
+        process.use_cpu()
+        cpu = next(cpu for cpu in process_manager.cpu_list if cpu.process == process)
 
         process_manager.terminate_process(process, False)
 
-        assert process_manager.user_terminated_process_count == 1
-        assert process_slot.process is None
-
-        # Validate that the process is now in a terminated process slot
-        new_process_slot = next(
-            child for child in process_manager.children
-                if isinstance(child, ProcessSlot) and child.process == process
-        )
-        assert new_process_slot not in process_manager.process_slots"""
+        assert process_manager.user_terminated_process_count == 0
+        assert cpu.process == process
 
     def test_create_new_process_at_random(self, ready_process_manager, stage_config, monkeypatch):
         process_manager = ready_process_manager
