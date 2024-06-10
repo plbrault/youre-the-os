@@ -61,9 +61,6 @@ class TestProcessManager:
 
         assert process_count == stage.config.num_processes_at_startup
 
-        for i in range(1, 5):
-            assert process_manager.get_process(i).pid == i
-
     @pytest.fixture
     def ready_process_manager(self, stage, monkeypatch):
         # Cause the random number generator to never provoke creation of new process
@@ -89,6 +86,21 @@ class TestProcessManager:
         monkeypatch.setattr(Random, 'get_number', Random.get_number)
 
         return process_manager
+
+    def test_get_process(self, ready_process_manager, stage_config):
+        process_manager = ready_process_manager
+
+        for i in range(1, stage_config.num_processes_at_startup + 1):
+            assert process_manager.get_process(i).pid == i
+
+    def test_del_process(self, ready_process_manager):
+        process_manager = ready_process_manager
+
+        process = process_manager.get_process(1)
+        process_manager.del_process(process)
+
+        with pytest.raises(KeyError):
+            process_manager.get_process(1)            
 
     def test_create_new_process_at_random(self, ready_process_manager, stage_config, monkeypatch):
         process_manager = ready_process_manager
@@ -138,13 +150,4 @@ class TestProcessManager:
         assert len([
                 process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
             ]) == stage_config.num_processes_at_startup + 2
-
-    def test_del_process(self, ready_process_manager):
-        process_manager = ready_process_manager
-
-        process = process_manager.get_process(1)
-        process_manager.del_process(process)
-
-        with pytest.raises(KeyError):
-            process_manager.get_process(1)
             
