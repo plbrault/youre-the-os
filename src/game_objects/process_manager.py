@@ -35,7 +35,7 @@ def _is_sorted(process_list: [Process]):
     return True
 
 class ProcessManager(GameObject):
-    MAX_TERMINATED_BY_USER = 10
+    MAX_TERMINATED_BY_USER = 10 # user refers to in-game user, not to the player.
 
     def __init__(self, stage):
         self._stage = stage
@@ -87,6 +87,7 @@ class ProcessManager(GameObject):
 
     @property
     def user_terminated_process_count(self):
+        # user refers to in-game user, not to the player.
         return self._user_terminated_process_count
 
     def get_process(self, pid):
@@ -190,6 +191,7 @@ class ProcessManager(GameObject):
         return False
 
     def terminate_process(self, process, by_user):
+        # `by_user` refers to in-game user, not to the player.
         can_terminate = False
 
         if by_user:
