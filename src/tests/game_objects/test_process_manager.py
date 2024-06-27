@@ -98,11 +98,8 @@ class TestProcessManager:
             monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
             stage = stage_custom_config(stage_config)
-
-            process_manager = ProcessManager(stage)
-            process_manager.setup()
-
-            monkeypatch.setattr(Stage, 'process_manager', property(lambda self: process_manager))
+            stage.setup()
+            process_manager = stage.process_manager
 
             time = 0.0
             process_count = 0
@@ -264,6 +261,9 @@ class TestProcessManager:
             assert not sort_button.visible
 
         process_manager.stage.update(stage_config.time_ms_to_show_sort_button, [])
+        process_manager.stage.update(stage_config.time_ms_to_show_sort_button + 1, [])
+        # We execute one extra update because the process manager determines the visibility of the button
+        # based on the stage's UptimeManager, which may get updated after the ProcessManager
         assert sort_button.visible
 
         
