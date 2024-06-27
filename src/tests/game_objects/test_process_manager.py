@@ -3,6 +3,7 @@ import pytest
 from constants import ONE_SECOND, ONE_MINUTE
 from engine.game_manager import GameManager
 from engine.random import Random
+from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process_manager import ProcessManager
@@ -261,7 +262,34 @@ class TestProcessManager:
         process_manager.stage.update(stage_config.time_ms_to_show_sort_button, [])
         process_manager.stage.update(stage_config.time_ms_to_show_sort_button + 1, [])
         # We execute one extra update because the process manager determines the visibility of the button
-        # based on the stage's UptimeManager, which may get updated after the ProcessManager
+        # based on the stage's UptimeManager, which may get updated after the ProcessManager.
         assert sort_button.visible
+
+    def test_show_auto_sort_checkbox(self, ready_process_manager_custom_config):
+        stage_config = StageConfig(
+            num_processes_at_startup = 0,
+            new_process_probability = 0,
+            time_ms_to_show_auto_sort_checkbox = 12 * ONE_MINUTE
+        )
+        process_manager = ready_process_manager_custom_config(stage_config)
+
+        auto_sort_checkbox = None
+        for child in process_manager.children:
+            if isinstance(child, Checkbox) and child.text == 'Auto-Sort':
+                auto_sort_checkbox = child
+                break
+
+        assert auto_sort_checkbox is not None
+        assert not auto_sort_checkbox.visible
+
+        for i in range(int(stage_config.time_ms_to_show_auto_sort_checkbox / ONE_SECOND)):
+            process_manager.stage.update(i * ONE_SECOND, [])
+            assert not auto_sort_checkbox.visible
+
+        process_manager.stage.update(stage_config.time_ms_to_show_auto_sort_checkbox, [])
+        process_manager.stage.update(stage_config.time_ms_to_show_auto_sort_checkbox + 1, [])
+        # We execute one extra update because the process manager determines the visibility of the checkbox
+        # based on the stage's UptimeManager, which may get updated after the ProcessManager.
+        assert auto_sort_checkbox.visible
 
         
