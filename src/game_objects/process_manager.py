@@ -21,8 +21,6 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
-_UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 12 * ONE_MINUTE
 _MIN_SORT_COOLDOWN_MS = 100
 _AUTO_SORT_CHECKBOX_ANIMATION_SPEED = 30
 
@@ -335,12 +333,12 @@ class ProcessManager(GameObject):
                 self._last_process_creation_time = current_time
 
         if (
-            self.stage.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
+            self.stage.uptime_manager.uptime_ms >= self.stage.config.time_to_show_sort_button
             and not self._sort_processes_button.visible
         ):
             self._sort_processes_button.visible = True
         if (
-            self.stage.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX
+            self.stage.uptime_manager.uptime_ms >= self.stage.config.time_to_show_auto_sort_checkbox
             and not self._auto_sort_checkbox.visible
         ):
             self._auto_sort_checkbox.visible = True
