@@ -45,8 +45,8 @@ class TestProcessManager:
         assert process_manager.user_terminated_process_count == 0
 
     def test_initial_process_creation(self, stage):
-        process_manager = ProcessManager(stage)
-        process_manager.setup()
+        process_manager = stage.process_manager
+        stage.setup()
 
         time = 0.0
         process_count = 0
@@ -68,10 +68,8 @@ class TestProcessManager:
         # Cause the random number generator to never provoke creation of new process
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        process_manager = ProcessManager(stage)
-        process_manager.setup()
-
-        monkeypatch.setattr(Stage, 'process_manager', property(lambda self: process_manager))
+        process_manager = stage.process_manager
+        stage.setup
 
         time = 0.0
         process_count = 0
