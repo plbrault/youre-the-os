@@ -213,8 +213,16 @@ class TestProcessManager:
         process_manager.update(time, [])
         assert process.has_ended
 
+        process.yield_cpu()
+
         counter = 0
         while process.view.y > -process.view.height and counter < 100000:
+            process_is_in_children = False
+            for child in process_manager.children:
+                if isinstance(child, Process) and child.pid == 1:
+                    process_is_in_children = True
+                    break
+            assert process_is_in_children
             counter += 1
             time += ONE_SECOND / FRAMERATE
             process_manager.update(int(time), [])
