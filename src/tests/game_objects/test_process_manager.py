@@ -1,12 +1,13 @@
 import pytest
 
-from constants import ONE_SECOND
+from constants import ONE_SECOND, ONE_MINUTE
 from engine.game_manager import GameManager
 from engine.random import Random
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
 from game_objects.process_manager import ProcessManager
 from game_objects.process_slot import ProcessSlot
+from game_objects.sort_button import SortButton
 from scenes.stage import Stage
 from stage_config import StageConfig
 
@@ -89,6 +90,38 @@ class TestProcessManager:
         monkeypatch.setattr(Random, 'get_number', Random.get_number)
 
         return process_manager
+
+    @pytest.fixture
+    def ready_process_manager_custom_config(self, stage_custom_config, monkeypatch):
+        def create_process(stage_config):
+            # Cause the random number generator to never provoke creation of new process
+            monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+            stage = stage_custom_config(stage_config)
+
+            process_manager = ProcessManager(stage)
+            process_manager.setup()
+
+            monkeypatch.setattr(Stage, 'process_manager', property(lambda self: process_manager))
+
+            time = 0.0
+            process_count = 0
+            iteration_count = 0
+
+            while process_count < stage.config.num_processes_at_startup and iteration_count < 100:
+                iteration_count += 1
+                process_manager.update(int(time), [])
+                time += ONE_SECOND / GameManager.fps
+
+                process_count = len([
+                    process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+                ])
+
+            # Bring back normal number generator
+            monkeypatch.setattr(Random, 'get_number', Random.get_number)
+
+            return process_manager
+        return create_process
 
     def test_get_process(self, ready_process_manager, stage_config):
         process_manager = ready_process_manager
@@ -208,4 +241,29 @@ class TestProcessManager:
         assert len([
                 process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
             ]) == stage_config.num_processes_at_startup + 2
-            
+
+    def test_show_sort_button(self, ready_process_manager_custom_config):
+        stage_config = StageConfig(
+            num_processes_at_startup = 0,
+            new_process_probability = 0,
+            time_ms_to_show_sort_button = 6 * ONE_MINUTE
+        )
+        process_manager = ready_process_manager_custom_config(stage_config)
+
+        sort_button = None
+        for child in process_manager.children:
+            if isinstance(child, SortButton):
+                sort_button = child
+                break
+
+        assert sort_button is not None
+        assert not sort_button.visible
+
+        for i in range(int(stage_config.time_ms_to_show_sort_button / ONE_SECOND)):
+            process_manager.stage.update(i * ONE_SECOND, [])
+            assert not sort_button.visible
+
+        process_manager.stage.update(stage_config.time_ms_to_show_sort_button, [])
+        assert sort_button.visible
+
+        
