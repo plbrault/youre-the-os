@@ -1,11 +1,12 @@
 import pytest
 
-from constants import ONE_SECOND, ONE_MINUTE
+from constants import FRAMERATE, ONE_SECOND, ONE_MINUTE
 from engine.game_manager import GameManager
 from engine.random import Random
 from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
+from game_objects.process import Process
 from game_objects.process_manager import ProcessManager
 from game_objects.process_slot import ProcessSlot
 from game_objects.sort_button import SortButton
@@ -188,6 +189,43 @@ class TestProcessManager:
 
         assert process_manager.user_terminated_process_count == 0
         assert cpu.process == process
+
+    def test_update_removes_process_out_of_screen(self, ready_process_manager_custom_config):
+        process_manager = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup = 1,
+            new_process_probability = 0,
+            graceful_termination_probability = 1,
+            io_probability = 0
+        ))
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+
+        process_is_in_children = False
+        for child in process_manager.children:
+            if child == process:
+                process_is_in_children = True
+                break
+        assert process_is_in_children
+
+        time = 2000
+
+        process_manager.update(time, [])
+        assert process.has_ended
+
+        counter = 0
+        while process.view.y > -process.view.height and counter < 100000:
+            counter += 1
+            time += ONE_SECOND / FRAMERATE
+            process_manager.update(int(time), [])
+        assert counter < 100000
+
+        process_is_in_children = False
+        for child in process_manager.children:
+            if isinstance(child, Process) and child.pid == 1:
+                process_is_in_children = True
+                break
+        assert not process_is_in_children
 
     def test_create_new_process_at_random(self, ready_process_manager, stage_config, monkeypatch):
         process_manager = ready_process_manager
