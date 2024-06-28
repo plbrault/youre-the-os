@@ -1,6 +1,6 @@
 import pytest
 
-from constants import FRAMERATE, ONE_SECOND, ONE_MINUTE
+from constants import DEAD_STARVATION_LEVEL, FRAMERATE, ONE_SECOND, ONE_MINUTE
 from engine.game_manager import GameManager
 from engine.random import Random
 from game_objects.checkbox import Checkbox
@@ -338,4 +338,24 @@ class TestProcessManager:
         # based on the stage's UptimeManager, which may get updated after the ProcessManager.
         assert auto_sort_checkbox.visible
 
+    def test_get_current_stats(self, ready_process_manager_custom_config):
+        stage_config = StageConfig(
+            num_processes_at_startup = 10,
+            new_process_probability = 0,
+            graceful_termination_probability = 0,
+            io_probability = 0
+        )
+        process_manager = ready_process_manager_custom_config(stage_config)
+
+        stats = process_manager.get_current_stats()
+
+        assert stats['alive_process_count'] == 10
+        assert stats['alive_process_count_by_starvation_level'][1] == 10
+        assert stats['alive_process_count_by_starvation_level'][0] == 0
+        for i in range(2, DEAD_STARVATION_LEVEL):
+            assert stats['alive_process_count_by_starvation_level'][i] == 0
+        assert stats['blocked_active_process_count'] == 0
+        assert stats['io_event_count'] == 0
+        assert stats['gracefully_terminated_process_count'] == 0
+        assert stats['user_terminated_process_count'] == 0
         
