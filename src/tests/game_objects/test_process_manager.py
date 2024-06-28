@@ -418,4 +418,21 @@ class TestProcessManager:
         assert stats['alive_process_count_by_starvation_level'][1] == 9
         for i in range(2, DEAD_STARVATION_LEVEL):
             assert stats['alive_process_count_by_starvation_level'][i] == 0
+
+        process_manager_4 = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup = 10,
+            new_process_probability = 0,
+            graceful_termination_probability = 0,
+            io_probability = 1
+        ))
+
+        stats = process_manager_4.get_current_stats()
+        assert stats['blocked_active_process_count'] == 0
+
+        process = process_manager_4.get_process(1)
+        process.use_cpu()
+        process.update(2000, [])
+
+        stats = process_manager_4.get_current_stats()
+        assert stats['blocked_active_process_count'] == 1
          
