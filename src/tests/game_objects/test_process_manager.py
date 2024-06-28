@@ -395,4 +395,27 @@ class TestProcessManager:
 
         stats = process_manager_2.get_current_stats()
         assert stats['alive_process_count'] == 11
+
+        process_manager_3 = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup = 10,
+            new_process_probability = 0,
+            graceful_termination_probability = 1,
+            io_probability = 0
+        ))
+
+        stats = process_manager_3.get_current_stats()
+        assert stats['alive_process_count'] == 10
+
+        process = process_manager_3.get_process(1)
+        process.use_cpu()
+        process.update(2000, [])
+
+        stats = process_manager_3.get_current_stats()
+        assert stats['alive_process_count'] == 9
+        assert stats['gracefully_terminated_process_count'] == 1
+        assert stats['user_terminated_process_count'] == 0
+        assert stats['alive_process_count_by_starvation_level'][0] == 0
+        assert stats['alive_process_count_by_starvation_level'][1] == 9
+        for i in range(2, DEAD_STARVATION_LEVEL):
+            assert stats['alive_process_count_by_starvation_level'][i] == 0
          
