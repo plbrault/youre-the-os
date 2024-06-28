@@ -350,12 +350,28 @@ class TestProcessManager:
         stats = process_manager.get_current_stats()
 
         assert stats['alive_process_count'] == 10
-        assert stats['alive_process_count_by_starvation_level'][1] == 10
         assert stats['alive_process_count_by_starvation_level'][0] == 0
+        assert stats['alive_process_count_by_starvation_level'][1] == 10
         for i in range(2, DEAD_STARVATION_LEVEL):
             assert stats['alive_process_count_by_starvation_level'][i] == 0
         assert stats['blocked_active_process_count'] == 0
         assert stats['io_event_count'] == 0
         assert stats['gracefully_terminated_process_count'] == 0
         assert stats['user_terminated_process_count'] == 0
-        
+
+        time = 0
+        process = process_manager.get_process(1)
+        while process.starvation_level < DEAD_STARVATION_LEVEL and time < 1000000:
+            process.update(time, [])
+            time += ONE_SECOND
+
+        stats = process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 9
+        assert stats['alive_process_count_by_starvation_level'][0] == 0
+        assert stats['alive_process_count_by_starvation_level'][1] == 9
+        for i in range(2, DEAD_STARVATION_LEVEL):
+            assert stats['alive_process_count_by_starvation_level'][i] == 0
+        assert stats['blocked_active_process_count'] == 0
+        assert stats['io_event_count'] == 0
+        assert stats['gracefully_terminated_process_count'] == 0
+        assert stats['user_terminated_process_count'] == 1        
