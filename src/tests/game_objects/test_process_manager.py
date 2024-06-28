@@ -1,6 +1,6 @@
 import pytest
 
-from constants import DEAD_STARVATION_LEVEL, FRAMERATE, ONE_SECOND, ONE_MINUTE
+from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, FRAMERATE, ONE_SECOND, ONE_MINUTE
 from engine.game_manager import GameManager
 from engine.random import Random
 from game_objects.checkbox import Checkbox
@@ -360,16 +360,23 @@ class TestProcessManager:
         assert stats['user_terminated_process_count'] == 0
 
         time = 0
-        process = process_manager.get_process(1)
-        while process.starvation_level < DEAD_STARVATION_LEVEL and time < 1000000:
-            process.update(time, [])
+        process1 = process_manager.get_process(1)
+        while process1.starvation_level < DEAD_STARVATION_LEVEL and time < 1000000:
+            process1.update(time, [])
+            time += ONE_SECOND
+
+        time = 0
+        process2 = process_manager.get_process(2)
+        while process2.starvation_level < DEAD_STARVATION_LEVEL - 1 and time < 1000000:
+            process2.update(time, [])
             time += ONE_SECOND
 
         stats = process_manager.get_current_stats()
         assert stats['alive_process_count'] == 9
         assert stats['alive_process_count_by_starvation_level'][0] == 0
-        assert stats['alive_process_count_by_starvation_level'][1] == 9
-        for i in range(2, DEAD_STARVATION_LEVEL):
+        assert stats['alive_process_count_by_starvation_level'][1] == 8
+        assert stats['alive_process_count_by_starvation_level'][LAST_ALIVE_STARVATION_LEVEL] == 1
+        for i in range(2, LAST_ALIVE_STARVATION_LEVEL):
             assert stats['alive_process_count_by_starvation_level'][i] == 0
         assert stats['blocked_active_process_count'] == 0
         assert stats['io_event_count'] == 0
