@@ -339,16 +339,14 @@ class TestProcessManager:
         assert auto_sort_checkbox.visible
 
     def test_get_current_stats(self, ready_process_manager_custom_config):
-        stage_config = StageConfig(
+        process_manager_1 = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 10,
             new_process_probability = 0,
             graceful_termination_probability = 0,
             io_probability = 0
-        )
-        process_manager = ready_process_manager_custom_config(stage_config)
+        ))
 
-        stats = process_manager.get_current_stats()
-
+        stats = process_manager_1.get_current_stats()
         assert stats['alive_process_count'] == 10
         assert stats['alive_process_count_by_starvation_level'][0] == 0
         assert stats['alive_process_count_by_starvation_level'][1] == 10
@@ -360,18 +358,18 @@ class TestProcessManager:
         assert stats['user_terminated_process_count'] == 0
 
         time = 0
-        process1 = process_manager.get_process(1)
+        process1 = process_manager_1.get_process(1)
         while process1.starvation_level < DEAD_STARVATION_LEVEL and time < 1000000:
             process1.update(time, [])
             time += ONE_SECOND
 
         time = 0
-        process2 = process_manager.get_process(2)
+        process2 = process_manager_1.get_process(2)
         while process2.starvation_level < DEAD_STARVATION_LEVEL - 1 and time < 1000000:
             process2.update(time, [])
             time += ONE_SECOND
 
-        stats = process_manager.get_current_stats()
+        stats = process_manager_1.get_current_stats()
         assert stats['alive_process_count'] == 9
         assert stats['alive_process_count_by_starvation_level'][0] == 0
         assert stats['alive_process_count_by_starvation_level'][1] == 8
