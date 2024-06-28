@@ -379,4 +379,20 @@ class TestProcessManager:
         assert stats['blocked_active_process_count'] == 0
         assert stats['io_event_count'] == 0
         assert stats['gracefully_terminated_process_count'] == 0
-        assert stats['user_terminated_process_count'] == 1        
+        assert stats['user_terminated_process_count'] == 1
+
+        process_manager_2 = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup = 10,
+            new_process_probability = 1,
+            graceful_termination_probability = 0,
+            io_probability = 0
+        ))
+
+        stats = process_manager_2.get_current_stats()
+        assert stats['alive_process_count'] == 10
+
+        process_manager_2.update(2000, [])
+
+        stats = process_manager_2.get_current_stats()
+        assert stats['alive_process_count'] == 11
+         
