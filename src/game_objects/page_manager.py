@@ -98,7 +98,7 @@ class PageManager(GameObject):
         self._pages[(pid, idx)] = page
         return page
 
-    def swap_page(self, page : Page, swap_whole_row : bool):
+    def swap_page(self, page : Page, swap_whole_row : bool = False):
         source_slots = self._swap_slots if page.in_swap else self._ram_slots
         target_slots = self._ram_slots if page.in_swap else self._swap_slots
 
