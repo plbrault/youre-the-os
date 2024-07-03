@@ -644,3 +644,39 @@ class TestProcessManager:
         assert process_manager.process_slots[1].process == process_3
         assert process_manager.process_slots[2].process == process_1
         assert process_manager.process_slots[3].process == None
+
+    def test_game_over(self, ready_process_manager_custom_config):
+        process_manager = ready_process_manager_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=10,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+            time_ms_to_show_sort_button=0,
+        ))
+
+        for i in range(1, 11):
+            process = process_manager.get_process(i)
+            time = 0
+            while process.starvation_level < DEAD_STARVATION_LEVEL:
+                process.update(time, [])
+                time += ONE_SECOND
+
+        assert process_manager.get_current_stats()['user_terminated_process_count'] == 10
+        assert not process_manager.stage.game_over
+
+        process_in_motion = True
+        time = 1000
+        while process_in_motion:
+            process_manager.update(time, [])
+            process_in_motion = False
+            for child in process_manager.children:
+                if isinstance(child, Process):
+                    if child.is_in_motion:
+                        process_in_motion = True
+                        break
+            time += ONE_SECOND / FRAMERATE
+
+        process_manager.update(time, [])
+
+        assert process_manager.stage.game_over
