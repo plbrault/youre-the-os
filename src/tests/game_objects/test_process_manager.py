@@ -529,4 +529,4 @@ class TestProcessManager:
         assert process_manager.process_slots[1].process == process_3
         assert process_manager.process_slots[2].process == process_2
         assert process_manager.process_slots[3].process == process_1
-         
+        assert active_process not in [process_slot.process for process_slot in process_manager.process_slots]
