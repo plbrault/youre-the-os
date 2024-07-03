@@ -292,7 +292,7 @@ class ProcessManager(GameObject):
             'user_terminated_process_count': self._user_terminated_process_count,
         }
 
-    def update(self, current_time, events):
+    def _handle_events(self, events):
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:
@@ -305,6 +305,9 @@ class ProcessManager(GameObject):
                         cpu = self._cpu_list[cpu_id]
                         if cpu.has_process:
                             cpu.process.yield_cpu()
+
+    def update(self, current_time, events):
+        self._handle_events(events)
 
         if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
             processes_are_moving = False
