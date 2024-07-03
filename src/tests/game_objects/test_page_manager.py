@@ -104,4 +104,9 @@ class TestPageManager:
         assert pages[2].view.y > pages[PageManager.get_num_cols()].view.y
         assert pages[2].view.x == pages[PageManager.get_num_cols() + 1].view.x
 
+        page_manager.swap_page(pages[2])
+        assert not pages[2].in_swap
+        assert pages[2].view.y == pages[1].view.y
+        assert pages[2].view.x < pages[1].view.x
+
     # test swap whole row
