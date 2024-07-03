@@ -306,9 +306,7 @@ class ProcessManager(GameObject):
                         if cpu.has_process:
                             cpu.process.yield_cpu()
 
-    def update(self, current_time, events):
-        self._handle_events(events)
-
+    def _check_game_over(self):
         if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
             processes_are_moving = False
             for child in self.children:
@@ -318,7 +316,14 @@ class ProcessManager(GameObject):
                         break
             if not processes_are_moving:
                 self._stage.game_over = True
-                return
+                return True
+        return False
+
+    def update(self, current_time, events):
+        if self._check_game_over():
+            return
+
+        self._handle_events(events)
 
         if self._next_pid <= self._stage.config.num_processes_at_startup and current_time - \
                 self._last_new_process_check >= 50:
