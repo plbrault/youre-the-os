@@ -99,36 +99,38 @@ class PageManager(GameObject):
         return page
 
     def swap_page(self, page : Page, swap_whole_row : bool = False):
+        if page.swapping_in_progress:
+            return
+
         source_slots = self._swap_slots if page.in_swap else self._ram_slots
         target_slots = self._ram_slots if page.in_swap else self._swap_slots
 
         can_swap = False
-        previous_slot = None
+        swapping_from = None
+        swapping_to = None
 
-        for ram_slot in target_slots:
-            if not ram_slot.has_page:
+        for source_slot in source_slots:
+            if source_slot.page == page:
+                swapping_from = source_slot
+                break
+        for target_slot in target_slots:
+            if not target_slot.has_page:
                 can_swap = True
+                swapping_to = target_slot
                 break
         if can_swap:
-            for source_slot in source_slots:
-                if source_slot.page == page:
-                    source_slot.page = None
-                    previous_slot = source_slot
-                    break
-            for target_slot in target_slots:
-                if not target_slot.has_page:
-                    target_slot.page = page
-                    page.view.set_xy(target_slot.view.x, target_slot.view.y)
-                    break
-            page.in_swap = not page.in_swap
-            game_monitor.notify_page_swap(page.pid, page.idx, page.in_swap)
+            page.swapping_from = swapping_from
+            page.swapping_to = swapping_to
+            page.started_swapping_at = self._stage.current_time
+            swapping_to.page = page
+
             if swap_whole_row:
                 slots_on_same_row = [
                     slot
                     for slot in source_slots
                     if (
-                        slot.view.y == previous_slot.view.y
-                        and slot != previous_slot
+                        slot.view.y == swapping_from.view.y
+                        and slot != swapping_from
                     )
                 ]
                 for slot in slots_on_same_row:
@@ -146,3 +148,21 @@ class PageManager(GameObject):
                 break
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
+
+    def _handle_page_swaps(self):
+        for page in self._pages.values():
+            if (
+                page.swapping_to is not None
+                and (self._stage.current_time - page.started_swapping_at) >= self._stage.config.swap_delay_ms
+            ):
+                page.view.set_xy(page.swapping_to.view.x, page.swapping_to.view.y)
+                page.swapping_from.page = None
+                page.swapping_from = None
+                page.swapping_to = None
+                page.started_swapping_at = None
+                page.in_swap = not page.in_swap
+                game_monitor.notify_page_swap(page.pid, page.idx, page.in_swap)
+
+    def update(self, current_time, events):
+        self._handle_page_swaps()
+        super().update(current_time, events)

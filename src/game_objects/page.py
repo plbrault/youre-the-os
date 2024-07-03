@@ -1,3 +1,5 @@
+from typing import Optional
+
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from game_objects.page_slot import PageSlot
@@ -13,8 +15,9 @@ class Page(GameObject):
         self._page_manager = page_manager
 
         self._in_use = False
-        self._swapping_to: PageSlot = None
-        self._started_swapping_at: int = None
+        self._swapping_from: Optional[PageSlot] = None
+        self._swapping_to: Optional[PageSlot] = None
+        self._started_swapping_at: Optional[int] = None
         self._in_swap = False
         self._display_blink_color = False
 
@@ -37,20 +40,32 @@ class Page(GameObject):
         self._in_use = value
 
     @property
-    def swapping_to(self):
+    def swapping_from(self) -> Optional[PageSlot]:
+        return self._swapping_from
+
+    @swapping_from.setter
+    def swapping_from(self, value: Optional[PageSlot]):
+        self._swapping_from = value
+
+    @property
+    def swapping_to(self) -> Optional[PageSlot]:
         return self._swapping_to
 
     @swapping_to.setter
-    def swapping_to(self, value: PageSlot):
+    def swapping_to(self, value: Optional[PageSlot]):
         self._swapping_to = value
 
     @property
-    def started_swapping_at(self):
+    def started_swapping_at(self) -> Optional[int]:
         return self._started_swapping_at
 
     @started_swapping_at.setter
-    def started_swapping_at(self, value: int):
+    def started_swapping_at(self, value: Optional[int]):
         self._started_swapping_at = value
+
+    @property
+    def swapping_in_progress(self) -> bool:
+        return self._started_swapping_at is not None
 
     @property
     def in_swap(self):
