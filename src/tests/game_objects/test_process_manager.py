@@ -530,3 +530,80 @@ class TestProcessManager:
         assert process_manager.process_slots[2].process == process_2
         assert process_manager.process_slots[3].process == process_1
         assert active_process not in [process_slot.process for process_slot in process_manager.process_slots]
+
+    def test_auto_sort(self, ready_process_manager_custom_config):
+        process_manager = ready_process_manager_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=5,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+            time_ms_to_show_sort_button=0,
+        ))
+
+        for i in range(1, 5):
+            process = process_manager.get_process(i)
+            time = 0
+            while process.starvation_level < i + 1:
+                process.update(time, [])
+                time += ONE_SECOND
+
+        process_1 = process_manager.get_process(1)
+        process_2 = process_manager.get_process(2)
+        process_3 = process_manager.get_process(3)
+        process_4 = process_manager.get_process(4)
+
+        assert process_4.sort_key < process_3.sort_key < process_2.sort_key < process_1.sort_key
+        assert process_manager.process_slots[0].process == process_1
+        assert process_manager.process_slots[1].process == process_2
+        assert process_manager.process_slots[2].process == process_3
+        assert process_manager.process_slots[3].process == process_4
+
+        process_manager.get_process(5).use_cpu()
+        active_process = process_manager.get_process(5)
+
+        sort_button = None
+        for child in process_manager.children:
+            if isinstance(child, SortButton):
+                sort_button = child
+                break
+
+        assert sort_button.visible
+        assert not sort_button.disabled
+
+        auto_sort_checkbox = None
+        for child in process_manager.children:
+            if isinstance(child, Checkbox) and child.text == 'Auto-Sort':
+                auto_sort_checkbox = child
+                break
+
+        auto_sort_checkbox.checked = True
+
+        process_manager.update(4000, [])
+        assert sort_button.disabled
+
+        steps = [
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+        ]
+        time = 4000
+        for step in steps:
+            process_manager.update(time, [])
+            order = [slot.process.pid for slot in process_manager.process_slots if slot.process is not None]
+            assert order == step
+
+        assert sort_button.disabled
+        assert process_manager.process_slots[0].process == process_4
+        assert process_manager.process_slots[1].process == process_3
+        assert process_manager.process_slots[2].process == process_2
+        assert process_manager.process_slots[3].process == process_1
+        assert active_process not in [process_slot.process for process_slot in process_manager.process_slots]
