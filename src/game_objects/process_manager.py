@@ -332,13 +332,7 @@ class ProcessManager(GameObject):
                 self._create_process()
                 self._last_process_creation_time = current_time
 
-    def update(self, current_time, events):
-        if self._check_game_over():
-            return
-
-        self._handle_events(events)
-        self._handle_process_creation(current_time)
-
+    def _handle_timed_powerups(self, current_time):
         if (
             self.stage.uptime_manager.uptime_ms >= self.stage.config.time_ms_to_show_sort_button
             and not self._sort_processes_button.visible
@@ -357,6 +351,15 @@ class ProcessManager(GameObject):
             or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
             or self._auto_sort_enabled
         )
+
+    def update(self, current_time, events):
+        if self._check_game_over():
+            return
+
+        self._handle_events(events)
+        self._handle_process_creation(current_time)
+        self._handle_timed_powerups(current_time)
+
         if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
 
