@@ -728,4 +728,3 @@ class TestProcessManager:
 
             assert process_manager.cpu_list[i - 1].process is None
             assert process.cpu is None
-
