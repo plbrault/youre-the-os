@@ -319,12 +319,7 @@ class ProcessManager(GameObject):
                 return True
         return False
 
-    def update(self, current_time, events):
-        if self._check_game_over():
-            return
-
-        self._handle_events(events)
-
+    def _handle_process_creation(self, current_time):
         if self._next_pid <= self._stage.config.num_processes_at_startup and current_time - \
                 self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
@@ -336,6 +331,13 @@ class ProcessManager(GameObject):
                     self._last_process_creation_time >= self._max_wait_between_new_processes:
                 self._create_process()
                 self._last_process_creation_time = current_time
+
+    def update(self, current_time, events):
+        if self._check_game_over():
+            return
+
+        self._handle_events(events)
+        self._handle_process_creation(current_time)
 
         if (
             self.stage.uptime_manager.uptime_ms >= self.stage.config.time_ms_to_show_sort_button
