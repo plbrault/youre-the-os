@@ -113,9 +113,10 @@ class TestProcessManager:
                 process_manager.update(int(time), [])
                 time += ONE_SECOND / GameManager.fps
 
-                process_count = len([
+                used_process_slots = [
                     process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
-                ])
+                ]
+                process_count = len(used_process_slots)
 
             # Bring back normal number generator
             monkeypatch.setattr(Random, 'get_number', Random.get_number)
