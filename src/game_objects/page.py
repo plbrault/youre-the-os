@@ -17,7 +17,7 @@ class Page(GameObject):
         self._in_use = False
         self._swapping_from: Optional[PageSlot] = None
         self._swapping_to: Optional[PageSlot] = None
-        self._started_swapping_at: Optional[int] = None
+        self._started_swap_at: Optional[int] = None
         self._in_swap = False
         self._display_blink_color = False
 
@@ -56,16 +56,22 @@ class Page(GameObject):
         self._swapping_to = value
 
     @property
-    def started_swapping_at(self) -> Optional[int]:
-        return self._started_swapping_at
+    def started_swap_at(self) -> Optional[int]:
+        return self._started_swap_at
 
-    @started_swapping_at.setter
-    def started_swapping_at(self, value: Optional[int]):
-        self._started_swapping_at = value
+    @started_swap_at.setter
+    def started_swap_at(self, value: Optional[int]):
+        self._started_swap_at = value
 
     @property
-    def swapping_in_progress(self) -> bool:
-        return self._started_swapping_at is not None
+    def swap_in_progress(self) -> bool:
+        return self._started_swap_at is not None
+
+    @property
+    def swap_percentage_completed(self) -> float:
+        if not self.swap_in_progress:
+            return 0
+        return (self._page_manager.stage.current_time - self._started_swap_at) / self._page_manager.stage.config.swap_delay_ms
 
     @property
     def in_swap(self):

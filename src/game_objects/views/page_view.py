@@ -22,7 +22,7 @@ class PageView(Drawable):
 
     def draw(self, surface):
         color = Color.DARK_GREY
-        if self._page.swapping_in_progress:
+        if self._page.swap_in_progress:
             color = Color.TEAL
         elif self._page.display_blink_color:
             color = Color.BLUE
@@ -31,3 +31,13 @@ class PageView(Drawable):
         pygame.draw.rect(surface, color, pygame.Rect(
             self._x, self._y, self.width, self.height))
         surface.blit(self._pid_text_surface, (self._x + 1, self._y + 5))
+
+        if self._page.swap_in_progress:
+            progress_bar_width = (self.width - 4) * self._page.swap_percentage_completed
+            progress_bar_height = 2
+            pygame.draw.rect(surface, Color.BLACK, pygame.Rect(
+                self._x + 2,
+                self._y + self.height - 4,
+                progress_bar_width,
+                progress_bar_height
+            ))

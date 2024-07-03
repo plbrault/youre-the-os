@@ -30,6 +30,10 @@ class PageManager(GameObject):
         return cls._NUM_COLS
 
     @property
+    def stage(self):
+        return self._stage
+
+    @property
     def pages_in_ram_label_xy(self):
         return self._pages_in_ram_label_xy
 
@@ -99,7 +103,7 @@ class PageManager(GameObject):
         return page
 
     def swap_page(self, page : Page, swap_whole_row : bool = False):
-        if page.swapping_in_progress:
+        if page.swap_in_progress:
             return
 
         source_slots = self._swap_slots if page.in_swap else self._ram_slots
@@ -121,7 +125,7 @@ class PageManager(GameObject):
         if can_swap:
             page.swapping_from = swapping_from
             page.swapping_to = swapping_to
-            page.started_swapping_at = self._stage.current_time
+            page.started_swap_at = self._stage.current_time
             swapping_to.page = page
 
             if swap_whole_row:
@@ -152,14 +156,14 @@ class PageManager(GameObject):
     def _handle_page_swaps(self):
         for page in self._pages.values():
             if (
-                page.swapping_in_progress
-                and (self._stage.current_time - page.started_swapping_at) >= self._stage.config.swap_delay_ms
+                page.swap_in_progress
+                and (self._stage.current_time - page.started_swap_at) >= self._stage.config.swap_delay_ms
             ):
                 page.view.set_xy(page.swapping_to.view.x, page.swapping_to.view.y)
                 page.swapping_from.page = None
                 page.swapping_from = None
                 page.swapping_to = None
-                page.started_swapping_at = None
+                page.started_swap_at = None
                 page.in_swap = not page.in_swap
                 game_monitor.notify_page_swap(page.pid, page.idx, page.in_swap)
 
