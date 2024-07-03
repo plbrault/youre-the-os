@@ -1,6 +1,8 @@
 import pytest
 
 from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, FRAMERATE, ONE_SECOND, ONE_MINUTE
+from engine.game_event import GameEvent
+from engine.game_event_type import GameEventType
 from engine.game_manager import GameManager
 from engine.random import Random
 from game_objects.checkbox import Checkbox
@@ -680,3 +682,50 @@ class TestProcessManager:
         process_manager.update(time, [])
 
         assert process_manager.stage.game_over
+
+    def test_cpu_hotkeys(self, ready_process_manager_custom_config):
+        process_manager = ready_process_manager_custom_config(StageConfig(
+            num_cpus=16,
+            num_processes_at_startup=16,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+            time_ms_to_show_sort_button=0,
+        ))
+
+        for i in range(1, 17):
+            process = process_manager.get_process(i)
+            process.use_cpu()
+
+        for cpu in process_manager.cpu_list:
+            assert cpu.process is not None
+
+        for i in range(1, 10):
+            process = process_manager.cpu_list[i - 1].process
+            assert process.cpu == process_manager.cpu_list[i - 1]
+
+            event = GameEvent(GameEventType.KEY_UP, { 'key': str(i), 'shift': False })
+            process_manager.update(1000, [event])
+
+            assert process_manager.cpu_list[i - 1].process is None
+            assert process.cpu is None
+
+        process = process_manager.cpu_list[9].process
+        assert process.cpu == process_manager.cpu_list[9]
+
+        event = GameEvent(GameEventType.KEY_UP, { 'key': '0', 'shift': False })
+        process_manager.update(1000, [event])
+
+        assert process_manager.cpu_list[9].process is None
+        assert process.cpu is None
+
+        for i in range(11, 17):
+            process = process_manager.cpu_list[i - 1].process
+            assert process.cpu == process_manager.cpu_list[i - 1]
+
+            event = GameEvent(GameEventType.KEY_UP, { 'key': str(i - 10), 'shift': True })
+            process_manager.update(1000, [event])
+
+            assert process_manager.cpu_list[i - 1].process is None
+            assert process.cpu is None
+
