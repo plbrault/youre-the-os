@@ -1,6 +1,7 @@
 import pytest
 
 from game_objects.page import Page
+from game_objects.page_slot import PageSlot
 from game_objects.page_manager import PageManager
 from stage_config import StageConfig
 
@@ -152,4 +153,46 @@ class TestPageManager:
         assert pages[PageManager.get_num_cols() - 1].in_swap
         assert pages[PageManager.get_num_cols() - 1].view.x == pages[PageManager.get_num_cols() - 1].view.x
         assert pages[PageManager.get_num_cols() - 1].view.y == old_y
-        
+
+    def test_delete_page_in_ram(self, page_manager):
+        pages = []
+
+        for i in range(PageManager.get_num_cols() * 2):
+            pages.append(page_manager.create_page(1, i))
+
+        page_to_delete = pages[1]
+        assert not page_to_delete.in_swap
+
+        containing_slot = next((
+            child for child in page_manager.children if isinstance(child, PageSlot) and child.page == page_to_delete
+        ), None)
+        assert containing_slot is not None
+
+        page_manager.delete_page(page_to_delete)
+
+        containing_slot = next((
+            child for child in page_manager.children if isinstance(child, PageSlot) and child.page == page_to_delete
+        ), None)
+        assert containing_slot is None
+
+    def test_delete_page_in_swap(self, page_manager):
+        pages = []
+
+        for i in range(PageManager.get_num_cols() * 2):
+            pages.append(page_manager.create_page(1, i))
+
+        page_to_delete = pages[PageManager.get_num_cols() + 1]
+        assert page_to_delete.in_swap
+
+        containing_slot = next((
+            child for child in page_manager.children if isinstance(child, PageSlot) and child.page == page_to_delete
+        ), None)
+        assert containing_slot is not None
+
+        page_manager.delete_page(page_to_delete)
+
+        containing_slot = next((
+            child for child in page_manager.children if isinstance(child, PageSlot) and child.page == page_to_delete
+        ), None)
+        assert containing_slot is None
+         
