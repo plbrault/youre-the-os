@@ -152,7 +152,7 @@ class PageManager(GameObject):
     def _handle_page_swaps(self):
         for page in self._pages.values():
             if (
-                page.swapping_to is not None
+                page.swapping_in_progress
                 and (self._stage.current_time - page.started_swapping_at) >= self._stage.config.swap_delay_ms
             ):
                 page.view.set_xy(page.swapping_to.view.x, page.swapping_to.view.y)
