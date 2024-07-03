@@ -125,4 +125,31 @@ class TestPageManager:
         assert pages[PageManager.get_num_cols()].view.x == old_x
         assert pages[PageManager.get_num_cols()].view.y == old_y
 
-    # test swap whole row
+    def test_swap_whole_row(self, page_manager):
+        pages = []
+
+        for i in range(PageManager.get_num_cols() * 2):
+            pages.append(page_manager.create_page(1, i))
+
+        page_manager.swap_page(pages[0], swap_whole_row=True)
+
+        for i in range(PageManager.get_num_cols()):
+            assert pages[i].in_swap
+            assert pages[i].view.x == pages[PageManager.get_num_cols() + i].view.x
+            assert pages[i].view.y > pages[PageManager.get_num_cols() + i].view.y
+
+        new_page = page_manager.create_page(2, 0)
+        assert not new_page.in_swap
+
+        old_y = pages[0].view.y
+        page_manager.swap_page(pages[0], swap_whole_row=True)
+
+        for i in range(PageManager.get_num_cols() - 1):
+            assert not pages[i].in_swap
+            assert pages[i].view.x == pages[PageManager.get_num_cols() + i + 1].view.x
+            assert pages[i].view.y == new_page.view.y
+
+        assert pages[PageManager.get_num_cols() - 1].in_swap
+        assert pages[PageManager.get_num_cols() - 1].view.x == pages[PageManager.get_num_cols() - 1].view.x
+        assert pages[PageManager.get_num_cols() - 1].view.y == old_y
+        
