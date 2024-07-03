@@ -612,4 +612,15 @@ class TestProcessManager:
 
         process_2.use_cpu()
 
-        
+        assert process_manager.process_slots[0].process == process_4
+        assert process_manager.process_slots[1].process == process_3
+        assert process_manager.process_slots[2].process == None
+        assert process_manager.process_slots[3].process == process_1
+
+        time += ONE_SECOND / FRAMERATE
+        process_manager.update(time, [])
+
+        assert process_manager.process_slots[0].process == process_4
+        assert process_manager.process_slots[1].process == process_3
+        assert process_manager.process_slots[2].process == process_1
+        assert process_manager.process_slots[3].process == None
