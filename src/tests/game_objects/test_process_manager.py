@@ -75,15 +75,26 @@ class TestProcessManager:
 
         time = 0.0
         process_count = 0
+        process_in_motion = 0
         iteration_count = 0
 
-        while process_count < stage.config.num_processes_at_startup and iteration_count < 100:
+        while (
+            (
+                process_count < stage.config.num_processes_at_startup
+                or process_in_motion > 0
+            )
+            and iteration_count < 100000
+        ):
             iteration_count += 1
             process_manager.update(int(time), [])
             time += ONE_SECOND / GameManager.fps
 
-            process_count = len([
+            used_process_slots = [
                 process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
+            ]
+            process_count = len(used_process_slots)
+            process_in_motion = len([
+                process_slot for process_slot in used_process_slots if process_slot.process.is_in_motion
             ])
 
         # Bring back normal number generator
