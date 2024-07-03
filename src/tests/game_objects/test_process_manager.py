@@ -468,20 +468,17 @@ class TestProcessManager:
             time_ms_to_show_sort_button=0,
         ))
 
+        for i in range(1, 5):
+            process = process_manager.get_process(i)
+            time = 0
+            while process.starvation_level < i + 1:
+                process.update(time, [])
+                time += ONE_SECOND
+
         process_1 = process_manager.get_process(1)
         process_2 = process_manager.get_process(2)
         process_3 = process_manager.get_process(3)
         process_4 = process_manager.get_process(4)
-
-        print('PROCESS 1 IN MOTION', process_1.is_in_motion)
-        print('PROCESS 2 IN MOTION', process_2.is_in_motion)
-        print('PROCESS 3 IN MOTION', process_3.is_in_motion)
-        print('PROCESS 4 IN MOTION', process_4.is_in_motion)
-
-        process_1.update(1000, [])
-        process_2.update(2000, [])
-        process_3.update(3000, [])
-        process_4.update(4000, [])
 
         assert process_4.sort_key < process_3.sort_key < process_2.sort_key < process_1.sort_key
         assert process_manager.process_slots[0].process == process_1
@@ -507,9 +504,13 @@ class TestProcessManager:
         assert sort_button.disabled
 
         time = 4000
-        while sort_button.disabled and time < 10000:
+        while sort_button.disabled :
             time += ONE_SECOND / FRAMERATE
             process_manager.update(time, [])
 
         assert not sort_button.disabled
+        assert process_manager.process_slots[0].process == process_4
+        assert process_manager.process_slots[1].process == process_3
+        assert process_manager.process_slots[2].process == process_2
+        assert process_manager.process_slots[3].process == process_1
          
