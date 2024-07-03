@@ -352,6 +352,10 @@ class ProcessManager(GameObject):
             or self._auto_sort_enabled
         )
 
+    def _handle_sorting(self):
+        if self._sort_in_progress or self._auto_sort_enabled:
+            self._continue_sorting()
+
     def update(self, current_time, events):
         if self._check_game_over():
             return
@@ -359,9 +363,7 @@ class ProcessManager(GameObject):
         self._handle_events(events)
         self._handle_process_creation(current_time)
         self._handle_timed_powerups(current_time)
-
-        if self._sort_in_progress or self._auto_sort_enabled:
-            self._continue_sorting()
+        self._handle_sorting()
 
         self._auto_sort_checkbox.view.move_towards_target_xy(_AUTO_SORT_CHECKBOX_ANIMATION_SPEED)
 
