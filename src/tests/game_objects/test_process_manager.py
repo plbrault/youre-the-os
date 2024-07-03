@@ -167,7 +167,8 @@ class TestProcessManager:
                 in process_manager.process_slots if process_slot.process == process
         )
 
-        process_manager.terminate_process(process, True)
+        result = process_manager.terminate_process(process, True)
+        assert result
 
         assert process_manager.user_terminated_process_count == 1
         assert process_slot.process is None
@@ -187,7 +188,8 @@ class TestProcessManager:
         process.use_cpu()
         cpu = next(cpu for cpu in process_manager.cpu_list if cpu.process == process)
 
-        process_manager.terminate_process(process, True)
+        result = process_manager.terminate_process(process, True)
+        assert result
 
         assert process_manager.user_terminated_process_count == 1
         assert cpu.process is None
@@ -207,7 +209,8 @@ class TestProcessManager:
         process.use_cpu()
         cpu = next(cpu for cpu in process_manager.cpu_list if cpu.process == process)
 
-        process_manager.terminate_process(process, False)
+        result = process_manager.terminate_process(process, False)
+        assert result
 
         assert process_manager.user_terminated_process_count == 0
         assert cpu.process == process
