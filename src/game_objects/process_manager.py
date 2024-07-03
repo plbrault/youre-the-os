@@ -1,7 +1,7 @@
 from math import inf
 import re
 
-from constants import ONE_SECOND, ONE_MINUTE
+from constants import ONE_SECOND
 import game_monitor
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
@@ -21,8 +21,6 @@ _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(
 _NUM_PROCESS_SLOT_ROWS = 6
 _NUM_PROCESS_SLOT_COLUMNS = 7
 
-_UPTIME_MS_TO_SHOW_SORT_BUTTON = 6 * ONE_MINUTE
-_UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX = 12 * ONE_MINUTE
 _MIN_SORT_COOLDOWN_MS = 100
 _AUTO_SORT_CHECKBOX_ANIMATION_SPEED = 30
 
@@ -35,7 +33,7 @@ def _is_sorted(process_list: [Process]):
     return True
 
 class ProcessManager(GameObject):
-    MAX_TERMINATED_BY_USER = 10
+    MAX_TERMINATED_BY_USER = 10 # user refers to in-game user, not to the player.
 
     def __init__(self, stage):
         self._stage = stage
@@ -87,6 +85,7 @@ class ProcessManager(GameObject):
 
     @property
     def user_terminated_process_count(self):
+        # user refers to in-game user, not to the player.
         return self._user_terminated_process_count
 
     def get_process(self, pid):
@@ -190,6 +189,7 @@ class ProcessManager(GameObject):
         return False
 
     def terminate_process(self, process, by_user):
+        # `by_user` refers to in-game user, not to the player.
         can_terminate = False
 
         if by_user:
@@ -310,10 +310,7 @@ class ProcessManager(GameObject):
             processes_are_moving = False
             for child in self.children:
                 if isinstance(child, Process):
-                    if child.view.target_x is not None and child.view.target_x != child.view.x:
-                        processes_are_moving = True
-                        break
-                    if child.view.target_y is not None and child.view.target_y != child.view.y:
+                    if child.is_in_motion:
                         processes_are_moving = True
                         break
             if not processes_are_moving:
@@ -333,12 +330,13 @@ class ProcessManager(GameObject):
                 self._last_process_creation_time = current_time
 
         if (
-            self.stage.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_SORT_BUTTON
+            self.stage.uptime_manager.uptime_ms >= self.stage.config.time_ms_to_show_sort_button
             and not self._sort_processes_button.visible
         ):
             self._sort_processes_button.visible = True
         if (
-            self.stage.uptime_manager.uptime_ms >= _UPTIME_MS_TO_SHOW_AUTO_SORT_CHECKBOX
+            self.stage.uptime_manager.uptime_ms
+                >= self.stage.config.time_ms_to_show_auto_sort_checkbox
             and not self._auto_sort_checkbox.visible
         ):
             self._auto_sort_checkbox.visible = True
