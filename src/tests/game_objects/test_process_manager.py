@@ -215,6 +215,23 @@ class TestProcessManager:
         assert process_manager.user_terminated_process_count == 0
         assert cpu.process == process
 
+    def test_terminate_process_by_user_when_cannot_terminate(self, ready_process_manager_custom_config):
+        process_manager = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup = 11,
+            new_process_probability = 0,
+            graceful_termination_probability = 0,
+            io_probability = 0
+        ))
+
+        for i in range(1, 11):
+            process = process_manager.get_process(i)
+            result = process_manager.terminate_process(process, True)
+            assert result
+
+        process = process_manager.get_process(11)
+        result = process_manager.terminate_process(process, True)
+        assert not result
+
     def test_update_removes_process_out_of_screen(self, ready_process_manager_custom_config):
         process_manager = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 1,
