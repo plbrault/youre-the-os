@@ -103,10 +103,14 @@ class TestProcessManager:
 
             time = 0.0
             process_count = 0
+            process_in_motion = 0
             iteration_count = 0
 
             while (
-                process_count < stage.config.num_processes_at_startup
+                (
+                    process_count < stage.config.num_processes_at_startup
+                    or process_in_motion > 0
+                )
                 and iteration_count < 100
             ):
                 iteration_count += 1
