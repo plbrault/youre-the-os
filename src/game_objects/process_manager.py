@@ -356,15 +356,7 @@ class ProcessManager(GameObject):
         if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
 
-    def update(self, current_time, events):
-        if self._check_game_over():
-            return
-
-        self._handle_events(events)
-        self._handle_process_creation(current_time)
-        self._handle_timed_powerups(current_time)
-        self._handle_sorting()
-
+    def _update_children(self, current_time, events):
         for game_object in self.children:
             game_object.update(current_time, events)
             if (
@@ -373,3 +365,13 @@ class ProcessManager(GameObject):
                 and game_object.view.y <= -game_object.view.height
             ):
                 self.children.remove(game_object)
+
+    def update(self, current_time, events):
+        if self._check_game_over():
+            return
+
+        self._handle_events(events)
+        self._handle_process_creation(current_time)
+        self._handle_timed_powerups(current_time)
+        self._handle_sorting()
+        self._update_children(current_time, events)
