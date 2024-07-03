@@ -503,10 +503,26 @@ class TestProcessManager:
         process_manager.update(4000, [])
         assert sort_button.disabled
 
+        steps = [
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 1, 2],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+            [4, 3, 2, 1],
+        ]
+        iteration = 0
         time = 4000
         while sort_button.disabled :
-            time += ONE_SECOND / FRAMERATE
             process_manager.update(time, [])
+            order = [slot.process.pid for slot in process_manager.process_slots if slot.process is not None]
+            assert order == steps[iteration]
+            iteration += 1
 
         assert not sort_button.disabled
         assert process_manager.process_slots[0].process == process_4
