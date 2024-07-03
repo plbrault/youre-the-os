@@ -520,6 +520,7 @@ class TestProcessManager:
         time = 4000
         while sort_button.disabled :
             process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
             order = [slot.process.pid for slot in process_manager.process_slots if slot.process is not None]
             assert order == steps[iteration]
             iteration += 1
@@ -598,6 +599,7 @@ class TestProcessManager:
         time = 4000
         for step in steps:
             process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
             order = [slot.process.pid for slot in process_manager.process_slots if slot.process is not None]
             assert order == step
 
@@ -607,3 +609,7 @@ class TestProcessManager:
         assert process_manager.process_slots[2].process == process_2
         assert process_manager.process_slots[3].process == process_1
         assert active_process not in [process_slot.process for process_slot in process_manager.process_slots]
+
+        process_2.use_cpu()
+
+        
