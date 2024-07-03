@@ -1,7 +1,7 @@
 from math import inf
 import re
 
-from constants import ONE_SECOND, ONE_MINUTE
+from constants import ONE_SECOND
 import game_monitor
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
@@ -335,7 +335,8 @@ class ProcessManager(GameObject):
         ):
             self._sort_processes_button.visible = True
         if (
-            self.stage.uptime_manager.uptime_ms >= self.stage.config.time_ms_to_show_auto_sort_checkbox
+            self.stage.uptime_manager.uptime_ms
+                >= self.stage.config.time_ms_to_show_auto_sort_checkbox
             and not self._auto_sort_checkbox.visible
         ):
             self._auto_sort_checkbox.visible = True
