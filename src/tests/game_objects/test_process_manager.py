@@ -93,7 +93,7 @@ class TestProcessManager:
 
     @pytest.fixture
     def ready_process_manager_custom_config(self, stage_custom_config, monkeypatch):
-        def create_process(stage_config):
+        def create_process_manager(stage_config):
             # Cause the random number generator to never provoke creation of new process
             monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
@@ -105,7 +105,10 @@ class TestProcessManager:
             process_count = 0
             iteration_count = 0
 
-            while process_count < stage.config.num_processes_at_startup and iteration_count < 100:
+            while (
+                process_count < stage.config.num_processes_at_startup
+                and iteration_count < 100
+            ):
                 iteration_count += 1
                 process_manager.update(int(time), [])
                 time += ONE_SECOND / GameManager.fps
@@ -118,7 +121,7 @@ class TestProcessManager:
             monkeypatch.setattr(Random, 'get_number', Random.get_number)
 
             return process_manager
-        return create_process
+        return create_process_manager
 
     def test_get_process(self, ready_process_manager, stage_config):
         process_manager = ready_process_manager
@@ -435,4 +438,59 @@ class TestProcessManager:
 
         stats = process_manager_4.get_current_stats()
         assert stats['blocked_active_process_count'] == 1
+
+    def test_sort(self, ready_process_manager_custom_config):
+        process_manager = ready_process_manager_custom_config(StageConfig(
+            num_cpus=4,
+            num_processes_at_startup=5,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+            time_ms_to_show_sort_button=0,
+        ))
+
+        process_1 = process_manager.get_process(1)
+        process_2 = process_manager.get_process(2)
+        process_3 = process_manager.get_process(3)
+        process_4 = process_manager.get_process(4)
+
+        print('PROCESS 1 IN MOTION', process_1.is_in_motion)
+        print('PROCESS 2 IN MOTION', process_2.is_in_motion)
+        print('PROCESS 3 IN MOTION', process_3.is_in_motion)
+        print('PROCESS 4 IN MOTION', process_4.is_in_motion)
+
+        process_1.update(1000, [])
+        process_2.update(2000, [])
+        process_3.update(3000, [])
+        process_4.update(4000, [])
+
+        assert process_4.sort_key < process_3.sort_key < process_2.sort_key < process_1.sort_key
+        assert process_manager.process_slots[0].process == process_1
+        assert process_manager.process_slots[1].process == process_2
+        assert process_manager.process_slots[2].process == process_3
+        assert process_manager.process_slots[3].process == process_4
+
+        process_manager.get_process(5).use_cpu()
+        active_process = process_manager.get_process(5)
+
+        sort_button = None
+        for child in process_manager.children:
+            if isinstance(child, SortButton):
+                sort_button = child
+                break
+
+        assert sort_button.visible
+        assert not sort_button.disabled
+
+        process_manager.sort_idle_processes()
+
+        process_manager.update(4000, [])
+        assert sort_button.disabled
+
+        time = 4000
+        while sort_button.disabled and time < 10000:
+            time += ONE_SECOND / FRAMERATE
+            process_manager.update(time, [])
+
+        assert not sort_button.disabled
          
