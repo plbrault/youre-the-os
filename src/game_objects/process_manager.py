@@ -310,7 +310,10 @@ class ProcessManager(GameObject):
             processes_are_moving = False
             for child in self.children:
                 if isinstance(child, Process):
-                    if child.is_in_motion:
+                    if child.view.target_x is not None and child.view.target_x != child.view.x:
+                        processes_are_moving = True
+                        break
+                    if child.view.target_y is not None and child.view.target_y != child.view.y:
                         processes_are_moving = True
                         break
             if not processes_are_moving:
