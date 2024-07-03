@@ -292,7 +292,7 @@ class ProcessManager(GameObject):
             'user_terminated_process_count': self._user_terminated_process_count,
         }
 
-    def update(self, current_time, events):
+    def _handle_events(self, events):
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:
@@ -306,6 +306,7 @@ class ProcessManager(GameObject):
                         if cpu.has_process:
                             cpu.process.yield_cpu()
 
+    def _check_game_over(self):
         if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
             processes_are_moving = False
             for child in self.children:
@@ -315,8 +316,10 @@ class ProcessManager(GameObject):
                         break
             if not processes_are_moving:
                 self._stage.game_over = True
-                return
+                return True
+        return False
 
+    def _handle_process_creation(self, current_time):
         if self._next_pid <= self._stage.config.num_processes_at_startup and current_time - \
                 self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
@@ -329,6 +332,7 @@ class ProcessManager(GameObject):
                 self._create_process()
                 self._last_process_creation_time = current_time
 
+    def _handle_timed_powerups(self, current_time):
         if (
             self.stage.uptime_manager.uptime_ms >= self.stage.config.time_ms_to_show_sort_button
             and not self._sort_processes_button.visible
@@ -341,17 +345,18 @@ class ProcessManager(GameObject):
         ):
             self._auto_sort_checkbox.visible = True
             self._auto_sort_checkbox.view.target_x = self._auto_sort_checkbox_final_x_position
-
         self._sort_processes_button.disabled = (
             self._sort_in_progress
             or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
             or self._auto_sort_enabled
         )
+        self._auto_sort_checkbox.view.move_towards_target_xy(_AUTO_SORT_CHECKBOX_ANIMATION_SPEED)
+
+    def _handle_sorting(self):
         if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
 
-        self._auto_sort_checkbox.view.move_towards_target_xy(_AUTO_SORT_CHECKBOX_ANIMATION_SPEED)
-
+    def _update_children(self, current_time, events):
         for game_object in self.children:
             game_object.update(current_time, events)
             if (
@@ -360,3 +365,13 @@ class ProcessManager(GameObject):
                 and game_object.view.y <= -game_object.view.height
             ):
                 self.children.remove(game_object)
+
+    def update(self, current_time, events):
+        if self._check_game_over():
+            return
+
+        self._handle_events(events)
+        self._handle_process_creation(current_time)
+        self._handle_timed_powerups(current_time)
+        self._handle_sorting()
+        self._update_children(current_time, events)
