@@ -345,12 +345,12 @@ class ProcessManager(GameObject):
         ):
             self._auto_sort_checkbox.visible = True
             self._auto_sort_checkbox.view.target_x = self._auto_sort_checkbox_final_x_position
-
         self._sort_processes_button.disabled = (
             self._sort_in_progress
             or current_time - self._last_sort_time < _MIN_SORT_COOLDOWN_MS
             or self._auto_sort_enabled
         )
+        self._auto_sort_checkbox.view.move_towards_target_xy(_AUTO_SORT_CHECKBOX_ANIMATION_SPEED)
 
     def _handle_sorting(self):
         if self._sort_in_progress or self._auto_sort_enabled:
@@ -364,8 +364,6 @@ class ProcessManager(GameObject):
         self._handle_process_creation(current_time)
         self._handle_timed_powerups(current_time)
         self._handle_sorting()
-
-        self._auto_sort_checkbox.view.move_towards_target_xy(_AUTO_SORT_CHECKBOX_ANIMATION_SPEED)
 
         for game_object in self.children:
             game_object.update(current_time, events)
