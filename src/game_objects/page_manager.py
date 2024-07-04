@@ -16,7 +16,6 @@ class PageManager(GameObject):
         self._pages = {}
 
         self._pages_in_ram_label_xy = (0, 0)
-        self._swap_is_enabled = True
         self._pages_on_disk_label_xy = None
 
         super().__init__(PageManagerView(self))
@@ -78,8 +77,6 @@ class PageManager(GameObject):
                     swap_slot.view.set_xy(x, y)
                     self._swap_slots.append(swap_slot)
             self.children.extend(self._swap_slots)
-        else:
-            self._swap_is_enabled = False
 
     def create_page(self, pid, idx):
         page = Page(pid, idx, self)
