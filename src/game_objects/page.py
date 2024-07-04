@@ -43,8 +43,20 @@ class Page(GameObject):
         self._in_use = value
 
     @property
+    def swap_queued(self) -> bool:
+        return self._swap_queued
+
+    @swap_queued.setter
+    def swap_queued(self, value: bool):
+        self._swap_queued = value
+
+    @property
     def swap_in_progress(self) -> bool:
         return self._started_swap_at is not None
+
+    @property
+    def swap_requested(self) -> bool:
+        return self.swap_queued or self.swap_in_progress
 
     @property
     def swapping_from(self) -> Optional[PageSlot]:
