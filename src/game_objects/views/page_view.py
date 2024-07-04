@@ -22,7 +22,7 @@ class PageView(Drawable):
 
     def draw(self, surface):
         color = Color.DARK_GREY
-        if self._page.swap_in_progress:
+        if self._page.swap_requested:
             color = Color.TEAL
         elif self._page.display_blink_color:
             color = Color.BLUE

@@ -103,7 +103,7 @@ class PageManager(GameObject):
         return page
 
     def swap_page(self, page : Page, swap_whole_row : bool = False):
-        if page.swap_in_progress:
+        if page.swap_requested:
             return
 
         source_slots = self._swap_slots if page.on_disk else self._ram_slots
