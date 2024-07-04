@@ -15,14 +15,14 @@ class TestPage:
         assert page.pid == 1
         assert page.idx == 1
         assert not page.in_use
-        assert not page.in_swap
+        assert not page.on_disk
 
-    def test_in_swap_setter(self, page_manager):
+    def test_on_disk_setter(self, page_manager):
         page = Page(1, 1, page_manager)
-        page.in_swap = True
-        assert page.in_swap
-        page.in_swap = False
-        assert not page.in_swap
+        page.on_disk = True
+        assert page.on_disk
+        page.on_disk = False
+        assert not page.on_disk
 
     def test_in_use_setter(self, page_manager):
         page = Page(1, 1, page_manager)
@@ -48,7 +48,7 @@ class TestPage:
         assert page_arg == page
         assert not swap_whole_row_arg
 
-    def test_click_when_not_in_swap(self, page_manager, monkeypatch):
+    def test_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
 
@@ -69,7 +69,7 @@ class TestPage:
         assert page_arg == page
         assert not swap_whole_row_arg
 
-    def test_click_wnen_in_swap(self, page_manager, monkeypatch):
+    def test_click_wnen_on_disk(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
 
@@ -81,7 +81,7 @@ class TestPage:
         monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
 
         page = Page(1, 1, page_manager)
-        page.in_swap = True
+        page.on_disk = True
         page.view.set_xy(1000, 500)
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
@@ -91,7 +91,7 @@ class TestPage:
         assert page_arg == page
         assert not swap_whole_row_arg
 
-    def test_shift_click_when_not_in_swap(self, page_manager, monkeypatch):
+    def test_shift_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
 
@@ -112,7 +112,7 @@ class TestPage:
         assert page_arg == page
         assert swap_whole_row_arg
 
-    def test_shift_click_wnen_in_swap(self, page_manager, monkeypatch):
+    def test_shift_click_wnen_on_disk(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
 
@@ -124,7 +124,7 @@ class TestPage:
         monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
 
         page = Page(1, 1, page_manager)
-        page.in_swap = True
+        page.on_disk = True
         page.view.set_xy(1000, 500)
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
@@ -137,7 +137,7 @@ class TestPage:
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)
         page.in_use = True
-        page.in_swap = True
+        page.on_disk = True
 
         previous_blink_value = page.display_blink_color
         for i in range(1, 5):
@@ -148,7 +148,7 @@ class TestPage:
     def test_blinking_animation_deactivation_after_stopping_use(self, page_manager):
         page = Page(1, 1, page_manager)
         page.in_use = True
-        page.in_swap = True
+        page.on_disk = True
 
         page.update(1000, [])
         page.update(1200, [])
@@ -162,12 +162,12 @@ class TestPage:
     def test_blinking_animation_deactivation_after_removing_from_swap(self, page_manager):
         page = Page(1, 1, page_manager)
         page.in_use = True
-        page.in_swap = True
+        page.on_disk = True
 
         page.update(1000, [])
         page.update(1200, [])
 
-        page.in_swap = False
+        page.on_disk = False
 
         for i in range(1, 5):
             page.update(i * 200, [])
@@ -176,12 +176,12 @@ class TestPage:
     def test_blinking_animation_deactivation_after_removing_from_swap_and_use(self, page_manager):
         page = Page(1, 1, page_manager)
         page.in_use = True
-        page.in_swap = True
+        page.on_disk = True
 
         page.update(1000, [])
         page.update(1200, [])
 
-        page.in_swap = False
+        page.on_disk = False
         page.in_use = False
 
         for i in range(1, 5):

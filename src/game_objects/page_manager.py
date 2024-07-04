@@ -17,7 +17,7 @@ class PageManager(GameObject):
 
         self._pages_in_ram_label_xy = (0, 0)
         self._swap_is_enabled = True
-        self._pages_in_swap_label_xy = None
+        self._pages_on_disk_label_xy = None
 
         super().__init__(PageManagerView(self))
 
@@ -38,8 +38,8 @@ class PageManager(GameObject):
         return self._pages_in_ram_label_xy
 
     @property
-    def pages_in_swap_label_xy(self):
-        return self._pages_in_swap_label_xy
+    def pages_on_disk_label_xy(self):
+        return self._pages_on_disk_label_xy
 
     def get_page(self, pid, idx):
         return self._pages[(pid, idx)]
@@ -64,7 +64,7 @@ class PageManager(GameObject):
         self.children.extend(self._ram_slots)
 
         if num_swap_rows > 0:
-            self._pages_in_swap_label_xy = (
+            self._pages_on_disk_label_xy = (
                 self._stage.process_manager.view.width,
                 164 + num_ram_rows * PageSlot().view.height + num_ram_rows * 5)
 
@@ -73,7 +73,7 @@ class PageManager(GameObject):
                     swap_slot = PageSlot()
                     x = self._stage.process_manager.view.width + \
                         column * ram_slot.view.width + column * 5
-                    y = self._pages_in_swap_label_xy[1] + \
+                    y = self._pages_on_disk_label_xy[1] + \
                         35 + row * ram_slot.view.height + row * 5
                     swap_slot.view.set_xy(x, y)
                     self._swap_slots.append(swap_slot)
@@ -94,7 +94,7 @@ class PageManager(GameObject):
             for swap_slot in self._swap_slots:
                 if not swap_slot.has_page:
                     swap_slot.page = page
-                    page.in_swap = True
+                    page.on_disk = True
                     page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
                     page_created = True
                     break
@@ -106,8 +106,8 @@ class PageManager(GameObject):
         if page.swap_in_progress:
             return
 
-        source_slots = self._swap_slots if page.in_swap else self._ram_slots
-        target_slots = self._ram_slots if page.in_swap else self._swap_slots
+        source_slots = self._swap_slots if page.on_disk else self._ram_slots
+        target_slots = self._ram_slots if page.on_disk else self._swap_slots
 
         can_swap = False
         swapping_from = None
@@ -164,8 +164,8 @@ class PageManager(GameObject):
                 page.swapping_from = None
                 page.swapping_to = None
                 page.started_swap_at = None
-                page.in_swap = not page.in_swap
-                game_monitor.notify_page_swap(page.pid, page.idx, page.in_swap)
+                page.on_disk = not page.on_disk
+                game_monitor.notify_page_swap(page.pid, page.idx, page.on_disk)
 
     def update(self, current_time, events):
         self._handle_page_swaps()

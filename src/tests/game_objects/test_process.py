@@ -369,7 +369,7 @@ class TestProcess:
         process.use_cpu()
 
         stage.page_manager.get_page(1, 0).swap()
-        assert stage.page_manager.get_page(1, 0).in_swap == True
+        assert stage.page_manager.get_page(1, 0).on_disk == True
 
         process.update(0, [])
 
@@ -387,7 +387,7 @@ class TestProcess:
         process.yield_cpu()
 
         stage.page_manager.get_page(1, 0).swap()
-        assert stage.page_manager.get_page(1, 0).in_swap == True
+        assert stage.page_manager.get_page(1, 0).on_disk == True
 
         process.use_cpu()
 

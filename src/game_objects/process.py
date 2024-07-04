@@ -152,7 +152,7 @@ class Process(GameObject):
                     for i in range(num_pages):
                         page = self._page_manager.create_page(self._pid, i)
                         self._pages.append(page)
-                        game_monitor.notify_page_new(page.pid, page.idx, page.in_swap, page.in_use)
+                        game_monitor.notify_page_new(page.pid, page.idx, page.on_disk, page.in_use)
                 for page in self._pages:
                     page.in_use = True
                     game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
@@ -255,13 +255,13 @@ class Process(GameObject):
                 if self._check_if_clicked_on(event):
                     self._on_click()
 
-    def _handle_pages_in_swap(self):
-        pages_in_swap = 0
+    def _handle_pages_on_disk(self):
+        pages_on_disk = 0
         if self.has_cpu:
             for page in self._pages:
-                if page.in_swap:
-                    pages_in_swap += 1
-        self._set_waiting_for_page(pages_in_swap > 0)
+                if page.on_disk:
+                    pages_on_disk += 1
+        self._set_waiting_for_page(pages_on_disk > 0)
 
     def _update_starvation_level(self, current_time):
         if self.has_cpu and not self.is_blocked:
@@ -297,7 +297,7 @@ class Process(GameObject):
                 self._pages.append(new_page)
                 new_page.in_use = True
                 game_monitor.notify_page_new(
-                    new_page.pid, new_page.idx, new_page.in_swap, new_page.in_use)
+                    new_page.pid, new_page.idx, new_page.on_disk, new_page.in_use)
 
     def _handle_graceful_termination_probability(self, current_time):
         if self.has_cpu and not self.is_blocked:
@@ -319,7 +319,7 @@ class Process(GameObject):
         self._handle_events(events)
 
         if not self.has_ended:
-            self._handle_pages_in_swap()
+            self._handle_pages_on_disk()
             if current_time >= self._last_event_check_time + ONE_SECOND:
                 self._last_event_check_time = current_time
                 self._update_starvation_level(current_time)
