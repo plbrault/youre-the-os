@@ -151,3 +151,6 @@ class PageManager(GameObject):
                 break
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
+
+    def update(self, current_time, events):
+        super().update(current_time, events)
