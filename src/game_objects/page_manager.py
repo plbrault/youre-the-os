@@ -123,9 +123,14 @@ class PageManager(GameObject):
                 swapping_to = target_slot
                 break
         if can_swap:
-            page.init_swap(swapping_from, swapping_to, False)
-            page.start_swap(self._stage.current_time)
             swapping_to.page = page
+
+            queue_swap = bool([page for page in self._pages.values() if page.swap_in_progress])
+            page.init_swap(swapping_from, swapping_to, queue_swap)
+            if queue_swap:
+                self._swap_queue.put(page)
+            else:
+                page.start_swap(self._stage.current_time)
 
             if swap_whole_row:
                 slots_on_same_row = [
@@ -152,5 +157,12 @@ class PageManager(GameObject):
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
 
+    def _handle_swap_queue(self):
+        if not self._swap_queue.empty():
+            if not bool([page for page in self._pages.values() if page.swap_in_progress]):
+                page = self._swap_queue.get()
+                page.start_swap(self._stage.current_time)
+
     def update(self, current_time, events):
+        self._handle_swap_queue()
         super().update(current_time, events)
