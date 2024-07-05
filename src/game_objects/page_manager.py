@@ -1,6 +1,5 @@
 from queue import Queue
 
-import game_monitor
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page

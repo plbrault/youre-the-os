@@ -107,7 +107,8 @@ class Page(GameObject):
            in progress is now completed."""
         if (
             self.swap_in_progress
-            and (self._stage.current_time - self.started_swap_at) >= self._stage.config.swap_delay_ms
+            and (self._stage.current_time - self.started_swap_at)
+                >= self._stage.config.swap_delay_ms
         ):
             self.view.set_xy(self.swapping_to.view.x, self.swapping_to.view.y)
             self._swapping_from.page = None
