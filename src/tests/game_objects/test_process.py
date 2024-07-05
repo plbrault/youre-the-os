@@ -368,7 +368,7 @@ class TestProcess:
 
         process.use_cpu()
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         assert stage.page_manager.get_page(1, 0).on_disk == True
 
         process.update(0, [])
@@ -386,7 +386,7 @@ class TestProcess:
         process.use_cpu()
         process.yield_cpu()
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         assert stage.page_manager.get_page(1, 0).on_disk == True
 
         process.use_cpu()
@@ -405,11 +405,11 @@ class TestProcess:
 
         process.use_cpu()
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         process.update(0, [])
         assert process.is_blocked == True
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         process.update(0, [])
 
         assert process.is_blocked == False
@@ -424,7 +424,7 @@ class TestProcess:
 
         process.use_cpu()
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         process.update(0, [])
         assert process.is_waiting_for_page == True
 
@@ -443,7 +443,7 @@ class TestProcess:
 
         process.use_cpu()
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         process.update(0, [])
         assert process.is_waiting_for_page == True
 
@@ -462,7 +462,7 @@ class TestProcess:
         process = Process(1, stage)
 
         process.use_cpu()
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
 
         for i in range(1, DEAD_STARVATION_LEVEL):
             process.update(i * process.time_between_starvation_levels, [])
@@ -808,7 +808,7 @@ class TestProcess:
         process = Process(1, stage)
 
         process.use_cpu()
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
 
         previous_blink_value = process.display_blink_color
         for i in range(1, 5):
@@ -820,10 +820,10 @@ class TestProcess:
         process = Process(1, stage)
 
         process.use_cpu()
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         process.update(1000, [])
 
-        stage.page_manager.get_page(1, 0).swap()
+        stage.page_manager.get_page(1, 0).request_swap()
         process.update(2000, [])
 
         for i in range(1, 5):

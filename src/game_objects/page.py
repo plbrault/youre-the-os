@@ -2,6 +2,7 @@ from typing import Optional
 
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
+import game_monitor
 from game_objects.page_slot import PageSlot
 from game_objects.views.page_view import PageView
 
@@ -13,6 +14,7 @@ class Page(GameObject):
         self._pid = pid
         self._idx = idx
         self._page_manager = page_manager
+        self._stage = page_manager.stage
 
         self._in_use = False
 
@@ -46,10 +48,6 @@ class Page(GameObject):
     def swap_queued(self) -> bool:
         return self._swap_queued
 
-    @swap_queued.setter
-    def swap_queued(self, value: bool):
-        self._swap_queued = value
-
     @property
     def swap_in_progress(self) -> bool:
         return self._started_swap_at is not None
@@ -62,31 +60,19 @@ class Page(GameObject):
     def swapping_from(self) -> Optional[PageSlot]:
         return self._swapping_from
 
-    @swapping_from.setter
-    def swapping_from(self, value: Optional[PageSlot]):
-        self._swapping_from = value
-
     @property
     def swapping_to(self) -> Optional[PageSlot]:
         return self._swapping_to
-
-    @swapping_to.setter
-    def swapping_to(self, value: Optional[PageSlot]):
-        self._swapping_to = value
 
     @property
     def started_swap_at(self) -> Optional[int]:
         return self._started_swap_at
 
-    @started_swap_at.setter
-    def started_swap_at(self, value: Optional[int]):
-        self._started_swap_at = value
-
     @property
     def swap_percentage_completed(self) -> float:
         if not self.swap_in_progress:
             return 0
-        return (self._page_manager.stage.current_time - self._started_swap_at) / self._page_manager.stage.config.swap_delay_ms
+        return (self._stage.current_time - self._started_swap_at) / self._stage.config.swap_delay_ms
 
     @property
     def on_disk(self):
@@ -100,8 +86,36 @@ class Page(GameObject):
     def display_blink_color(self):
         return self._display_blink_color
 
-    def swap(self, swap_whole_row : bool = False):
+    def request_swap(self, swap_whole_row : bool = False):
+        """The method called when the player clicks on the page."""
         self._page_manager.swap_page(self, swap_whole_row)
+
+    def init_swap(self, swapping_from : PageSlot, swapping_to : PageSlot, queued: bool):
+        """The method called by the page manager to set the swap attributes."""
+        self._swapping_from = swapping_from
+        self._swapping_to = swapping_to
+        if queued:
+            self._swap_queued = True
+
+    def start_swap(self, current_time: int):
+        """The method called by the page manager to actually start the swap."""
+        self._swap_queued = False
+        self._started_swap_at = current_time
+
+    def _update_swap(self):
+        """This method is called at each update to perform necessary operations if a swap that was
+           in progress is now completed."""
+        if (
+            self.swap_in_progress
+            and (self._stage.current_time - self.started_swap_at) >= self._stage.config.swap_delay_ms
+        ):
+            self.view.set_xy(self.swapping_to.view.x, self.swapping_to.view.y)
+            self._swapping_from.page = None
+            self._swapping_from = None
+            self._swapping_to = None
+            self._started_swap_at = None
+            self._on_disk = not self._on_disk
+            game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
     def _check_if_clicked_on(self, event):
         if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
@@ -109,13 +123,14 @@ class Page(GameObject):
         return False
 
     def _on_click(self, shift_down : bool):
-        self.swap(shift_down)
+        self.request_swap(shift_down)
 
     def update(self, current_time, events):
         for event in events:
             if self._check_if_clicked_on(event):
                 self._on_click(event.get_property('shift'))
 
+        self._update_swap()
         if self.in_use and self.on_disk:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:

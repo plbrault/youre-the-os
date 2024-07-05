@@ -43,7 +43,7 @@ class TestPage:
         monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
 
         page = Page(1, 1, page_manager)
-        page.swap()
+        page.request_swap()
 
         assert page_arg == page
         assert not swap_whole_row_arg

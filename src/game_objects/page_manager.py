@@ -1,3 +1,5 @@
+from queue import Queue
+
 import game_monitor
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
@@ -14,6 +16,7 @@ class PageManager(GameObject):
         self._ram_slots = []
         self._swap_slots = []
         self._pages = {}
+        self._swap_queue = Queue()
 
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
@@ -120,9 +123,8 @@ class PageManager(GameObject):
                 swapping_to = target_slot
                 break
         if can_swap:
-            page.swapping_from = swapping_from
-            page.swapping_to = swapping_to
-            page.started_swap_at = self._stage.current_time
+            page.init_swap(swapping_from, swapping_to, False)
+            page.start_swap(self._stage.current_time)
             swapping_to.page = page
 
             if swap_whole_row:
@@ -149,21 +151,3 @@ class PageManager(GameObject):
                 break
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
-
-    def _handle_page_swaps(self):
-        for page in self._pages.values():
-            if (
-                page.swap_in_progress
-                and (self._stage.current_time - page.started_swap_at) >= self._stage.config.swap_delay_ms
-            ):
-                page.view.set_xy(page.swapping_to.view.x, page.swapping_to.view.y)
-                page.swapping_from.page = None
-                page.swapping_from = None
-                page.swapping_to = None
-                page.started_swap_at = None
-                page.on_disk = not page.on_disk
-                game_monitor.notify_page_swap(page.pid, page.idx, page.on_disk)
-
-    def update(self, current_time, events):
-        self._handle_page_swaps()
-        super().update(current_time, events)
