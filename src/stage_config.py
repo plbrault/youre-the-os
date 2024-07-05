@@ -8,7 +8,7 @@ class StageConfig:
     num_processes_at_startup: int = 14
     max_processes: int = MAX_PROCESSES
     num_ram_rows: int = 8
-    swap_delay_ms: int = 500
+    swap_delay_ms: int = 100
     new_process_probability: float = 0.05
     priority_process_probability: float = 0.01
     io_probability: float = 0.01
