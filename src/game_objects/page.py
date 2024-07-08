@@ -90,7 +90,7 @@ class Page(GameObject):
            in progress is now completed."""
         if self.swap_in_progress:
             self._swap_percentage_completed = min(1,
-                (self._stage.current_time - self._started_swap_at)
+                (current_time - self._started_swap_at)
                 / self._stage.config.swap_delay_ms
             )
             if self._swap_percentage_completed == 1:
