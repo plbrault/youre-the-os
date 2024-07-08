@@ -99,23 +99,38 @@ class TestPageManager:
         page_manager.update(time, [])
 
         page_manager.swap_page(pages[0])
+        assert not pages[0].on_disk
+        assert pages[0].swap_requested
+        assert pages[0].swap_in_progress
         time += 1000
         page_manager.update(time, [])
         assert pages[0].on_disk
+        assert not pages[0].swap_requested
+        assert not pages[0].swap_in_progress
         assert pages[0].view.y > pages[PageManager.get_num_cols()].view.y
         assert pages[0].view.x == pages[PageManager.get_num_cols()].view.x
 
         page_manager.swap_page(pages[2])
+        assert not pages[2].on_disk
+        assert pages[2].swap_requested
+        assert pages[2].swap_in_progress
         time += 1000
         page_manager.update(time, [])
         assert pages[2].on_disk
+        assert not pages[2].swap_requested
+        assert not pages[2].swap_in_progress
         assert pages[2].view.y > pages[PageManager.get_num_cols()].view.y
         assert pages[2].view.x == pages[PageManager.get_num_cols() + 1].view.x
 
         page_manager.swap_page(pages[2])
+        assert pages[2].on_disk
+        assert pages[2].swap_requested
+        assert pages[2].swap_in_progress
         time += 1000
         page_manager.update(time, [])
         assert not pages[2].on_disk
+        assert not pages[2].swap_requested
+        assert not pages[2].swap_in_progress
         assert pages[2].view.y == pages[1].view.y
         assert pages[2].view.x < pages[1].view.x
 
