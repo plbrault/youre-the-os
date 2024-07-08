@@ -125,7 +125,7 @@ class PageManager(GameObject):
             swapping_to.page = page
 
             queue_swap = bool([page for page in self._pages.values() if page.swap_in_progress])
-            page.init_swap(swapping_from, swapping_to, queue_swap)
+            page.init_swap(swapping_from, swapping_to)
             if queue_swap:
                 self._swap_queue.put(page)
             else:

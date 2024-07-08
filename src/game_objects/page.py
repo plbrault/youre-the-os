@@ -18,7 +18,7 @@ class Page(GameObject):
 
         self._in_use = False
 
-        self._swap_queued: bool = False
+        self._waiting_to_swap: bool = False
         self._swapping_from: Optional[PageSlot] = None
         self._swapping_to: Optional[PageSlot] = None
         self._started_swap_at: Optional[int] = None
@@ -50,7 +50,7 @@ class Page(GameObject):
 
     @property
     def swap_requested(self) -> bool:
-        return self._swap_queued or self.swap_in_progress
+        return self._waiting_to_swap or self.swap_in_progress
 
     @property
     def swap_percentage_completed(self) -> float:
@@ -74,16 +74,15 @@ class Page(GameObject):
         """The method called when the player clicks on the page."""
         self._page_manager.swap_page(self, swap_whole_row)
 
-    def init_swap(self, swapping_from : PageSlot, swapping_to : PageSlot, queued: bool):
+    def init_swap(self, swapping_from : PageSlot, swapping_to : PageSlot):
         """The method called by the page manager to set the swap attributes."""
         self._swapping_from = swapping_from
         self._swapping_to = swapping_to
-        if queued:
-            self._swap_queued = True
+        self._waiting_to_swap = True
 
     def start_swap(self, current_time: int):
         """The method called by the page manager to actually start the swap."""
-        self._swap_queued = False
+        self._waiting_to_swap = False
         self._started_swap_at = current_time
 
     def _update_swap(self):

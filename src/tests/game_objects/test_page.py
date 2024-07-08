@@ -4,6 +4,7 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from game_objects.page import Page
 from game_objects.page_manager import PageManager
+from game_objects.page_slot import PageSlot
 
 class TestPage:
     @pytest.fixture
@@ -47,6 +48,55 @@ class TestPage:
 
         assert page_arg == page
         assert not swap_whole_row_arg
+
+    def test_swap(self, page_manager):
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_to = PageSlot()
+        swapping_from.page = page
+        swapping_to.page = page
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert not page.on_disk
+        assert page.swap_percentage_completed == 0
+
+        page.init_swap(swapping_from, swapping_to)
+
+        assert page.swap_requested
+        assert not page.swap_in_progress
+        assert not page.on_disk
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.start_swap(0)
+
+        assert page.swap_requested
+        assert page.swap_in_progress
+        assert not page.on_disk
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.update(page_manager.stage.config.swap_delay_ms // 2, [])
+
+        assert page.swap_requested
+        assert page.swap_in_progress
+        assert not page.on_disk
+        assert page.swap_percentage_completed == 0.5
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.update(page_manager.stage.config.swap_delay_ms, [])
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.on_disk
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page is None
+        assert swapping_to.page == page
 
     def test_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
