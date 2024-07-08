@@ -31,7 +31,7 @@ class TestPage:
         page.in_use = False
         assert not page.in_use
 
-    def test_swap(self, page_manager, monkeypatch):
+    def test_request_swap(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
 

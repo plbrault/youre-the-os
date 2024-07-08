@@ -45,28 +45,12 @@ class Page(GameObject):
         self._in_use = value
 
     @property
-    def swap_queued(self) -> bool:
-        return self._swap_queued
-
-    @property
     def swap_in_progress(self) -> bool:
         return self._started_swap_at is not None
 
     @property
     def swap_requested(self) -> bool:
-        return self.swap_queued or self.swap_in_progress
-
-    @property
-    def swapping_from(self) -> Optional[PageSlot]:
-        return self._swapping_from
-
-    @property
-    def swapping_to(self) -> Optional[PageSlot]:
-        return self._swapping_to
-
-    @property
-    def started_swap_at(self) -> Optional[int]:
-        return self._started_swap_at
+        return self._swap_queued or self.swap_in_progress
 
     @property
     def swap_percentage_completed(self) -> float:
@@ -107,10 +91,10 @@ class Page(GameObject):
            in progress is now completed."""
         if (
             self.swap_in_progress
-            and (self._stage.current_time - self.started_swap_at)
+            and (self._stage.current_time - self._started_swap_at)
                 >= self._stage.config.swap_delay_ms
         ):
-            self.view.set_xy(self.swapping_to.view.x, self.swapping_to.view.y)
+            self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
             self._swapping_from.page = None
             self._swapping_from = None
             self._swapping_to = None
