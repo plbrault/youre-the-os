@@ -22,6 +22,7 @@ class Page(GameObject):
         self._swapping_from: Optional[PageSlot] = None
         self._swapping_to: Optional[PageSlot] = None
         self._started_swap_at: Optional[int] = None
+        self._swap_percentage_completed: float = 0
         self._on_disk = False
 
         self._display_blink_color = False
@@ -54,9 +55,7 @@ class Page(GameObject):
 
     @property
     def swap_percentage_completed(self) -> float:
-        if not self.swap_in_progress:
-            return 0
-        return (self._stage.current_time - self._started_swap_at) / self._stage.config.swap_delay_ms
+        return self._swap_percentage_completed
 
     @property
     def on_disk(self):
@@ -79,27 +78,30 @@ class Page(GameObject):
         self._swapping_from = swapping_from
         self._swapping_to = swapping_to
         self._waiting_to_swap = True
+        self._swap_percentage_completed = 0
 
     def start_swap(self, current_time: int):
         """The method called by the page manager to actually start the swap."""
         self._waiting_to_swap = False
         self._started_swap_at = current_time
 
-    def _update_swap(self):
+    def _update_swap(self, current_time):
         """This method is called at each update to perform necessary operations if a swap that was
            in progress is now completed."""
-        if (
-            self.swap_in_progress
-            and (self._stage.current_time - self._started_swap_at)
-                >= self._stage.config.swap_delay_ms
-        ):
-            self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
-            self._swapping_from.page = None
-            self._swapping_from = None
-            self._swapping_to = None
-            self._started_swap_at = None
-            self._on_disk = not self._on_disk
-            game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
+        if self.swap_in_progress:
+            self._swap_percentage_completed = min(1,
+                (self._stage.current_time - self._started_swap_at)
+                / self._stage.config.swap_delay_ms
+            )
+            if self._swap_percentage_completed == 1:
+                self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
+                self._swapping_from.page = None
+                self._swapping_from = None
+                self._swapping_to = None
+                self._started_swap_at = None
+                self._on_disk = not self._on_disk
+                self._swap_percentage_completed = 0
+                game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
     def _check_if_clicked_on(self, event):
         if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
@@ -114,7 +116,7 @@ class Page(GameObject):
             if self._check_if_clicked_on(event):
                 self._on_click(event.get_property('shift'))
 
-        self._update_swap()
+        self._update_swap(current_time)
         if self.in_use and self.on_disk:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:
