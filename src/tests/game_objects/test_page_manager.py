@@ -95,17 +95,26 @@ class TestPageManager:
         for i in range(PageManager.get_num_cols() * 2):
             pages.append(page_manager.create_page(1, i))
 
+        time = 2000
+        page_manager.update(time, [])
+
         page_manager.swap_page(pages[0])
+        time += 1000
+        page_manager.update(time, [])
         assert pages[0].on_disk
         assert pages[0].view.y > pages[PageManager.get_num_cols()].view.y
         assert pages[0].view.x == pages[PageManager.get_num_cols()].view.x
 
         page_manager.swap_page(pages[2])
+        time += 1000
+        page_manager.update(time, [])
         assert pages[2].on_disk
         assert pages[2].view.y > pages[PageManager.get_num_cols()].view.y
         assert pages[2].view.x == pages[PageManager.get_num_cols() + 1].view.x
 
         page_manager.swap_page(pages[2])
+        time += 1000
+        page_manager.update(time, [])
         assert not pages[2].on_disk
         assert pages[2].view.y == pages[1].view.y
         assert pages[2].view.x < pages[1].view.x
