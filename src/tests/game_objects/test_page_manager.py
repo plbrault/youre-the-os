@@ -156,9 +156,14 @@ class TestPageManager:
         for i in range(PageManager.get_num_cols() * 2):
             pages.append(page_manager.create_page(1, i))
 
+        time = 10000
+        page_manager.update(time, [])
+
         page_manager.swap_page(pages[0], swap_whole_row=True)
 
         for i in range(PageManager.get_num_cols()):
+            time += page_manager.stage.config.swap_delay_ms
+            page_manager.update(time, [])
             assert pages[i].on_disk
             assert pages[i].view.x == pages[PageManager.get_num_cols() + i].view.x
             assert pages[i].view.y > pages[PageManager.get_num_cols() + i].view.y
@@ -170,6 +175,8 @@ class TestPageManager:
         page_manager.swap_page(pages[0], swap_whole_row=True)
 
         for i in range(PageManager.get_num_cols() - 1):
+            time += page_manager.stage.config.swap_delay_ms
+            page_manager.update(time, [])
             assert not pages[i].on_disk
             assert pages[i].view.x == pages[PageManager.get_num_cols() + i + 1].view.x
             assert pages[i].view.y == new_page.view.y
