@@ -192,7 +192,7 @@ class Stage(Scene):
                         event['pid']).toggle()
                 elif event['type'] == 'page':
                     self._page_manager.get_page(
-                        event['pid'], event['idx']).swap()
+                        event['pid'], event['idx']).request_swap()
             except Exception as exc: # pylint: disable=broad-exception-caught
                 print(exc.__class__.__name__, *exc.args, event, file=sys.stderr)
 

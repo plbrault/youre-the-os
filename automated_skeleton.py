@@ -48,7 +48,7 @@ from dataclasses import dataclass, field
 class Page:
     pid: int
     idx: int
-    in_swap: bool
+    on_disk: bool
     in_use: bool
 
     @property
