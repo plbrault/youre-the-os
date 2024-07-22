@@ -32,7 +32,7 @@ class CustomSettingsDialogView(Drawable):
 
     @property
     def width(self):
-        return 560
+        return 580
 
     @property
     def height(self):

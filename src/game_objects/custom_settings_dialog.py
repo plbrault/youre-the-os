@@ -97,13 +97,14 @@ class CustomSettingsDialog(GameObject):
         )
         self.children.append(self._graceful_termination_selector)
 
-        selector_width = self._new_process_probability_selector.view.width
+        selector_width = self._swap_delay_selector.view.width
         self._num_cpus_selector.view.min_width = selector_width
         self._num_processes_at_startup_selector.view.min_width = selector_width
         self._max_processes_selector.view.min_width = selector_width
-        self._swap_delay_selector.view.min_width = selector_width
+        self._new_process_probability_selector.view.min_width = selector_width
         self._num_ram_rows_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
+        self._priority_process_probability_selector.view.min_width = selector_width
         self._graceful_termination_selector.view.min_width = selector_width
 
         self._start_button = Button('Start', start_fn)
