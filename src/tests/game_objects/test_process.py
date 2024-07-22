@@ -470,6 +470,7 @@ class TestProcess:
 
         process.use_cpu()
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1000, [])
 
         for i in range(1, DEAD_STARVATION_LEVEL):
             process.update(i * process.time_between_starvation_levels, [])
