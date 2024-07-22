@@ -86,8 +86,8 @@ class Page(GameObject):
         self._started_swap_at = current_time
 
     def _update_swap(self, current_time):
-        """This method is called at each update to perform necessary operations if a swap that was
-           in progress is now completed."""
+        """This method is called at each update. If a swap is in progress, it performs
+        appropriate checks and operations."""
         if self.swap_in_progress:
             self._swap_percentage_completed = min(1,
                 (current_time - self._started_swap_at)
