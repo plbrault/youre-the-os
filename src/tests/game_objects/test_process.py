@@ -829,9 +829,11 @@ class TestProcess:
 
         process.use_cpu()
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1000, [])
         process.update(1000, [])
 
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(2000, [])
         process.update(2000, [])
 
         for i in range(1, 5):

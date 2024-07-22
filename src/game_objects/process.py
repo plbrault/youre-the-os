@@ -255,13 +255,13 @@ class Process(GameObject):
                 if self._check_if_clicked_on(event):
                     self._on_click()
 
-    def _handle_pages_on_disk(self):
-        pages_on_disk = 0
+    def _handle_unavailable_pages(self):
+        unavailable_pages = 0
         if self.has_cpu:
             for page in self._pages:
-                if page.on_disk:
-                    pages_on_disk += 1
-        self._set_waiting_for_page(pages_on_disk > 0)
+                if page.on_disk or page.swap_requested:
+                    unavailable_pages += 1
+        self._set_waiting_for_page(unavailable_pages > 0)
 
     def _update_starvation_level(self, current_time):
         if self.has_cpu and not self.is_blocked:
@@ -319,7 +319,7 @@ class Process(GameObject):
         self._handle_events(events)
 
         if not self.has_ended:
-            self._handle_pages_on_disk()
+            self._handle_unavailable_pages()
             if current_time >= self._last_event_check_time + ONE_SECOND:
                 self._last_event_check_time = current_time
                 self._update_starvation_level(current_time)
