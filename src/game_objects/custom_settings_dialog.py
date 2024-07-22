@@ -27,10 +27,10 @@ _swap_delay_ms_to_names = {
 }
 
 _swap_delay_ms_to_ids = {
-    1000: 0,
-    500: 1,
-    250: 2,
-    100: 3
+    100: 0,
+    250: 1,
+    500: 2,
+    1000: 3
 }
 
 class CustomSettingsDialog(GameObject):
