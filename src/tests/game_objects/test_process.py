@@ -389,6 +389,7 @@ class TestProcess:
         process.yield_cpu()
 
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1000, [])
         assert stage.page_manager.get_page(1, 0).on_disk == True
 
         process.use_cpu()
