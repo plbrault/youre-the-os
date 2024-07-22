@@ -10,6 +10,29 @@ from game_objects.option_selector import OptionSelector
 from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
 from stage_config import StageConfig
 
+_swap_delay_names = ['Low', 'Medium', 'High', 'Higher']
+
+_swap_delay_names_to_ms = {
+    'Low': 100,
+    'Medium': 250,
+    'High': 500,
+    'Higher': 1000
+}
+
+_swap_delay_ms_to_names = {
+    100: 'Low',
+    250: 'Medium',
+    500: 'High',
+    1000: 'Higher'
+}
+
+_swap_delay_ms_to_ids = {
+    100: 0,
+    250: 1,
+    500: 2,
+    1000: 3
+}
+
 class CustomSettingsDialog(GameObject):
 
     def __init__(self, start_fn, cancel_fn, default_config : StageConfig = StageConfig()):
@@ -35,6 +58,12 @@ class CustomSettingsDialog(GameObject):
             [str(i) for i in range(MIN_RAM_ROWS, MAX_RAM_ROWS + 1)],
             default_config.num_ram_rows - 1)
         self.children.append(self._num_ram_rows_selector)
+
+        self._swap_delay_selector = OptionSelector(
+            _swap_delay_names,
+            _swap_delay_ms_to_ids[default_config.swap_delay_ms]
+        )
+        self.children.append(self._swap_delay_selector)
 
         self._new_process_probability_selector = OptionSelector(
             [str(i) + ' %' for i in range(0, 105, 5)])
@@ -68,12 +97,14 @@ class CustomSettingsDialog(GameObject):
         )
         self.children.append(self._graceful_termination_selector)
 
-        selector_width = self._new_process_probability_selector.view.width
+        selector_width = self._swap_delay_selector.view.width
         self._num_cpus_selector.view.min_width = selector_width
         self._num_processes_at_startup_selector.view.min_width = selector_width
         self._max_processes_selector.view.min_width = selector_width
+        self._new_process_probability_selector.view.min_width = selector_width
         self._num_ram_rows_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
+        self._priority_process_probability_selector.view.min_width = selector_width
         self._graceful_termination_selector.view.min_width = selector_width
 
         self._start_button = Button('Start', start_fn)
@@ -89,6 +120,7 @@ class CustomSettingsDialog(GameObject):
             num_processes_at_startup = int(self._num_processes_at_startup_selector.selected_option),
             max_processes = int(self._max_processes_selector.selected_option),
             num_ram_rows = int(self._num_ram_rows_selector.selected_option),
+            swap_delay_ms = _swap_delay_names_to_ms[self._swap_delay_selector.selected_option],
             new_process_probability = (
                 self._new_process_probability_selector.selected_option_id * 0.05
             ),
@@ -134,6 +166,11 @@ class CustomSettingsDialog(GameObject):
             self.view.x + self.view.width - self._num_ram_rows_selector.view.width - 20,
             self.view.num_ram_rows_y +
             (self.view.label_height - self._num_ram_rows_selector.view.height) / 2
+        )
+        self._swap_delay_selector.view.set_xy(
+            self.view.x + self.view.width - self._swap_delay_selector.view.width - 20,
+            self.view.swap_delay_y +
+            (self.view.label_height - self._swap_delay_selector.view.height) / 2
         )
         self._new_process_probability_selector.view.set_xy(
             self.view.x + self.view.width -
