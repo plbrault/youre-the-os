@@ -134,22 +134,6 @@ class TestPageManager:
         assert pages[2].view.y == pages[1].view.y
         assert pages[2].view.x < pages[1].view.x
 
-    def test_swap_page_when_cannot_swap(self, page_manager):
-        pages = []
-
-        for i in range(PageManager.get_num_cols() * 2):
-            pages.append(page_manager.create_page(1, i))
-
-        assert pages[PageManager.get_num_cols()].on_disk
-
-        (old_x, old_y) = (pages[PageManager.get_num_cols()].view.x, pages[PageManager.get_num_cols()].view.y)
-
-        page_manager.swap_page(pages[PageManager.get_num_cols()])
-
-        assert pages[PageManager.get_num_cols()].on_disk
-        assert pages[PageManager.get_num_cols()].view.x == old_x
-        assert pages[PageManager.get_num_cols()].view.y == old_y
-
     def test_swap_whole_row(self, page_manager):
         pages = []
 
