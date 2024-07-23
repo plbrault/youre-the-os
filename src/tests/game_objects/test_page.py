@@ -95,7 +95,7 @@ class TestPage:
         assert not page.swap_in_progress
         assert page.on_disk
         assert page.swap_percentage_completed == 0
-        assert swapping_from.page is None
+        assert not swapping_from.has_page
         assert swapping_to.page == page
 
     def test_click_when_not_on_disk(self, page_manager, monkeypatch):

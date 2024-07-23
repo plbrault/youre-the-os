@@ -46,16 +46,12 @@ class Page(GameObject):
         self._in_use = value
 
     @property
-    def swap_in_progress(self) -> bool:
-        return self._started_swap_at is not None
-
-    @property
     def swap_requested(self) -> bool:
         return self._waiting_to_swap or self.swap_in_progress
 
     @property
-    def swapping_to(self) -> Optional[PageSlot]:
-        return self._swapping_to
+    def swap_in_progress(self) -> bool:
+        return self._started_swap_at is not None
 
     @property
     def swap_percentage_completed(self) -> float:
@@ -77,17 +73,18 @@ class Page(GameObject):
         """The method called when the player clicks on the page."""
         self._page_manager.swap_page(self, swap_whole_row)
 
-    def init_swap(self, swapping_from : PageSlot, swapping_to : PageSlot):
+    def init_swap(self, swapping_from : PageSlot):
         """The method called by the page manager to set the swap attributes."""
         self._swapping_from = swapping_from
-        self._swapping_to = swapping_to
         self._waiting_to_swap = True
         self._swap_percentage_completed = 0
 
-    def start_swap(self, current_time: int):
+    def start_swap(self, current_time: int, swapping_to : PageSlot):
         """The method called by the page manager to actually start the swap."""
         self._waiting_to_swap = False
         self._started_swap_at = current_time
+        self._swapping_to = swapping_to
+        swapping_to.page = self
 
     def _update_swap(self, current_time):
         """This method is called at each update. If a swap is in progress, it performs
@@ -101,7 +98,6 @@ class Page(GameObject):
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
                 self._swapping_from.page = None
                 self._swapping_to.page = self
-                self._swapping_to.incoming_page = None
                 self._swapping_from = None
                 self._swapping_to = None
                 self._started_swap_at = None

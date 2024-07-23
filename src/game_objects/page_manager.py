@@ -1,3 +1,5 @@
+from queue import Queue
+
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
@@ -13,8 +15,8 @@ class PageManager(GameObject):
         self._ram_slots = []
         self._swap_slots = []
         self._pages = {}
-        self._swap_in_waiting_list = []
-        self._swap_out_waiting_list = []
+        self._swap_in_queue = Queue()
+        self._swap_out_queue = Queue()
 
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
@@ -83,14 +85,14 @@ class PageManager(GameObject):
         page = Page(pid, idx, self)
         page_created = False
         for ram_slot in self._ram_slots:
-            if ram_slot.is_available:
+            if not ram_slot.has_page:
                 ram_slot.page = page
                 page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
                 page_created = True
                 break
         if not page_created:
             for swap_slot in self._swap_slots:
-                if swap_slot.is_available:
+                if not swap_slot.has_page:
                     swap_slot.page = page
                     page.on_disk = True
                     page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
@@ -106,78 +108,61 @@ class PageManager(GameObject):
 
         source_slots = self._swap_slots if page.on_disk else self._ram_slots
         target_slots = self._ram_slots if page.on_disk else self._swap_slots
+        swap_queue = self._swap_in_queue if page.on_disk else self._swap_out_queue
 
-        can_swap = False
-        swapping_from = None
+        can_swap_now = False
+        swapping_from = next(source_slot for source_slot in source_slots if source_slot.page == page)
         swapping_to = None
 
-        for source_slot in source_slots:
-            if source_slot.page == page:
-                swapping_from = source_slot
-                break
-        for target_slot in target_slots:
-            if target_slot.is_available:
-                can_swap = True
-                swapping_to = target_slot
-                break
-        if not can_swap:
-            for target_slot in target_slots:
-                if target_slot.page and target_slot.page.swap_requested and not target_slot.incoming_page:
-                    can_swap = True
-                    swapping_to = target_slot
-        if can_swap:
-            swapping_to.incoming_page = page
-            must_wait = bool([page for page in self._pages.values() if page.swap_requested])
-            page.init_swap(swapping_from, swapping_to)
-            if must_wait:
-                if page.on_disk:
-                    self._swap_in_waiting_list.append(page)
-                else:
-                    self._swap_out_waiting_list.append(page)
-            else:
-                page.start_swap(self._stage.current_time)
+        page.init_swap(swapping_from)
 
-            if swap_whole_row:
-                slots_on_same_row = [
-                    slot
-                    for slot in source_slots
-                    if (
-                        slot.view.y == swapping_from.view.y
-                        and slot != swapping_from
-                    )
-                ]
-                for slot in slots_on_same_row:
-                    if slot.page is not None:
-                        self.swap_page(slot.page, False)
+        if not [page for page in self._pages.values() if page.swap_requested]:
+            swapping_to = next((target_slot for target_slot in target_slots if not target_slot.has_page), None)
+            can_swap_now = bool(swapping_to)
+
+        if can_swap_now:
+            page.start_swap(self._stage.current_time, swapping_to)
+        else:
+            swap_queue.put(page)
+
+        if swap_whole_row:
+            slots_on_same_row = [
+                slot
+                for slot in source_slots
+                if (
+                    slot.view.y == swapping_from.view.y
+                    and slot != swapping_from
+                )
+            ]
+            for slot in slots_on_same_row:
+                if slot.has_page:
+                    self.swap_page(slot.page, False)
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
             if ram_slot.page == page:
                 ram_slot.page = None
                 break
-            if ram_slot.incoming_page == page:
-                ram_slot.incoming_page = None
         for swap_slot in self._swap_slots:
             if swap_slot.page == page:
                 swap_slot.page = None
                 break
-            if swap_slot.incoming_page == page:
-                swap_slot.incoming_page = None
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
 
-    def _handle_swap_waiting_lists(self, current_time):
+    def _handle_swap_queues(self, current_time):
         swap_in_progress = bool([page for page in self._pages.values() if page.swap_in_progress])
+        empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
+        empty_disk_slot = next((slot for slot in self._swap_slots if not slot.has_page), None)
+
         if not swap_in_progress:
-            next_page_to_swap_in = next((page for page in self._swap_in_waiting_list if not page.swapping_to.page), None)
-            next_page_to_swap_out = next((page for page in self._swap_out_waiting_list if not page.swapping_to.page), None)
-            if next_page_to_swap_in:
-                next_page_to_swap_in.start_swap(current_time)
-                self._swap_in_waiting_list.remove(next_page_to_swap_in)
-            elif next_page_to_swap_out:
-                next_page_to_swap_out.start_swap(current_time)
-                self._swap_out_waiting_list.remove(next_page_to_swap_out)
+            if empty_ram_slot and not self._swap_in_queue.empty():
+                page = self._swap_in_queue.get()
+                page.start_swap(current_time, empty_ram_slot)
+            elif empty_disk_slot and not self._swap_out_queue.empty():
+                page = self._swap_out_queue.get()
+                page.start_swap(current_time, empty_disk_slot)
 
     def update(self, current_time, events):
-        self._handle_swap_waiting_lists(current_time)
+        self._handle_swap_queues(current_time)
         super().update(current_time, events)
