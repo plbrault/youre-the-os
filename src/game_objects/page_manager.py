@@ -121,7 +121,13 @@ class PageManager(GameObject):
                 can_swap = True
                 swapping_to = target_slot
                 break
+        if not can_swap:
+            for target_slot in target_slots:
+                if target_slot.page and target_slot.page.swap_requested and not target_slot.incoming_page:
+                    can_swap = True
+                    swapping_to = target_slot
         if can_swap:
+            swapping_to.incoming_page = page
             queue_swap = bool([page for page in self._pages.values() if page.swap_in_progress])
             page.init_swap(swapping_from, swapping_to)
             if queue_swap:
