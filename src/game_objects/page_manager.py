@@ -113,12 +113,12 @@ class PageManager(GameObject):
         can_swap_now = False
         swapping_from = next(source_slot for source_slot in source_slots if source_slot.page == page)
         swapping_to = None
-
-        page.init_swap(swapping_from)
-
+        
         if not [page for page in self._pages.values() if page.swap_requested]:
             swapping_to = next((target_slot for target_slot in target_slots if not target_slot.has_page), None)
             can_swap_now = bool(swapping_to)
+
+        page.init_swap(swapping_from)
 
         if can_swap_now:
             page.start_swap(self._stage.current_time, swapping_to)
