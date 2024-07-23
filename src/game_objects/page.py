@@ -54,6 +54,10 @@ class Page(GameObject):
         return self._waiting_to_swap or self.swap_in_progress
 
     @property
+    def swapping_to(self) -> Optional[PageSlot]:
+        return self._swapping_to
+
+    @property
     def swap_percentage_completed(self) -> float:
         return self._swap_percentage_completed
 

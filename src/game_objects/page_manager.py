@@ -15,7 +15,8 @@ class PageManager(GameObject):
         self._ram_slots = []
         self._swap_slots = []
         self._pages = {}
-        self._swap_queue = Queue()
+        self._swap_in_queue = Queue()
+        self._swap_out_queue = Queue()
 
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
@@ -131,7 +132,10 @@ class PageManager(GameObject):
             queue_swap = bool([page for page in self._pages.values() if page.swap_in_progress])
             page.init_swap(swapping_from, swapping_to)
             if queue_swap:
-                self._swap_queue.put(page)
+                if page.on_disk:
+                    self._swap_in_queue.put(page)
+                else:
+                    self._swap_out_queue.put(page)
             else:
                 page.start_swap(self._stage.current_time)
 
@@ -164,12 +168,17 @@ class PageManager(GameObject):
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
 
-    def _handle_swap_queue(self):
-        if not self._swap_queue.empty():
-            if not bool([page for page in self._pages.values() if page.swap_in_progress]):
-                page = self._swap_queue.get()
+    def _handle_swap_queues(self):
+        swap_in_progress = bool([page for page in self._pages.values() if page.swap_in_progress])
+
+        if not swap_in_progress:
+            if not (self._swap_in_queue.empty() or self._swap_in_queue.queue[0].swapping_to.page):
+                page = self._swap_in_queue.get()
+                page.start_swap(self._stage.current_time)
+            elif not self._swap_out_queue.empty():
+                page = self._swap_out_queue.get()
                 page.start_swap(self._stage.current_time)
 
     def update(self, current_time, events):
-        self._handle_swap_queue()
+        self._handle_swap_queues()
         super().update(current_time, events)
