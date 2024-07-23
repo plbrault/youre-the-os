@@ -84,14 +84,14 @@ class PageManager(GameObject):
         page = Page(pid, idx, self)
         page_created = False
         for ram_slot in self._ram_slots:
-            if not ram_slot.has_page:
+            if ram_slot.is_available:
                 ram_slot.page = page
                 page.view.set_xy(ram_slot.view.x, ram_slot.view.y)
                 page_created = True
                 break
         if not page_created:
             for swap_slot in self._swap_slots:
-                if not swap_slot.has_page:
+                if swap_slot.is_available:
                     swap_slot.page = page
                     page.on_disk = True
                     page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
@@ -117,7 +117,7 @@ class PageManager(GameObject):
                 swapping_from = source_slot
                 break
         for target_slot in target_slots:
-            if not target_slot.has_page:
+            if target_slot.is_available:
                 can_swap = True
                 swapping_to = target_slot
                 break
@@ -141,7 +141,7 @@ class PageManager(GameObject):
                     )
                 ]
                 for slot in slots_on_same_row:
-                    if slot.has_page:
+                    if slot.page is not None:
                         self.swap_page(slot.page, False)
 
     def delete_page(self, page):
