@@ -97,6 +97,7 @@ class Page(GameObject):
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
                 self._swapping_from.page = None
                 self._swapping_to.page = self
+                self._swapping_to.incoming_page = None
                 self._swapping_from = None
                 self._swapping_to = None
                 self._started_swap_at = None
