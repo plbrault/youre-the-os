@@ -166,18 +166,18 @@ class PageManager(GameObject):
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
 
-    def _handle_swap_waiting_lists(self):
+    def _handle_swap_waiting_lists(self, current_time):
         swap_in_progress = bool([page for page in self._pages.values() if page.swap_in_progress])
         if not swap_in_progress:
             next_page_to_swap_in = next((page for page in self._swap_in_waiting_list if not page.swapping_to.page), None)
             next_page_to_swap_out = next((page for page in self._swap_out_waiting_list if not page.swapping_to.page), None)
             if next_page_to_swap_in:
-                next_page_to_swap_in.start_swap(self._stage.current_time)
+                next_page_to_swap_in.start_swap(current_time)
                 self._swap_in_waiting_list.remove(next_page_to_swap_in)
             elif next_page_to_swap_out:
-                next_page_to_swap_out.start_swap(self._stage.current_time)
+                next_page_to_swap_out.start_swap(current_time)
                 self._swap_out_waiting_list.remove(next_page_to_swap_out)
 
     def update(self, current_time, events):
-        self._handle_swap_waiting_lists()
+        self._handle_swap_waiting_lists(current_time)
         super().update(current_time, events)
