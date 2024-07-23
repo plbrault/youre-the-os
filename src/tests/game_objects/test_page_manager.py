@@ -89,7 +89,7 @@ class TestPageManager:
         assert page1.view.y == page2.view.y
         assert page2.view.x > page1.view.x
 
-    def test_swap_page_when_can_swap(self, page_manager):
+    def test_swap_page(self, page_manager):
         pages = []
 
         for i in range(PageManager.get_num_cols() * 2):
