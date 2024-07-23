@@ -75,6 +75,7 @@ class Page(GameObject):
 
     def init_swap(self, swapping_from : PageSlot, swapping_to : PageSlot):
         """The method called by the page manager to set the swap attributes."""
+        swapping_to.incoming_page = self
         self._swapping_from = swapping_from
         self._swapping_to = swapping_to
         self._waiting_to_swap = True
@@ -96,6 +97,7 @@ class Page(GameObject):
             if self._swap_percentage_completed == 1:
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
                 self._swapping_from.page = None
+                self._swapping_to.page = self
                 self._swapping_from = None
                 self._swapping_to = None
                 self._started_swap_at = None
