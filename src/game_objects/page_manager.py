@@ -107,23 +107,11 @@ class PageManager(GameObject):
             return
 
         source_slots = self._disk_slots if page.on_disk else self._ram_slots
-        target_slots = self._ram_slots if page.on_disk else self._disk_slots
         swap_queue = self._swap_in_queue if page.on_disk else self._swap_out_queue
 
-        can_swap_now = False
         swapping_from = next(source_slot for source_slot in source_slots if source_slot.page == page)
-        swapping_to = None
-        
-        if not [page for page in self._pages.values() if page.swap_requested]:
-            swapping_to = next((target_slot for target_slot in target_slots if not target_slot.has_page), None)
-            can_swap_now = bool(swapping_to)
-
         page.init_swap(swapping_from)
-
-        if can_swap_now:
-            page.start_swap(self._stage.current_time, swapping_to)
-        else:
-            swap_queue.put(page)
+        swap_queue.put(page)
 
         if swap_whole_row:
             slots_on_same_row = [
