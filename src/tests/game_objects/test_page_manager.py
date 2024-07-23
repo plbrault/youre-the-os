@@ -162,6 +162,8 @@ class TestPageManager:
         page_manager.swap_page(pages[0], swap_whole_row=True)
 
         for i in range(PageManager.get_num_cols()):
+            time += 1
+            page_manager.update(time, [])
             time += page_manager.stage.config.swap_delay_ms
             page_manager.update(time, [])
             assert pages[i].on_disk
@@ -175,6 +177,8 @@ class TestPageManager:
         page_manager.swap_page(pages[0], swap_whole_row=True)
 
         for i in range(PageManager.get_num_cols() - 1):
+            time += 1
+            page_manager.update(time, [])
             time += page_manager.stage.config.swap_delay_ms
             page_manager.update(time, [])
             assert not pages[i].on_disk
