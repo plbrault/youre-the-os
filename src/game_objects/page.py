@@ -97,7 +97,6 @@ class Page(GameObject):
             if self._swap_percentage_completed == 1:
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
                 self._swapping_from.page = None
-                self._swapping_to.page = self
                 self._swapping_from = None
                 self._swapping_to = None
                 self._started_swap_at = None
