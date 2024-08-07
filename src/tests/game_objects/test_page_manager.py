@@ -89,7 +89,7 @@ class TestPageManager:
         assert page1.view.y == page2.view.y
         assert page2.view.x > page1.view.x
 
-    def test_swap_page_when_can_swap(self, page_manager):
+    def test_swap_page(self, page_manager):
         pages = []
 
         for i in range(PageManager.get_num_cols() * 2):
@@ -99,6 +99,11 @@ class TestPageManager:
         page_manager.update(time, [])
 
         page_manager.swap_page(pages[0])
+        assert not pages[0].on_disk
+        assert pages[0].swap_requested
+        assert not pages[0].swap_in_progress
+        time += 1
+        page_manager.update(time, [])
         assert not pages[0].on_disk
         assert pages[0].swap_requested
         assert pages[0].swap_in_progress
@@ -113,6 +118,11 @@ class TestPageManager:
         page_manager.swap_page(pages[2])
         assert not pages[2].on_disk
         assert pages[2].swap_requested
+        assert not pages[2].swap_in_progress
+        time += 1
+        page_manager.update(time, [])
+        assert not pages[2].on_disk
+        assert pages[2].swap_requested
         assert pages[2].swap_in_progress
         time += 1000
         page_manager.update(time, [])
@@ -125,6 +135,11 @@ class TestPageManager:
         page_manager.swap_page(pages[2])
         assert pages[2].on_disk
         assert pages[2].swap_requested
+        assert not pages[2].swap_in_progress
+        time += 1
+        page_manager.update(time, [])
+        assert pages[2].on_disk
+        assert pages[2].swap_requested
         assert pages[2].swap_in_progress
         time += 1000
         page_manager.update(time, [])
@@ -133,22 +148,6 @@ class TestPageManager:
         assert not pages[2].swap_in_progress
         assert pages[2].view.y == pages[1].view.y
         assert pages[2].view.x < pages[1].view.x
-
-    def test_swap_page_when_cannot_swap(self, page_manager):
-        pages = []
-
-        for i in range(PageManager.get_num_cols() * 2):
-            pages.append(page_manager.create_page(1, i))
-
-        assert pages[PageManager.get_num_cols()].on_disk
-
-        (old_x, old_y) = (pages[PageManager.get_num_cols()].view.x, pages[PageManager.get_num_cols()].view.y)
-
-        page_manager.swap_page(pages[PageManager.get_num_cols()])
-
-        assert pages[PageManager.get_num_cols()].on_disk
-        assert pages[PageManager.get_num_cols()].view.x == old_x
-        assert pages[PageManager.get_num_cols()].view.y == old_y
 
     def test_swap_whole_row(self, page_manager):
         pages = []
@@ -162,6 +161,8 @@ class TestPageManager:
         page_manager.swap_page(pages[0], swap_whole_row=True)
 
         for i in range(PageManager.get_num_cols()):
+            time += 1
+            page_manager.update(time, [])
             time += page_manager.stage.config.swap_delay_ms
             page_manager.update(time, [])
             assert pages[i].on_disk
@@ -175,6 +176,8 @@ class TestPageManager:
         page_manager.swap_page(pages[0], swap_whole_row=True)
 
         for i in range(PageManager.get_num_cols() - 1):
+            time += 1
+            page_manager.update(time, [])
             time += page_manager.stage.config.swap_delay_ms
             page_manager.update(time, [])
             assert not pages[i].on_disk

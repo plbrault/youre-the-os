@@ -368,8 +368,8 @@ class TestProcess:
 
         process.use_cpu()
 
-
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1, [])
         stage.page_manager.update(1000, [])
         assert stage.page_manager.get_page(1, 0).on_disk == True
 
@@ -389,6 +389,7 @@ class TestProcess:
         process.yield_cpu()
 
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1, [])
         stage.page_manager.update(1000, [])
         assert stage.page_manager.get_page(1, 0).on_disk == True
 
@@ -409,11 +410,13 @@ class TestProcess:
         process.use_cpu()
 
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1, [])
         stage.page_manager.update(1000, [])
         process.update(0, [])
         assert process.is_blocked == True
 
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1001, [])
         stage.page_manager.update(2000, [])
         process.update(0, [])
 
@@ -829,10 +832,12 @@ class TestProcess:
 
         process.use_cpu()
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1, [])
         stage.page_manager.update(1000, [])
         process.update(1000, [])
 
         stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1001, [])
         stage.page_manager.update(2000, [])
         process.update(2000, [])
 

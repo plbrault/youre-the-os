@@ -13,9 +13,10 @@ class PageManager(GameObject):
         self._stage = stage
 
         self._ram_slots = []
-        self._swap_slots = []
+        self._disk_slots = []
         self._pages = {}
-        self._swap_queue = Queue()
+        self._swap_in_queue = Queue()
+        self._swap_out_queue = Queue()
 
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
@@ -71,14 +72,14 @@ class PageManager(GameObject):
 
             for row in range(num_swap_rows):
                 for column in range(num_cols):
-                    swap_slot = PageSlot()
+                    disk_slot = PageSlot()
                     x = self._stage.process_manager.view.width + \
                         column * ram_slot.view.width + column * 5
                     y = self._pages_on_disk_label_xy[1] + \
                         35 + row * ram_slot.view.height + row * 5
-                    swap_slot.view.set_xy(x, y)
-                    self._swap_slots.append(swap_slot)
-            self.children.extend(self._swap_slots)
+                    disk_slot.view.set_xy(x, y)
+                    self._disk_slots.append(disk_slot)
+            self.children.extend(self._disk_slots)
 
     def create_page(self, pid, idx):
         page = Page(pid, idx, self)
@@ -90,11 +91,11 @@ class PageManager(GameObject):
                 page_created = True
                 break
         if not page_created:
-            for swap_slot in self._swap_slots:
-                if not swap_slot.has_page:
-                    swap_slot.page = page
+            for disk_slot in self._disk_slots:
+                if not disk_slot.has_page:
+                    disk_slot.page = page
                     page.on_disk = True
-                    page.view.set_xy(swap_slot.view.x, swap_slot.view.y)
+                    page.view.set_xy(disk_slot.view.x, disk_slot.view.y)
                     page_created = True
                     break
         self.children.append(page)
@@ -105,63 +106,52 @@ class PageManager(GameObject):
         if page.swap_requested:
             return
 
-        source_slots = self._swap_slots if page.on_disk else self._ram_slots
-        target_slots = self._ram_slots if page.on_disk else self._swap_slots
+        source_slots = self._disk_slots if page.on_disk else self._ram_slots
+        swap_queue = self._swap_in_queue if page.on_disk else self._swap_out_queue
 
-        can_swap = False
-        swapping_from = None
-        swapping_to = None
+        swapping_from = next(
+            source_slot for source_slot in source_slots if source_slot.page == page)
+        page.init_swap(swapping_from)
+        swap_queue.put(page)
 
-        for source_slot in source_slots:
-            if source_slot.page == page:
-                swapping_from = source_slot
-                break
-        for target_slot in target_slots:
-            if not target_slot.has_page:
-                can_swap = True
-                swapping_to = target_slot
-                break
-        if can_swap:
-            swapping_to.page = page
-
-            queue_swap = bool([page for page in self._pages.values() if page.swap_in_progress])
-            page.init_swap(swapping_from, swapping_to)
-            if queue_swap:
-                self._swap_queue.put(page)
-            else:
-                page.start_swap(self._stage.current_time)
-
-            if swap_whole_row:
-                slots_on_same_row = [
-                    slot
-                    for slot in source_slots
-                    if (
-                        slot.view.y == swapping_from.view.y
-                        and slot != swapping_from
-                    )
-                ]
-                for slot in slots_on_same_row:
-                    if slot.has_page:
-                        self.swap_page(slot.page, False)
+        if swap_whole_row:
+            slots_on_same_row = [
+                slot
+                for slot in source_slots
+                if (
+                    slot.view.y == swapping_from.view.y
+                    and slot != swapping_from
+                )
+            ]
+            for slot in slots_on_same_row:
+                if slot.has_page:
+                    self.swap_page(slot.page, False)
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
             if ram_slot.page == page:
                 ram_slot.page = None
                 break
-        for swap_slot in self._swap_slots:
-            if swap_slot.page == page:
-                swap_slot.page = None
+        for disk_slot in self._disk_slots:
+            if disk_slot.page == page:
+                disk_slot.page = None
                 break
         self.children.remove(page)
         del self._pages[(page.pid, page.idx)]
 
-    def _handle_swap_queue(self):
-        if not self._swap_queue.empty():
-            if not bool([page for page in self._pages.values() if page.swap_in_progress]):
-                page = self._swap_queue.get()
-                page.start_swap(self._stage.current_time)
+    def _handle_swap_queues(self, current_time):
+        swap_in_progress = bool([page for page in self._pages.values() if page.swap_in_progress])
+        empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
+        empty_disk_slot = next((slot for slot in self._disk_slots if not slot.has_page), None)
+
+        if not swap_in_progress:
+            if empty_ram_slot and not self._swap_in_queue.empty():
+                page = self._swap_in_queue.get()
+                page.start_swap(current_time, empty_ram_slot)
+            elif empty_disk_slot and not self._swap_out_queue.empty():
+                page = self._swap_out_queue.get()
+                page.start_swap(current_time, empty_disk_slot)
 
     def update(self, current_time, events):
-        self._handle_swap_queue()
+        self._handle_swap_queues(current_time)
         super().update(current_time, events)
