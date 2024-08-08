@@ -128,7 +128,7 @@ _parts = [
     HowToPlayPart(
         [
             'Sometimes, you will run out of RAM and new pages will be written on disk.',
-            'You can move pages between RAM and disk by clicking on them.'
+            'You can move pages between RAM and disk by clicking on them. A small delay will be involved.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_12_0.png')),
