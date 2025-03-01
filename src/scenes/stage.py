@@ -13,7 +13,6 @@ from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
 from stage_config import StageConfig
 
-
 class Stage(Scene):
     def __init__(self, name='', config : StageConfig = StageConfig(),
                  *, script=None, standalone=False):
@@ -216,6 +215,14 @@ class Stage(Scene):
         except KeyError:
             pass
 
+    def _check_game_over(self):
+        if (
+            self._process_manager.user_terminated_process_count
+            == self._config.max_processes_terminated_by_user
+        ):
+            if not self._process_manager.any_process_in_motion:
+                self._game_over = True
+
     def update(self, current_time, events):
         dialog = None
 
@@ -250,3 +257,4 @@ class Stage(Scene):
             self._process_script_events()
             for game_object in self._scene_objects:
                 game_object.update(current_time, events)
+            self._check_game_over()
