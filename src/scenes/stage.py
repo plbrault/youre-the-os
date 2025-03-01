@@ -216,7 +216,10 @@ class Stage(Scene):
             pass
 
     def _check_game_over(self):
-        if self._process_manager.user_terminated_process_count == self._config.max_processes_terminated_by_user:
+        if (
+            self._process_manager.user_terminated_process_count
+            == self._config.max_processes_terminated_by_user
+        ):
             if not self._process_manager.any_process_in_motion:
                 self._game_over = True
 

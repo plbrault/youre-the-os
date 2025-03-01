@@ -201,7 +201,10 @@ class ProcessManager(GameObject):
         can_terminate = False
 
         if by_user:
-            if self._user_terminated_process_count < self.stage.config.max_processes_terminated_by_user:
+            if (
+                self._user_terminated_process_count
+                < self.stage.config.max_processes_terminated_by_user
+            ):
                 can_terminate = True
 
                 slot = self._user_terminated_process_slots[self._user_terminated_process_count]
