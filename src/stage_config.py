@@ -7,6 +7,7 @@ class StageConfig:
     num_cpus: int = 4
     num_processes_at_startup: int = 14
     max_processes: int = MAX_PROCESSES
+    max_processes_terminated_by_user: int = 10 # user refers to in-game user, not to the player.
     num_ram_rows: int = 8
     swap_delay_ms: int = 100
     new_process_probability: float = 0.05
