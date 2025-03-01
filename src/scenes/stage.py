@@ -229,12 +229,12 @@ class Stage(Scene):
             elif display_game_over_dialog:
                 if self._game_over_dialog is None:
                     self._game_over_dialog = GameOverDialog(
-                        self._uptime_manager.uptime_text,
-                        self.name,
-                        self._score_manager.score,
-                        self.setup,
-                        self._return_to_main_menu,
-                        self._standalone)
+                        uptime = self._uptime_manager.uptime_text,
+                        stage_name = self.name,
+                        score = self._score_manager.score,
+                        restart_game_fn = self.setup,
+                        main_menu_fn = self._return_to_main_menu,
+                        standalone = self._standalone)
                     self._game_over_dialog.view.set_xy(
                         (self.screen.get_width() -
                          self._game_over_dialog.view.width) / 2,
