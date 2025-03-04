@@ -92,7 +92,7 @@ class Page(GameObject):
         if self.swap_in_progress:
             self._swap_percentage_completed = min(1,
                 (current_time - self._started_swap_at)
-                / (self._stage.config.swap_delay_ms + 1) # +1 ensures no division by 0
+                / self._stage.config.swap_delay_ms
             )
             if self._swap_percentage_completed == 1:
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)

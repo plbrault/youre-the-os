@@ -18,7 +18,6 @@ MAX_RAM_ROWS = 11
 MAX_PAGES_PER_PROCESS = 4
 
 SWAP_DELAY_NAMES_TO_MS = {
-    'None': 0,
     'Low': 100,
     'Medium': 250,
     'High': 500,
