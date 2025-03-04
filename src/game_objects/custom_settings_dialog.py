@@ -17,7 +17,6 @@ _swap_delay_ms_to_ids = {
     SWAP_DELAY_NAMES_TO_MS[SWAP_DELAY_NAMES[2]]: 2,
     SWAP_DELAY_NAMES_TO_MS[SWAP_DELAY_NAMES[3]]: 3
 }
-print('!!!!!!!!!!!!!!!!', _swap_delay_ms_to_ids)
 
 class CustomSettingsDialog(GameObject):
 
