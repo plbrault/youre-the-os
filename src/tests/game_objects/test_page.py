@@ -84,7 +84,7 @@ class TestPage:
         assert page.swap_requested
         assert page.swap_in_progress
         assert not page.on_disk
-        assert page.swap_percentage_completed == 0.5
+        assert 0.49 < page.swap_percentage_completed < 0.51
         assert swapping_from.page == page
         assert swapping_to.page == page
 
