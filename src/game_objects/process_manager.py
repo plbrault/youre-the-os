@@ -33,8 +33,6 @@ def _is_sorted(process_list: [Process]):
     return True
 
 class ProcessManager(GameObject):
-    MAX_TERMINATED_BY_USER = 10 # user refers to in-game user, not to the player.
-
     def __init__(self, stage):
         self._stage = stage
 
@@ -88,6 +86,16 @@ class ProcessManager(GameObject):
         # user refers to in-game user, not to the player.
         return self._user_terminated_process_count
 
+    @property
+    def any_process_in_motion(self):
+        processes_in_motion = False
+        for child in self.children:
+            if isinstance(child, Process):
+                if child.is_in_motion:
+                    processes_in_motion = True
+                    break
+        return processes_in_motion
+
     def get_process(self, pid):
         return self._processes[pid]
 
@@ -129,7 +137,7 @@ class ProcessManager(GameObject):
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
-        for i in range(self.MAX_TERMINATED_BY_USER):
+        for i in range(self.stage.config.max_processes_terminated_by_user):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
             y = WINDOW_HEIGHT - process_slot.view.height - 20
@@ -193,7 +201,10 @@ class ProcessManager(GameObject):
         can_terminate = False
 
         if by_user:
-            if self._user_terminated_process_count < self.MAX_TERMINATED_BY_USER:
+            if (
+                self._user_terminated_process_count
+                < self.stage.config.max_processes_terminated_by_user
+            ):
                 can_terminate = True
 
                 slot = self._user_terminated_process_slots[self._user_terminated_process_count]
@@ -306,19 +317,6 @@ class ProcessManager(GameObject):
                         if cpu.has_process:
                             cpu.process.yield_cpu()
 
-    def _check_game_over(self):
-        if self._user_terminated_process_count == self.MAX_TERMINATED_BY_USER:
-            processes_are_moving = False
-            for child in self.children:
-                if isinstance(child, Process):
-                    if child.is_in_motion:
-                        processes_are_moving = True
-                        break
-            if not processes_are_moving:
-                self._stage.game_over = True
-                return True
-        return False
-
     def _handle_process_creation(self, current_time):
         if self._next_pid <= self._stage.config.num_processes_at_startup and current_time - \
                 self._last_new_process_check >= 50:
@@ -367,7 +365,7 @@ class ProcessManager(GameObject):
                 self.children.remove(game_object)
 
     def update(self, current_time, events):
-        if self._check_game_over():
+        if self.stage.game_over:
             return
 
         self._handle_events(events)

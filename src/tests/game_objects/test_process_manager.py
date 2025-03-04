@@ -648,6 +648,7 @@ class TestProcessManager:
         assert process_manager.process_slots[3].process == None
 
     def test_game_over(self, ready_process_manager_custom_config):
+        # TODO: Move this test to Stage tests as game over logic is now handled by Stage rather than ProcessManager
         process_manager = ready_process_manager_custom_config(StageConfig(
             num_cpus=4,
             num_processes_at_startup=10,
@@ -679,7 +680,7 @@ class TestProcessManager:
                         break
             time += ONE_SECOND / FRAMERATE
 
-        process_manager.update(time, [])
+        process_manager.stage.update(time, [])
 
         assert process_manager.stage.game_over
 

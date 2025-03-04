@@ -89,11 +89,15 @@ class Page(GameObject):
     def _update_swap(self, current_time):
         """This method is called at each update. If a swap is in progress, it performs
         appropriate checks and operations."""
+
         if self.swap_in_progress:
-            self._swap_percentage_completed = min(1,
-                (current_time - self._started_swap_at)
-                / self._stage.config.swap_delay_ms
-            )
+            if self._stage.config.swap_delay_ms == 0:
+                self._swap_percentage_completed = 1
+            else:
+                self._swap_percentage_completed = min(1,
+                    (current_time - self._started_swap_at)
+                    / self._stage.config.swap_delay_ms
+                )
             if self._swap_percentage_completed == 1:
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)
                 self._swapping_from.page = None
