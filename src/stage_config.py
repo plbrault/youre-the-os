@@ -10,6 +10,7 @@ class StageConfig:
     max_processes_terminated_by_user: int = 10 # user refers to in-game user, not to the player.
     num_ram_rows: int = 8
     swap_delay_ms: int = 100
+    parallel_swaps: int = 4
     new_process_probability: float = 0.05
     priority_process_probability: float = 0.01
     io_probability: float = 0.01
