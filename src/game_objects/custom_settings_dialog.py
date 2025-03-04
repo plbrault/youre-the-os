@@ -2,7 +2,8 @@ from dataclasses import replace
 
 from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
-    MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS
+    MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS,
+    SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS
 )
 from engine.game_object import GameObject
 from game_objects.button import Button
@@ -10,27 +11,11 @@ from game_objects.option_selector import OptionSelector
 from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
 from stage_config import StageConfig
 
-_swap_delay_names = ['Low', 'Medium', 'High', 'Higher']
-
-_swap_delay_names_to_ms = {
-    'Low': 100,
-    'Medium': 250,
-    'High': 500,
-    'Higher': 1000
-}
-
-_swap_delay_ms_to_names = {
-    100: 'Low',
-    250: 'Medium',
-    500: 'High',
-    1000: 'Higher'
-}
-
 _swap_delay_ms_to_ids = {
-    100: 0,
-    250: 1,
-    500: 2,
-    1000: 3
+    SWAP_DELAY_NAMES_TO_MS[SWAP_DELAY_NAMES[0]]: 0,
+    SWAP_DELAY_NAMES_TO_MS[SWAP_DELAY_NAMES[1]]: 1,
+    SWAP_DELAY_NAMES_TO_MS[SWAP_DELAY_NAMES[2]]: 2,
+    SWAP_DELAY_NAMES_TO_MS[SWAP_DELAY_NAMES[3]]: 3
 }
 
 class CustomSettingsDialog(GameObject):
@@ -60,7 +45,7 @@ class CustomSettingsDialog(GameObject):
         self.children.append(self._num_ram_rows_selector)
 
         self._swap_delay_selector = OptionSelector(
-            _swap_delay_names,
+            SWAP_DELAY_NAMES,
             _swap_delay_ms_to_ids[default_config.swap_delay_ms]
         )
         self.children.append(self._swap_delay_selector)
@@ -120,7 +105,7 @@ class CustomSettingsDialog(GameObject):
             num_processes_at_startup = int(self._num_processes_at_startup_selector.selected_option),
             max_processes = int(self._max_processes_selector.selected_option),
             num_ram_rows = int(self._num_ram_rows_selector.selected_option),
-            swap_delay_ms = _swap_delay_names_to_ms[self._swap_delay_selector.selected_option],
+            swap_delay_ms = SWAP_DELAY_NAMES_TO_MS[self._swap_delay_selector.selected_option],
             new_process_probability = (
                 self._new_process_probability_selector.selected_option_id * 0.05
             ),

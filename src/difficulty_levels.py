@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from constants import SWAP_DELAY_NAMES_TO_MS
 from stage_config import StageConfig
 
 @dataclass(frozen=True)
@@ -13,7 +14,7 @@ _easy_difficulty = DifficultyLevel(
         num_cpus=4,
         num_processes_at_startup=14,
         num_ram_rows=8,
-        swap_delay_ms=100,
+        swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Low'],
         new_process_probability=0.05,
         priority_process_probability=0.01,
         io_probability=0.01,
@@ -31,7 +32,7 @@ _hard_difficulty = DifficultyLevel(
         num_cpus=8,
         num_processes_at_startup=28,
         num_ram_rows=6,
-        swap_delay_ms=250,
+        swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Medium'],
         new_process_probability=0.1,
         priority_process_probability=0.05,
         io_probability=0.1,
@@ -44,7 +45,7 @@ _harder_difficulty = DifficultyLevel(
         num_cpus=12,
         num_processes_at_startup=35,
         num_ram_rows=6,
-        swap_delay_ms=500,
+        swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['High'],
         new_process_probability=0.2,
         priority_process_probability=0.1,
         io_probability=0.2,
@@ -57,7 +58,7 @@ _insane_difficulty = DifficultyLevel(
         num_cpus=16,
         num_processes_at_startup=42,
         num_ram_rows=4,
-        swap_delay_ms=1000,
+        swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Higher'],
         new_process_probability=1,
         priority_process_probability=0.1,
         io_probability=0.3,
