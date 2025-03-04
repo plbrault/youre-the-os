@@ -3,7 +3,7 @@ from dataclasses import replace
 from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
     MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS,
-    SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS, SWAP_DELAY_MS_TO_NAMES
+    SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS
 )
 from engine.game_object import GameObject
 from game_objects.button import Button
