@@ -61,6 +61,10 @@ class Page(GameObject):
     def on_disk(self):
         return self._on_disk
 
+    @property
+    def in_ram(self):
+        return not self._on_disk
+
     @on_disk.setter
     def on_disk(self, value):
         self._on_disk = value

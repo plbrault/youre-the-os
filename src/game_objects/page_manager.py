@@ -141,17 +141,35 @@ class PageManager(GameObject):
         del self._pages[(page.pid, page.idx)]
 
     def _handle_swap_queues(self, current_time):
-        swap_in_progress = bool([page for page in self._pages.values() if page.swap_in_progress])
-        empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
-        empty_disk_slot = next((slot for slot in self._disk_slots if not slot.has_page), None)
+        num_swap_ins_in_progress = len([
+            page for page in self._pages.values()
+                if page.swap_in_progress
+                    and page.on_disk
+        ])
+        num_swap_outs_in_progress = len([
+            page for page in self._pages.values()
+                if page.swap_in_progress
+                    and page.in_ram
+        ])
 
-        if not swap_in_progress:
-            if empty_ram_slot and not self._swap_in_queue.empty():
-                page = self._swap_in_queue.get()
-                page.start_swap(current_time, empty_ram_slot)
-            elif empty_disk_slot and not self._swap_out_queue.empty():
-                page = self._swap_out_queue.get()
-                page.start_swap(current_time, empty_disk_slot)
+        if num_swap_ins_in_progress < self._stage.config.parallel_swaps:
+            num_new_swap_ins_in_progress = 0
+            for _ in range(self._stage.config.parallel_swaps - num_swap_ins_in_progress):
+                empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
+                if empty_ram_slot and not self._swap_in_queue.empty():
+                    page = self._swap_in_queue.get()
+                    page.start_swap(current_time, empty_ram_slot)
+                    num_new_swap_ins_in_progress += 1
+                else:
+                    break
+            num_swap_ins_in_progress += num_new_swap_ins_in_progress
+
+        if num_swap_ins_in_progress == 0:
+            for _ in range(self._stage.config.parallel_swaps - num_swap_outs_in_progress):
+                empty_disk_slot = next((slot for slot in self._disk_slots if not slot.has_page), None)
+                if empty_disk_slot and not self._swap_out_queue.empty():
+                    page = self._swap_out_queue.get()
+                    page.start_swap(current_time, empty_disk_slot)
 
     def update(self, current_time, events):
         self._handle_swap_queues(current_time)
