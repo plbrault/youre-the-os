@@ -17,8 +17,6 @@ MAX_RAM_ROWS = 11
 
 MAX_PAGES_PER_PROCESS = 4
 
-SWAP_DELAY_NAMES = ['Low', 'Medium', 'High', 'Higher']
-
 SWAP_DELAY_NAMES_TO_MS = {
     'Low': 100,
     'Medium': 250,
@@ -26,9 +24,6 @@ SWAP_DELAY_NAMES_TO_MS = {
     'Higher': 1000
 }
 
-SWAP_DELAY_MS_TO_NAMES = {
-    100: 'Low',
-    250: 'Medium',
-    500: 'High',
-    1000: 'Higher'
-}
+SWAP_DELAY_MS_TO_NAMES = {value: key for key, value in SWAP_DELAY_NAMES_TO_MS.items()}
+
+SWAP_DELAY_NAMES = list(SWAP_DELAY_NAMES_TO_MS.keys())
