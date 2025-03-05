@@ -90,6 +90,16 @@ class Page(GameObject):
         self._swapping_to = swapping_to
         swapping_to.page = self
 
+    def cancel_swap(self):
+        if self.swap_in_progress:
+            self._swapping_to.page = None
+        if self.swap_requested:
+            self._waiting_to_swap = False
+            self._swapping_from = None
+            self._swapping_to = None
+            self._started_swap_at = None
+            self._swap_percentage_completed = 0
+
     def _update_swap(self, current_time):
         """This method is called at each update. If a swap is in progress, it performs
         appropriate checks and operations."""
@@ -113,17 +123,22 @@ class Page(GameObject):
                 game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
     def _check_if_clicked_on(self, event):
+        mouse_drag = event.type == GameEventType.MOUSE_LEFT_DRAG
         if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
-            return self._view.collides(*event.get_property('position'))
-        return False
+            return self._view.collides(*event.get_property('position')), mouse_drag
+        return False, False
 
-    def _on_click(self, shift_down : bool):
-        self.request_swap(shift_down)
+    def _on_click(self, mouse_drag : bool, shift_down : bool):
+        if self.swap_requested and not mouse_drag and not shift_down:
+                self.cancel_swap()
+        else:
+            self.request_swap(shift_down)
 
     def update(self, current_time, events):
         for event in events:
-            if self._check_if_clicked_on(event):
-                self._on_click(event.get_property('shift'))
+            clicked_on, mouse_drag = self._check_if_clicked_on(event)
+            if clicked_on:
+                self._on_click(mouse_drag, event.get_property('shift'))
 
         self._update_swap(current_time)
         if self.in_use and self.on_disk:
