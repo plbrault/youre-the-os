@@ -122,24 +122,21 @@ class Page(GameObject):
                 self._swap_percentage_completed = 0
                 game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
-    def _check_if_clicked_on(self, event):
-        mouse_drag = event.type == GameEventType.MOUSE_LEFT_DRAG
-        if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
-            return self._view.collides(*event.get_property('position')), mouse_drag
-        return False, False
-
     def _on_click(self, mouse_drag : bool, shift_down : bool):
         if self.swap_requested and not mouse_drag and not shift_down:
             self.cancel_swap()
         else:
             self.request_swap(shift_down)
 
-    def update(self, current_time, events):
+    def _handle_events(self, events):
         for event in events:
-            clicked_on, mouse_drag = self._check_if_clicked_on(event)
-            if clicked_on:
-                self._on_click(mouse_drag, event.get_property('shift'))
+            if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
+                if self._view.collides(*event.get_property('position')):
+                    mouse_drag = event.type == GameEventType.MOUSE_LEFT_DRAG
+                    self._on_click(mouse_drag, event.get_property('shift'))
 
+    def update(self, current_time, events):
+        self._handle_events(events)
         self._update_swap(current_time)
         if self.in_use and self.on_disk:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
