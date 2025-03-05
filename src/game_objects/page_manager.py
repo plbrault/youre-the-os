@@ -166,7 +166,9 @@ class PageManager(GameObject):
 
         if num_swap_ins_in_progress == 0:
             for _ in range(self._stage.config.parallel_swaps - num_swap_outs_in_progress):
-                empty_disk_slot = next((slot for slot in self._disk_slots if not slot.has_page), None)
+                empty_disk_slot = next(
+                    (slot for slot in self._disk_slots if not slot.has_page),
+                    None)
                 if empty_disk_slot and not self._swap_out_queue.empty():
                     page = self._swap_out_queue.get()
                     page.start_swap(current_time, empty_disk_slot)
