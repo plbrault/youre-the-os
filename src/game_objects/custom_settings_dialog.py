@@ -3,7 +3,7 @@ from dataclasses import replace
 from constants import (
     MIN_CPU_COUNT, MAX_CPU_COUNT, MIN_PROCESSES_AT_STARTUP,
     MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS,
-    SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS
+    SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS, RAM_PAGES_PER_ROW
 )
 from engine.game_object import GameObject
 from game_objects.button import Button
@@ -46,6 +46,12 @@ class CustomSettingsDialog(GameObject):
             _swap_delay_ms_to_ids[default_config.swap_delay_ms]
         )
         self.children.append(self._swap_delay_selector)
+
+        self._parallel_swap_selector = OptionSelector(
+            [str(i) for i in range(1, RAM_PAGES_PER_ROW + 1)],
+            0
+        )
+        self.children.append(self._parallel_swap_selector)
 
         self._new_process_probability_selector = OptionSelector(
             [str(i) + ' %' for i in range(0, 105, 5)])
