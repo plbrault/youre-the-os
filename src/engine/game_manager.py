@@ -41,7 +41,6 @@ class GameManager():
 
         self._mouse_down = False
         self._shift_down = False
-        self._mouse_drag_last_pos = None
 
     @property
     def current_scene(self):
@@ -96,16 +95,12 @@ class GameManager():
                             GameEventType.MOUSE_LEFT_CLICK, {
                                 'position': event.pos, 'shift': self._shift_down }))
                     mouse_event_added = True
-            elif event.type == pygame.MOUSEMOTION:
-                if self._mouse_down and not mouse_event_added:
-                    self._mouse_drag_last_pos = event.pos
-                    game_event = GameEvent(GameEventType.MOUSE_LEFT_DRAG,
-                                    {'position': event.pos, 'shift': self._shift_down})
-                    events.append(game_event)
-                    mouse_event_added = True
-                    mouse_drag_event = game_event
-                else:
-                    self._mouse_drag_last_pos = None
+            elif event.type == pygame.MOUSEMOTION and self._mouse_down and not mouse_event_added:
+                event = GameEvent(GameEventType.MOUSE_LEFT_DRAG,
+                                  {'position': event.pos, 'shift': self._shift_down})
+                events.append(event)
+                mouse_event_added = True
+                mouse_drag_event = event
         return events
 
     async def _main_loop(self, ignore_events=False):
