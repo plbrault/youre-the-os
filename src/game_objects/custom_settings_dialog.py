@@ -49,7 +49,7 @@ class CustomSettingsDialog(GameObject):
 
         self._parallel_swap_selector = OptionSelector(
             [str(i) for i in range(1, RAM_PAGES_PER_ROW + 1)],
-            0
+            default_config.parallel_swaps - 1
         )
         self.children.append(self._parallel_swap_selector)
 
