@@ -130,7 +130,7 @@ class Page(GameObject):
 
     def _on_click(self, mouse_drag : bool, shift_down : bool):
         if self.swap_requested and not mouse_drag and not shift_down:
-                self.cancel_swap()
+            self.cancel_swap()
         else:
             self.request_swap(shift_down)
 
