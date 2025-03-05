@@ -153,25 +153,33 @@ class PageManager(GameObject):
         ])
 
         if num_swap_ins_in_progress < self._stage.config.parallel_swaps:
-            num_new_swap_ins_in_progress = 0
-            for _ in range(self._stage.config.parallel_swaps - num_swap_ins_in_progress):
+            newly_in_progress = 0
+            while newly_in_progress < self._stage.config.parallel_swaps - num_swap_ins_in_progress:
                 empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
                 if empty_ram_slot and not self._swap_in_queue.empty():
                     page = self._swap_in_queue.get()
+                    if not page.swap_requested: # check if swap was cancelled
+                        continue
                     page.start_swap(current_time, empty_ram_slot)
-                    num_new_swap_ins_in_progress += 1
+                    newly_in_progress += 1
                 else:
                     break
-            num_swap_ins_in_progress += num_new_swap_ins_in_progress
+            num_swap_ins_in_progress += newly_in_progress
 
         if num_swap_ins_in_progress == 0:
-            for _ in range(self._stage.config.parallel_swaps - num_swap_outs_in_progress):
+            newly_in_progress = 0
+            while newly_in_progress < self._stage.config.parallel_swaps - num_swap_outs_in_progress:
                 empty_disk_slot = next(
                     (slot for slot in self._disk_slots if not slot.has_page),
                     None)
                 if empty_disk_slot and not self._swap_out_queue.empty():
                     page = self._swap_out_queue.get()
+                    if not page.swap_requested: # check if swap was cancelled
+                        continue
                     page.start_swap(current_time, empty_disk_slot)
+                    newly_in_progress += 1
+                else:
+                    break
 
     def update(self, current_time, events):
         self._handle_swap_queues(current_time)
