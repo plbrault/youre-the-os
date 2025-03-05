@@ -21,6 +21,8 @@ class CustomSettingsDialogView(Drawable):
             '# RAM Rows', True, Color.WHITE)
         self._swap_delay_label_text = FONT_SECONDARY_MEDIUM.render(
             'Swap Latency', True, Color.WHITE)
+        self._parallel_swap_label_text = FONT_SECONDARY_MEDIUM.render(
+            'Parallel Swaps', True, Color.WHITE)
         self._new_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
             'New Process Probability', True, Color.WHITE)
         self._priority_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
@@ -63,8 +65,12 @@ class CustomSettingsDialogView(Drawable):
         return self.num_ram_rows_y + self.label_height + 30
 
     @property
-    def new_process_probability_y(self):
+    def parallel_swap_y(self):
         return self.swap_delay_y + self.label_height + 30
+
+    @property
+    def new_process_probability_y(self):
+        return self.parallel_swap_y + self.label_height + 30
 
     @property
     def priority_process_probability_y(self):
@@ -104,6 +110,8 @@ class CustomSettingsDialogView(Drawable):
                      (self.x + 20, self.num_ram_rows_y))
         surface.blit(self._swap_delay_label_text,
                      (self.x + 20, self.swap_delay_y))
+        surface.blit(self._parallel_swap_label_text,
+                     (self.x + 20, self.parallel_swap_y))
         surface.blit(self._new_process_probability_label_text,
                      (self.x + 20, self.new_process_probability_y))
         surface.blit(self._priority_process_probability_label_text,

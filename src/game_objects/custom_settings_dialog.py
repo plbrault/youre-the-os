@@ -91,6 +91,8 @@ class CustomSettingsDialog(GameObject):
         self._max_processes_selector.view.min_width = selector_width
         self._new_process_probability_selector.view.min_width = selector_width
         self._num_ram_rows_selector.view.min_width = selector_width
+        self._swap_delay_selector.view.min_width = selector_width
+        self._parallel_swap_selector.view.min_width = selector_width
         self._io_probability_selector.view.min_width = selector_width
         self._priority_process_probability_selector.view.min_width = selector_width
         self._graceful_termination_selector.view.min_width = selector_width
@@ -159,6 +161,11 @@ class CustomSettingsDialog(GameObject):
             self.view.x + self.view.width - self._swap_delay_selector.view.width - 20,
             self.view.swap_delay_y +
             (self.view.label_height - self._swap_delay_selector.view.height) / 2
+        )
+        self._parallel_swap_selector.view.set_xy(
+            self.view.x + self.view.width - self._parallel_swap_selector.view.width - 20,
+            self.view.parallel_swap_y +
+            (self.view.label_height - self._parallel_swap_selector.view.height) / 2
         )
         self._new_process_probability_selector.view.set_xy(
             self.view.x + self.view.width -
