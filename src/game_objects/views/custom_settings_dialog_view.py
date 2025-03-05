@@ -46,7 +46,7 @@ class CustomSettingsDialogView(Drawable):
 
     @property
     def num_cpus_y(self):
-        return self.y + self._title_text.get_height() + 60
+        return self.y + self._title_text.get_height() + 50
 
     @property
     def num_processes_at_startup_y(self):
@@ -100,7 +100,7 @@ class CustomSettingsDialogView(Drawable):
             border_radius=3)
 
         surface.blit(self._title_text, (self.x + (self.width -
-                     self._title_text.get_width()) / 2, self.y + 20))
+                     self._title_text.get_width()) / 2, self.y + 10))
         surface.blit(self._num_cpus_label_text, (self.x + 20, self.num_cpus_y))
         surface.blit(self._num_processes_at_startup_label_text,
                      (self.x + 20, self.num_processes_at_startup_y))
