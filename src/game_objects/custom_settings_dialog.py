@@ -111,6 +111,7 @@ class CustomSettingsDialog(GameObject):
             max_processes = int(self._max_processes_selector.selected_option),
             num_ram_rows = int(self._num_ram_rows_selector.selected_option),
             swap_delay_ms = SWAP_DELAY_NAMES_TO_MS[self._swap_delay_selector.selected_option],
+            parallel_swaps = int(self._parallel_swap_selector.selected_option),
             new_process_probability = (
                 self._new_process_probability_selector.selected_option_id * 0.05
             ),
@@ -194,11 +195,11 @@ class CustomSettingsDialog(GameObject):
         self._start_button.view.set_xy(
             self.view.x + (self.view.width / 2) -
             self._start_button.view.width - 10,
-            self.view.y + self.view.height - self._start_button.view.height - 20
+            self.view.y + self.view.height - self._start_button.view.height - 18
         )
         self._cancel_button.view.set_xy(
             self.view.x + (self.view.width / 2) + 10,
-            self.view.y + self.view.height - self._cancel_button.view.height - 20
+            self.view.y + self.view.height - self._cancel_button.view.height - 18
         )
 
         for child in self.children:

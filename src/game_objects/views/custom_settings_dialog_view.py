@@ -4,6 +4,8 @@ from engine.drawable import Drawable
 from ui.fonts import FONT_SECONDARY_MEDIUM, FONT_PRIMARY_XXLARGE
 from ui.color import Color
 
+_OPTION_VERTICAL_SPACING = 25
+
 class CustomSettingsDialogView(Drawable):
     def __init__(self, custom_settings_dialog):
         self._custom_settings_dialog = custom_settings_dialog
@@ -50,39 +52,39 @@ class CustomSettingsDialogView(Drawable):
 
     @property
     def num_processes_at_startup_y(self):
-        return self.num_cpus_y + self.label_height + 30
+        return self.num_cpus_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def max_processes_y(self):
-        return self.num_processes_at_startup_y + self.label_height + 30
+        return self.num_processes_at_startup_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def num_ram_rows_y(self):
-        return self.max_processes_y + self.label_height + 30
+        return self.max_processes_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def swap_delay_y(self):
-        return self.num_ram_rows_y + self.label_height + 30
+        return self.num_ram_rows_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def parallel_swap_y(self):
-        return self.swap_delay_y + self.label_height + 30
+        return self.swap_delay_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def new_process_probability_y(self):
-        return self.parallel_swap_y + self.label_height + 30
+        return self.parallel_swap_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def priority_process_probability_y(self):
-        return self.new_process_probability_y + self.label_height + 30
+        return self.new_process_probability_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def io_probability_y(self):
-        return self.priority_process_probability_y + self.label_height + 30
+        return self.priority_process_probability_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def graceful_termination_y(self):
-        return self.io_probability_y + self.label_height + 30
+        return self.io_probability_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     def draw(self, surface):
         pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
@@ -100,7 +102,7 @@ class CustomSettingsDialogView(Drawable):
             border_radius=3)
 
         surface.blit(self._title_text, (self.x + (self.width -
-                     self._title_text.get_width()) / 2, self.y + 10))
+                     self._title_text.get_width()) / 2, self.y + 18))
         surface.blit(self._num_cpus_label_text, (self.x + 20, self.num_cpus_y))
         surface.blit(self._num_processes_at_startup_label_text,
                      (self.x + 20, self.num_processes_at_startup_y))
