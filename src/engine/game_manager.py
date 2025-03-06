@@ -65,7 +65,7 @@ class GameManager():
     def _get_events(self):
         events = []
         mouse_event_added = False
-        mouse_drag_event = None
+        mouse_motion_event = None
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,22 +85,22 @@ class GameManager():
                 self._mouse_down = True
             elif event.type == pygame.MOUSEBUTTONUP and event.button == _LEFT_MOUSE_BUTTON:
                 self._mouse_down = False
-                if mouse_event_added and mouse_drag_event:
-                    events.remove(mouse_drag_event)
+                if mouse_event_added and mouse_motion_event:
+                    events.remove(mouse_motion_event)
                     mouse_event_added = False
-                    mouse_drag_event = None
+                    mouse_motion_event = None
                 if not mouse_event_added:
                     events.append(
                         GameEvent(
                             GameEventType.MOUSE_LEFT_CLICK, {
                                 'position': event.pos, 'shift': self._shift_down }))
                     mouse_event_added = True
-            elif event.type == pygame.MOUSEMOTION and self._mouse_down and not mouse_event_added:
-                event = GameEvent(GameEventType.MOUSE_LEFT_DRAG,
-                                  {'position': event.pos, 'shift': self._shift_down})
-                events.append(event)
+            elif event.type == pygame.MOUSEMOTION and not mouse_event_added:
+                game_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                  {'position': event.pos, 'left_button_down': self._mouse_down, 'shift': self._shift_down})
+                events.append(game_event)
                 mouse_event_added = True
-                mouse_drag_event = event
+                mouse_motion_event = game_event
         return events
 
     async def _main_loop(self, ignore_events=False):

@@ -235,7 +235,13 @@ class Process(GameObject):
             game_monitor.notify_process_killed(self._pid)
 
     def _check_if_clicked_on(self, event):
-        if event.type in set([GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]):
+        if (
+            event.type == GameEventType.MOUSE_LEFT_CLICK
+            or (
+                event.type == GameEventType.MOUSE_MOTION
+                and event.get_property('left_button_down')
+            )
+        ):
             return self._view.collides(*event.get_property('position'))
         return False
 

@@ -130,10 +130,12 @@ class Page(GameObject):
 
     def _handle_events(self, events):
         for event in events:
-            if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
-                if self._view.collides(*event.get_property('position')):
-                    mouse_drag = event.type == GameEventType.MOUSE_LEFT_DRAG
-                    self._on_click(mouse_drag, event.get_property('shift'))
+            if event.type == GameEventType.MOUSE_LEFT_CLICK:
+                if self.view.collides(*event.get_property('position')):
+                    self._on_click(False, event.get_property('shift'))
+            elif event.type == GameEventType.MOUSE_MOTION and event.get_property('left_button_down'):
+                if self.view.collides(*event.get_property('position')):
+                    self._on_click(True, event.get_property('shift'))
 
     def update(self, current_time, events):
         self._handle_events(events)
