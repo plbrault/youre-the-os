@@ -97,7 +97,9 @@ class GameManager():
                     mouse_event_added = True
             elif event.type == pygame.MOUSEMOTION and not mouse_event_added:
                 game_event = GameEvent(GameEventType.MOUSE_MOTION,
-                                  {'position': event.pos, 'left_button_down': self._mouse_down, 'shift': self._shift_down})
+                                  {'position': event.pos,
+                                   'left_button_down': self._mouse_down,
+                                   'shift': self._shift_down})
                 events.append(game_event)
                 mouse_event_added = True
                 mouse_motion_event = game_event
