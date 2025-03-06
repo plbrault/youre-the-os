@@ -28,7 +28,6 @@ class Page(GameObject):
 
         self._display_blink_color = False
 
-        self._mouse_over = False
         self._mouse_dragged_on = False
 
         super().__init__(PageView(self))
@@ -151,22 +150,18 @@ class Page(GameObject):
     def _handle_events(self, events):
         for event in events:
             if event.type == GameEventType.MOUSE_MOTION:
-                if self.view.collides(*event.get_property('position')):
-                    if not self._mouse_over:
-                        self._mouse_dragged_on = event.get_property('left_button_down')
-                    self._mouse_over = True
-                else:
-                    self._mouse_over = False
-                    self._mouse_dragged_on = False
-
+                self._mouse_dragged_on = (
+                    self.view.collides(*event.get_property('position'))
+                    and event.get_property('left_button_down')
+                )
             if event.type == GameEventType.MOUSE_LEFT_CLICK:
-                self._page_manager.current_mouse_drag_action = PageMouseDragAction.NONE                
                 if (
                     self.view.collides(*event.get_property('position'))
                     and not self._mouse_dragged_on
                 ):
                     self._on_click(False, event.get_property('shift'))
                 self._mouse_dragged_on = False
+                self._page_manager.current_mouse_drag_action = PageMouseDragAction.NONE
             elif (
                 event.type == GameEventType.MOUSE_MOTION
                 and event.get_property('left_button_down')
