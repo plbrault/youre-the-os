@@ -3,6 +3,7 @@ from typing import Optional
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 import game_monitor
+from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
 from game_objects.views.page_view import PageView
 
@@ -126,10 +127,21 @@ class Page(GameObject):
                 game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
     def _on_click(self, mouse_drag : bool, shift_down : bool):
-        if self.swap_requested and not mouse_drag and not shift_down:
-            self.cancel_swap()
+        if mouse_drag and not shift_down:
+            if self._page_manager.current_mouse_drag_action == PageMouseDragAction.NONE:
+                if self.swap_requested:
+                    self._page_manager.current_mouse_drag_action = PageMouseDragAction.CANCEL_SWAP
+                else:
+                    self._page_manager.current_mouse_drag_action = PageMouseDragAction.REQUEST_SWAP
+            if self._page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP:
+                self.request_swap(shift_down)
+            elif self._page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP:
+                self.cancel_swap()
         else:
-            self.request_swap(shift_down)
+            if self.swap_requested:
+                self.cancel_swap()
+            else:
+                self.request_swap(shift_down)
 
     def _handle_events(self, events):
         for event in events:
@@ -143,6 +155,7 @@ class Page(GameObject):
                     self._mouse_dragged_on = False
 
             if event.type == GameEventType.MOUSE_LEFT_CLICK:
+                self._page_manager.current_mouse_drag_action = PageMouseDragAction.NONE                
                 if (
                     self.view.collides(*event.get_property('position'))
                     and not self._mouse_dragged_on
