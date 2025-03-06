@@ -139,6 +139,18 @@ class PageManager(GameObject):
                 if slot.has_page:
                     self.swap_page(slot.page, False)
 
+    def cancel_page_swap(self, page : Page, cancel_whole_row : bool = False):
+        page.cancel_swap()
+        if cancel_whole_row:
+            slots_on_same_row = [
+                slot
+                for slot in (self._ram_slots + self._disk_slots)
+                if (slot.view.y == page.view.y and slot != page)
+            ]
+            for slot in slots_on_same_row:
+                if slot.has_page:
+                    self.cancel_page_swap(slot.page)
+
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
             if ram_slot.page == page:

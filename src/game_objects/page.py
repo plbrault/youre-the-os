@@ -78,7 +78,7 @@ class Page(GameObject):
         return self._display_blink_color
 
     def request_swap(self, swap_whole_row : bool = False):
-        """The method called when the player clicks on the page."""
+        """The method called when the player clicks on the page to swap it."""
         self._page_manager.swap_page(self, swap_whole_row)
 
     def init_swap(self, swapping_from : PageSlot):
@@ -94,7 +94,12 @@ class Page(GameObject):
         self._swapping_to = swapping_to
         swapping_to.page = self
 
+    def request_swap_cancellation(self, cancel_whole_row : bool = False):
+        """The method called when the player clicks on the page to cancel swapping."""
+        self._page_manager.cancel_page_swap(self, cancel_whole_row)
+
     def cancel_swap(self):
+        """The method called by the page manager to cancel the swap."""
         if self.swap_in_progress:
             self._swapping_to.page = None
         if self.swap_requested:
@@ -127,19 +132,19 @@ class Page(GameObject):
                 game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
     def _on_click(self, mouse_drag : bool, shift_down : bool):
-        if mouse_drag and not shift_down:
+        if mouse_drag:
             if self._page_manager.current_mouse_drag_action == PageMouseDragAction.NONE:
                 if self.swap_requested:
                     self._page_manager.current_mouse_drag_action = PageMouseDragAction.CANCEL_SWAP
                 else:
                     self._page_manager.current_mouse_drag_action = PageMouseDragAction.REQUEST_SWAP
             if self._page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP:
-                self.request_swap(shift_down)
+                self.request_swap(False)
             elif self._page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP:
-                self.cancel_swap()
+                self.request_swap_cancellation(False)
         else:
             if self.swap_requested:
-                self.cancel_swap()
+                self.request_swap_cancellation(shift_down)
             else:
                 self.request_swap(shift_down)
 
