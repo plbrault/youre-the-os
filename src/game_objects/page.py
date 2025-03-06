@@ -3,6 +3,7 @@ from typing import Optional
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 import game_monitor
+from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
 from game_objects.views.page_view import PageView
 
@@ -26,6 +27,8 @@ class Page(GameObject):
         self._on_disk = False
 
         self._display_blink_color = False
+
+        self._mouse_dragged_on = False
 
         super().__init__(PageView(self))
 
@@ -74,7 +77,7 @@ class Page(GameObject):
         return self._display_blink_color
 
     def request_swap(self, swap_whole_row : bool = False):
-        """The method called when the player clicks on the page."""
+        """The method called when the player clicks on the page to swap it."""
         self._page_manager.swap_page(self, swap_whole_row)
 
     def init_swap(self, swapping_from : PageSlot):
@@ -89,6 +92,21 @@ class Page(GameObject):
         self._started_swap_at = current_time
         self._swapping_to = swapping_to
         swapping_to.page = self
+
+    def request_swap_cancellation(self, cancel_whole_row : bool = False):
+        """The method called when the player clicks on the page to cancel swapping."""
+        self._page_manager.cancel_page_swap(self, cancel_whole_row)
+
+    def cancel_swap(self):
+        """The method called by the page manager to cancel the swap."""
+        if self.swap_in_progress:
+            self._swapping_to.page = None
+        if self.swap_requested:
+            self._waiting_to_swap = False
+            self._swapping_from = None
+            self._swapping_to = None
+            self._started_swap_at = None
+            self._swap_percentage_completed = 0
 
     def _update_swap(self, current_time):
         """This method is called at each update. If a swap is in progress, it performs
@@ -112,19 +130,47 @@ class Page(GameObject):
                 self._swap_percentage_completed = 0
                 game_monitor.notify_page_swap(self.pid, self.idx, self.on_disk)
 
-    def _check_if_clicked_on(self, event):
-        if event.type in [GameEventType.MOUSE_LEFT_CLICK, GameEventType.MOUSE_LEFT_DRAG]:
-            return self._view.collides(*event.get_property('position'))
-        return False
+    def _on_click(self, mouse_drag : bool, shift_down : bool):
+        if mouse_drag:
+            if self._page_manager.current_mouse_drag_action == PageMouseDragAction.NONE:
+                if self.swap_requested:
+                    self._page_manager.current_mouse_drag_action = PageMouseDragAction.CANCEL_SWAP
+                else:
+                    self._page_manager.current_mouse_drag_action = PageMouseDragAction.REQUEST_SWAP
+            if self._page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP:
+                self.request_swap(False)
+            elif self._page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP:
+                self.request_swap_cancellation(False)
+        else:
+            if self.swap_requested:
+                self.request_swap_cancellation(shift_down)
+            else:
+                self.request_swap(shift_down)
 
-    def _on_click(self, shift_down : bool):
-        self.request_swap(shift_down)
+    def _handle_events(self, events):
+        for event in events:
+            if event.type == GameEventType.MOUSE_MOTION:
+                self._mouse_dragged_on = (
+                    self.view.collides(*event.get_property('position'))
+                    and event.get_property('left_button_down')
+                )
+            if event.type == GameEventType.MOUSE_LEFT_CLICK:
+                if (
+                    self.view.collides(*event.get_property('position'))
+                    and not self._mouse_dragged_on
+                ):
+                    self._on_click(False, event.get_property('shift'))
+                self._mouse_dragged_on = False
+                self._page_manager.current_mouse_drag_action = PageMouseDragAction.NONE
+            elif (
+                event.type == GameEventType.MOUSE_MOTION
+                and event.get_property('left_button_down')
+            ):
+                if self.view.collides(*event.get_property('position')):
+                    self._on_click(True, event.get_property('shift'))
 
     def update(self, current_time, events):
-        for event in events:
-            if self._check_if_clicked_on(event):
-                self._on_click(event.get_property('shift'))
-
+        self._handle_events(events)
         self._update_swap(current_time)
         if self.in_use and self.on_disk:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
