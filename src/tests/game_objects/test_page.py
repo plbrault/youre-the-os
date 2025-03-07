@@ -53,19 +53,21 @@ class TestPage:
         page_arg = None
         cancel_whole_row_arg = None
 
-        def request_swap_mock(page, cancel_whole_row):
-            pass
-
         def cancel_swap_mock(page, cancel_whole_row):
             nonlocal page_arg, cancel_whole_row_arg
             page_arg = page
             cancel_whole_row_arg = cancel_whole_row
 
-        monkeypatch.setattr(page_manager, 'swap_page', request_swap_mock)
         monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
 
         page = Page(1, 1, page_manager)
-        page.request_swap()
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+        page.init_swap(swapping_from)
+
+        assert page.swap_requested
+
         page.request_swap_cancellation()
 
         assert page_arg == page
@@ -222,6 +224,18 @@ class TestPage:
 
         assert page_arg == page
         assert not swap_whole_row_arg
+
+    def test_click_when_swap_requested(self, page_manager, monkeypatch):
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        def request_swap_mock(page, cancel_whole_row):
+            pass
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal page_arg, cancel_whole_row_arg
+            page_arg = page
+            cancel_whole_row_arg = cancel_whole_row        
 
     def test_shift_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
