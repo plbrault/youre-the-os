@@ -81,6 +81,14 @@ class TestPage:
         assert page_arg == page
         assert not cancel_whole_row_arg
 
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        page.request_swap_cancellation(True)
+
+        assert page_arg == page
+        assert cancel_whole_row_arg
+
     def test_swap(self, page_manager):
         page = Page(1, 1, page_manager)
 
