@@ -401,12 +401,49 @@ class TestPage:
         assert page3.swap_requested
 
         mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
-                                     {'position': (page3.view.x, page3.view.y), 'shift': True, 'left_button_down': True })
+                                     {'position': (page3.view.x, page3.view.y), 'shift': False, 'left_button_down': True })
         page3.update(2000, [mouse_drag_event])
 
         assert page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP
         assert not swap_args
         assert cancel_args[0] == page3 and not cancel_args[1]
+
+        cancel_args = None
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page2.view.x, page2.view.y), 'shift': False, 'left_button_down': True })
+        page2.update(2000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP
+        assert not swap_args
+        assert not cancel_args
+
+    def test_mouse_drag_with_shift_down(self, page_manager, monkeypatch):
+        swap_args = None
+        cancel_args = None
+
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal swap_args
+            swap_args = (page, swap_whole_row)
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal cancel_args
+            cancel_args = (page, cancel_whole_row)
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        assert page_manager.current_mouse_drag_action == None
+
+        page = Page(1, 1, page_manager)
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page.view.x, page.view.y), 'shift': True, 'left_button_down': True })
+        page.update(2000, [mouse_drag_event])
+
+        assert not page_manager.current_mouse_drag_action
+        assert not swap_args
+        assert not cancel_args
 
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)
