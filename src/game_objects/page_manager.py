@@ -144,7 +144,6 @@ class PageManager(GameObject):
         if not page.swap_requested:
             return
 
-        page.cancel_swap()
         if cancel_whole_row:
             slots_on_same_row = [
                 slot
@@ -154,6 +153,8 @@ class PageManager(GameObject):
             for slot in slots_on_same_row:
                 if slot.has_page:
                     self.cancel_page_swap(slot.page)
+        else:
+            page.cancel_swap()
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:
