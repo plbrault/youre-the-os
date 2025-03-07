@@ -11,7 +11,7 @@ class TestPageManager:
     def stage_config(self):
         return StageConfig(
             num_cpus=4,
-            num_ram_rows=1,
+            num_ram_rows=1
         )
 
     @pytest.fixture
@@ -149,6 +149,132 @@ class TestPageManager:
         assert not pages[2].swap_in_progress
         assert pages[2].view.y == pages[1].view.y
         assert pages[2].view.x < pages[1].view.x
+
+    def test_parallel_swaps(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            num_cpus=4,
+            num_ram_rows=1,
+            swap_delay_ms=1000,
+            parallel_swaps=4
+        ))
+        page_manager = PageManager(stage)
+        page_manager.setup()
+
+        pages = []
+
+        for i in range(24):
+            page = page_manager.create_page(1, i)
+            pages.append(page)
+
+        time = 10000
+        page_manager.update(time, [])
+
+        for i in range(8):
+            page_manager.swap_page(pages[i])
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+            assert pages[i].in_ram
+        for i in range(16, 24):
+            page_manager.swap_page(pages[i])
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+            assert pages[i].on_disk
+
+        time += 500
+        page_manager.update(time, [])
+
+        for i in range(4):
+            assert pages[i].swap_in_progress
+        for i in range(4, 8):
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(8, 16):
+            assert not pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(16, 24):
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+
+        time += 1000
+        page_manager.update(time, [])
+        time += 500
+        page_manager.update(time, [])
+
+        for i in range(4):
+            assert not pages[i].swap_requested
+            assert pages[i].on_disk
+        for i in range(4, 8):
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(8, 16):
+            assert not pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(16, 20):
+            assert pages[i].swap_in_progress
+        for i in range(20, 24):
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+
+        time += 1000
+        page_manager.update(time, [])
+        time += 500
+        page_manager.update(time, [])
+
+        for i in range(4):
+            assert not pages[i].swap_requested
+            assert pages[i].on_disk
+        for i in range(4, 8):
+            assert pages[i].swap_in_progress
+        for i in range(8, 16):
+            assert not pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(16, 20):
+            assert not pages[i].swap_requested
+            assert pages[i].in_ram
+        for i in range(20, 24):
+            assert pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+
+        time += 1000
+        page_manager.update(time, [])
+        time += 500
+        page_manager.update(time, [])
+
+        for i in range(4):
+            assert not pages[i].swap_requested
+            assert pages[i].on_disk
+        for i in range(4, 8):
+            assert not pages[i].swap_requested
+            assert pages[i].on_disk
+        for i in range(8, 16):
+            assert not pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(16, 20):
+            assert not pages[i].swap_requested
+            assert pages[i].in_ram
+        for i in range(20, 24):
+            assert pages[i].swap_in_progress
+
+        time += 1000
+        page_manager.update(time, [])
+        time += 500
+        page_manager.update(time, [])
+
+        for i in range(4):
+            assert not pages[i].swap_requested
+            assert pages[i].on_disk
+        for i in range(4, 8):
+            assert not pages[i].swap_requested
+            assert pages[i].on_disk
+        for i in range(8, 16):
+            assert not pages[i].swap_requested
+            assert not pages[i].swap_in_progress
+        for i in range(16, 20):
+            assert not pages[i].swap_requested
+            assert pages[i].in_ram
+        for i in range(20, 24):
+            assert not pages[i].swap_requested
+            assert pages[i].in_ram
 
     def test_swap_whole_row(self, page_manager):
         pages = []
