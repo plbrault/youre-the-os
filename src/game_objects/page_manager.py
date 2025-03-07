@@ -1,7 +1,7 @@
 from queue import Queue
 from typing import Optional
 
-from constants import MAX_RAM_ROWS, RAM_PAGES_PER_ROW
+from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
@@ -10,7 +10,7 @@ from game_objects.page_slot import PageSlot
 
 class PageManager(GameObject):
     _TOTAL_ROWS = MAX_RAM_ROWS
-    _NUM_COLS = RAM_PAGES_PER_ROW
+    _NUM_COLS = PAGES_PER_ROW
 
     def __init__(self, stage):
         self._stage = stage

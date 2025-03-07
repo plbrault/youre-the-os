@@ -1,5 +1,6 @@
 import pytest
 
+from constants import PAGES_PER_ROW
 from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 from game_objects.page_manager import PageManager
@@ -187,6 +188,42 @@ class TestPageManager:
         assert pages[PageManager.get_num_cols() - 1].on_disk
         assert pages[PageManager.get_num_cols() - 1].view.x == pages[PageManager.get_num_cols() - 1].view.x
         assert pages[PageManager.get_num_cols() - 1].view.y == old_y
+
+    def test_cancel_page_swap(self, page_manager, monkeypatch):
+        cancel_called = False
+
+        def cancel_swap_mock():
+            nonlocal cancel_called
+            cancel_called = True
+
+        page = page_manager.create_page(1, 0)
+        monkeypatch.setattr(page, 'cancel_swap', cancel_swap_mock)
+
+        page_manager.swap_page(page)
+        assert page.swap_requested
+        assert not cancel_called
+
+        page_manager.cancel_page_swap(page)
+        assert cancel_called
+
+    def test_cancel_page_swap_for_whole_row(self, page_manager, monkeypatch):
+        pages = []
+
+        cancel_calls =  0
+
+        def cancel_swap_mock():
+            nonlocal cancel_calls
+            cancel_calls += 1
+
+        for i in range(PAGES_PER_ROW * 2):
+            page = page_manager.create_page(1, i)
+            monkeypatch.setattr(page, 'cancel_swap', cancel_swap_mock)
+            page.request_swap()
+            assert page.swap_requested
+            pages.append(page)
+
+        page_manager.cancel_page_swap(pages[0], cancel_whole_row=True)
+        assert cancel_calls == PAGES_PER_ROW
 
     def test_delete_page_in_ram(self, page_manager):
         pages = []
