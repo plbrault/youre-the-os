@@ -1,3 +1,3 @@
 TITLE = "You're the OS!"
-VERSION = "1.9.0"
+VERSION = "1.10.0"
 COPYRIGHT_YEAR = "2023-2025"
