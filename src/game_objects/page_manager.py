@@ -1,6 +1,7 @@
 from queue import Queue
+from typing import Optional
 
-from constants import MAX_RAM_ROWS, RAM_PAGES_PER_ROW
+from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
@@ -9,7 +10,7 @@ from game_objects.page_slot import PageSlot
 
 class PageManager(GameObject):
     _TOTAL_ROWS = MAX_RAM_ROWS
-    _NUM_COLS = RAM_PAGES_PER_ROW
+    _NUM_COLS = PAGES_PER_ROW
 
     def __init__(self, stage):
         self._stage = stage
@@ -23,7 +24,7 @@ class PageManager(GameObject):
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
 
-        self._current_mouse_drag_action = PageMouseDragAction.NONE
+        self._current_mouse_drag_action: Optional[PageMouseDragAction] = None
 
         super().__init__(PageManagerView(self))
 
@@ -51,11 +52,11 @@ class PageManager(GameObject):
         return self._pages[(pid, idx)]
 
     @property
-    def current_mouse_drag_action(self) -> PageMouseDragAction:
+    def current_mouse_drag_action(self) -> Optional[PageMouseDragAction]:
         return self._current_mouse_drag_action
 
     @current_mouse_drag_action.setter
-    def current_mouse_drag_action(self, value: PageMouseDragAction):
+    def current_mouse_drag_action(self, value: Optional[PageMouseDragAction]):
         self._current_mouse_drag_action = value
 
     def setup(self):
@@ -140,7 +141,9 @@ class PageManager(GameObject):
                     self.swap_page(slot.page, False)
 
     def cancel_page_swap(self, page : Page, cancel_whole_row : bool = False):
-        page.cancel_swap()
+        if not page.swap_requested:
+            return
+
         if cancel_whole_row:
             slots_on_same_row = [
                 slot
@@ -150,6 +153,8 @@ class PageManager(GameObject):
             for slot in slots_on_same_row:
                 if slot.has_page:
                     self.cancel_page_swap(slot.page)
+        else:
+            page.cancel_swap()
 
     def delete_page(self, page):
         for ram_slot in self._ram_slots:

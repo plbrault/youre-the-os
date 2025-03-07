@@ -78,7 +78,8 @@ class Page(GameObject):
 
     def request_swap(self, swap_whole_row : bool = False):
         """The method called when the player clicks on the page to swap it."""
-        self._page_manager.swap_page(self, swap_whole_row)
+        if not self.swap_requested:
+            self._page_manager.swap_page(self, swap_whole_row)
 
     def init_swap(self, swapping_from : PageSlot):
         """The method called by the page manager to set the swap attributes."""
@@ -95,7 +96,8 @@ class Page(GameObject):
 
     def request_swap_cancellation(self, cancel_whole_row : bool = False):
         """The method called when the player clicks on the page to cancel swapping."""
-        self._page_manager.cancel_page_swap(self, cancel_whole_row)
+        if self.swap_requested:
+            self._page_manager.cancel_page_swap(self, cancel_whole_row)
 
     def cancel_swap(self):
         """The method called by the page manager to cancel the swap."""
@@ -132,7 +134,7 @@ class Page(GameObject):
 
     def _on_click(self, mouse_drag : bool, shift_down : bool):
         if mouse_drag:
-            if self._page_manager.current_mouse_drag_action == PageMouseDragAction.NONE:
+            if not self._page_manager.current_mouse_drag_action:
                 if self.swap_requested:
                     self._page_manager.current_mouse_drag_action = PageMouseDragAction.CANCEL_SWAP
                 else:
@@ -157,14 +159,18 @@ class Page(GameObject):
             if event.type == GameEventType.MOUSE_LEFT_CLICK:
                 if (
                     self.view.collides(*event.get_property('position'))
-                    and not self._mouse_dragged_on
+                    and (
+                        not self._mouse_dragged_on
+                        or event.get_property('shift')
+                    )
                 ):
                     self._on_click(False, event.get_property('shift'))
                 self._mouse_dragged_on = False
-                self._page_manager.current_mouse_drag_action = PageMouseDragAction.NONE
+                self._page_manager.current_mouse_drag_action = None
             elif (
                 event.type == GameEventType.MOUSE_MOTION
                 and event.get_property('left_button_down')
+                and not event.get_property('shift')
             ):
                 if self.view.collides(*event.get_property('position')):
                     self._on_click(True, event.get_property('shift'))

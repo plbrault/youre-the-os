@@ -4,6 +4,7 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from game_objects.page import Page
 from game_objects.page_manager import PageManager
+from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
 
 class TestPage:
@@ -48,6 +49,46 @@ class TestPage:
 
         assert page_arg == page
         assert not swap_whole_row_arg
+
+        page_arg = None
+        swap_whole_row_arg = None
+
+        page.request_swap(True)
+
+        assert page_arg == page
+        assert swap_whole_row_arg
+
+    def test_request_swap_cancellation(self, page_manager, monkeypatch):
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal page_arg, cancel_whole_row_arg
+            page_arg = page
+            cancel_whole_row_arg = cancel_whole_row
+
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+        page.init_swap(swapping_from)
+
+        assert page.swap_requested
+
+        page.request_swap_cancellation()
+
+        assert page_arg == page
+        assert not cancel_whole_row_arg
+
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        page.request_swap_cancellation(True)
+
+        assert page_arg == page
+        assert cancel_whole_row_arg
 
     def test_swap(self, page_manager):
         page = Page(1, 1, page_manager)
@@ -96,6 +137,67 @@ class TestPage:
         assert page.swap_percentage_completed == 0
         assert not swapping_from.has_page
         assert swapping_to.page == page
+
+    def test_cancel_swap(self, page_manager):
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+        swapping_to = PageSlot()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert not page.on_disk
+        assert page.swap_percentage_completed == 0
+
+        page.init_swap(swapping_from)
+
+        assert page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+
+        page.cancel_swap()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+
+        page.init_swap(swapping_from)
+        page.start_swap(10000, swapping_to)
+
+        assert page.swap_requested
+        assert page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.cancel_swap()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert not swapping_to.has_page
+
+        page.init_swap(swapping_from)
+        page.start_swap(20000, swapping_to)
+        page.update(20000 + page_manager.stage.config.swap_delay_ms // 2, [])
+
+        assert page.swap_requested
+        assert page.swap_in_progress
+        assert 0.49 < page.swap_percentage_completed < 0.51
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.cancel_swap()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert not swapping_to.has_page
 
     def test_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
@@ -182,6 +284,211 @@ class TestPage:
 
         assert page_arg == page
         assert swap_whole_row_arg
+
+    def test_click_when_swap_requested(self, page_manager, monkeypatch):
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal page_arg, cancel_whole_row_arg
+            page_arg = page
+            cancel_whole_row_arg = cancel_whole_row
+
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+
+        page.init_swap(swapping_from)
+        assert page.swap_requested
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                      {'position': (page.view.x, page.view.y), 'shift': False })
+        page.update(1000, [mouse_click_event])
+
+        assert page_arg == page
+        assert not cancel_whole_row_arg
+
+    def test_shift_click_when_swap_requested(self, page_manager, monkeypatch):
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal page_arg, cancel_whole_row_arg
+            page_arg = page
+            cancel_whole_row_arg = cancel_whole_row
+
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+
+        page.init_swap(swapping_from)
+        assert page.swap_requested
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                        {'position': (page.view.x, page.view.y), 'shift': True })
+        page.update(1000, [mouse_click_event])
+
+        assert page_arg == page
+        assert cancel_whole_row_arg
+
+    def test_mouse_drag(self, page_manager, monkeypatch):
+        swap_args = None
+        cancel_args = None
+
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal swap_args
+            swap_args = (page, swap_whole_row)
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal cancel_args
+            cancel_args = (page, cancel_whole_row)
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        assert page_manager.current_mouse_drag_action == None
+
+        page1 = Page(1, 1, page_manager)
+        page1.view.set_xy(1000, 500)
+
+        page2 = Page(1, 2, page_manager)
+        page2.view.set_xy(1000, 600)
+
+        page3 = Page(1, 3, page_manager)
+        page3.view.set_xy(1000, 700)
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                     {'position': (page1.view.x, page1.view.y), 'shift': False, 'left_button_down': True })
+        page1.update(1000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
+        assert swap_args[0] == page1 and not swap_args[1]
+        assert not cancel_args
+
+        swap_args = None
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                     {'position': (page2.view.x, page2.view.y), 'shift': False, 'left_button_down': True })
+        page2.update(1000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
+        assert swap_args[0] == page2 and not swap_args[1]
+        assert not cancel_args
+
+        swap_args = None
+
+        page3.init_swap(PageSlot())
+        assert page3.swap_requested
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page3.view.x, page3.view.y), 'shift': False, 'left_button_down': True })
+        page3.update(1000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
+        assert not swap_args
+        assert not cancel_args
+
+        swap_args = None
+
+        page_manager.current_mouse_drag_action = None
+
+        assert page3.swap_requested
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                     {'position': (page3.view.x, page3.view.y), 'shift': False, 'left_button_down': True })
+        page3.update(2000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP
+        assert not swap_args
+        assert cancel_args[0] == page3 and not cancel_args[1]
+
+        cancel_args = None
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page2.view.x, page2.view.y), 'shift': False, 'left_button_down': True })
+        page2.update(2000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP
+        assert not swap_args
+        assert not cancel_args
+
+    def test_mouse_drag_with_shift_down(self, page_manager, monkeypatch):
+        swap_args = None
+        cancel_args = None
+
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal swap_args
+            swap_args = (page, swap_whole_row)
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal cancel_args
+            cancel_args = (page, cancel_whole_row)
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        assert page_manager.current_mouse_drag_action == None
+
+        page = Page(1, 1, page_manager)
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page.view.x, page.view.y), 'shift': True, 'left_button_down': True })
+        page.update(2000, [mouse_drag_event])
+
+        assert not page_manager.current_mouse_drag_action
+        assert not swap_args
+        assert not cancel_args
+
+    def test_click_after_drag(self, page_manager, monkeypatch):
+        swap_args = None
+        cancel_args = None
+
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal swap_args
+            swap_args = (page, swap_whole_row)
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal cancel_args
+            cancel_args = (page, cancel_whole_row)
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+        assert not page.swap_requested
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page.view.x, page.view.y), 'shift': False, 'left_button_down': True })
+        page.update(2000, [mouse_drag_event])
+        page.init_swap(PageSlot())
+
+        assert swap_args
+        assert not cancel_args
+        assert page.swap_requested
+        swap_args = None
+
+        click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                {'position': (page.view.x, page.view.y), 'shift': False })
+        page.update(2000, [click_event])
+
+        assert not swap_args
+        assert not cancel_args
+
+        mouse_motion_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (0, 0), 'shift': False, 'left_button_down': False })
+        page.update(2000, [mouse_motion_event])
+        click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                {'position': (page.view.x, page.view.y), 'shift': False })
+        page.update(2000, [click_event])
+
+        assert not swap_args
+        assert cancel_args[0] == page and not cancel_args[1]
 
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)
