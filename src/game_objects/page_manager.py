@@ -141,6 +141,9 @@ class PageManager(GameObject):
                     self.swap_page(slot.page, False)
 
     def cancel_page_swap(self, page : Page, cancel_whole_row : bool = False):
+        if not page.swap_requested:
+            return
+
         page.cancel_swap()
         if cancel_whole_row:
             slots_on_same_row = [

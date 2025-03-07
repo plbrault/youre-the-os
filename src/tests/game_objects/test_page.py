@@ -391,7 +391,7 @@ class TestPage:
         page3.update(1000, [mouse_drag_event])
 
         assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
-        assert swap_args[0] == page3 and not swap_args[1]
+        assert not swap_args
         assert not cancel_args
 
         swap_args = None

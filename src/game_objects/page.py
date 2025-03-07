@@ -78,7 +78,8 @@ class Page(GameObject):
 
     def request_swap(self, swap_whole_row : bool = False):
         """The method called when the player clicks on the page to swap it."""
-        self._page_manager.swap_page(self, swap_whole_row)
+        if not self.swap_requested:
+            self._page_manager.swap_page(self, swap_whole_row)
 
     def init_swap(self, swapping_from : PageSlot):
         """The method called by the page manager to set the swap attributes."""
@@ -95,7 +96,8 @@ class Page(GameObject):
 
     def request_swap_cancellation(self, cancel_whole_row : bool = False):
         """The method called when the player clicks on the page to cancel swapping."""
-        self._page_manager.cancel_page_swap(self, cancel_whole_row)
+        if self.swap_requested:
+            self._page_manager.cancel_page_swap(self, cancel_whole_row)
 
     def cancel_swap(self):
         """The method called by the page manager to cancel the swap."""
