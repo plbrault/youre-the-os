@@ -159,7 +159,10 @@ class Page(GameObject):
             if event.type == GameEventType.MOUSE_LEFT_CLICK:
                 if (
                     self.view.collides(*event.get_property('position'))
-                    and not self._mouse_dragged_on
+                    and (
+                        not self._mouse_dragged_on
+                        or event.get_property('shift')
+                    )
                 ):
                     self._on_click(False, event.get_property('shift'))
                 self._mouse_dragged_on = False
@@ -167,6 +170,7 @@ class Page(GameObject):
             elif (
                 event.type == GameEventType.MOUSE_MOTION
                 and event.get_property('left_button_down')
+                and not event.get_property('shift')
             ):
                 if self.view.collides(*event.get_property('position')):
                     self._on_click(True, event.get_property('shift'))
