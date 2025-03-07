@@ -132,7 +132,7 @@ class Page(GameObject):
 
     def _on_click(self, mouse_drag : bool, shift_down : bool):
         if mouse_drag:
-            if self._page_manager.current_mouse_drag_action == PageMouseDragAction.NONE:
+            if not self._page_manager.current_mouse_drag_action:
                 if self.swap_requested:
                     self._page_manager.current_mouse_drag_action = PageMouseDragAction.CANCEL_SWAP
                 else:
@@ -161,7 +161,7 @@ class Page(GameObject):
                 ):
                     self._on_click(False, event.get_property('shift'))
                 self._mouse_dragged_on = False
-                self._page_manager.current_mouse_drag_action = PageMouseDragAction.NONE
+                self._page_manager.current_mouse_drag_action = None
             elif (
                 event.type == GameEventType.MOUSE_MOTION
                 and event.get_property('left_button_down')

@@ -4,6 +4,7 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from game_objects.page import Page
 from game_objects.page_manager import PageManager
+from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
 
 class TestPage:
@@ -335,6 +336,77 @@ class TestPage:
 
         assert page_arg == page
         assert cancel_whole_row_arg
+
+    def test_mouse_drag(self, page_manager, monkeypatch):
+        swap_args = None
+        cancel_args = None
+
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal swap_args
+            swap_args = (page, swap_whole_row)
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal cancel_args
+            cancel_args = (page, cancel_whole_row)
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        assert page_manager.current_mouse_drag_action == None
+
+        page1 = Page(1, 1, page_manager)
+        page1.view.set_xy(1000, 500)
+
+        page2 = Page(1, 2, page_manager)
+        page2.view.set_xy(1000, 600)
+
+        page3 = Page(1, 3, page_manager)
+        page3.view.set_xy(1000, 700)
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                     {'position': (page1.view.x, page1.view.y), 'shift': False, 'left_button_down': True })
+        page1.update(1000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
+        assert swap_args[0] == page1 and not swap_args[1]
+        assert not cancel_args
+
+        swap_args = None
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                     {'position': (page2.view.x, page2.view.y), 'shift': False, 'left_button_down': True })
+        page2.update(1000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
+        assert swap_args[0] == page2 and not swap_args[1]
+        assert not cancel_args
+
+        swap_args = None
+
+        page3.init_swap(PageSlot())
+        assert page3.swap_requested
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page3.view.x, page3.view.y), 'shift': False, 'left_button_down': True })
+        page3.update(1000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.REQUEST_SWAP
+        assert swap_args[0] == page3 and not swap_args[1]
+        assert not cancel_args
+
+        swap_args = None
+
+        page_manager.current_mouse_drag_action = None
+
+        assert page3.swap_requested
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                     {'position': (page3.view.x, page3.view.y), 'shift': True, 'left_button_down': True })
+        page3.update(2000, [mouse_drag_event])
+
+        assert page_manager.current_mouse_drag_action == PageMouseDragAction.CANCEL_SWAP
+        assert not swap_args
+        assert cancel_args[0] == page3 and not cancel_args[1]
 
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)

@@ -1,4 +1,5 @@
 from queue import Queue
+from typing import Optional
 
 from constants import MAX_RAM_ROWS, RAM_PAGES_PER_ROW
 from engine.game_object import GameObject
@@ -23,7 +24,7 @@ class PageManager(GameObject):
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
 
-        self._current_mouse_drag_action = PageMouseDragAction.NONE
+        self._current_mouse_drag_action: Optional[PageMouseDragAction] = None
 
         super().__init__(PageManagerView(self))
 
@@ -51,11 +52,11 @@ class PageManager(GameObject):
         return self._pages[(pid, idx)]
 
     @property
-    def current_mouse_drag_action(self) -> PageMouseDragAction:
+    def current_mouse_drag_action(self) -> Optional[PageMouseDragAction]:
         return self._current_mouse_drag_action
 
     @current_mouse_drag_action.setter
-    def current_mouse_drag_action(self, value: PageMouseDragAction):
+    def current_mouse_drag_action(self, value: Optional[PageMouseDragAction]):
         self._current_mouse_drag_action = value
 
     def setup(self):
