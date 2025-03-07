@@ -49,6 +49,28 @@ class TestPage:
         assert page_arg == page
         assert not swap_whole_row_arg
 
+    def test_request_swap_cancellation(self, page_manager, monkeypatch):
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        def request_swap_mock(page, cancel_whole_row):
+            pass
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal page_arg, cancel_whole_row_arg
+            page_arg = page
+            cancel_whole_row_arg = cancel_whole_row
+
+        monkeypatch.setattr(page_manager, 'swap_page', request_swap_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+        page.request_swap()
+        page.request_swap_cancellation()
+
+        assert page_arg == page
+        assert not cancel_whole_row_arg
+
     def test_swap(self, page_manager):
         page = Page(1, 1, page_manager)
 
