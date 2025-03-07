@@ -4,6 +4,7 @@ from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PA
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
+from game_objects.page_slot import PageSlot
 from game_objects.process import Process
 from stage_config import StageConfig
 
@@ -820,6 +821,13 @@ class TestProcess:
 
         process.use_cpu()
         stage.page_manager.get_page(1, 0).request_swap()
+
+        for i in range(1, 5):
+            process.update(i * 200, [])
+            assert not process.display_blink_color
+
+        stage.page_manager.get_page(1, 0).start_swap(0, PageSlot())
+        assert stage.page_manager.get_page(1, 0).swap_in_progress
 
         previous_blink_value = process.display_blink_color
         for i in range(1, 5):
