@@ -265,7 +265,7 @@ class Process(GameObject):
         unavailable_pages = 0
         if self.has_cpu:
             for page in self._pages:
-                if page.on_disk or page.swap_requested:
+                if page.on_disk or page.swap_in_progress:
                     unavailable_pages += 1
         self._set_waiting_for_page(unavailable_pages > 0)
 
