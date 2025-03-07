@@ -445,6 +445,51 @@ class TestPage:
         assert not swap_args
         assert not cancel_args
 
+    def test_click_after_drag(self, page_manager, monkeypatch):
+        swap_args = None
+        cancel_args = None
+
+        def swap_page_mock(page, swap_whole_row):
+            nonlocal swap_args
+            swap_args = (page, swap_whole_row)
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal cancel_args
+            cancel_args = (page, cancel_whole_row)
+
+        monkeypatch.setattr(page_manager, 'swap_page', swap_page_mock)
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+        assert not page.swap_requested
+
+        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (page.view.x, page.view.y), 'shift': False, 'left_button_down': True })
+        page.update(2000, [mouse_drag_event])
+        page.init_swap(PageSlot())
+
+        assert swap_args
+        assert not cancel_args
+        assert page.swap_requested
+        swap_args = None
+
+        click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                {'position': (page.view.x, page.view.y), 'shift': False })
+        page.update(2000, [click_event])
+
+        assert not swap_args
+        assert not cancel_args
+
+        mouse_motion_event = GameEvent(GameEventType.MOUSE_MOTION,
+                                        {'position': (0, 0), 'shift': False, 'left_button_down': False })
+        page.update(2000, [mouse_motion_event])
+        click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                {'position': (page.view.x, page.view.y), 'shift': False })
+        page.update(2000, [click_event])
+
+        assert not swap_args
+        assert cancel_args[0] == page and not cancel_args[1]
+
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)
         page.in_use = True
