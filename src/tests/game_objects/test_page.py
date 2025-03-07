@@ -119,6 +119,67 @@ class TestPage:
         assert not swapping_from.has_page
         assert swapping_to.page == page
 
+    def test_cancel_swap(self, page_manager):
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+        swapping_to = PageSlot()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert not page.on_disk
+        assert page.swap_percentage_completed == 0
+
+        page.init_swap(swapping_from)
+
+        assert page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+
+        page.cancel_swap()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+
+        page.init_swap(swapping_from)
+        page.start_swap(10000, swapping_to)
+
+        assert page.swap_requested
+        assert page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.cancel_swap()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert not swapping_to.has_page
+
+        page.init_swap(swapping_from)
+        page.start_swap(20000, swapping_to)
+        page.update(20000 + page_manager.stage.config.swap_delay_ms // 2, [])
+
+        assert page.swap_requested
+        assert page.swap_in_progress
+        assert 0.49 < page.swap_percentage_completed < 0.51
+        assert swapping_from.page == page
+        assert swapping_to.page == page
+
+        page.cancel_swap()
+
+        assert not page.swap_requested
+        assert not page.swap_in_progress
+        assert page.swap_percentage_completed == 0
+        assert swapping_from.page == page
+        assert not swapping_to.has_page
+
     def test_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
