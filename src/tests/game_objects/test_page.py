@@ -241,32 +241,6 @@ class TestPage:
         assert page_arg == page
         assert not swap_whole_row_arg
 
-    def test_click_when_swap_requested(self, page_manager, monkeypatch):
-        page_arg = None
-        cancel_whole_row_arg = None
-
-        def cancel_swap_mock(page, cancel_whole_row):
-            nonlocal page_arg, cancel_whole_row_arg
-            page_arg = page
-            cancel_whole_row_arg = cancel_whole_row
-
-        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
-
-        page = Page(1, 1, page_manager)
-
-        swapping_from = PageSlot()
-        swapping_from.page = page
-
-        page.init_swap(swapping_from)
-        assert page.swap_requested
-
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
-                                      {'position': (page.view.x, page.view.y), 'shift': False })
-        page.update(1000, [mouse_click_event])
-
-        assert page_arg == page
-        assert not cancel_whole_row_arg
-
     def test_shift_click_when_not_on_disk(self, page_manager, monkeypatch):
         page_arg = None
         swap_whole_row_arg = None
@@ -309,6 +283,32 @@ class TestPage:
 
         assert page_arg == page
         assert swap_whole_row_arg
+
+    def test_click_when_swap_requested(self, page_manager, monkeypatch):
+        page_arg = None
+        cancel_whole_row_arg = None
+
+        def cancel_swap_mock(page, cancel_whole_row):
+            nonlocal page_arg, cancel_whole_row_arg
+            page_arg = page
+            cancel_whole_row_arg = cancel_whole_row
+
+        monkeypatch.setattr(page_manager, 'cancel_page_swap', cancel_swap_mock)
+
+        page = Page(1, 1, page_manager)
+
+        swapping_from = PageSlot()
+        swapping_from.page = page
+
+        page.init_swap(swapping_from)
+        assert page.swap_requested
+
+        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+                                      {'position': (page.view.x, page.view.y), 'shift': False })
+        page.update(1000, [mouse_click_event])
+
+        assert page_arg == page
+        assert not cancel_whole_row_arg        
 
     def test_blinking_animation(self, page_manager):
         page = Page(1, 1, page_manager)
