@@ -10,7 +10,7 @@ from dataclasses import replace
 from os import path
 import argparse
 
-from difficulty_levels import default_difficulty, difficulty_levels_map
+from config.difficulty_levels import default_difficulty, difficulty_levels_map
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
 from scenes.stage import Stage

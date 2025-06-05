@@ -1,4 +1,4 @@
-from difficulty_levels import DifficultyLevel, difficulty_levels
+from config.difficulty_levels import DifficultyLevel, difficulty_levels
 from engine.scene import Scene
 from game_objects.about_dialog import AboutDialog
 from game_objects.button import Button
