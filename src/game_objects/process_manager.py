@@ -6,10 +6,10 @@ import game_monitor
 from engine.game_event_type import GameEventType
 from engine.game_object import GameObject
 from engine.random import randint
+from factories.process_factory import ProcessFactory
 from game_objects.checkbox import Checkbox
 from game_objects.cpu import Cpu
 from game_objects.io_queue import IoQueue
-from game_objects.priority_process import PriorityProcess
 from game_objects.process import Process
 from game_objects.views.process_manager_view import ProcessManagerView
 from game_objects.process_slot import ProcessSlot
@@ -35,6 +35,8 @@ def _is_sorted(process_list: [Process]):
 class ProcessManager(GameObject):
     def __init__(self, stage):
         self._stage = stage
+
+        self._process_factory = ProcessFactory(stage, stage.config)
 
         self._cpu_list = None
         self._alive_process_list = None
@@ -177,10 +179,10 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process_cls = Process
             if randint(1, 100) <= int(self._stage.config.priority_process_probability * 100):
-                process_cls = PriorityProcess
-            process = process_cls(pid, self._stage)
+                process = self._process_factory.create_priority_process(pid)
+            else:
+                process = self._process_factory.create_standard_process(pid)
 
             process_slot = self.process_slots[process_slot_id]
             process_slot.process = process

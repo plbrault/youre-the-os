@@ -1,6 +1,7 @@
 from typing import Type
 from math import sqrt
 
+from config.process_config import ProcessConfig
 from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 )
@@ -17,12 +18,12 @@ _BLINKING_INTERVAL_MS = 200
 class Process(GameObject):
     _ANIMATION_SPEED = 35
 
-    def __init__(self, pid, stage,
-                 *, time_between_starvation_levels=10000, view_class: Type[Drawable] = ProcessView):
+    def __init__(self, pid: int, stage: 'Stage', config: ProcessConfig,
+                 *, view_class: Type[Drawable] = ProcessView):
         self._pid = pid
         self._process_manager = stage.process_manager
         self._page_manager = stage.page_manager
-        self._time_between_starvation_levels = time_between_starvation_levels
+        self._config = config
 
         self._cpu = None
         self._is_waiting_for_io = False
@@ -42,9 +43,9 @@ class Process(GameObject):
         self._pages = []
 
         self._io_probability_numerator = int(
-            stage.config.io_probability * 100)
+            config.io_probability * 100)
         self._graceful_termination_probability_numerator = int(
-            stage.config.graceful_termination_probability * 100
+            config.graceful_termination_probability * 100
         )
 
         super().__init__(view_class(self))
@@ -55,7 +56,7 @@ class Process(GameObject):
 
     @property
     def time_between_starvation_levels(self):
-        return self._time_between_starvation_levels
+        return self._config.time_between_starvation_levels_ms
 
     @property
     def cpu(self):
