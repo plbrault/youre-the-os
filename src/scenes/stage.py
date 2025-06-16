@@ -105,14 +105,6 @@ class Stage(Scene):
         self._name = value
 
     @property
-    def config(self):
-        return self._config
-
-    @config.setter
-    def config(self, value):
-        self._config = value
-
-    @property
     def game_over(self):
         return self._game_over
 
