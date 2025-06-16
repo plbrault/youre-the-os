@@ -55,8 +55,8 @@ class Stage(Scene):
         self._game_over_time = None
         self._game_over_dialog = None
 
-        self._process_manager = ProcessManager(self)
-        self._page_manager = PageManager(self)
+        self._process_manager = ProcessManager(self, self._config)
+        self._page_manager = PageManager(self, self._config)
 
         self._process_manager.setup()
         self._scene_objects.append(self._process_manager)

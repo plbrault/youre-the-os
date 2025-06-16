@@ -1,8 +1,8 @@
 from config.page_config import PageConfig
 from game_objects.page import Page
 
-class ProcessFactory:
-    def __init__(self, stage: 'Stage', stage_config: StageConfig):
+class PageFactory:
+    def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
         self._stage_config = stage_config
         self._page_config = PageConfig(
@@ -15,5 +15,5 @@ class ProcessFactory:
             pid=pid,
             idx=idx,
             page_manager=self._stage.page_manager,
-            page_config=self._page_config
+            config=self._page_config
         )

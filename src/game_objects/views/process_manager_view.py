@@ -24,7 +24,7 @@ class ProcessManagerView(Drawable):
         return WINDOW_HEIGHT
 
     def draw(self, surface):
-        terminated_processes_text = f'User Ragequits ({self._process_manager.user_terminated_process_count} / {self._process_manager.stage.config.max_processes_terminated_by_user}) :' # pylint: disable=line-too-long
+        terminated_processes_text = f'User Ragequits ({self._process_manager.user_terminated_process_count} / {self._process_manager.max_processes_terminated_by_user}) :' # pylint: disable=line-too-long
 
         terminated_processes_text_surface = FONT_PRIMARY_LARGE.render(
             terminated_processes_text, False, Color.WHITE)

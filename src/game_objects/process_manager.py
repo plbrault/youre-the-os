@@ -33,10 +33,11 @@ def _is_sorted(process_list: [Process]):
     return True
 
 class ProcessManager(GameObject):
-    def __init__(self, stage):
+    def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
+        self._stage_config = stage_config
 
-        self._process_factory = ProcessFactory(stage, stage.config)
+        self._process_factory = ProcessFactory(stage, stage_config)
 
         self._cpu_list = None
         self._alive_process_list = None
@@ -57,7 +58,7 @@ class ProcessManager(GameObject):
         self._last_sort_time = 0
 
         self._new_process_probability_numerator = int(
-            stage.config.new_process_probability * 100)
+            self._stage_config.new_process_probability * 100)
 
         if self._new_process_probability_numerator > 0:
             self._max_wait_between_new_processes = int(
@@ -98,6 +99,10 @@ class ProcessManager(GameObject):
                     break
         return processes_in_motion
 
+    @property
+    def max_processes_terminated_by_user(self):
+        return self._stage_config.max_processes_terminated_by_user
+
     def get_process(self, pid):
         return self._processes[pid]
 
@@ -117,7 +122,7 @@ class ProcessManager(GameObject):
         self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
 
-        for i in range(self._stage.config.num_cpus):
+        for i in range(self._stage_config.num_cpus):
             self.cpu_list.append(Cpu(i + 1))
 
         for i, cpu in enumerate(self.cpu_list):
@@ -139,7 +144,7 @@ class ProcessManager(GameObject):
                 self.process_slots.append(process_slot)
         self.children.extend(self.process_slots)
 
-        for i in range(self.stage.config.max_processes_terminated_by_user):
+        for i in range(self._stage_config.max_processes_terminated_by_user):
             process_slot = ProcessSlot()
             x = 50 + i * process_slot.view.width + i * 5
             y = WINDOW_HEIGHT - process_slot.view.height - 20
@@ -169,7 +174,7 @@ class ProcessManager(GameObject):
         )
 
     def _create_process(self, process_slot_id=None):
-        if len(self._alive_process_list) < self._stage.config.max_processes:
+        if len(self._alive_process_list) < self._stage_config.max_processes:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
@@ -179,7 +184,7 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            if randint(1, 100) <= int(self._stage.config.priority_process_probability * 100):
+            if randint(1, 100) <= int(self._stage_config.priority_process_probability * 100):
                 process = self._process_factory.create_priority_process(pid)
             else:
                 process = self._process_factory.create_standard_process(pid)
@@ -205,7 +210,7 @@ class ProcessManager(GameObject):
         if by_user:
             if (
                 self._user_terminated_process_count
-                < self.stage.config.max_processes_terminated_by_user
+                < self._stage_config.max_processes_terminated_by_user
             ):
                 can_terminate = True
 
@@ -320,7 +325,7 @@ class ProcessManager(GameObject):
                             cpu.process.yield_cpu()
 
     def _handle_process_creation(self, current_time):
-        if self._next_pid <= self._stage.config.num_processes_at_startup and current_time - \
+        if self._next_pid <= self._stage_config.num_processes_at_startup and current_time - \
                 self._last_new_process_check >= 50:
             self._last_new_process_check = current_time
             self._last_process_creation_time = current_time
@@ -334,13 +339,13 @@ class ProcessManager(GameObject):
 
     def _handle_timed_powerups(self, current_time):
         if (
-            self.stage.uptime_manager.uptime_ms >= self.stage.config.time_ms_to_show_sort_button
+            self.stage.uptime_manager.uptime_ms >= self._stage_config.time_ms_to_show_sort_button
             and not self._sort_processes_button.visible
         ):
             self._sort_processes_button.visible = True
         if (
             self.stage.uptime_manager.uptime_ms
-                >= self.stage.config.time_ms_to_show_auto_sort_checkbox
+                >= self._stage_config.time_ms_to_show_auto_sort_checkbox
             and not self._auto_sort_checkbox.visible
         ):
             self._auto_sort_checkbox.visible = True
