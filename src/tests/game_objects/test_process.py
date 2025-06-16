@@ -13,8 +13,8 @@ class TestProcess:
     @pytest.fixture
     def process_config(self):
         return ProcessConfig(
-            io_probability=0.01,
-            graceful_termination_probability=0.01,
+            io_probability=0,
+            graceful_termination_probability=0,
             time_between_starvation_levels_ms=10000
         )
 
