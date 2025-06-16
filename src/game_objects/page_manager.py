@@ -5,6 +5,7 @@ from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
+from factories.page_factory import PageFactory
 from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
 
@@ -15,6 +16,7 @@ class PageManager(GameObject):
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
         self._stage_config = stage_config
+        self._page_factory = PageFactory(stage, stage_config)
 
         self._ram_slots = []
         self._disk_slots = []
@@ -96,7 +98,7 @@ class PageManager(GameObject):
             self.children.extend(self._disk_slots)
 
     def create_page(self, pid, idx):
-        page = Page(pid, idx, self)
+        page = self._page_factory.create_page(pid, idx)
         page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
