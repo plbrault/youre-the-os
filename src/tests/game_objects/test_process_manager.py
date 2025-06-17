@@ -30,17 +30,17 @@ class TestProcessManager:
     def stage(self, stage_custom_config, stage_config):
         return stage_custom_config(stage_config)
 
-    def test_setup(self, stage):
-        process_manager = ProcessManager(stage)
+    def test_setup(self, stage, stage_config):
+        process_manager = ProcessManager(stage, stage_config)
         process_manager.setup()
 
         assert process_manager.stage == stage
 
-        assert len(process_manager.cpu_list) == custom_config.num_cpus
+        assert len(process_manager.cpu_list) == stage_config.num_cpus
         for cpu in process_manager.cpu_list:
             assert isinstance(cpu, Cpu)
 
-        assert len(process_manager.process_slots) == custom_config.max_processes
+        assert len(process_manager.process_slots) == stage_config.max_processes
         for process_slot in process_manager.process_slots:
             assert isinstance(process_slot, ProcessSlot)
 
