@@ -13,11 +13,9 @@ async def main():
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
-    stage_scene = Stage()
     main_menu_scene = MainMenu()
     how_to_play_scene = HowToPlay()
 
-    game_manager.register_scene(stage_scene)
     game_manager.register_scene(main_menu_scene)
     game_manager.register_scene(how_to_play_scene)
 

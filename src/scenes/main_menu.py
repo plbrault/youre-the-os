@@ -7,6 +7,7 @@ from game_objects.hotkey_dialog import HokeyDialog
 from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
+from scenes.stage import Stage
 from stage_config import StageConfig
 
 
@@ -131,9 +132,10 @@ class MainMenu(Scene):
     def _start_game(self, difficulty_level):
         if self._custom_settings_dialog is not None:
             self._custom_config = self._custom_settings_dialog.config
-        self.scene_manager.get_scene('stage').name = 'Difficulty: ' + difficulty_level.name.upper()
-        self.scene_manager.get_scene('stage').config = difficulty_level.config
-        self.scene_manager.start_scene('stage')
+        stage_name = 'Difficulty: ' + difficulty_level.name.upper()
+        stage_config = difficulty_level.config
+        stage = Stage(stage_name, stage_config)
+        self.scene_manager.start_scene(stage)
 
     def _start_how_to_play(self):
         self.scene_manager.start_scene('how_to_play')

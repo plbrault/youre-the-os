@@ -21,8 +21,6 @@ class SceneManager():
     @screen.setter
     def screen(self, value: Surface):
         self._screen = value
-        for scene in self._scenes.values():
-            scene.screen = value
 
     def register_scene(self, scene: Scene):
         self._scenes[scene.scene_id] = scene
