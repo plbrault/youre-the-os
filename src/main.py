@@ -17,9 +17,9 @@ async def main():
     main_menu_scene = MainMenu()
     how_to_play_scene = HowToPlay()
 
-    game_manager.add_scene(stage_scene)
-    game_manager.add_scene(main_menu_scene)
-    game_manager.add_scene(how_to_play_scene)
+    game_manager.register_scene(stage_scene)
+    game_manager.register_scene(main_menu_scene)
+    game_manager.register_scene(how_to_play_scene)
 
     game_manager.startup_scene = main_menu_scene
     await game_manager.play()

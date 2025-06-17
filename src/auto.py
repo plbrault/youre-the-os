@@ -129,7 +129,7 @@ async def main():
         stage_name, difficulty_level.config, script=compiled_script, standalone=True
     )
 
-    game_manager.add_scene(stage_scene)
+    game_manager.register_scene(stage_scene)
     game_manager.startup_scene = stage_scene
 
     await game_manager.play(ignore_events=True)
