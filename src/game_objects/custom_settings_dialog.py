@@ -9,7 +9,7 @@ from engine.game_object import GameObject
 from game_objects.button import Button
 from game_objects.option_selector import OptionSelector
 from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 _swap_delay_ms_to_ids = {
     SWAP_DELAY_NAMES_TO_MS[name]: idx for idx, name in enumerate(SWAP_DELAY_NAMES)

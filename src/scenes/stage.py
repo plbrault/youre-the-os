@@ -11,7 +11,7 @@ from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 class Stage(Scene):
     def __init__(self, name: str, config : StageConfig,

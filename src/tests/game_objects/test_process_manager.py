@@ -13,7 +13,7 @@ from game_objects.process_manager import ProcessManager
 from game_objects.process_slot import ProcessSlot
 from game_objects.sort_button import SortButton
 from scenes.stage import Stage
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 class TestProcessManager:
     @pytest.fixture

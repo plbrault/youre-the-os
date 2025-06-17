@@ -8,8 +8,7 @@ from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
 from scenes.stage import Stage
-from stage_config import StageConfig
-
+from config.stage_config import StageConfig
 
 class MainMenu(Scene):
     def __init__(self):

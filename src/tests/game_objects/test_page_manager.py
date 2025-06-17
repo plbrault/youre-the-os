@@ -4,7 +4,7 @@ from constants import PAGES_PER_ROW
 from game_objects.page import Page
 from game_objects.page_slot import PageSlot
 from game_objects.page_manager import PageManager
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 class TestPageManager:
     @pytest.fixture

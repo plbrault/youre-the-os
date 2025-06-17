@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from constants import SWAP_DELAY_NAMES_TO_MS
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 @dataclass(frozen=True)
 class DifficultyLevel:

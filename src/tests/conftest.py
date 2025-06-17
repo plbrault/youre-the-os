@@ -6,7 +6,7 @@ import pytest
 
 from engine.scene_manager import SceneManager
 import scenes.stage
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 from window_size import WINDOW_SIZE
 
 @pytest.fixture

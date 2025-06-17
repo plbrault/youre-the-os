@@ -6,7 +6,7 @@ from engine.game_event_type import GameEventType
 from engine.random import Random
 from game_objects.page_slot import PageSlot
 from game_objects.process import Process
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 class TestProcess:
     @pytest.fixture
