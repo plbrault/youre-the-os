@@ -6,13 +6,16 @@ from ui.color import Color
 
 class Scene(ABC):
     scene_manager = None
-    screen: pygame.Surface
     background_color = Color.BLACK
 
     def __init__(self, scene_id: str):
         self._scene_id = scene_id
         self._is_started = False
         self._scene_objects = []
+
+    @property
+    def screen(self) -> pygame.Surface:
+        return self.scene_manager.screen
 
     @property
     def scene_id(self):

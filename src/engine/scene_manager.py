@@ -21,12 +21,9 @@ class SceneManager():
     @screen.setter
     def screen(self, value: Surface):
         self._screen = value
-        for scene in self._scenes.values():
-            scene.screen = value
 
-    def add_scene(self, scene: Scene):
+    def register_scene(self, scene: Scene):
         self._scenes[scene.scene_id] = scene
-        self._scenes[scene.scene_id].scene_manager = self
 
     def get_scene(self, scene_id: str):
         if scene_id not in self._scenes:
@@ -34,13 +31,12 @@ class SceneManager():
         return self._scenes[scene_id]
 
     def start_scene(self, scene: Union[Scene, str]):
-        scene_id = None
-        if isinstance(scene, Scene):
-            scene_id = scene.scene_id
-        else:
+        if isinstance(scene, str):
             scene_id = scene
-        if scene_id not in self._scenes:
-            raise ValueError('Scene needs to be added with `add_scene` prior to starting it.')
+            if scene_id not in self._scenes:
+                raise ValueError(f'Scene not found: {scene_id}')
+            scene = self._scenes[scene_id]
 
-        self._scenes[scene_id].setup()
-        self._current_scene = self._scenes[scene_id]
+        scene.scene_manager = self
+        scene.setup()
+        self._current_scene = scene

@@ -14,7 +14,7 @@ from game_objects.uptime_manager import UptimeManager
 from stage_config import StageConfig
 
 class Stage(Scene):
-    def __init__(self, name='', config : StageConfig = StageConfig(),
+    def __init__(self, name: str, config : StageConfig,
                  *, script=None, standalone=False):
         self._name = name
 

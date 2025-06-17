@@ -22,15 +22,13 @@ class GameManager():
 
     @startup_scene.setter
     def startup_scene(self, value : Union[Scene, str]):
-        if isinstance(value, Scene):
-            if not self._scene_manager.get_scene(value.scene_id):
-                raise ValueError('Startup scene first needs to be added with `add_scene`.')
-            self._startup_scene = value
-        elif isinstance(value, str):
+        if isinstance(value, str) and self._scene_manager.get_scene(value) is None:
             scene = self._scene_manager.get_scene(value)
             if scene is None:
-                raise ValueError('Startup scene first needs to be added with `add_scene`.')
-            self._startup_scene = scene
+                raise ValueError(f'Scene not found: {value}')
+        else:
+            scene = value
+        self._startup_scene = scene
 
     def __init__(self):
         self._current_scene = None
@@ -59,8 +57,8 @@ class GameManager():
         pygame.display.set_icon(icon)
         self._scene_manager.screen = self._screen
 
-    def add_scene(self, scene: Scene):
-        self._scene_manager.add_scene(scene)
+    def register_scene(self, scene: Scene):
+        self._scene_manager.register_scene(scene)
 
     def _get_events(self):
         events = []
