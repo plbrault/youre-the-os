@@ -27,8 +27,8 @@ class TestProcessManager:
         )
 
     @pytest.fixture
-    def stage(self, stage_custom_config, custom_config):
-        return stage_custom_config(custom_config)
+    def stage(self, stage_custom_config, stage_config):
+        return stage_custom_config(stage_config)
 
     def test_setup(self, stage):
         process_manager = ProcessManager(stage)
