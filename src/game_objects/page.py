@@ -79,8 +79,7 @@ class Page(GameObject):
     def request_swap(self, swap_whole_row : bool = False):
         """The method called when the player clicks on the page to swap it."""
         if not self.swap_requested:
-            pass
-            #self._page_manager.swap_page(self, swap_whole_row)
+            self._page_manager.swap_page(self, swap_whole_row)
 
     def init_swap(self, swapping_from : PageSlot):
         """The method called by the page manager to set the swap attributes."""
