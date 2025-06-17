@@ -25,7 +25,7 @@ class GameManager():
         if isinstance(value, str) and self._scene_manager.get_scene(value) is None:
             scene = self._scene_manager.get_scene(value)
             if scene is None:
-                raise ValueError('Scene not found: {}'.format(value))
+                raise ValueError(f'Scene not found: {value}')
         else:
             scene = value
         self._startup_scene = scene

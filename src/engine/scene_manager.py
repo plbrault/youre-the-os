@@ -34,7 +34,7 @@ class SceneManager():
         if isinstance(scene, str):
             scene_id = scene
             if scene_id not in self._scenes:
-                raise ValueError('Scene not found: {}'.format(scene_id))
+                raise ValueError(f'Scene not found: {scene_id}')
             scene = self._scenes[scene_id]
 
         scene.scene_manager = self
