@@ -24,8 +24,8 @@ def Stage(monkeypatch):
     return scenes.stage.Stage
 
 @pytest.fixture
-def stage(Stage, scene_manager):
-    config = StageConfig(
+def stage_config():
+    return StageConfig(
         num_cpus = 4,
         num_processes_at_startup = 14,
         num_ram_rows = 8,
@@ -33,15 +33,18 @@ def stage(Stage, scene_manager):
         io_probability = 0,
         graceful_termination_probability = 0
     )
-    stage = Stage('Test Stage', config)
+
+@pytest.fixture
+def stage(Stage, stage_config, scene_manager):
+    stage = Stage('Test Stage', stage_config)
     stage.scene_manager = scene_manager
     stage.setup()
     return stage
 
 @pytest.fixture
 def stage_custom_config(scene_manager, Stage):
-    def create_stage(stage_config):
-        stage = Stage('Test Stage', stage_config)
+    def create_stage(custom_config):
+        stage = Stage('Test Stage', custom_config)
         stage.scene_manager = scene_manager
         stage.setup()
         return stage

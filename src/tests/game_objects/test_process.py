@@ -110,12 +110,12 @@ class TestProcess:
         process.update(process.time_between_starvation_levels, [])
         assert process.current_starvation_level_duration == 0
 
-    def test_use_cpu_when_first_cpu_is_available(self, stage, process_config):
+    def test_use_cpu_when_first_cpu_is_available(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config.num_cpus):
+        for i in range(0, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         process.use_cpu()
@@ -123,7 +123,7 @@ class TestProcess:
         assert process.has_cpu == True
         assert process.cpu == stage.process_manager.cpu_list[0]
         assert stage.process_manager.cpu_list[0].process == process
-        for i in range(1, stage.config.num_cpus):
+        for i in range(1, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
@@ -131,12 +131,12 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.has_ended == False
 
-    def test_use_cpu_when_first_cpu_is_unavailable(self, stage, process_config):
+    def test_use_cpu_when_first_cpu_is_unavailable(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config.num_cpus):
+        for i in range(0, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         stage.process_manager.cpu_list[0].process = Process(2, stage, process_config)
@@ -146,7 +146,7 @@ class TestProcess:
         assert process.cpu == stage.process_manager.cpu_list[1]
         assert stage.process_manager.cpu_list[0].process.pid == 2
         assert stage.process_manager.cpu_list[1].process == process
-        for i in range(2, stage.config.num_cpus):
+        for i in range(2, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
@@ -154,22 +154,22 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.has_ended == False
 
-    def test_use_cpu_when_all_cpus_are_unavailable(self, stage, process_config):
+    def test_use_cpu_when_all_cpus_are_unavailable(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config.num_cpus):
+        for i in range(0, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
-        for i in range(0, stage.config.num_cpus):
+        for i in range(0, stage_config.num_cpus):
             stage.process_manager.cpu_list[i].process = Process(i + 2, stage, process_config)
 
         process.use_cpu()
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config.num_cpus):
+        for i in range(0, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process.pid == i + 2
 
         assert process.is_waiting_for_io == False
@@ -177,7 +177,7 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.has_ended == False
 
-    def test_use_cpu_when_already_using_cpu(self, stage, process_config):
+    def test_use_cpu_when_already_using_cpu(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
         process.use_cpu()
@@ -186,7 +186,7 @@ class TestProcess:
         assert process.cpu == stage.process_manager.cpu_list[0]
         assert process.has_cpu == True
         assert stage.process_manager.cpu_list[0].process == process
-        for i in range(1, stage.config.num_cpus):
+        for i in range(1, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False
@@ -194,10 +194,10 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.has_ended == False
 
-    def test_yield_cpu(self, stage, process_config):
+    def test_yield_cpu(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
-        for i in range(0, stage.config.num_cpus - 1):
+        for i in range(0, stage_config.num_cpus - 1):
             stage.process_manager.cpu_list[i].process = Process(i + 2, stage, process_config)
 
         process.use_cpu()
@@ -205,7 +205,7 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config.num_cpus - 1):
+        for i in range(0, stage_config.num_cpus - 1):
             assert stage.process_manager.cpu_list[i].process.pid == i + 2
         assert stage.process_manager.cpu_list[3].process == None
 
@@ -214,13 +214,13 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.has_ended == False
 
-    def test_yield_cpu_when_already_idle(self, stage, process_config):
+    def test_yield_cpu_when_already_idle(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage.config.num_cpus):
+        for i in range(0, stage_config.num_cpus):
             assert stage.process_manager.cpu_list[i].process == None
 
         assert process.is_waiting_for_io == False

@@ -151,13 +151,14 @@ class TestPageManager:
         assert pages[2].view.x < pages[1].view.x
 
     def test_parallel_swaps(self, stage_custom_config):
-        stage = stage_custom_config(StageConfig(
+        stage_config = StageConfig(
             num_cpus=4,
             num_ram_rows=1,
             swap_delay_ms=1000,
             parallel_swaps=4
-        ))
-        page_manager = PageManager(stage)
+        )
+        stage = stage_custom_config(stage_config)
+        page_manager = PageManager(stage, stage_config)
         page_manager.setup()
 
         pages = []
@@ -276,7 +277,7 @@ class TestPageManager:
             assert not pages[i].swap_requested
             assert pages[i].in_ram
 
-    def test_swap_whole_row(self, page_manager):
+    def test_swap_whole_row(self, stage_config, page_manager):
         pages = []
 
         for i in range(PageManager.get_num_cols() * 2):
@@ -290,7 +291,7 @@ class TestPageManager:
         for i in range(PageManager.get_num_cols()):
             time += 1
             page_manager.update(time, [])
-            time += page_manager.stage.config.swap_delay_ms
+            time += stage_config.swap_delay_ms
             page_manager.update(time, [])
             assert pages[i].on_disk
             assert pages[i].view.x == pages[PageManager.get_num_cols() + i].view.x
@@ -305,7 +306,7 @@ class TestPageManager:
         for i in range(PageManager.get_num_cols() - 1):
             time += 1
             page_manager.update(time, [])
-            time += page_manager.stage.config.swap_delay_ms
+            time += stage_config.swap_delay_ms
             page_manager.update(time, [])
             assert not pages[i].on_disk
             assert pages[i].view.x == pages[PageManager.get_num_cols() + i + 1].view.x

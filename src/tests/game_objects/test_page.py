@@ -9,8 +9,8 @@ from game_objects.page_slot import PageSlot
 
 class TestPage:
     @pytest.fixture
-    def page_manager(self, stage):
-        return PageManager(stage)
+    def page_manager(self, stage, stage_config):
+        return PageManager(stage, stage_config)
 
     def test_initial_property_values(self, page_manager):
         page = Page(1, 1, page_manager)
@@ -90,7 +90,7 @@ class TestPage:
         assert page_arg == page
         assert cancel_whole_row_arg
 
-    def test_swap(self, page_manager):
+    def test_swap(self, stage_config, page_manager):
         page = Page(1, 1, page_manager)
 
         swapping_from = PageSlot()
@@ -120,7 +120,7 @@ class TestPage:
         assert swapping_from.page == page
         assert swapping_to.page == page
 
-        page.update(page_manager.stage.config.swap_delay_ms // 2, [])
+        page.update(stage_config.swap_delay_ms // 2, [])
 
         assert page.swap_requested
         assert page.swap_in_progress
@@ -129,7 +129,7 @@ class TestPage:
         assert swapping_from.page == page
         assert swapping_to.page == page
 
-        page.update(page_manager.stage.config.swap_delay_ms, [])
+        page.update(stage_config.swap_delay_ms, [])
 
         assert not page.swap_requested
         assert not page.swap_in_progress
@@ -138,7 +138,7 @@ class TestPage:
         assert not swapping_from.has_page
         assert swapping_to.page == page
 
-    def test_cancel_swap(self, page_manager):
+    def test_cancel_swap(self, stage_config, page_manager):
         page = Page(1, 1, page_manager)
 
         swapping_from = PageSlot()
@@ -183,7 +183,7 @@ class TestPage:
 
         page.init_swap(swapping_from)
         page.start_swap(20000, swapping_to)
-        page.update(20000 + page_manager.stage.config.swap_delay_ms // 2, [])
+        page.update(20000 + stage_config.swap_delay_ms // 2, [])
 
         assert page.swap_requested
         assert page.swap_in_progress

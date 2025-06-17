@@ -27,8 +27,8 @@ class TestProcessManager:
         )
 
     @pytest.fixture
-    def stage(self, stage_custom_config, stage_config):
-        return stage_custom_config(stage_config)
+    def stage(self, stage_custom_config, custom_config):
+        return stage_custom_config(custom_config)
 
     def test_setup(self, stage):
         process_manager = ProcessManager(stage)
@@ -36,11 +36,11 @@ class TestProcessManager:
 
         assert process_manager.stage == stage
 
-        assert len(process_manager.cpu_list) == stage.config.num_cpus
+        assert len(process_manager.cpu_list) == custom_config.num_cpus
         for cpu in process_manager.cpu_list:
             assert isinstance(cpu, Cpu)
 
-        assert len(process_manager.process_slots) == stage.config.max_processes
+        assert len(process_manager.process_slots) == custom_config.max_processes
         for process_slot in process_manager.process_slots:
             assert isinstance(process_slot, ProcessSlot)
 
@@ -48,7 +48,7 @@ class TestProcessManager:
 
         assert process_manager.user_terminated_process_count == 0
 
-    def test_initial_process_creation(self, stage):
+    def test_initial_process_creation(self, stage, stage_config):
         process_manager = stage.process_manager
         stage.setup()
 
@@ -56,7 +56,7 @@ class TestProcessManager:
         process_count = 0
         iteration_count = 0
 
-        while process_count < stage.config.num_processes_at_startup and iteration_count < 1000:
+        while process_count < stage_config.num_processes_at_startup and iteration_count < 1000:
             iteration_count += 1
             process_manager.update(int(time), [])
             time += ONE_SECOND / GameManager.fps
@@ -65,10 +65,10 @@ class TestProcessManager:
                 process_slot for process_slot in process_manager.process_slots if process_slot.process is not None
             ])
 
-        assert process_count == stage.config.num_processes_at_startup
+        assert process_count == stage_config.num_processes_at_startup
 
     @pytest.fixture
-    def ready_process_manager(self, stage, monkeypatch):
+    def ready_process_manager(self, stage, stage_config, monkeypatch):
         # Cause the random number generator to never provoke creation of new process
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
@@ -82,7 +82,7 @@ class TestProcessManager:
 
         while (
             (
-                process_count < stage.config.num_processes_at_startup
+                process_count < stage_config.num_processes_at_startup
                 or process_in_motion > 0
             )
             and iteration_count < 100000
@@ -106,11 +106,11 @@ class TestProcessManager:
 
     @pytest.fixture
     def ready_process_manager_custom_config(self, stage_custom_config, monkeypatch):
-        def create_process_manager(stage_config):
+        def create_process_manager(custom_config):
             # Cause the random number generator to never provoke creation of new process
             monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-            stage = stage_custom_config(stage_config)
+            stage = stage_custom_config(custom_config)
             stage.setup()
             process_manager = stage.process_manager
 
@@ -121,7 +121,7 @@ class TestProcessManager:
 
             while (
                 (
-                    process_count < stage.config.num_processes_at_startup
+                    process_count < custom_config.num_processes_at_startup
                     or process_in_motion > 0
                 )
                 and iteration_count < 100000
