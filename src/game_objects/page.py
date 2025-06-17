@@ -11,11 +11,11 @@ _BLINKING_INTERVAL_MS = 200
 
 class Page(GameObject):
 
-    def __init__(self, pid, idx, page_manager):
+    def __init__(self, pid: int, idx: int, page_manager: 'PageManager', config: 'PageConfig'):
         self._pid = pid
         self._idx = idx
         self._page_manager = page_manager
-        self._stage = page_manager.stage
+        self._config = config
 
         self._in_use = False
 
@@ -115,12 +115,12 @@ class Page(GameObject):
         appropriate checks and operations."""
 
         if self.swap_in_progress:
-            if self._stage.config.swap_delay_ms == 0:
+            if self._config.swap_delay_ms == 0:
                 self._swap_percentage_completed = 1
             else:
                 self._swap_percentage_completed = min(1,
                     (current_time - self._started_swap_at)
-                    / self._stage.config.swap_delay_ms
+                    / self._config.swap_delay_ms
                 )
             if self._swap_percentage_completed == 1:
                 self.view.set_xy(self._swapping_to.view.x, self._swapping_to.view.y)

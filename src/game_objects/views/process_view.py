@@ -40,6 +40,9 @@ _waiting_for_io_emoji = pygame.image.load(
 
 
 class ProcessView(Drawable):
+    width = 64
+    height = 64
+
     def __init__(self, process):
         self._process = process
         self._target_x = None
@@ -47,14 +50,6 @@ class ProcessView(Drawable):
         self._pid_text_surface = FONT_SECONDARY_XXSMALL.render(
             'PID ' + str(self._process.pid), False, Color.BLACK)
         super().__init__()
-
-    @property
-    def width(self):
-        return 64
-
-    @property
-    def height(self):
-        return 64
 
     def draw(self, surface):
         if self._process.has_ended and self._process.starvation_level == 0:

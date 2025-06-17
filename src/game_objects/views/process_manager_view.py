@@ -1,7 +1,6 @@
 from engine.drawable import Drawable
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_LARGE
-from game_objects.process import Process
 from game_objects.views.process_view import ProcessView
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
@@ -13,8 +12,7 @@ class ProcessManagerView(Drawable):
 
         self._idle_processes_text_surface = FONT_PRIMARY_LARGE.render(
             'Idle Processes :', False, Color.WHITE)
-        self._process_view_height = ProcessView(
-            Process(0, process_manager.stage)).height
+        self._process_view_height = ProcessView.height
 
     @property
     def width(self):
@@ -25,7 +23,7 @@ class ProcessManagerView(Drawable):
         return WINDOW_HEIGHT
 
     def draw(self, surface):
-        terminated_processes_text = f'User Ragequits ({self._process_manager.user_terminated_process_count} / {self._process_manager.stage.config.max_processes_terminated_by_user}) :' # pylint: disable=line-too-long
+        terminated_processes_text = f'User Ragequits ({self._process_manager.user_terminated_process_count} / {self._process_manager.max_processes_terminated_by_user}) :' # pylint: disable=line-too-long
 
         terminated_processes_text_surface = FONT_PRIMARY_LARGE.render(
             terminated_processes_text, False, Color.WHITE)

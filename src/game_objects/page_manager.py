@@ -7,13 +7,16 @@ from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
 from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
+from factories.page_factory import PageFactory
 
 class PageManager(GameObject):
     _TOTAL_ROWS = MAX_RAM_ROWS
     _NUM_COLS = PAGES_PER_ROW
 
-    def __init__(self, stage):
+    def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
+        self._stage_config = stage_config
+        self._page_factory = PageFactory(stage, stage_config)
 
         self._ram_slots = []
         self._disk_slots = []
@@ -63,7 +66,7 @@ class PageManager(GameObject):
         self._pages_in_ram_label_xy = (
             self._stage.process_manager.view.width, 120)
 
-        num_ram_rows = self._stage.config.num_ram_rows
+        num_ram_rows = self._stage_config.num_ram_rows
         num_swap_rows = self._TOTAL_ROWS - num_ram_rows
 
         num_cols = PageManager._NUM_COLS
@@ -95,7 +98,7 @@ class PageManager(GameObject):
             self.children.extend(self._disk_slots)
 
     def create_page(self, pid, idx):
-        page = Page(pid, idx, self)
+        page = self._page_factory.create_page(pid, idx)
         page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:
@@ -180,9 +183,9 @@ class PageManager(GameObject):
                     and page.in_ram
         ])
 
-        if num_swap_ins_in_progress < self._stage.config.parallel_swaps:
+        if num_swap_ins_in_progress < self._stage_config.parallel_swaps:
             newly_in_progress = 0
-            while newly_in_progress < self._stage.config.parallel_swaps - num_swap_ins_in_progress:
+            while newly_in_progress < self._stage_config.parallel_swaps - num_swap_ins_in_progress:
                 empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
                 if empty_ram_slot and not self._swap_in_queue.empty():
                     page = self._swap_in_queue.get()
@@ -196,7 +199,7 @@ class PageManager(GameObject):
 
         if num_swap_ins_in_progress == 0:
             newly_in_progress = 0
-            while newly_in_progress < self._stage.config.parallel_swaps - num_swap_outs_in_progress:
+            while newly_in_progress < self._stage_config.parallel_swaps - num_swap_outs_in_progress:
                 empty_disk_slot = next(
                     (slot for slot in self._disk_slots if not slot.has_page),
                     None)

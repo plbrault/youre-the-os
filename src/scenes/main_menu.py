@@ -1,4 +1,5 @@
-from difficulty_levels import DifficultyLevel, difficulty_levels
+from config.difficulty_levels import DifficultyLevel, difficulty_levels
+from config.stage_config import StageConfig
 from engine.scene import Scene
 from game_objects.about_dialog import AboutDialog
 from game_objects.button import Button
@@ -8,8 +9,6 @@ from game_objects.main_menu_title import MainMenuTitle
 from game_objects.difficulty_selection_label import DifficultySelectionLabel
 from game_objects.option_selector import OptionSelector
 from scenes.stage import Stage
-from stage_config import StageConfig
-
 
 class MainMenu(Scene):
     def __init__(self):

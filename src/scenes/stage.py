@@ -11,7 +11,7 @@ from game_objects.page_manager import PageManager
 from game_objects.process_manager import ProcessManager
 from game_objects.score_manager import ScoreManager
 from game_objects.uptime_manager import UptimeManager
-from stage_config import StageConfig
+from config.stage_config import StageConfig
 
 class Stage(Scene):
     def __init__(self, name: str, config : StageConfig,
@@ -55,8 +55,8 @@ class Stage(Scene):
         self._game_over_time = None
         self._game_over_dialog = None
 
-        self._process_manager = ProcessManager(self)
-        self._page_manager = PageManager(self)
+        self._process_manager = ProcessManager(self, self._config)
+        self._page_manager = PageManager(self, self._config)
 
         self._process_manager.setup()
         self._scene_objects.append(self._process_manager)
@@ -103,14 +103,6 @@ class Stage(Scene):
     @name.setter
     def name(self, value):
         self._name = value
-
-    @property
-    def config(self):
-        return self._config
-
-    @config.setter
-    def config(self, value):
-        self._config = value
 
     @property
     def game_over(self):
