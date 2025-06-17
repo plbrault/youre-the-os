@@ -184,10 +184,7 @@ class ProcessManager(GameObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            if randint(1, 100) <= int(self._stage_config.priority_process_probability * 100):
-                process = self._process_factory.create_priority_process(pid)
-            else:
-                process = self._process_factory.create_standard_process(pid)
+            process = self._process_factory.create_random_process(pid)
 
             process_slot = self.process_slots[process_slot_id]
             process_slot.process = process

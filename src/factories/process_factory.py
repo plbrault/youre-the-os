@@ -1,6 +1,7 @@
 from config.process_config import ProcessConfig
 from game_objects.process import Process
 from game_objects.views.priority_process_view import PriorityProcessView
+from engine.random import randint
 
 class ProcessFactory:
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
@@ -32,3 +33,9 @@ class ProcessFactory:
             self._priority_process_config,
             view_class=PriorityProcessView
         )
+
+    def create_random_process(self, pid: int):
+        if randint(1, 100) <= int(self._stage_config.priority_process_probability * 100):
+            return self.create_priority_process(pid)
+        else:
+            return self.create_standard_process(pid)
