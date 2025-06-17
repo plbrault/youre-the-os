@@ -20,7 +20,6 @@ class TestPageManager:
 
     @pytest.fixture
     def page_manager(self, stage):
-        stage.page_manager.setup()
         return stage.page_manager
 
     def test_create_page_in_ram(self, page_manager):
