@@ -19,8 +19,8 @@ class TestPageManager:
         return stage_custom_config(stage_config)
 
     @pytest.fixture
-    def page_manager(self, stage):
-        page_manager = PageManager(stage)
+    def page_manager(self, stage, stage_config):
+        page_manager = PageManager(stage, stage_config)
         page_manager.setup()
         return page_manager
 
