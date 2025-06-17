@@ -19,10 +19,9 @@ class TestPageManager:
         return stage_custom_config(stage_config)
 
     @pytest.fixture
-    def page_manager(self, stage, stage_config):
-        page_manager = PageManager(stage, stage_config)
-        page_manager.setup()
-        return page_manager
+    def page_manager(self, stage):
+        stage.page_manager.setup()
+        return stage.page_manager
 
     def test_create_page_in_ram(self, page_manager):
         num_pages = len([child for child in page_manager.children if isinstance(child, Page)])

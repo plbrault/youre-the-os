@@ -31,7 +31,7 @@ class TestProcessManager:
         return stage_custom_config(stage_config)
 
     def test_setup(self, stage, stage_config):
-        process_manager = ProcessManager(stage, stage_config)
+        process_manager = stage.process_manager
         process_manager.setup()
 
         assert process_manager.stage == stage
