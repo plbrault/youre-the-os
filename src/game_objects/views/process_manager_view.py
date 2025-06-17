@@ -1,7 +1,6 @@
 from engine.drawable import Drawable
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_LARGE
-from game_objects.process import Process
 from game_objects.views.process_view import ProcessView
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 

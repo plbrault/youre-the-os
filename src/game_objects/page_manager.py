@@ -5,9 +5,9 @@ from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from engine.game_object import GameObject
 from game_objects.views.page_manager_view import PageManagerView
 from game_objects.page import Page
-from factories.page_factory import PageFactory
 from game_objects.page_mouse_drag_action import PageMouseDragAction
 from game_objects.page_slot import PageSlot
+from factories.page_factory import PageFactory
 
 class PageManager(GameObject):
     _TOTAL_ROWS = MAX_RAM_ROWS

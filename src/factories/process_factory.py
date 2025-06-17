@@ -37,5 +37,4 @@ class ProcessFactory:
     def create_random_process(self, pid: int):
         if randint(1, 100) <= int(self._stage_config.priority_process_probability * 100):
             return self.create_priority_process(pid)
-        else:
-            return self.create_standard_process(pid)
+        return self.create_standard_process(pid)

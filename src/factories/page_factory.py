@@ -1,7 +1,7 @@
 from config.page_config import PageConfig
 from game_objects.page import Page
 
-class PageFactory:
+class PageFactory: # pylint: disable=too-few-public-methods
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
         self._stage_config = stage_config
