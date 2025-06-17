@@ -4,14 +4,16 @@ os.chdir('src')
 import pygame
 import pytest
 
+from engine.scene_manager import SceneManager
 import scenes.stage
 from stage_config import StageConfig
 from window_size import WINDOW_SIZE
 
 @pytest.fixture
-def screen(monkeypatch):
-    screen = pygame.Surface(WINDOW_SIZE)
-    return screen
+def scene_manager():
+    scene_manager = SceneManager()
+    scene_manager.screen = pygame.Surface(WINDOW_SIZE)
+    return scene_manager
 
 @pytest.fixture
 def Stage(monkeypatch):
@@ -22,7 +24,7 @@ def Stage(monkeypatch):
     return scenes.stage.Stage
 
 @pytest.fixture
-def stage(Stage, screen):
+def stage(Stage, scene_manager):
     config = StageConfig(
         num_cpus = 4,
         num_processes_at_startup = 14,
@@ -32,15 +34,15 @@ def stage(Stage, screen):
         graceful_termination_probability = 0
     )
     stage = Stage('Test Stage', config)
-    stage.screen = screen
+    stage.scene_manager = scene_manager
     stage.setup()
     return stage
 
 @pytest.fixture
-def stage_custom_config(screen, Stage):
+def stage_custom_config(scene_manager, Stage):
     def create_stage(stage_config):
         stage = Stage('Test Stage', stage_config)
-        stage.screen = screen
+        stage.scene_manager = scene_manager
         stage.setup()
         return stage
     return create_stage
