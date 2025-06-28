@@ -31,6 +31,7 @@ class IoQueue(SceneObject):
 
         self._subscriber_queue = deque([])
         self._event_count = 0
+        self._current_time = 0
         self._last_update_time = 0
 
         self._display_blink_color = False
@@ -39,7 +40,7 @@ class IoQueue(SceneObject):
 
     def wait_for_event(self, callback):
         self._subscriber_queue.append(
-            _IoEventWaiter(self._process_manager.stage.current_time, callback)
+            _IoEventWaiter(self._current_time, callback)
         )
 
     @property
@@ -66,6 +67,8 @@ class IoQueue(SceneObject):
         self.process_events()
 
     def update(self, current_time, events):
+        self._current_time = current_time
+
         for event in events:
             if self._check_if_clicked_on(event):
                 self._on_click()

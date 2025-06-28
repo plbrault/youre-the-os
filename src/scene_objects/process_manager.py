@@ -69,8 +69,10 @@ class ProcessManager(SceneObject):
         super().__init__(ProcessManagerView(self))
 
     @property
-    def stage(self):
-        return self._stage
+    def view_vars(self):
+        return {
+            'page_manager_view_width': self._stage.page_manager.view.width,
+        }
 
     @property
     def cpu_list(self):
@@ -336,12 +338,12 @@ class ProcessManager(SceneObject):
 
     def _handle_timed_powerups(self, current_time):
         if (
-            self.stage.uptime_manager.uptime_ms >= self._stage_config.time_ms_to_show_sort_button
+            self._stage.uptime_manager.uptime_ms >= self._stage_config.time_ms_to_show_sort_button
             and not self._sort_processes_button.visible
         ):
             self._sort_processes_button.visible = True
         if (
-            self.stage.uptime_manager.uptime_ms
+            self._stage.uptime_manager.uptime_ms
                 >= self._stage_config.time_ms_to_show_auto_sort_checkbox
             and not self._auto_sort_checkbox.visible
         ):
@@ -369,7 +371,7 @@ class ProcessManager(SceneObject):
                 self.children.remove(scene_object)
 
     def update(self, current_time, events):
-        if self.stage.game_over:
+        if self._stage.game_over:
             return
 
         self._handle_events(events)
