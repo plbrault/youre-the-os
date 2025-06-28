@@ -7,15 +7,15 @@ from constants import (
 )
 import game_monitor
 from engine.drawable import Drawable
-from engine.game_object import GameObject
+from engine.scene_object import SceneObject
 from engine.game_event_type import GameEventType
 from engine.random import randint
-from game_objects.views.process_view import ProcessView
+from scene_objects.views.process_view import ProcessView
 
 _NEW_PAGE_PROBABILITY_DENOMINATOR = 20
 _BLINKING_INTERVAL_MS = 200
 
-class Process(GameObject):
+class Process(SceneObject):
     _ANIMATION_SPEED = 35
 
     def __init__(self, pid: int, stage: 'Stage', config: ProcessConfig,

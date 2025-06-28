@@ -5,13 +5,13 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.game_manager import GameManager
 from engine.random import Random
-from game_objects.checkbox import Checkbox
-from game_objects.cpu import Cpu
-from game_objects.io_queue import IoQueue
-from game_objects.process import Process
-from game_objects.process_manager import ProcessManager
-from game_objects.process_slot import ProcessSlot
-from game_objects.sort_button import SortButton
+from scene_objects.checkbox import Checkbox
+from scene_objects.cpu import Cpu
+from scene_objects.io_queue import IoQueue
+from scene_objects.process import Process
+from scene_objects.process_manager import ProcessManager
+from scene_objects.process_slot import ProcessSlot
+from scene_objects.sort_button import SortButton
 from scenes.stage import Stage
 from config.stage_config import StageConfig
 

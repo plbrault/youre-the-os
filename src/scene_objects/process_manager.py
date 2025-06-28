@@ -4,16 +4,16 @@ import re
 from constants import ONE_SECOND
 import game_monitor
 from engine.game_event_type import GameEventType
-from engine.game_object import GameObject
+from engine.scene_object import SceneObject
 from engine.random import randint
 from factories.process_factory import ProcessFactory
-from game_objects.checkbox import Checkbox
-from game_objects.cpu import Cpu
-from game_objects.io_queue import IoQueue
-from game_objects.process import Process
-from game_objects.views.process_manager_view import ProcessManagerView
-from game_objects.process_slot import ProcessSlot
-from game_objects.sort_button import SortButton
+from scene_objects.checkbox import Checkbox
+from scene_objects.cpu import Cpu
+from scene_objects.io_queue import IoQueue
+from scene_objects.process import Process
+from scene_objects.views.process_manager_view import ProcessManagerView
+from scene_objects.process_slot import ProcessSlot
+from scene_objects.sort_button import SortButton
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(10)))
@@ -32,7 +32,7 @@ def _is_sorted(process_list: [Process]):
             return False
     return True
 
-class ProcessManager(GameObject):
+class ProcessManager(SceneObject):
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
         self._stage_config = stage_config
@@ -359,14 +359,14 @@ class ProcessManager(GameObject):
             self._continue_sorting()
 
     def _update_children(self, current_time, events):
-        for game_object in self.children:
-            game_object.update(current_time, events)
+        for scene_object in self.children:
+            scene_object.update(current_time, events)
             if (
-                isinstance(game_object, Process)
-                and game_object.has_ended
-                and game_object.view.y <= -game_object.view.height
+                isinstance(scene_object, Process)
+                and scene_object.has_ended
+                and scene_object.view.y <= -scene_object.view.height
             ):
-                self.children.remove(game_object)
+                self.children.remove(scene_object)
 
     def update(self, current_time, events):
         if self.stage.game_over:

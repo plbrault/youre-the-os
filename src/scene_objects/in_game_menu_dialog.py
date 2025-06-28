@@ -1,9 +1,9 @@
-from engine.game_object import GameObject
-from game_objects.button import Button
-from game_objects.views.in_game_menu_dialog_view import InGameMenuDialogView
+from engine.scene_object import SceneObject
+from scene_objects.button import Button
+from scene_objects.views.in_game_menu_dialog_view import InGameMenuDialogView
 
 
-class InGameMenuDialog(GameObject):
+class InGameMenuDialog(SceneObject):
 
     def __init__(self, restart_game_fn, main_menu_fn, close_menu_fn):
         super().__init__(InGameMenuDialogView(self))

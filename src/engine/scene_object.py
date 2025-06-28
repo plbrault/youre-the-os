@@ -3,7 +3,7 @@ from abc import ABC
 from engine.drawable import Drawable
 
 
-class GameObject(ABC):
+class SceneObject(ABC):
     def __init__(self, view: Drawable):
         self._view = view
         self._visible = True

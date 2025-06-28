@@ -1,9 +1,9 @@
-from engine.game_object import GameObject
-from game_objects.button import Button
-from game_objects.views.game_over_dialog_view import GameOverDialogView
+from engine.scene_object import SceneObject
+from scene_objects.button import Button
+from scene_objects.views.game_over_dialog_view import GameOverDialogView
 
 
-class GameOverDialog(GameObject):
+class GameOverDialog(SceneObject):
     def __init__(
         self, *, uptime, stage_name, score, restart_game_fn, main_menu_fn, standalone=False
     ):

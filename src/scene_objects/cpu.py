@@ -1,8 +1,8 @@
-from engine.game_object import GameObject
-from game_objects.views.cpu_view import CpuView
+from engine.scene_object import SceneObject
+from scene_objects.views.cpu_view import CpuView
 
 
-class Cpu(GameObject):
+class Cpu(SceneObject):
     def __init__(self, cpu_id, *, _time_for_process_happiness=5000):
         self._cpu_id = cpu_id
         self._process = None

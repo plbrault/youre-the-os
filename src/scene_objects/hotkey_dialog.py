@@ -1,12 +1,12 @@
-from engine.game_object import GameObject
-from game_objects.button import Button
-from game_objects.views.about_dialog_view import AboutDialogView
+from engine.scene_object import SceneObject
+from scene_objects.button import Button
+from scene_objects.views.hotkey_dialog_view import HokeyDialogView
 
 
-class AboutDialog(GameObject):
+class HokeyDialog(SceneObject):
 
     def __init__(self, close_fn):
-        super().__init__(AboutDialogView(self))
+        super().__init__(HokeyDialogView(self))
 
         self._close_button = Button('Close', close_fn)
         self.children.append(self._close_button)

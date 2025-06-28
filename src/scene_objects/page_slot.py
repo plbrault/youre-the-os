@@ -1,8 +1,8 @@
-from engine.game_object import GameObject
-from game_objects.views.page_slot_view import PageSlotView
+from engine.scene_object import SceneObject
+from scene_objects.views.page_slot_view import PageSlotView
 
 
-class PageSlot(GameObject):
+class PageSlot(SceneObject):
     def __init__(self):
         self._page = None
 

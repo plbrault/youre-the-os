@@ -5,17 +5,17 @@ from constants import (
     MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS,
     SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS, PAGES_PER_ROW
 )
-from engine.game_object import GameObject
-from game_objects.button import Button
-from game_objects.option_selector import OptionSelector
-from game_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
+from engine.scene_object import SceneObject
+from scene_objects.button import Button
+from scene_objects.option_selector import OptionSelector
+from scene_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
 from config.stage_config import StageConfig
 
 _swap_delay_ms_to_ids = {
     SWAP_DELAY_NAMES_TO_MS[name]: idx for idx, name in enumerate(SWAP_DELAY_NAMES)
 }
 
-class CustomSettingsDialog(GameObject):
+class CustomSettingsDialog(SceneObject):
 
     def __init__(self, start_fn, cancel_fn, default_config : StageConfig = StageConfig()):
         super().__init__(CustomSettingsDialogView(self))

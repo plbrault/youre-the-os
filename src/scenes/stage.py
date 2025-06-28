@@ -3,14 +3,14 @@ import sys
 from constants import ONE_SECOND
 import game_monitor
 from engine.scene import Scene
-from game_objects.button import Button
-from game_objects.game_over_dialog import GameOverDialog
-from game_objects.in_game_menu_dialog import InGameMenuDialog
-from game_objects.label import Label
-from game_objects.page_manager import PageManager
-from game_objects.process_manager import ProcessManager
-from game_objects.score_manager import ScoreManager
-from game_objects.uptime_manager import UptimeManager
+from scene_objects.button import Button
+from scene_objects.game_over_dialog import GameOverDialog
+from scene_objects.in_game_menu_dialog import InGameMenuDialog
+from scene_objects.label import Label
+from scene_objects.page_manager import PageManager
+from scene_objects.process_manager import ProcessManager
+from scene_objects.score_manager import ScoreManager
+from scene_objects.uptime_manager import UptimeManager
 from config.stage_config import StageConfig
 
 class Stage(Scene):
@@ -247,6 +247,6 @@ class Stage(Scene):
             dialog.update(current_time, events)
         else:
             self._process_script_events()
-            for game_object in self._scene_objects:
-                game_object.update(current_time, events)
+            for scene_object in self._scene_objects:
+                scene_object.update(current_time, events)
             self._check_game_over()

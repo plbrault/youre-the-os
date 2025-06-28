@@ -4,8 +4,8 @@ import pygame
 
 from ui.color import Color
 from engine.scene import Scene
-from game_objects.button import Button
-from game_objects.how_to_play_part import HowToPlayPart
+from scene_objects.button import Button
+from scene_objects.how_to_play_part import HowToPlayPart
 
 _parts = [
     HowToPlayPart(
@@ -234,5 +234,5 @@ class HowToPlay(Scene):
         self.scene_manager.start_scene('main_menu')
 
     def update(self, current_time, events):
-        for game_object in self._scene_objects:
-            game_object.update(current_time, events)
+        for scene_object in self._scene_objects:
+            scene_object.update(current_time, events)

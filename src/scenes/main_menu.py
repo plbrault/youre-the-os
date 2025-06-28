@@ -1,13 +1,13 @@
 from config.difficulty_levels import DifficultyLevel, difficulty_levels
 from config.stage_config import StageConfig
 from engine.scene import Scene
-from game_objects.about_dialog import AboutDialog
-from game_objects.button import Button
-from game_objects.custom_settings_dialog import CustomSettingsDialog
-from game_objects.hotkey_dialog import HokeyDialog
-from game_objects.main_menu_title import MainMenuTitle
-from game_objects.difficulty_selection_label import DifficultySelectionLabel
-from game_objects.option_selector import OptionSelector
+from scene_objects.about_dialog import AboutDialog
+from scene_objects.button import Button
+from scene_objects.custom_settings_dialog import CustomSettingsDialog
+from scene_objects.hotkey_dialog import HokeyDialog
+from scene_objects.main_menu_title import MainMenuTitle
+from scene_objects.difficulty_selection_label import DifficultySelectionLabel
+from scene_objects.option_selector import OptionSelector
 from scenes.stage import Stage
 
 class MainMenu(Scene):
@@ -147,5 +147,5 @@ class MainMenu(Scene):
         elif self._hotkey_dialog is not None:
             self._hotkey_dialog.update(current_time, events)
         else:
-            for game_object in self._scene_objects:
-                game_object.update(current_time, events)
+            for scene_object in self._scene_objects:
+                scene_object.update(current_time, events)

@@ -1,8 +1,8 @@
-from engine.game_object import GameObject
-from game_objects.views.process_slot_view import ProcessSlotView
+from engine.scene_object import SceneObject
+from scene_objects.views.process_slot_view import ProcessSlotView
 
 
-class ProcessSlot(GameObject):
+class ProcessSlot(SceneObject):
     def __init__(self):
         self._process = None
 

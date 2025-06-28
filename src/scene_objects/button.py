@@ -1,12 +1,12 @@
 from typing import Callable, Type
 
 from engine.game_event_type import GameEventType
-from engine.game_object import GameObject
+from engine.scene_object import SceneObject
 from engine.drawable import Drawable
-from game_objects.views.button_view import ButtonView
+from scene_objects.views.button_view import ButtonView
 
 
-class Button(GameObject):
+class Button(SceneObject):
 
     def __init__(self, text, action_fn: Callable,
                  *, key_bind: str = '', view_class: Type[Drawable] = ButtonView

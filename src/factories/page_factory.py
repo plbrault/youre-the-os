@@ -1,5 +1,5 @@
 from config.page_config import PageConfig
-from game_objects.page import Page
+from scene_objects.page import Page
 
 class PageFactory: # pylint: disable=too-few-public-methods
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
