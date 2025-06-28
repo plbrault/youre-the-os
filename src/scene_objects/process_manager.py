@@ -116,7 +116,7 @@ class ProcessManager(SceneObject):
         self._alive_process_list = []
         self._process_slots = []
         self._user_terminated_process_slots = []
-        self._io_queue = IoQueue(self)
+        self._io_queue = IoQueue(self, self._stage_config.io_max_waiting_time_ms)
         self._processes = {}
 
         self._next_pid = 1
