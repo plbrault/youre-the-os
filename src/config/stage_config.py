@@ -13,7 +13,7 @@ class StageConfig:
     parallel_swaps: int = 1
     new_process_probability: float = 0.05
     priority_process_probability: float = 0.01
-    io_probability: float = 0.01,
+    io_probability: float = 0.01
     io_max_waiting_time_ms: int = 5000
     graceful_termination_probability: float = 0.01
     time_ms_to_show_sort_button: int = 6 * ONE_MINUTE
