@@ -40,10 +40,6 @@ class PageManager(SceneObject):
         return cls._NUM_COLS
 
     @property
-    def stage(self):
-        return self._stage
-
-    @property
     def pages_in_ram_label_xy(self):
         return self._pages_in_ram_label_xy
 

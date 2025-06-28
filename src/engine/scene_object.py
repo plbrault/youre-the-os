@@ -15,7 +15,7 @@ class SceneObject(ABC):
 
     @property
     def view_vars(self) -> dict[str, any]:
-        """ Override this method to provide variables for the view. """
+        """ Override this method to provide additional variables for the view. """
         return {}
 
     @property
