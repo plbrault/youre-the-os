@@ -34,8 +34,6 @@ class TestProcessManager:
         process_manager = stage.process_manager
         process_manager.setup()
 
-        assert process_manager.stage == stage
-
         assert len(process_manager.cpu_list) == stage_config.num_cpus
         for cpu in process_manager.cpu_list:
             assert isinstance(cpu, Cpu)
@@ -141,7 +139,7 @@ class TestProcessManager:
             # Bring back normal number generator
             monkeypatch.setattr(Random, 'get_number', Random.get_number)
 
-            return process_manager
+            return process_manager, stage
         return create_process_manager
 
     def test_get_process(self, ready_process_manager, stage_config):
@@ -218,7 +216,7 @@ class TestProcessManager:
         assert cpu.process == process
 
     def test_terminate_process_by_user_when_cannot_terminate(self, ready_process_manager_custom_config):
-        process_manager = ready_process_manager_custom_config(StageConfig(
+        process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 11,
             new_process_probability = 0,
             graceful_termination_probability = 0,
@@ -235,7 +233,7 @@ class TestProcessManager:
         assert not result
 
     def test_update_removes_process_out_of_screen(self, ready_process_manager_custom_config):
-        process_manager = ready_process_manager_custom_config(StageConfig(
+        process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 1,
             new_process_probability = 0,
             graceful_termination_probability = 1,
@@ -334,7 +332,7 @@ class TestProcessManager:
             new_process_probability = 0,
             time_ms_to_show_sort_button = 6 * ONE_MINUTE
         )
-        process_manager = ready_process_manager_custom_config(stage_config)
+        process_manager, stage = ready_process_manager_custom_config(stage_config)
 
         sort_button = None
         for child in process_manager.children:
@@ -346,11 +344,11 @@ class TestProcessManager:
         assert not sort_button.visible
 
         for i in range(int(stage_config.time_ms_to_show_sort_button / ONE_SECOND)):
-            process_manager.stage.update(i * ONE_SECOND, [])
+            stage.update(i * ONE_SECOND, [])
             assert not sort_button.visible
 
-        process_manager.stage.update(stage_config.time_ms_to_show_sort_button, [])
-        process_manager.stage.update(stage_config.time_ms_to_show_sort_button + 1, [])
+        stage.update(stage_config.time_ms_to_show_sort_button, [])
+        stage.update(stage_config.time_ms_to_show_sort_button + 1, [])
         # We execute one extra update because the process manager determines the visibility of the button
         # based on the stage's UptimeManager, which may get updated after the ProcessManager.
         assert sort_button.visible
@@ -361,7 +359,7 @@ class TestProcessManager:
             new_process_probability = 0,
             time_ms_to_show_auto_sort_checkbox = 12 * ONE_MINUTE
         )
-        process_manager = ready_process_manager_custom_config(stage_config)
+        process_manager, stage = ready_process_manager_custom_config(stage_config)
 
         auto_sort_checkbox = None
         for child in process_manager.children:
@@ -373,17 +371,17 @@ class TestProcessManager:
         assert not auto_sort_checkbox.visible
 
         for i in range(int(stage_config.time_ms_to_show_auto_sort_checkbox / ONE_SECOND)):
-            process_manager.stage.update(i * ONE_SECOND, [])
+            stage.update(i * ONE_SECOND, [])
             assert not auto_sort_checkbox.visible
 
-        process_manager.stage.update(stage_config.time_ms_to_show_auto_sort_checkbox, [])
-        process_manager.stage.update(stage_config.time_ms_to_show_auto_sort_checkbox + 1, [])
+        stage.update(stage_config.time_ms_to_show_auto_sort_checkbox, [])
+        stage.update(stage_config.time_ms_to_show_auto_sort_checkbox + 1, [])
         # We execute one extra update because the process manager determines the visibility of the checkbox
         # based on the stage's UptimeManager, which may get updated after the ProcessManager.
         assert auto_sort_checkbox.visible
 
     def test_get_current_stats(self, ready_process_manager_custom_config):
-        process_manager_1 = ready_process_manager_custom_config(StageConfig(
+        process_manager_1, stage_1 = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 10,
             new_process_probability = 0,
             graceful_termination_probability = 0,
@@ -425,7 +423,7 @@ class TestProcessManager:
         assert stats['gracefully_terminated_process_count'] == 0
         assert stats['user_terminated_process_count'] == 1
 
-        process_manager_2 = ready_process_manager_custom_config(StageConfig(
+        process_manager_2, stage_2 = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 10,
             new_process_probability = 1,
             graceful_termination_probability = 0,
@@ -440,7 +438,7 @@ class TestProcessManager:
         stats = process_manager_2.get_current_stats()
         assert stats['alive_process_count'] == 11
 
-        process_manager_3 = ready_process_manager_custom_config(StageConfig(
+        process_manager_3, stage_3 = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 10,
             new_process_probability = 0,
             graceful_termination_probability = 1,
@@ -463,7 +461,7 @@ class TestProcessManager:
         for i in range(2, DEAD_STARVATION_LEVEL):
             assert stats['alive_process_count_by_starvation_level'][i] == 0
 
-        process_manager_4 = ready_process_manager_custom_config(StageConfig(
+        process_manager_4, stage_4 = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 10,
             new_process_probability = 0,
             graceful_termination_probability = 0,
@@ -481,7 +479,7 @@ class TestProcessManager:
         assert stats['blocked_active_process_count'] == 1
 
     def test_sort(self, ready_process_manager_custom_config):
-        process_manager = ready_process_manager_custom_config(StageConfig(
+        process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_cpus=4,
             num_processes_at_startup=5,
             new_process_probability=0,
@@ -555,7 +553,7 @@ class TestProcessManager:
         assert active_process not in [process_slot.process for process_slot in process_manager.process_slots]
 
     def test_auto_sort(self, ready_process_manager_custom_config):
-        process_manager = ready_process_manager_custom_config(StageConfig(
+        process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_cpus=4,
             num_processes_at_startup=5,
             new_process_probability=0,
@@ -649,7 +647,7 @@ class TestProcessManager:
 
     def test_game_over(self, ready_process_manager_custom_config):
         # TODO: Move this test to Stage tests as game over logic is now handled by Stage rather than ProcessManager
-        process_manager = ready_process_manager_custom_config(StageConfig(
+        process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_cpus=4,
             num_processes_at_startup=10,
             new_process_probability=0,
@@ -666,7 +664,7 @@ class TestProcessManager:
                 time += ONE_SECOND
 
         assert process_manager.get_current_stats()['user_terminated_process_count'] == 10
-        assert not process_manager.stage.game_over
+        assert not stage.game_over
 
         process_in_motion = True
         time = 1000
@@ -680,12 +678,12 @@ class TestProcessManager:
                         break
             time += ONE_SECOND / FRAMERATE
 
-        process_manager.stage.update(time, [])
+        stage.update(time, [])
 
-        assert process_manager.stage.game_over
+        assert stage.game_over
 
     def test_cpu_hotkeys(self, ready_process_manager_custom_config):
-        process_manager = ready_process_manager_custom_config(StageConfig(
+        process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_cpus=16,
             num_processes_at_startup=16,
             new_process_probability=0,
