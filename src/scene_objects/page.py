@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from engine.game_event_type import GameEventType
