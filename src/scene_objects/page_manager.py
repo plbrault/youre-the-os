@@ -4,8 +4,7 @@ from typing import Optional
 from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from engine.scene_object import SceneObject
 from scene_objects.views.page_manager_view import PageManagerView
-from scene_objects.page import Page
-from scene_objects.page_mouse_drag_action import PageMouseDragAction
+from scene_objects.page import Page, PageMouseDragAction
 from scene_objects.page_slot import PageSlot
 from factories.page_factory import PageFactory
 

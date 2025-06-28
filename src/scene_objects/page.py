@@ -3,11 +3,15 @@ from typing import Optional
 from engine.game_event_type import GameEventType
 from engine.scene_object import SceneObject
 import game_monitor
-from scene_objects.page_mouse_drag_action import PageMouseDragAction
 from scene_objects.page_slot import PageSlot
 from scene_objects.views.page_view import PageView
 
 _BLINKING_INTERVAL_MS = 200
+
+PageMouseDragAction = Enum('PageMouseDragAction', [
+    'REQUEST_SWAP',
+    'CANCEL_SWAP'
+])
 
 class Page(SceneObject):
 
