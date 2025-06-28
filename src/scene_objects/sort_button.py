@@ -9,13 +9,14 @@ class SortButton(Button):
         super().__init__('Sort', self._action, key_bind='s', view_class=SortButtonView)
         self._process_manager = process_manager
         self._visible = False
+        self._current_time = 0
         self._became_visible_at = 0
         self._last_pressed_at = 0
         self._blinking = False
         self._blinking_hidden = False
 
     def _action(self):
-        self._last_pressed_at = self._process_manager.stage.current_time
+        self._last_pressed_at = self._current_time
         self.disabled = True
         self._blinking = self._blinking_hidden = False
         self._process_manager.sort_idle_processes()
@@ -26,7 +27,7 @@ class SortButton(Button):
         self._blinking_hidden = False
         if self._visible:
             self._blinking = True
-            self._became_visible_at = self._process_manager.stage.current_time
+            self._became_visible_at = self._current_time
         else:
             self._blinking = False
             self._became_visible_at = 0
@@ -43,6 +44,7 @@ class SortButton(Button):
         return self._blinking_hidden
 
     def update(self, current_time, events):
+        self._current_time = current_time
         if not self.visible:
             events = []
         elif self._blinking:

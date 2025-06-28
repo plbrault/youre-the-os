@@ -16,7 +16,7 @@ class ProcessManagerView(Drawable):
 
     @property
     def width(self):
-        return WINDOW_WIDTH - self._process_manager.stage.page_manager.view.width
+        return WINDOW_WIDTH - self._process_manager.view_vars['page_manager_view_width']
 
     @property
     def height(self):
