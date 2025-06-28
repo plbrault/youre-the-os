@@ -1,13 +1,11 @@
 from collections import deque
 
-from constants import ONE_SECOND
 import game_monitor
 from engine.scene_object import SceneObject
 from engine.game_event_type import GameEventType
 from engine.random import randint
 from scene_objects.views.io_queue_view import IoQueueView
 
-_MAX_WAITING_TIME = 5000
 _BLINKING_INTERVAL_MS = 333
 _EVENT_PROBABILITY_DENOMINATOR = 3
 
@@ -26,8 +24,9 @@ class _IoEventWaiter:
 
 class IoQueue(SceneObject):
 
-    def __init__(self, process_manager):
-        self._process_manager = process_manager
+    def __init__(self, min_waiting_time_ms, max_waiting_time_ms):
+        self._min_waiting_time_ms = min_waiting_time_ms
+        self._max_waiting_time_ms = max_waiting_time_ms
 
         self._subscriber_queue = deque([])
         self._event_count = 0
@@ -79,12 +78,12 @@ class IoQueue(SceneObject):
         if (
             self._event_count < len(self._subscriber_queue)
             and current_time >=
-                self._subscriber_queue[self._event_count].waiting_since + _MAX_WAITING_TIME
+                self._subscriber_queue[self._event_count].waiting_since + self._max_waiting_time_ms
         ):
             self._last_update_time = current_time
             self._event_count += 1
 
-        elif current_time >= self._last_update_time + ONE_SECOND:
+        elif current_time >= self._last_update_time + self._min_waiting_time_ms:
             self._last_update_time = current_time
 
             if (
