@@ -70,8 +70,8 @@ class TestProcessManager:
         # Cause the random number generator to never provoke creation of new process
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
+        stage.setup()
         process_manager = stage.process_manager
-        stage.setup
 
         time = 0.0
         process_count = 0
