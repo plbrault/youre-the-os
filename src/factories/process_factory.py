@@ -1,6 +1,6 @@
 from config.process_config import ProcessConfig
-from game_objects.process import Process
-from game_objects.views.priority_process_view import PriorityProcessView
+from scene_objects.process import Process
+from scene_objects.views.priority_process_view import PriorityProcessView
 from engine.random import randint
 
 class ProcessFactory:

@@ -1,8 +1,8 @@
 from typing import Callable, Type
 
 from engine.drawable import Drawable
-from game_objects.button import Button
-from game_objects.views.checkbox_view import CheckboxView
+from scene_objects.button import Button
+from scene_objects.views.checkbox_view import CheckboxView
 
 class Checkbox(Button):
     def __init__(self,

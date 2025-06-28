@@ -1,6 +1,6 @@
-from engine.game_object import GameObject
-from game_objects.button import Button
-from game_objects.views.sort_button_view import SortButtonView
+from engine.scene_object import SceneObject
+from scene_objects.button import Button
+from scene_objects.views.sort_button_view import SortButtonView
 
 _BLINKING_INTERVAL_MS = 500
 
@@ -20,7 +20,7 @@ class SortButton(Button):
         self._blinking = self._blinking_hidden = False
         self._process_manager.sort_idle_processes()
 
-    @GameObject.visible.setter
+    @SceneObject.visible.setter
     def visible(self, value: bool):
         self._visible = value
         self._blinking_hidden = False

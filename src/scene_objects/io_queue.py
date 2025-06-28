@@ -2,10 +2,10 @@ from collections import deque
 
 from constants import ONE_SECOND
 import game_monitor
-from engine.game_object import GameObject
+from engine.scene_object import SceneObject
 from engine.game_event_type import GameEventType
 from engine.random import randint
-from game_objects.views.io_queue_view import IoQueueView
+from scene_objects.views.io_queue_view import IoQueueView
 
 _MAX_WAITING_TIME = 5000
 _BLINKING_INTERVAL_MS = 333
@@ -24,7 +24,7 @@ class _IoEventWaiter:
     def callback(self):
         return self._callback
 
-class IoQueue(GameObject):
+class IoQueue(SceneObject):
 
     def __init__(self, process_manager):
         self._process_manager = process_manager

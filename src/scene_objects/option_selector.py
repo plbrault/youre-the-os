@@ -1,9 +1,9 @@
-from engine.game_object import GameObject
-from game_objects.views.option_selector_view import OptionSelectorView
-from game_objects.button import Button
+from engine.scene_object import SceneObject
+from scene_objects.views.option_selector_view import OptionSelectorView
+from scene_objects.button import Button
 
 
-class OptionSelector(GameObject):
+class OptionSelector(SceneObject):
 
     def __init__(self, options: [str], default_option_id=0):
         self._options = options

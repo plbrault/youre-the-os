@@ -36,7 +36,7 @@ class Scene(ABC):
     def render(self):
         self.screen.fill(self.background_color)
 
-        for game_object in self._scene_objects:
-            game_object.render(self.screen)
+        for scene_object in self._scene_objects:
+            scene_object.render(self.screen)
 
         pygame.display.flip()

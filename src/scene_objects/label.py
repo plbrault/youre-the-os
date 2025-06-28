@@ -1,8 +1,8 @@
-from engine.game_object import GameObject
-from game_objects.views.label_view import LabelView
+from engine.scene_object import SceneObject
+from scene_objects.views.label_view import LabelView
 
 
-class Label(GameObject):
+class Label(SceneObject):
     def __init__(self, text):
         super().__init__(LabelView(self))
         self._text = text

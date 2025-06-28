@@ -2,11 +2,11 @@ import pytest
 
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
-from game_objects.page import Page
+from scene_objects.page import Page
 from config.page_config import PageConfig
-from game_objects.page_manager import PageManager
-from game_objects.page_mouse_drag_action import PageMouseDragAction
-from game_objects.page_slot import PageSlot
+from scene_objects.page_manager import PageManager
+from scene_objects.page_mouse_drag_action import PageMouseDragAction
+from scene_objects.page_slot import PageSlot
 
 class TestPage:
     @pytest.fixture

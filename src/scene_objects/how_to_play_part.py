@@ -1,9 +1,9 @@
 from constants import ONE_SECOND
-from engine.game_object import GameObject
-from game_objects.views.how_to_play_part_view import HowToPlayPartView
+from engine.scene_object import SceneObject
+from scene_objects.views.how_to_play_part_view import HowToPlayPartView
 
 
-class HowToPlayPart(GameObject):
+class HowToPlayPart(SceneObject):
 
     def __init__(self, text, images, animation_interval=ONE_SECOND):
         self._text = text

@@ -1,15 +1,15 @@
 from typing import Optional
 
 from engine.game_event_type import GameEventType
-from engine.game_object import GameObject
+from engine.scene_object import SceneObject
 import game_monitor
-from game_objects.page_mouse_drag_action import PageMouseDragAction
-from game_objects.page_slot import PageSlot
-from game_objects.views.page_view import PageView
+from scene_objects.page_mouse_drag_action import PageMouseDragAction
+from scene_objects.page_slot import PageSlot
+from scene_objects.views.page_view import PageView
 
 _BLINKING_INTERVAL_MS = 200
 
-class Page(GameObject):
+class Page(SceneObject):
 
     def __init__(self, pid: int, idx: int, page_manager: 'PageManager', config: 'PageConfig'):
         self._pid = pid

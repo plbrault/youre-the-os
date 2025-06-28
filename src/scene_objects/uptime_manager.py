@@ -1,11 +1,11 @@
 from datetime import timedelta
 
 from constants import ONE_SECOND
-from engine.game_object import GameObject
-from game_objects.views.uptime_manager_view import UptimeManagerView
+from engine.scene_object import SceneObject
+from scene_objects.views.uptime_manager_view import UptimeManagerView
 
 
-class UptimeManager(GameObject):
+class UptimeManager(SceneObject):
 
     def __init__(self, stage):
         self._stage = stage
