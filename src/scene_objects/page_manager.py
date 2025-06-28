@@ -4,8 +4,7 @@ from typing import Optional
 from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from engine.scene_object import SceneObject
 from scene_objects.views.page_manager_view import PageManagerView
-from scene_objects.page import Page
-from scene_objects.page_mouse_drag_action import PageMouseDragAction
+from scene_objects.page import Page, PageMouseDragAction
 from scene_objects.page_slot import PageSlot
 from factories.page_factory import PageFactory
 
@@ -31,6 +30,13 @@ class PageManager(SceneObject):
 
         super().__init__(PageManagerView(self))
 
+    @property
+    def view_vars(self):
+        return {
+            'pages_in_ram_label_xy': self._pages_in_ram_label_xy,
+            'pages_on_disk_label_xy': self._pages_on_disk_label_xy,
+        }
+
     @classmethod
     def get_total_rows(cls):
         return cls._TOTAL_ROWS
@@ -38,18 +44,6 @@ class PageManager(SceneObject):
     @classmethod
     def get_num_cols(cls):
         return cls._NUM_COLS
-
-    @property
-    def stage(self):
-        return self._stage
-
-    @property
-    def pages_in_ram_label_xy(self):
-        return self._pages_in_ram_label_xy
-
-    @property
-    def pages_on_disk_label_xy(self):
-        return self._pages_on_disk_label_xy
 
     def get_page(self, pid, idx):
         return self._pages[(pid, idx)]
