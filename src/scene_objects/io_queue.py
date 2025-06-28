@@ -25,9 +25,9 @@ class _IoEventWaiter:
 
 class IoQueue(SceneObject):
 
-    def __init__(self, process_manager, event_max_waiting_time_ms):
-        self._process_manager = process_manager
-        self._event_max_waiting_time_ms = event_max_waiting_time_ms
+    def __init__(self, min_waiting_time_ms, max_waiting_time_ms):
+        self._min_waiting_time_ms = min_waiting_time_ms
+        self._max_waiting_time_ms = max_waiting_time_ms
 
         self._subscriber_queue = deque([])
         self._event_count = 0
@@ -79,12 +79,12 @@ class IoQueue(SceneObject):
         if (
             self._event_count < len(self._subscriber_queue)
             and current_time >=
-                self._subscriber_queue[self._event_count].waiting_since + self._event_max_waiting_time_ms
+                self._subscriber_queue[self._event_count].waiting_since + self._max_waiting_time_ms
         ):
             self._last_update_time = current_time
             self._event_count += 1
 
-        elif current_time >= self._last_update_time + ONE_SECOND:
+        elif current_time >= self._last_update_time + self._min_waiting_time_ms:
             self._last_update_time = current_time
 
             if (
