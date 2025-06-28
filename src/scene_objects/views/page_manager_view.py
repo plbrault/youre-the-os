@@ -24,7 +24,7 @@ class PageManagerView(Drawable):
 
     def draw(self, surface):
         surface.blit(self._pages_in_ram_text_surface,
-                     self._page_manager.pages_in_ram_label_xy)
-        if self._page_manager.pages_on_disk_label_xy is not None:
+                     self._page_manager.view_vars['pages_in_ram_label_xy'])
+        if self._page_manager.view_vars['pages_on_disk_label_xy'] is not None:
             surface.blit(self._pages_on_disk_space_text_surface,
-                         self._page_manager.pages_on_disk_label_xy)
+                         self._page_manager.view_vars['pages_on_disk_label_xy'])
