@@ -1,6 +1,5 @@
 from collections import deque
 
-from constants import ONE_SECOND
 import game_monitor
 from engine.scene_object import SceneObject
 from engine.game_event_type import GameEventType
