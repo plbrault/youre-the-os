@@ -18,19 +18,24 @@ arg_parser.add_argument('config_module', help='The Python module path from `src`
 
 print(sys.path)
 
-#async def main():
-args = arg_parser.parse_args()
-print("Config module:", args.config_module)
-config_module = import_module(args.config_module)
+async def main():
+    args = arg_parser.parse_args()
+    try:
+        config_module = import_module(args.config_module)
+    except ModuleNotFoundError as e:
+        print(f"Error: The specified module '{args.config_module}' could not be found.")
+        sys.exit(1)
 
-print(config_module)
+    print("Config module:", args.config_module)
 
-#stage = config_module.stage
+    stage = config_module.stage
+    stage.name = 'SANDBOX'
+    stage.standalone = True
 
-#game_manager = GameManager()
-#game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
-#game_manager.startup_scene = stage
+    game_manager = GameManager()
+    game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
+    game_manager.startup_scene = stage
 
-    #await game_manager.play()
+    await game_manager.play()
 
-#asyncio.run(main())
+asyncio.run(main())
