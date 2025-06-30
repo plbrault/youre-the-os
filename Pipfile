@@ -18,5 +18,6 @@ python_version = "3.13"
 [scripts]
 desktop = "python ./run-desktop.py"
 auto = "python ./run-auto.py"
+sandbox = "python ./run-sandbox.py"
 web = "python ./run-web.py"
 pylint = "pylint ./src"
