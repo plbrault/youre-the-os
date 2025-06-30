@@ -2,7 +2,6 @@ import argparse
 import asyncio
 from importlib import import_module
 from os import path
-import sys
 
 from config.difficulty_levels import default_difficulty
 from engine.game_manager import GameManager
@@ -15,8 +14,6 @@ from window_size import WINDOW_SIZE
 
 arg_parser = argparse.ArgumentParser(prog='pipenv run sandbox', description='Run the game in sandbox mode.')
 arg_parser.add_argument('config_module', help='The Python module path from `src` to the sandbox configuration file to use, e.g. `sandbox.sample`.')
-
-print(sys.path)
 
 async def main():
     args = arg_parser.parse_args()
