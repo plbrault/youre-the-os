@@ -1,5 +1,5 @@
 """
-Sample config file for the sandbox mode.
+Example configuration file for the sandbox mode.
 Only the `stage` variable is used while setting up the sandbox stage.
 It must be an instance of either `Stage` or a subclass of `Stage`.
 The `name` and `standalone` properties of `stage` will be overridden.

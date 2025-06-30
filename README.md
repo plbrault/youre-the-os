@@ -38,6 +38,18 @@ pipenv run desktop
 pipenv run web
 ```
 
+**Run sandbox mode**
+
+The sandbox mode allows you to skip the menu and immediately run a custom stage. It is provided for development purposes.
+
+First, you need to create a sandbox configuration file. An example is provided in `src/sandbox/sample.py`. It is recommended to store your configuration file in that same `src/sandbox` directory. Files added to that directory will be ignored by Git.
+
+Next, run the following command, replacing `sandbox.sample` by the Python module path from `src` to your own configuration file (for instance, if your file is `src/sandbox/myConfig.py`, the module path will be `sandbox.myConfig`):
+
+```bash
+pipenv run sandbox sandbox.sample
+```
+
 **Run with an automated script:**
 
 _(Implemented by [@Wiguwbe](https://github.com/Wiguwbe))_
