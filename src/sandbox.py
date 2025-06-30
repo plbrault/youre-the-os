@@ -1,5 +1,8 @@
+import argparse
 import asyncio
+from importlib import import_module
 from os import path
+import sys
 
 from config.difficulty_levels import default_difficulty
 from engine.game_manager import GameManager
@@ -10,13 +13,24 @@ from scenes.main_menu import MainMenu
 from scenes.stage import Stage
 from window_size import WINDOW_SIZE
 
-async def main():
-    stage = Stage('SANDBOX', default_difficulty.config, standalone=True)
+arg_parser = argparse.ArgumentParser(prog='pipenv run sandbox', description='Run the game in sandbox mode.')
+arg_parser.add_argument('config_module', help='The Python module path from `src` to the sandbox configuration file to use, e.g. `sandbox.sample`.')
 
-    game_manager = GameManager()
-    game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
-    game_manager.startup_scene = stage
+print(sys.path)
 
-    await game_manager.play()
+#async def main():
+args = arg_parser.parse_args()
+print("Config module:", args.config_module)
+config_module = import_module(args.config_module)
 
-asyncio.run(main())
+print(config_module)
+
+#stage = config_module.stage
+
+#game_manager = GameManager()
+#game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
+#game_manager.startup_scene = stage
+
+    #await game_manager.play()
+
+#asyncio.run(main())
