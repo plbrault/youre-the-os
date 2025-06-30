@@ -48,7 +48,7 @@ def parse_arguments():
     returns the script filename and the difficulty configuration"""
 
     parser = argparse.ArgumentParser(
-                prog="auto",
+                prog="pipenv run auto",
                 description="Run the game with an automated script")
 
     # file for script

@@ -105,6 +105,14 @@ class Stage(Scene):
         self._name = value
 
     @property
+    def standalone(self):
+        return self._standalone
+
+    @standalone.setter
+    def standalone(self, value):
+        self._standalone = value
+
+    @property
     def game_over(self):
         return self._game_over
 

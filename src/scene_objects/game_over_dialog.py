@@ -13,15 +13,20 @@ class GameOverDialog(SceneObject):
         self.standalone = standalone
         super().__init__(GameOverDialogView(self))
 
-        if not self.standalone:
-            self._play_again_button = Button('Play Again', restart_game_fn)
-            self._main_menu_button = Button('Main Menu', main_menu_fn)
+        self._play_again_button = Button('Play Again', restart_game_fn)
+        self.children.append(self._play_again_button)
 
-            self.children.append(self._play_again_button)
+        if not self.standalone:
+            self._main_menu_button = Button('Main Menu', main_menu_fn)
             self.children.append(self._main_menu_button)
 
     def update(self, current_time, events):
-        if not self.standalone:
+        if self.standalone:
+            self._play_again_button.view.set_xy(
+                self.view.x + (self.view.width / 2) - (self._play_again_button.view.width / 2),
+                self.view.y + self.view.height - self._play_again_button.view.height - 20
+            )
+        else:
             self._play_again_button.view.set_xy(
                 self.view.x + (self.view.width / 2) -
                 self._play_again_button.view.width - 10,
