@@ -2,24 +2,27 @@ import argparse
 import asyncio
 from importlib import import_module
 from os import path
+import sys
 
-from config.difficulty_levels import default_difficulty
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
 from game_info import TITLE
-from scenes.how_to_play import HowToPlay
-from scenes.main_menu import MainMenu
-from scenes.stage import Stage
 from window_size import WINDOW_SIZE
 
-arg_parser = argparse.ArgumentParser(prog='pipenv run sandbox', description='Run the game in sandbox mode.')
-arg_parser.add_argument('config_module', help='The Python module path from `src` to the sandbox configuration file to use, e.g. `sandbox.sample`.')
+arg_parser = argparse.ArgumentParser(
+    prog='pipenv run sandbox', description='Run the game in sandbox mode.'
+)
+arg_parser.add_argument(
+    'config_module',
+    help='The Python module path from `src` to the sandbox configuration file to use, ' \
+        'e.g. `sandbox.sample`.'
+)
 
 async def main():
     args = arg_parser.parse_args()
     try:
         config_module = import_module(args.config_module)
-    except ModuleNotFoundError as e:
+    except ModuleNotFoundError:
         print(f"Error: The specified module '{args.config_module}' could not be found.")
         sys.exit(1)
 
