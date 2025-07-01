@@ -697,35 +697,36 @@ class TestProcessManager:
         for i in range(1, 17):
             process = process_manager.get_process(i)
             process.use_cpu()
-
-        for cpu in process_manager.cpu_list:
-            assert cpu.process is not None
+            assert process_manager.cpu_manager.get_cpu_by_id(i).process == process
 
         for i in range(1, 10):
-            process = process_manager.cpu_list[i - 1].process
-            assert process.cpu == process_manager.cpu_list[i - 1]
+            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            process = cpu.process
+            assert process.cpu == cpu
 
             event = GameEvent(GameEventType.KEY_UP, { 'key': str(i), 'shift': False })
             process_manager.update(1000, [event])
 
-            assert process_manager.cpu_list[i - 1].process is None
+            assert cpu.process is None
             assert process.cpu is None
 
-        process = process_manager.cpu_list[9].process
-        assert process.cpu == process_manager.cpu_list[9]
+        cpu = process_manager.cpu_manager.get_cpu_by_id(10)
+        process = cpu.process
+        assert process.cpu == cpu
 
         event = GameEvent(GameEventType.KEY_UP, { 'key': '0', 'shift': False })
         process_manager.update(1000, [event])
 
-        assert process_manager.cpu_list[9].process is None
+        assert cpu.process is None
         assert process.cpu is None
 
         for i in range(11, 17):
-            process = process_manager.cpu_list[i - 1].process
-            assert process.cpu == process_manager.cpu_list[i - 1]
+            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            process = cpu.process
+            assert process.cpu == cpu
 
             event = GameEvent(GameEventType.KEY_UP, { 'key': str(i - 10), 'shift': True })
             process_manager.update(1000, [event])
 
-            assert process_manager.cpu_list[i - 1].process is None
+            assert cpu.process is None
             assert process.cpu is None
