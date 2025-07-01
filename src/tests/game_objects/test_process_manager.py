@@ -188,7 +188,7 @@ class TestProcessManager:
         process = process_manager.get_process(1)
 
         process.use_cpu()
-        cpu = next(cpu for cpu in process_manager.cpu_list if cpu.process == process)
+        cpu = process_manager.cpu_manager.find_cpu_with_process(process)
 
         result = process_manager.terminate_process(process, True)
         assert result
