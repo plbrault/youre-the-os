@@ -830,8 +830,9 @@ class TestProcess:
         process.update(1000, [mouse_click_event])
 
         assert process.has_cpu == True
-        assert process.view.target_x == stage.process_manager.cpu_list[0].view.x
-        assert process.view.target_y == stage.process_manager.cpu_list[0].view.y
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        assert process.view.target_x == cpu.view.x
+        assert process.view.target_y == cpu.view.y
 
     def test_click_during_moving_animation(self, stage, process_config):
         process = Process(1, stage, process_config)
@@ -847,7 +848,8 @@ class TestProcess:
 
     def test_click_when_running(self, stage, process_config):
         process = Process(1, stage, process_config)
-        stage.process_manager.cpu_list[0].process = Process(2, stage, process_config) # to force process to use a CPU with a different x position than itself
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu.process = Process(2, stage, process_config) # to force process to use a CPU with a different x position than itself
         process.use_cpu()
 
         assert process.has_cpu == True
