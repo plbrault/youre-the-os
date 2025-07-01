@@ -138,10 +138,6 @@ class ProcessManager(SceneObject):
         return self._cpu_manager
 
     @property
-    def cpu_list(self):
-        return self._cpu_manager.cpu_list
-
-    @property
     def process_slots(self):
         return self._process_slots
 

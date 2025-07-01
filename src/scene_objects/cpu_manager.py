@@ -20,10 +20,6 @@ class CpuManager(SceneObject):
             cpu.view.set_xy(x, y)
         self.children.extend(self._cpu_list)
 
-    @property
-    def cpu_list(self):
-        return self._cpu_list
-
     def get_cpu_by_id(self, id) -> Cpu | None:
         if id < 1 or id > len(self._cpu_list):
             return None
