@@ -22,6 +22,7 @@ class Process(SceneObject):
                  *, view_class: Type[Drawable] = ProcessView):
         self._pid = pid
         self._process_manager = stage.process_manager
+        self._cpu_manager = stage.process_manager.cpu_manager
         self._page_manager = stage.page_manager
         self._config = config
 
@@ -133,14 +134,13 @@ class Process(SceneObject):
 
     def use_cpu(self):
         if not self.has_cpu:
-            for cpu in self._process_manager.cpu_list:
-                if not cpu.has_process:
-                    cpu.process = self
-                    self._cpu = cpu
-                    self.view.set_target_xy(cpu.view.x, cpu.view.y)
-                    game_monitor.notify_process_cpu(self._pid, self.has_cpu)
-                    break
-            if self.has_cpu:
+            cpu = self._cpu_manager.select_free_cpu()
+            if cpu is not None:
+                cpu.process = self
+                self._cpu = cpu
+                self.view.set_target_xy(cpu.view.x, cpu.view.y)
+                game_monitor.notify_process_cpu(self._pid, self.has_cpu)
+
                 self._last_state_change_time = self._last_update_time
                 for slot in self._process_manager.process_slots:
                     if slot.process == self:

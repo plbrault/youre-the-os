@@ -134,6 +134,10 @@ class ProcessManager(SceneObject):
         }
 
     @property
+    def cpu_manager(self):
+        return self._cpu_manager
+
+    @property
     def cpu_list(self):
         return self._cpu_manager.cpu_list
 

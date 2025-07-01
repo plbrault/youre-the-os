@@ -29,6 +29,12 @@ class CpuManager(SceneObject):
             return None
         return self._cpu_list[id - 1]
 
+    def select_free_cpu(self) -> Cpu | None:
+        for cpu in self._cpu_list:
+            if not cpu.has_process:
+                return cpu
+        return None
+
     def find_cpu_with_process(self, process: Process) -> Cpu | None:
         for cpu in self._cpu_list:
             if cpu.process and cpu.process == process:
