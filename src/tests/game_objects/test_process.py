@@ -139,18 +139,22 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage_config.num_cpus):
-            assert stage.process_manager.cpu_list[i].process == None
+        for i in range(1, stage_config.num_cpus + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+            assert cpu.process == None
 
-        stage.process_manager.cpu_list[0].process = Process(2, stage, process_config)
+        cpu_1 = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu_1.process = Process(2, stage, process_config)
         process.use_cpu()
 
+        cpu_2 = stage.process_manager.cpu_manager.get_cpu_by_id(2)
         assert process.has_cpu == True
-        assert process.cpu == stage.process_manager.cpu_list[1]
-        assert stage.process_manager.cpu_list[0].process.pid == 2
-        assert stage.process_manager.cpu_list[1].process == process
-        for i in range(2, stage_config.num_cpus):
-            assert stage.process_manager.cpu_list[i].process == None
+        assert process.cpu == cpu_2
+        assert cpu_1.process.pid == 2
+        assert cpu_2.process == process
+        for i in range(3, stage_config.num_cpus + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+            assert cpu.process == None
 
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
