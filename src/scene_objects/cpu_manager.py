@@ -24,6 +24,11 @@ class CpuManager(SceneObject):
     def cpu_list(self):
         return self._cpu_list
 
+    def get_cpu_by_id(self, id) -> Cpu | None:
+        if id < 1 or id > len(self._cpu_list):
+            return None
+        return self._cpu_list[id - 1]
+
     def find_cpu_with_process(self, process: Process) -> Cpu | None:
         for cpu in self._cpu_list:
             if cpu.process and cpu.process == process:

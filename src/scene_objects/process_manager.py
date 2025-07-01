@@ -299,15 +299,15 @@ class ProcessManager(SceneObject):
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:
-                    cpu_id = int(re.search(r'\d', event.get_property('key')).group()) - 1
-                    if cpu_id == -1:
-                        cpu_id = 9
+                    cpu_id = int(re.search(r'\d', event.get_property('key')).group())
+                    if cpu_id == 0:
+                        cpu_id = 10
                     if event.get_property('shift'):
                         cpu_id += 10
-                    if cpu_id < len(self._cpu_manager.cpu_list):
-                        cpu = self._cpu_manager.cpu_list[cpu_id]
-                        if cpu.has_process:
-                            cpu.process.yield_cpu()
+
+                    cpu = self._cpu_manager.get_cpu_by_id(cpu_id)
+                    if cpu is not None and cpu.has_process:
+                        cpu.process.yield_cpu()
 
     def _handle_process_creation(self, current_time):
         if self._next_pid <= self._stage_config.num_processes_at_startup and current_time - \
