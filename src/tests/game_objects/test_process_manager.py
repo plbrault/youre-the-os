@@ -34,9 +34,11 @@ class TestProcessManager:
         process_manager = stage.process_manager
         process_manager.setup()
 
-        assert len(process_manager.cpu_list) == stage_config.num_cpus
-        for cpu in process_manager.cpu_list:
+        for cpu_id in range(1, stage_config.num_cpus + 1):
+            cpu = process_manager.cpu_manager.get_cpu_by_id(cpu_id)
             assert isinstance(cpu, Cpu)
+            assert cpu.cpu_id == cpu_id
+        assert process_manager.cpu_manager.get_cpu_by_id(stage_config.num_cpus + 1) is None
 
         assert len(process_manager.process_slots) == stage_config.max_processes
         for process_slot in process_manager.process_slots:
@@ -186,7 +188,7 @@ class TestProcessManager:
         process = process_manager.get_process(1)
 
         process.use_cpu()
-        cpu = next(cpu for cpu in process_manager.cpu_list if cpu.process == process)
+        cpu = process_manager.cpu_manager.find_cpu_with_process(process)
 
         result = process_manager.terminate_process(process, True)
         assert result
@@ -207,7 +209,7 @@ class TestProcessManager:
         process = process_manager.get_process(1)
 
         process.use_cpu()
-        cpu = next(cpu for cpu in process_manager.cpu_list if cpu.process == process)
+        cpu = process_manager.cpu_manager.find_cpu_with_process(process)
 
         result = process_manager.terminate_process(process, False)
         assert result
@@ -695,35 +697,36 @@ class TestProcessManager:
         for i in range(1, 17):
             process = process_manager.get_process(i)
             process.use_cpu()
-
-        for cpu in process_manager.cpu_list:
-            assert cpu.process is not None
+            assert process_manager.cpu_manager.get_cpu_by_id(i).process == process
 
         for i in range(1, 10):
-            process = process_manager.cpu_list[i - 1].process
-            assert process.cpu == process_manager.cpu_list[i - 1]
+            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            process = cpu.process
+            assert process.cpu == cpu
 
             event = GameEvent(GameEventType.KEY_UP, { 'key': str(i), 'shift': False })
             process_manager.update(1000, [event])
 
-            assert process_manager.cpu_list[i - 1].process is None
+            assert cpu.process is None
             assert process.cpu is None
 
-        process = process_manager.cpu_list[9].process
-        assert process.cpu == process_manager.cpu_list[9]
+        cpu = process_manager.cpu_manager.get_cpu_by_id(10)
+        process = cpu.process
+        assert process.cpu == cpu
 
         event = GameEvent(GameEventType.KEY_UP, { 'key': '0', 'shift': False })
         process_manager.update(1000, [event])
 
-        assert process_manager.cpu_list[9].process is None
+        assert cpu.process is None
         assert process.cpu is None
 
         for i in range(11, 17):
-            process = process_manager.cpu_list[i - 1].process
-            assert process.cpu == process_manager.cpu_list[i - 1]
+            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            process = cpu.process
+            assert process.cpu == cpu
 
             event = GameEvent(GameEventType.KEY_UP, { 'key': str(i - 10), 'shift': True })
             process_manager.update(1000, [event])
 
-            assert process_manager.cpu_list[i - 1].process is None
+            assert cpu.process is None
             assert process.cpu is None

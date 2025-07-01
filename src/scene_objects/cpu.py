@@ -4,7 +4,7 @@ from scene_objects.views.cpu_view import CpuView
 
 class Cpu(SceneObject):
     def __init__(self, cpu_id, *, _time_for_process_happiness=5000):
-        self._cpu_id = cpu_id
+        self._id = cpu_id
         self._process = None
 
         self._time_for_process_happiness = _time_for_process_happiness
@@ -13,7 +13,7 @@ class Cpu(SceneObject):
 
     @property
     def cpu_id(self):
-        return self._cpu_id
+        return self._id
 
     @property
     def time_for_process_happiness(self):
