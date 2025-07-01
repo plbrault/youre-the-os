@@ -12,7 +12,7 @@ class Cpu(SceneObject):
         super().__init__(CpuView(self))
 
     @property
-    def id(self):
+    def cpu_id(self):
         return self._id
 
     @property
