@@ -20,10 +20,10 @@ class CpuManager(SceneObject):
             cpu.view.set_xy(x, y)
         self.children.extend(self._cpu_list)
 
-    def get_cpu_by_id(self, id) -> Cpu | None:
-        if id < 1 or id > len(self._cpu_list):
+    def get_cpu_by_id(self, cpu_id) -> Cpu | None:
+        if cpu_id < 1 or cpu_id > len(self._cpu_list):
             return None
-        return self._cpu_list[id - 1]
+        return self._cpu_list[cpu_id - 1]
 
     def select_free_cpu(self) -> Cpu | None:
         for cpu in self._cpu_list:
