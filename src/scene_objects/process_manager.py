@@ -8,7 +8,7 @@ from engine.scene_object import SceneObject
 from engine.random import randint
 from factories.process_factory import ProcessFactory
 from scene_objects.checkbox import Checkbox
-from scene_objects.cpu import Cpu
+from scene_objects.cpu_manager import CpuManager
 from scene_objects.io_queue import IoQueue
 from scene_objects.process import Process
 from scene_objects.views.process_manager_view import ProcessManagerView
@@ -39,7 +39,7 @@ class ProcessManager(SceneObject):
 
         self._process_factory = ProcessFactory(stage, stage_config)
 
-        self._cpu_list = None
+        self._cpu_manager = None
         self._alive_process_list = None
         self._process_slots = None
         self._user_terminated_process_slots = None
@@ -68,51 +68,10 @@ class ProcessManager(SceneObject):
 
         super().__init__(ProcessManagerView(self))
 
-    @property
-    def view_vars(self):
-        return {
-            'page_manager_view_width': self._stage.page_manager.view.width,
-        }
-
-    @property
-    def cpu_list(self):
-        return self._cpu_list
-
-    @property
-    def process_slots(self):
-        return self._process_slots
-
-    @property
-    def io_queue(self):
-        return self._io_queue
-
-    @property
-    def user_terminated_process_count(self):
-        # user refers to in-game user, not to the player.
-        return self._user_terminated_process_count
-
-    @property
-    def any_process_in_motion(self):
-        processes_in_motion = False
-        for child in self.children:
-            if isinstance(child, Process):
-                if child.is_in_motion:
-                    processes_in_motion = True
-                    break
-        return processes_in_motion
-
-    @property
-    def max_processes_terminated_by_user(self):
-        return self._stage_config.max_processes_terminated_by_user
-
-    def get_process(self, pid):
-        return self._processes[pid]
-
-    def del_process(self, process):
-        del self._processes[process.pid]
-
     def setup(self):
-        self._cpu_list = []
+        self._cpu_manager = CpuManager(self._stage_config)
+        self._cpu_manager.setup()
+        self.children.append(self._cpu_manager)
         self._alive_process_list = []
         self._process_slots = []
         self._user_terminated_process_slots = []
@@ -125,15 +84,6 @@ class ProcessManager(SceneObject):
         self._last_new_process_check = 0
         self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
-
-        for i in range(self._stage_config.num_cpus):
-            self.cpu_list.append(Cpu(i + 1))
-
-        for i, cpu in enumerate(self.cpu_list):
-            x = 50 + i * cpu.view.width + i * 5
-            y = 50
-            cpu.view.set_xy(x, y)
-        self.children.extend(self.cpu_list)
 
         io_queue = self._io_queue
         io_queue.view.set_xy(50, 10)
@@ -176,6 +126,49 @@ class ProcessManager(SceneObject):
         self._auto_sort_checkbox_final_x_position = (
             self._sort_processes_button.view.x + self._sort_processes_button.view.width + 10
         )
+
+    @property
+    def view_vars(self):
+        return {
+            'page_manager_view_width': self._stage.page_manager.view.width,
+        }
+
+    @property
+    def cpu_list(self):
+        return self._cpu_manager.cpu_list
+
+    @property
+    def process_slots(self):
+        return self._process_slots
+
+    @property
+    def io_queue(self):
+        return self._io_queue
+
+    @property
+    def user_terminated_process_count(self):
+        # user refers to in-game user, not to the player.
+        return self._user_terminated_process_count
+
+    @property
+    def any_process_in_motion(self):
+        processes_in_motion = False
+        for child in self.children:
+            if isinstance(child, Process):
+                if child.is_in_motion:
+                    processes_in_motion = True
+                    break
+        return processes_in_motion
+
+    @property
+    def max_processes_terminated_by_user(self):
+        return self._stage_config.max_processes_terminated_by_user
+
+    def get_process(self, pid):
+        return self._processes[pid]
+
+    def del_process(self, process):
+        del self._processes[process.pid]
 
     def _create_process(self, process_slot_id=None):
         if len(self._alive_process_list) < self._stage_config.max_processes:
@@ -220,7 +213,7 @@ class ProcessManager(SceneObject):
                 slot.process = process
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
-                for cpu in self._cpu_list:
+                for cpu in self._cpu_manager.cpu_list:
                     if cpu.process == process:
                         cpu.process = None
                 for process_slot in self._process_slots:
@@ -290,7 +283,7 @@ class ProcessManager(SceneObject):
             process_count_by_starvation_level[process.starvation_level] += 1
 
         active_process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
-        for cpu in self._cpu_list:
+        for cpu in self._cpu_manager.cpu_list:
             if cpu.process is not None and not cpu.process.has_ended:
                 active_process_count_by_starvation_level[cpu.process.starvation_level] += 1
 
@@ -298,12 +291,12 @@ class ProcessManager(SceneObject):
             'alive_process_count': len(self._alive_process_list),
             'alive_process_count_by_starvation_level': process_count_by_starvation_level,
             'active_process_count': len([
-                cpu for cpu in self._cpu_list
+                cpu for cpu in self._cpu_manager.cpu_list
                     if cpu.process is not None and not cpu.process.has_ended
             ]),
             'active_process_count_by_starvation_level': active_process_count_by_starvation_level,
             'blocked_active_process_count': len([
-                cpu for cpu in self._cpu_list
+                cpu for cpu in self._cpu_manager.cpu_list
                     if cpu.process is not None and cpu.process.is_blocked
             ]),
             'io_event_count': self._io_queue.event_count,
@@ -320,8 +313,8 @@ class ProcessManager(SceneObject):
                         cpu_id = 9
                     if event.get_property('shift'):
                         cpu_id += 10
-                    if cpu_id < len(self._cpu_list):
-                        cpu = self._cpu_list[cpu_id]
+                    if cpu_id < len(self._cpu_manager.cpu_list):
+                        cpu = self._cpu_manager.cpu_list[cpu_id]
                         if cpu.has_process:
                             cpu.process.yield_cpu()
 
