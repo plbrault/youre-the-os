@@ -213,9 +213,7 @@ class ProcessManager(SceneObject):
                 slot.process = process
                 process.view.set_target_xy(slot.view.x, slot.view.y)
 
-                for cpu in self._cpu_manager.cpu_list:
-                    if cpu.process == process:
-                        cpu.process = None
+                self._cpu_manager.remove_process_from_cpu(process)
                 for process_slot in self._process_slots:
                     if process_slot.process == process:
                         process_slot.process = None
