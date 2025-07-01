@@ -235,8 +235,9 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(0, stage_config.num_cpus):
-            assert stage.process_manager.cpu_list[i].process == None
+        for i in range(1, stage_config.num_cpus + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+            assert cpu.process == None
 
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
