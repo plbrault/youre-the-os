@@ -169,3 +169,60 @@ class TestCPUManager:
         cpu4_1.process = None
         cpu = cpu_manager.select_free_cpu()
         assert cpu is cpu4_1
+
+    def test_check_cpu_for_penalty_with_no_hyperthreading(self, cpu_config_no_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_no_hyperthreading)
+        cpu_manager.setup()
+
+        process = create_process(cpu_manager, 1)
+
+        cpu = cpu_manager.get_cpu_by_logical_id(1)
+        assert cpu_manager.check_cpu_for_penalty(cpu) is False
+
+        cpu.process = process
+        assert cpu_manager.check_cpu_for_penalty(cpu) is False
+
+    def test_check_cpu_for_penalty_with_hyperthreading(self, cpu_config_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+
+        cpu1_1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu1_2 = cpu_manager.get_cpu_by_logical_id(2)
+        cpu2_1 = cpu_manager.get_cpu_by_logical_id(3)
+        cpu2_2 = cpu_manager.get_cpu_by_logical_id(4)
+
+        assert cpu_manager.check_cpu_for_penalty(cpu1_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu1_2) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_2) is False
+
+        cpu1_1.process = process1
+        assert cpu_manager.check_cpu_for_penalty(cpu1_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu1_2) is False
+
+        cpu1_2.process = process2
+        assert cpu_manager.check_cpu_for_penalty(cpu1_1) is True
+        assert cpu_manager.check_cpu_for_penalty(cpu1_2) is True
+        assert cpu_manager.check_cpu_for_penalty(cpu2_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_2) is False
+
+        cpu1_1.process = None
+        assert cpu_manager.check_cpu_for_penalty(cpu1_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu1_2) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_2) is False
+
+        cpu1_1.process = process1
+        assert cpu_manager.check_cpu_for_penalty(cpu1_1) is True
+        assert cpu_manager.check_cpu_for_penalty(cpu1_2) is True
+        assert cpu_manager.check_cpu_for_penalty(cpu2_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_2) is False
+
+        cpu1_2.process = None
+        assert cpu_manager.check_cpu_for_penalty(cpu1_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu1_2) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_1) is False
+        assert cpu_manager.check_cpu_for_penalty(cpu2_2) is False
