@@ -31,10 +31,15 @@ class CpuManager(SceneObject):
                 physical_core.append(logical_core)
             self._physical_cores.append(physical_core)
 
-        for i, cpu in enumerate(self._cpu_list):
-            x = 50 + i * cpu.view.width + i * 5
-            y = 50
-            cpu.view.set_xy(x, y)
+        x = 50
+        y = 50
+        for i, physical_core in enumerate(self._physical_cores):
+            for j, logical_core in enumerate(physical_core):
+                logical_core.view.set_xy(x, y)
+                x += logical_core.view.width + 5
+                if j == len(physical_core) - 1 and len(physical_core) > 1:
+                    x += 15
+
         self.children.extend(self._cpu_list)
 
     def get_cpu_by_logical_id(self, logical_id) -> Cpu | None:
