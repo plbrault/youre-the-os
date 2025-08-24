@@ -24,6 +24,7 @@ class CpuManager(SceneObject):
                 logical_core = Cpu(
                     physical_id,
                     logical_id,
+                    self,
                     process_happiness_ms=self._stage_config.cpu_config.process_happiness_ms_for_core[i],
                     penalty_ms=self._stage_config.cpu_config.penalty_ms_for_core[i],
                 )
@@ -52,6 +53,13 @@ class CpuManager(SceneObject):
                     if not cpu.has_process:
                         return cpu
         return None
+
+    def check_cpu_for_penalty(self, cpu: Cpu) -> bool:
+        return len([
+            core for core in
+            self._physical_cores[cpu.physical_id - 1]
+            if core.has_process
+        ]) > 1
 
     def find_cpu_with_process(self, process: Process) -> Cpu | None:
         for cpu in self._cpu_list:
