@@ -268,3 +268,46 @@ class TestCPUManager:
         cpu2_2.process = process2
         assert cpu_manager.find_cpu_with_process(process1) is cpu1_1
         assert cpu_manager.find_cpu_with_process(process2) is cpu2_2
+
+    def test_remove_process_from_cpu_with_no_hyperthreading(self, cpu_config_no_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_no_hyperthreading)
+        cpu_manager.setup()
+
+        process = create_process(cpu_manager, 1)
+
+        cpu = cpu_manager.get_cpu_by_logical_id(1)
+        cpu.process = process
+        cpu_manager.remove_process_from_cpu(process)
+        assert cpu.process is None
+        cpu_manager.remove_process_from_cpu(process)
+        assert cpu.process is None
+
+    def test_remove_process_from_cpu_with_hyperthreading(self, cpu_config_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+
+        cpu1_1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu1_2 = cpu_manager.get_cpu_by_logical_id(2)
+
+        cpu1_1.process = process1
+        cpu1_2.process = process2
+
+        cpu_manager.remove_process_from_cpu(process1)
+        assert cpu1_1.process is None
+        assert cpu1_2.process is process2
+
+        cpu_manager.remove_process_from_cpu(process1)
+        assert cpu1_1.process is None
+        assert cpu1_2.process is process2
+
+        cpu_manager.remove_process_from_cpu(process2)
+        assert cpu1_1.process is None
+        assert cpu1_2.process is None
+
+        cpu_manager.remove_process_from_cpu(process2)
+        assert cpu1_1.process is None
+        assert cpu1_2.process is None
+        
