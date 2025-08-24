@@ -114,3 +114,58 @@ class TestCPUManager:
         cpu4.process = None
         cpu = cpu_manager.select_free_cpu()
         assert cpu is cpu4
+
+    def test_select_free_cpu_with_hyperthreading(self, cpu_config_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+        process3 = create_process(cpu_manager, 3)
+        process4 = create_process(cpu_manager, 4)
+        process5 = create_process(cpu_manager, 5)
+        process6 = create_process(cpu_manager, 6)
+        process7 = create_process(cpu_manager, 7)
+        process8 = create_process(cpu_manager, 8)
+
+        cpu1_1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu1_2 = cpu_manager.get_cpu_by_logical_id(2)
+        cpu2_1 = cpu_manager.get_cpu_by_logical_id(3)
+        cpu2_2 = cpu_manager.get_cpu_by_logical_id(4)
+        cpu3_1 = cpu_manager.get_cpu_by_logical_id(5)
+        cpu3_2 = cpu_manager.get_cpu_by_logical_id(6)
+        cpu4_1 = cpu_manager.get_cpu_by_logical_id(7)
+        cpu4_2 = cpu_manager.get_cpu_by_logical_id(8)
+
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1_1
+
+        cpu1_1.process = process1
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu2_1
+
+        cpu2_1.process = process2
+        cpu4_1.process = process3
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu3_1
+
+        cpu3_1.process = process4
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1_2
+
+        cpu1_2.process = process5
+        cpu4_2.process = process6
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu2_2
+
+        cpu2_2.process = process7
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu3_2
+
+        cpu3_2.process = process8
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is None
+
+        cpu4_1.process = None
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu4_1
