@@ -26,4 +26,3 @@ class StageConfig:
     @deprecated("Use cpu_config.total_threads instead.")
     def num_cpus(self) -> int:
         return sum(self.cpu_config.num_threads_for_core)
-    

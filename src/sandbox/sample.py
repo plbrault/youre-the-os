@@ -5,11 +5,12 @@ It must be an instance of either `Stage` or a subclass of `Stage`.
 The `name` and `standalone` properties of `stage` will be overridden.
 """
 
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 from scenes.stage import Stage
 
 config = StageConfig(
-    num_cpus=4,
+    cpu_config=CpuConfig(num_cores=4),
     num_processes_at_startup=14,
     num_ram_rows=8,
     swap_delay_ms=100,

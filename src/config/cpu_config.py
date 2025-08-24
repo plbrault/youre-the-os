@@ -15,7 +15,7 @@ class CpuConfig:
 
     @property
     def total_threads(self) -> int:
-        return sum(self.num_threads_for_core)    
+        return sum(self.num_threads_for_core)
 
     @property
     def process_time_to_happiness_ms_for_core(self) -> list[int]:
