@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from constants import SWAP_DELAY_NAMES_TO_MS
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 @dataclass(frozen=True)
@@ -11,7 +12,7 @@ class DifficultyLevel:
 _easy_difficulty = DifficultyLevel(
     'Easy',
     StageConfig(
-        num_cpus=4,
+        cpu_config=CpuConfig(num_cores=4),
         num_processes_at_startup=14,
         num_ram_rows=8,
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Low'],
@@ -30,7 +31,7 @@ _normal_difficulty = DifficultyLevel(
 _hard_difficulty = DifficultyLevel(
     'Hard',
     StageConfig(
-        num_cpus=8,
+        cpu_config=CpuConfig(num_cores=8),
         num_processes_at_startup=28,
         num_ram_rows=6,
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Medium'],
@@ -44,7 +45,7 @@ _hard_difficulty = DifficultyLevel(
 _harder_difficulty = DifficultyLevel(
     'Harder',
     StageConfig(
-        num_cpus=12,
+        cpu_config=CpuConfig(num_cores=12),
         num_processes_at_startup=35,
         num_ram_rows=6,
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['High'],
@@ -58,7 +59,7 @@ _harder_difficulty = DifficultyLevel(
 _insane_difficulty = DifficultyLevel(
     'Insane',
     StageConfig(
-        num_cpus=16,
+        cpu_config=CpuConfig(num_cores=16),
         num_processes_at_startup=42,
         num_ram_rows=4,
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Higher'],
