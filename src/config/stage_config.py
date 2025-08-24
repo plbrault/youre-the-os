@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from warnings import deprecated
 
 from constants import MAX_PROCESSES, ONE_MINUTE
 from config.cpu_config import CpuConfig
@@ -21,8 +20,3 @@ class StageConfig:
     graceful_termination_probability: float = 0.01
     time_ms_to_show_sort_button: int = 6 * ONE_MINUTE
     time_ms_to_show_auto_sort_checkbox: int = 12 * ONE_MINUTE
-
-    @property
-    @deprecated("Use cpu_config.total_threads instead.")
-    def num_cpus(self) -> int:
-        return sum(self.cpu_config.num_threads_for_core)
