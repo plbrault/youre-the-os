@@ -3,21 +3,29 @@ from scene_objects.views.cpu_view import CpuView
 
 
 class Cpu(SceneObject):
-    def __init__(self, cpu_id, *, _time_for_process_happiness=5000):
-        self._id = cpu_id
-        self._process = None
+    def __init__(self, physical_id, logical_id, cpu_manager, *, process_happiness_ms, penalty_ms):
+        self._physical_id = physical_id
+        self._logical_id = logical_id
+        self._cpu_manager = cpu_manager
+        self._process_happiness_ms = process_happiness_ms
+        self._penalty_ms = penalty_ms
 
-        self._time_for_process_happiness = _time_for_process_happiness
+        self._process = None
 
         super().__init__(CpuView(self))
 
     @property
-    def cpu_id(self):
-        return self._id
+    def physical_id(self):
+        return self._physical_id
 
     @property
-    def time_for_process_happiness(self):
-        return self._time_for_process_happiness
+    def logical_id(self):
+        return self._logical_id
+
+    @property
+    def process_happiness_ms(self):
+        penalty_ms = self._penalty_ms if self._cpu_manager.check_cpu_for_penalty(self) else 0
+        return self._process_happiness_ms + penalty_ms
 
     @property
     def has_process(self):

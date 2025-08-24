@@ -4,13 +4,14 @@ from constants import PAGES_PER_ROW
 from scene_objects.page import Page
 from scene_objects.page_slot import PageSlot
 from scene_objects.page_manager import PageManager
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 class TestPageManager:
     @pytest.fixture
     def stage_config(self):
         return StageConfig(
-            num_cpus=4,
+            cpu_config = CpuConfig(num_cores=4),
             num_ram_rows=1
         )
 
@@ -150,7 +151,7 @@ class TestPageManager:
 
     def test_parallel_swaps(self, stage_custom_config):
         stage_config = StageConfig(
-            num_cpus=4,
+            cpu_config = CpuConfig(num_cores=4),
             num_ram_rows=1,
             swap_delay_ms=1000,
             parallel_swaps=4

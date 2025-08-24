@@ -13,13 +13,14 @@ from scene_objects.process_manager import ProcessManager
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
 from scenes.stage import Stage
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 class TestProcessManager:
     @pytest.fixture
     def stage_config(self):
         return StageConfig(
-            num_cpus=4,
+            cpu_config = CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             max_processes=42,
             new_process_probability=0.05,
@@ -34,11 +35,11 @@ class TestProcessManager:
         process_manager = stage.process_manager
         process_manager.setup()
 
-        for cpu_id in range(1, stage_config.num_cpus + 1):
-            cpu = process_manager.cpu_manager.get_cpu_by_id(cpu_id)
+        for logical_id in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = process_manager.cpu_manager.get_cpu_by_logical_id(logical_id)
             assert isinstance(cpu, Cpu)
-            assert cpu.cpu_id == cpu_id
-        assert process_manager.cpu_manager.get_cpu_by_id(stage_config.num_cpus + 1) is None
+            assert cpu.logical_id == logical_id
+        assert process_manager.cpu_manager.get_cpu_by_logical_id(stage_config.cpu_config.total_threads + 1) is None
 
         assert len(process_manager.process_slots) == stage_config.max_processes
         for process_slot in process_manager.process_slots:
@@ -482,7 +483,7 @@ class TestProcessManager:
 
     def test_sort(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=5,
             new_process_probability=0,
             io_probability=0,
@@ -556,7 +557,7 @@ class TestProcessManager:
 
     def test_auto_sort(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=5,
             new_process_probability=0,
             io_probability=0,
@@ -650,7 +651,7 @@ class TestProcessManager:
     def test_game_over(self, ready_process_manager_custom_config):
         # TODO: Move this test to Stage tests as game over logic is now handled by Stage rather than ProcessManager
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=10,
             new_process_probability=0,
             io_probability=0,
@@ -686,7 +687,7 @@ class TestProcessManager:
 
     def test_cpu_hotkeys(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=16,
+            cpu_config=CpuConfig(num_cores=16),
             num_processes_at_startup=16,
             new_process_probability=0,
             io_probability=0,
@@ -697,10 +698,10 @@ class TestProcessManager:
         for i in range(1, 17):
             process = process_manager.get_process(i)
             process.use_cpu()
-            assert process_manager.cpu_manager.get_cpu_by_id(i).process == process
+            assert process_manager.cpu_manager.get_cpu_by_logical_id(i).process == process
 
         for i in range(1, 10):
-            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            cpu = process_manager.cpu_manager.get_cpu_by_logical_id(i)
             process = cpu.process
             assert process.cpu == cpu
 
@@ -710,7 +711,7 @@ class TestProcessManager:
             assert cpu.process is None
             assert process.cpu is None
 
-        cpu = process_manager.cpu_manager.get_cpu_by_id(10)
+        cpu = process_manager.cpu_manager.get_cpu_by_logical_id(10)
         process = cpu.process
         assert process.cpu == cpu
 
@@ -721,7 +722,7 @@ class TestProcessManager:
         assert process.cpu is None
 
         for i in range(11, 17):
-            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            cpu = process_manager.cpu_manager.get_cpu_by_logical_id(i)
             process = cpu.process
             assert process.cpu == cpu
 

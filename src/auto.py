@@ -107,6 +107,20 @@ def parse_arguments():
                 name = 'Custom'
             )
 
+    if args.num_cpus is not None:
+        difficulty = replace(
+            difficulty,
+            config = replace(
+                difficulty.config,
+                cpu_config = replace(
+                    difficulty.config.cpu_config,
+                    num_cores = args.num_cpus
+                )
+            ),
+            # on change, difficulty is now Custom
+            name = 'Custom'
+        )
+
     return args.filename, difficulty
 
 

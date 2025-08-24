@@ -203,7 +203,7 @@ class Stage(Scene):
 
         num_cols = PageManager.get_num_cols()
         script_globals = {
-            'num_cpus': self._config.num_cpus,
+            'num_cpus': self._config.cpu_config.total_threads,
             'num_ram_pages': num_cols * self._config.num_ram_rows,
             'num_swap_pages':
                 num_cols * (PageManager.get_total_rows() - self._config.num_ram_rows),

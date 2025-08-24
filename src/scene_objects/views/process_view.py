@@ -74,9 +74,9 @@ class ProcessView(Drawable):
             progress_bar_width = min(
                     (self.width - 4),
                     (self.width - 4)
-                        - (self._process.cpu.time_for_process_happiness
+                        - (self._process.cpu.process_happiness_ms
                             - self._process.current_state_duration)
-                        * (self.width - 4) / self._process.cpu.time_for_process_happiness,
+                        * (self.width - 4) / self._process.cpu.process_happiness_ms,
                 )
             progress_bar_height = 2
             pygame.draw.rect(surface, Color.BLUE, pygame.Rect(

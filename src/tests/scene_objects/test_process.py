@@ -7,6 +7,7 @@ from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
 from scene_objects.process import Process
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 class TestProcess:
@@ -115,18 +116,18 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
         process.use_cpu()
 
-        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(1)
         assert process.has_cpu == True
         assert process.cpu == cpu
         assert cpu.process == process
-        for i in range(2, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(2, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
@@ -139,21 +140,21 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
-        cpu_1 = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu_1 = stage.process_manager.cpu_manager.get_cpu_by_logical_id(1)
         cpu_1.process = Process(2, stage, process_config)
         process.use_cpu()
 
-        cpu_2 = stage.process_manager.cpu_manager.get_cpu_by_id(2)
+        cpu_2 = stage.process_manager.cpu_manager.get_cpu_by_logical_id(2)
         assert process.has_cpu == True
         assert process.cpu == cpu_2
         assert cpu_1.process.pid == 2
         assert cpu_2.process == process
-        for i in range(3, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(3, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
@@ -166,20 +167,20 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
-        for i in range(1, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             cpu.process = Process(i + 2, stage, process_config)
 
         process.use_cpu()
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process.pid == i + 2
 
         assert process.is_waiting_for_io == False
@@ -193,12 +194,12 @@ class TestProcess:
         process.use_cpu()
         process.use_cpu()
 
-        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(1)
         assert process.cpu == cpu
         assert process.has_cpu == True
         assert cpu.process == process
-        for i in range(2, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(2, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
@@ -209,8 +210,8 @@ class TestProcess:
     def test_yield_cpu(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
-        for i in range(1, stage_config.num_cpus):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             cpu.process = Process(i + 2, stage, process_config)
 
         process.use_cpu()
@@ -218,10 +219,10 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process.pid == i + 2
-        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(4)
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(4)
         assert cpu.process == None
 
         assert process.is_waiting_for_io == False
@@ -235,8 +236,8 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
-            cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(i)
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
@@ -267,13 +268,13 @@ class TestProcess:
         process.use_cpu()
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
-        current_time += process.cpu.time_for_process_happiness
+        current_time += process.cpu.process_happiness_ms
         process.update(current_time, [])
         assert process.starvation_level == 0
 
     def test_graceful_termination(self, stage_custom_config, monkeypatch):
         stage_config = StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -532,7 +533,7 @@ class TestProcess:
             graceful_termination_probability=0.01
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -568,7 +569,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -597,7 +598,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -626,7 +627,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -659,7 +660,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -688,7 +689,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -730,7 +731,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -773,7 +774,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -830,7 +831,7 @@ class TestProcess:
         process.update(1000, [mouse_click_event])
 
         assert process.has_cpu == True
-        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(1)
         assert process.view.target_x == cpu.view.x
         assert process.view.target_y == cpu.view.y
 
@@ -848,7 +849,7 @@ class TestProcess:
 
     def test_click_when_running(self, stage, process_config):
         process = Process(1, stage, process_config)
-        cpu = stage.process_manager.cpu_manager.get_cpu_by_id(1)
+        cpu = stage.process_manager.cpu_manager.get_cpu_by_logical_id(1)
         cpu.process = Process(2, stage, process_config) # to force process to use a CPU with a different x position than itself
         process.use_cpu()
 
@@ -872,7 +873,7 @@ class TestProcess:
             graceful_termination_probability=0.01
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -939,7 +940,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -1024,7 +1025,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,

@@ -69,7 +69,7 @@ class ProcessManager(SceneObject):
         super().__init__(ProcessManagerView(self))
 
     def setup(self):
-        self._cpu_manager = CpuManager(self._stage_config)
+        self._cpu_manager = CpuManager(self._stage_config.cpu_config)
         self._cpu_manager.setup()
         self.children.append(self._cpu_manager)
         self._alive_process_list = []
@@ -299,13 +299,13 @@ class ProcessManager(SceneObject):
         for event in events:
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') in _NUM_KEYS:
-                    cpu_id = int(re.search(r'\d', event.get_property('key')).group())
-                    if cpu_id == 0:
-                        cpu_id = 10
+                    logical_id = int(re.search(r'\d', event.get_property('key')).group())
+                    if logical_id == 0:
+                        logical_id = 10
                     if event.get_property('shift'):
-                        cpu_id += 10
+                        logical_id += 10
 
-                    cpu = self._cpu_manager.get_cpu_by_id(cpu_id)
+                    cpu = self._cpu_manager.get_cpu_by_logical_id(logical_id)
                     if cpu is not None and cpu.has_process:
                         cpu.process.yield_cpu()
 
