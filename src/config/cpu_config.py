@@ -7,12 +7,13 @@ class CpuConfig:
     An attribute expressed as a single value applies to all cores.
     An attribute expressed as a list applies to each core in order.
 
-    Each thread will translate to a Cpu object in-game, as an OS would see it.
+    Each thread will translate to a Cpu object in-game, as an OS would typically see it.
     """
 
     num_cores: int = 4
     num_threads_per_core: int | list[int] = 1
     process_happiness_ms: int | list[int] = 5000
+
     """Extra time added to process_happiness_ms when multiple processes are running on the same physical core."""
     penalty_ms: int | list[int] = 0
 
