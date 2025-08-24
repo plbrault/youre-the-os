@@ -11,7 +11,7 @@ class CpuManager(SceneObject):
         self._cpu_list = []
 
     def setup(self):
-        for i in range(self._stage_config.num_cpus):
+        for i in range(self._stage_config.cpu_config.total_threads):
             self._cpu_list.append(Cpu(i + 1))
 
         for i, cpu in enumerate(self._cpu_list):

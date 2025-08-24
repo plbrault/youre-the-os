@@ -35,11 +35,11 @@ class TestProcessManager:
         process_manager = stage.process_manager
         process_manager.setup()
 
-        for cpu_id in range(1, stage_config.num_cpus + 1):
+        for cpu_id in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = process_manager.cpu_manager.get_cpu_by_id(cpu_id)
             assert isinstance(cpu, Cpu)
             assert cpu.cpu_id == cpu_id
-        assert process_manager.cpu_manager.get_cpu_by_id(stage_config.num_cpus + 1) is None
+        assert process_manager.cpu_manager.get_cpu_by_id(stage_config.cpu_config.total_threads + 1) is None
 
         assert len(process_manager.process_slots) == stage_config.max_processes
         for process_slot in process_manager.process_slots:

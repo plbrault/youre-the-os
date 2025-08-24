@@ -116,7 +116,7 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
@@ -126,7 +126,7 @@ class TestProcess:
         assert process.has_cpu == True
         assert process.cpu == cpu
         assert cpu.process == process
-        for i in range(2, stage_config.num_cpus + 1):
+        for i in range(2, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
@@ -140,7 +140,7 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
@@ -153,7 +153,7 @@ class TestProcess:
         assert process.cpu == cpu_2
         assert cpu_1.process.pid == 2
         assert cpu_2.process == process
-        for i in range(3, stage_config.num_cpus + 1):
+        for i in range(3, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
@@ -167,11 +167,11 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
-        for i in range(1, stage_config.num_cpus + 1):
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             cpu.process = Process(i + 2, stage, process_config)
 
@@ -179,7 +179,7 @@ class TestProcess:
 
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process.pid == i + 2
 
@@ -198,7 +198,7 @@ class TestProcess:
         assert process.cpu == cpu
         assert process.has_cpu == True
         assert cpu.process == process
-        for i in range(2, stage_config.num_cpus + 1):
+        for i in range(2, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
@@ -210,7 +210,7 @@ class TestProcess:
     def test_yield_cpu(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
 
-        for i in range(1, stage_config.num_cpus):
+        for i in range(1, stage_config.cpu_config.total_threads):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             cpu.process = Process(i + 2, stage, process_config)
 
@@ -219,7 +219,7 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus):
+        for i in range(1, stage_config.cpu_config.total_threads):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process.pid == i + 2
         cpu = stage.process_manager.cpu_manager.get_cpu_by_id(4)
@@ -236,7 +236,7 @@ class TestProcess:
         process.yield_cpu()
         assert process.cpu == None
         assert process.has_cpu == False
-        for i in range(1, stage_config.num_cpus + 1):
+        for i in range(1, stage_config.cpu_config.total_threads + 1):
             cpu = stage.process_manager.cpu_manager.get_cpu_by_id(i)
             assert cpu.process == None
 
