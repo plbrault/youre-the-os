@@ -247,4 +247,24 @@ class TestCPUManager:
         cpu4.process = process2
         assert cpu_manager.find_cpu_with_process(process1) is cpu1
         assert cpu_manager.find_cpu_with_process(process2) is cpu4
-        
+
+    def test_find_cpu_with_process_with_hyperthreading(self, cpu_config_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+
+        cpu1_1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu2_2 = cpu_manager.get_cpu_by_logical_id(4)
+
+        assert cpu_manager.find_cpu_with_process(process1) is None
+        assert cpu_manager.find_cpu_with_process(process2) is None
+
+        cpu1_1.process = process1
+        assert cpu_manager.find_cpu_with_process(process1) is cpu1_1
+        assert cpu_manager.find_cpu_with_process(process2) is None
+
+        cpu2_2.process = process2
+        assert cpu_manager.find_cpu_with_process(process1) is cpu1_1
+        assert cpu_manager.find_cpu_with_process(process2) is cpu2_2
