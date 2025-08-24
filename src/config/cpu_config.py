@@ -14,7 +14,8 @@ class CpuConfig:
     num_threads_per_core: int | list[int] = 1
     process_happiness_ms: int | list[int] = 5000
 
-    """Extra time added to process_happiness_ms when multiple processes are running on the same physical core."""
+    """Extra time added to process_happiness_ms when
+       multiple processes are running on the same physical core."""
     penalty_ms: int | list[int] = 0
 
     @property

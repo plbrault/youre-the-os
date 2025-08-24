@@ -101,7 +101,7 @@ class CpuManager(SceneObject):
             if len(physical_core) > 1:
                 rectangle_x = physical_core[0].view.x - 4
                 rectangle_y = physical_core[0].view.y - 4
-                rectangle_width = sum([cpu.view.width for cpu in physical_core]) + 13
+                rectangle_width = sum(cpu.view.width for cpu in physical_core) + 13
                 rectangle_height = physical_core[0].view.height + 8
                 rectangle = {
                     'x': rectangle_x,
