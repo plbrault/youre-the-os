@@ -88,6 +88,29 @@ class TestCPUManager:
         process1 = create_process(cpu_manager, 1)
         process2 = create_process(cpu_manager, 2)
         process3 = create_process(cpu_manager, 3)
+        process4 = create_process(cpu_manager, 4)
+
+        cpu1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu2 = cpu_manager.get_cpu_by_logical_id(2)
+        cpu3 = cpu_manager.get_cpu_by_logical_id(3)
+        cpu4 = cpu_manager.get_cpu_by_logical_id(4)
 
         cpu = cpu_manager.select_free_cpu()
-        assert cpu.logical_id == 1
+        assert cpu is cpu1
+
+        cpu1.process = process1
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu2
+
+        cpu2.process = process2
+        cpu4.process = process3
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu3
+
+        cpu3.process = process4
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is None
+
+        cpu4.process = None
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu4
