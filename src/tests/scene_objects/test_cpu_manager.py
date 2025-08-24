@@ -226,3 +226,25 @@ class TestCPUManager:
         assert cpu_manager.check_cpu_for_penalty(cpu1_2) is False
         assert cpu_manager.check_cpu_for_penalty(cpu2_1) is False
         assert cpu_manager.check_cpu_for_penalty(cpu2_2) is False
+
+    def test_find_cpu_with_process_with_no_hyperthreading(self, cpu_config_no_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_no_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+
+        cpu1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu4 = cpu_manager.get_cpu_by_logical_id(4)
+
+        assert cpu_manager.find_cpu_with_process(process1) is None
+        assert cpu_manager.find_cpu_with_process(process2) is None
+
+        cpu1.process = process1
+        assert cpu_manager.find_cpu_with_process(process1) is cpu1
+        assert cpu_manager.find_cpu_with_process(process2) is None
+
+        cpu4.process = process2
+        assert cpu_manager.find_cpu_with_process(process1) is cpu1
+        assert cpu_manager.find_cpu_with_process(process2) is cpu4
+        
