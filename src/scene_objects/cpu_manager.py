@@ -88,3 +88,23 @@ class CpuManager(SceneObject):
                     if cpu.process is not None and cpu.process.is_blocked
             ]),
         }
+
+    @property
+    def view_vars(self):
+        physical_core_rectangles = []
+        for physical_core in self._physical_cores:
+            if len(physical_core) > 1:
+                rectangle_x = physical_core[0].view.x - 4
+                rectangle_y = physical_core[0].view.y - 4
+                rectangle_width = sum([cpu.view.width for cpu in physical_core]) + 13
+                rectangle_height = physical_core[0].view.height + 8
+                rectangle = {
+                    'x': rectangle_x,
+                    'y': rectangle_y,
+                    'width': rectangle_width,
+                    'height': rectangle_height,
+                }
+                physical_core_rectangles.append(rectangle)
+        return {
+            'physical_core_rectangles': physical_core_rectangles,
+        }

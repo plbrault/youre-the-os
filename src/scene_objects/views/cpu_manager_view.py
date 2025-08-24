@@ -1,4 +1,6 @@
 from engine.drawable import Drawable
+import pygame
+from ui.color import Color
 
 
 class CpuManagerView(Drawable):
@@ -15,4 +17,15 @@ class CpuManagerView(Drawable):
         return 0
 
     def draw(self, surface):
-        pass
+        for rectangle in self.cpu_manager.view_vars['physical_core_rectangles']:
+            pygame.draw.rect(
+                surface,
+                Color.DARK_GREY,
+                pygame.Rect(
+                    rectangle['x'],
+                    rectangle['y'],
+                    rectangle['width'],
+                    rectangle['height'],
+                ),
+                2,
+            )
