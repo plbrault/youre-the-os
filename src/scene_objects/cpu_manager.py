@@ -42,9 +42,15 @@ class CpuManager(SceneObject):
         return self._cpu_list[logical_id - 1]
 
     def select_free_cpu(self) -> Cpu | None:
-        for cpu in self._cpu_list:
-            if not cpu.has_process:
-                return cpu
+        max_num_threads = max(
+            self._stage_config.cpu_config.num_threads_for_core
+        )
+        for thread_index in range(max_num_threads):
+            for physical_core in self._physical_cores:
+                if thread_index < len(physical_core):
+                    cpu = physical_core[thread_index]
+                    if not cpu.has_process:
+                        return cpu
         return None
 
     def find_cpu_with_process(self, process: Process) -> Cpu | None:
