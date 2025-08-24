@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 
 from constants import MAX_PROCESSES, ONE_MINUTE
+from config.cpu_config import CpuConfig, STANDARD_CPU
 
 @dataclass(frozen=True)
 class StageConfig:
     num_cpus: int = 4
+    cpu_config: CpuConfig | list[CpuConfig] = STANDARD_CPU
     num_processes_at_startup: int = 14
     max_processes: int = MAX_PROCESSES
     max_processes_terminated_by_user: int = 10 # user refers to in-game user, not to the player.
