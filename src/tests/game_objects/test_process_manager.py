@@ -35,11 +35,11 @@ class TestProcessManager:
         process_manager = stage.process_manager
         process_manager.setup()
 
-        for cpu_id in range(1, stage_config.cpu_config.total_threads + 1):
-            cpu = process_manager.cpu_manager.get_cpu_by_id(cpu_id)
+        for logical_id in range(1, stage_config.cpu_config.total_threads + 1):
+            cpu = process_manager.cpu_manager.get_cpu_by_logical_id(logical_id)
             assert isinstance(cpu, Cpu)
-            assert cpu.cpu_id == cpu_id
-        assert process_manager.cpu_manager.get_cpu_by_id(stage_config.cpu_config.total_threads + 1) is None
+            assert cpu.logical_id == logical_id
+        assert process_manager.cpu_manager.get_cpu_by_logical_id(stage_config.cpu_config.total_threads + 1) is None
 
         assert len(process_manager.process_slots) == stage_config.max_processes
         for process_slot in process_manager.process_slots:
@@ -698,10 +698,10 @@ class TestProcessManager:
         for i in range(1, 17):
             process = process_manager.get_process(i)
             process.use_cpu()
-            assert process_manager.cpu_manager.get_cpu_by_id(i).process == process
+            assert process_manager.cpu_manager.get_cpu_by_logical_id(i).process == process
 
         for i in range(1, 10):
-            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            cpu = process_manager.cpu_manager.get_cpu_by_logical_id(i)
             process = cpu.process
             assert process.cpu == cpu
 
@@ -711,7 +711,7 @@ class TestProcessManager:
             assert cpu.process is None
             assert process.cpu is None
 
-        cpu = process_manager.cpu_manager.get_cpu_by_id(10)
+        cpu = process_manager.cpu_manager.get_cpu_by_logical_id(10)
         process = cpu.process
         assert process.cpu == cpu
 
@@ -722,7 +722,7 @@ class TestProcessManager:
         assert process.cpu is None
 
         for i in range(11, 17):
-            cpu = process_manager.cpu_manager.get_cpu_by_id(i)
+            cpu = process_manager.cpu_manager.get_cpu_by_logical_id(i)
             process = cpu.process
             assert process.cpu == cpu
 

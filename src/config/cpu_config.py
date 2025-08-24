@@ -4,8 +4,8 @@ from dataclasses import dataclass
 class CpuConfig:
     num_cores: int = 4
     num_threads_per_core: int | list[int] = 1
-    process_time_to_happiness_ms: int | list[int] = 5000
-    multithread_penalty_ms: int | list[int] = 0
+    process_happiness_ms: int | list[int] = 5000
+    penalty_ms: int | list[int] = 0
 
     @property
     def num_threads_for_core(self) -> list[int]:
@@ -18,13 +18,13 @@ class CpuConfig:
         return sum(self.num_threads_for_core)
 
     @property
-    def process_time_to_happiness_ms_for_core(self) -> list[int]:
-        if isinstance(self.process_time_to_happiness_ms, int):
-            return [self.process_time_to_happiness_ms] * self.num_cores
-        return self.process_time_to_happiness_ms
+    def process_happiness_ms_for_core(self) -> list[int]:
+        if isinstance(self.process_happiness_ms, int):
+            return [self.process_happiness_ms] * self.num_cores
+        return self.process_happiness_ms
 
     @property
-    def multithread_penalty_ms_for_core(self) -> list[int]:
-        if isinstance(self.multithread_penalty_ms, int):
-            return [self.multithread_penalty_ms] * self.num_cores
-        return self.multithread_penalty_ms
+    def penalty_ms_for_core(self) -> list[int]:
+        if isinstance(self.penalty_ms, int):
+            return [self.penalty_ms] * self.num_cores
+        return self.penalty_ms
