@@ -2,6 +2,14 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class CpuConfig:
+    """Configuration of physical cores and logical cores (threads) of the CPU.
+
+    An attribute expressed as a single value applies to all cores.
+    An attribute expressed as a list applies to each core in order.
+
+    Each thread will translate to a Cpu object in-game, as an OS would see it.
+    """
+
     num_cores: int = 4
     num_threads_per_core: int | list[int] = 1
     process_happiness_ms: int | list[int] = 5000
