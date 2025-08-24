@@ -13,13 +13,14 @@ from scene_objects.process_manager import ProcessManager
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
 from scenes.stage import Stage
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 class TestProcessManager:
     @pytest.fixture
     def stage_config(self):
         return StageConfig(
-            num_cpus=4,
+            cpu_config = CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             max_processes=42,
             new_process_probability=0.05,
@@ -482,7 +483,7 @@ class TestProcessManager:
 
     def test_sort(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=5,
             new_process_probability=0,
             io_probability=0,
@@ -556,7 +557,7 @@ class TestProcessManager:
 
     def test_auto_sort(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=5,
             new_process_probability=0,
             io_probability=0,
@@ -650,7 +651,7 @@ class TestProcessManager:
     def test_game_over(self, ready_process_manager_custom_config):
         # TODO: Move this test to Stage tests as game over logic is now handled by Stage rather than ProcessManager
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=10,
             new_process_probability=0,
             io_probability=0,
@@ -686,7 +687,7 @@ class TestProcessManager:
 
     def test_cpu_hotkeys(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
-            num_cpus=16,
+            cpu_config=CpuConfig(num_cores=16),
             num_processes_at_startup=16,
             new_process_probability=0,
             io_probability=0,

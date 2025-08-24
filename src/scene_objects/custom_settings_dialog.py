@@ -9,6 +9,7 @@ from engine.scene_object import SceneObject
 from scene_objects.button import Button
 from scene_objects.option_selector import OptionSelector
 from scene_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 _swap_delay_ms_to_ids = {
@@ -106,7 +107,7 @@ class CustomSettingsDialog(SceneObject):
     @property
     def config(self):
         config = StageConfig(
-            num_cpus = int(self._num_cpus_selector.selected_option),
+            cpu_config = CpuConfig(num_cores = int(self._num_cpus_selector.selected_option)),
             num_processes_at_startup = int(self._num_processes_at_startup_selector.selected_option),
             max_processes = int(self._max_processes_selector.selected_option),
             num_ram_rows = int(self._num_ram_rows_selector.selected_option),

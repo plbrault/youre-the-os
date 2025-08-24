@@ -7,6 +7,7 @@ from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
 from scene_objects.process import Process
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
 class TestProcess:
@@ -273,7 +274,7 @@ class TestProcess:
 
     def test_graceful_termination(self, stage_custom_config, monkeypatch):
         stage_config = StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -532,7 +533,7 @@ class TestProcess:
             graceful_termination_probability=0.01
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -568,7 +569,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -597,7 +598,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -626,7 +627,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -659,7 +660,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -688,7 +689,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -730,7 +731,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -773,7 +774,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -872,7 +873,7 @@ class TestProcess:
             graceful_termination_probability=0.01
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -939,7 +940,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,
@@ -1024,7 +1025,7 @@ class TestProcess:
             graceful_termination_probability=0
         )
         stage = stage_custom_config(StageConfig(
-            num_cpus=4,
+            cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
             num_ram_rows=8,
             new_process_probability=0,

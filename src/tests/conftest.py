@@ -6,6 +6,7 @@ import pytest
 
 from engine.scene_manager import SceneManager
 import scenes.stage
+from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 from window_size import WINDOW_SIZE
 
@@ -26,7 +27,7 @@ def Stage(monkeypatch):
 @pytest.fixture
 def stage_config():
     return StageConfig(
-        num_cpus = 4,
+        cpu_config = CpuConfig(num_cores=4),
         num_processes_at_startup = 14,
         num_ram_rows = 8,
         new_process_probability = 0,

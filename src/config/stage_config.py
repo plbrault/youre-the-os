@@ -23,7 +23,7 @@ class StageConfig:
     time_ms_to_show_auto_sort_checkbox: int = 12 * ONE_MINUTE
 
     @property
-    @deprecated("This property allows code written prior to introducing CpuConfig to continue to work as expected. It should not be used in new code.")
+    @deprecated("Use cpu_config.total_threads instead.")
     def num_cpus(self) -> int:
-        return sum(self.cpu_config.num_threads)
+        return sum(self.cpu_config.num_threads_for_core)
     

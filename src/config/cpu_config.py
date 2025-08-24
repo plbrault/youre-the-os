@@ -14,6 +14,10 @@ class CpuConfig:
         return self.num_threads_per_core
 
     @property
+    def total_threads(self) -> int:
+        return sum(self.num_threads_for_core)    
+
+    @property
     def process_time_to_happiness_ms_for_core(self) -> list[int]:
         if isinstance(self.process_time_to_happiness_ms, int):
             return [self.process_time_to_happiness_ms] * self.num_cores
