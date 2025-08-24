@@ -4,10 +4,10 @@ from scene_objects.views.cpu_manager_view import CpuManagerView
 from engine.scene_object import SceneObject
 
 class CpuManager(SceneObject):
-    def __init__(self, stage_config: 'StageConfig'):
+    def __init__(self, cpu_config: 'CpuConfig'):
         super().__init__(CpuManagerView(self))
 
-        self._stage_config = stage_config
+        self._cpu_config = cpu_config
         self._physical_cores: [[Cpu]] = []
 
     @property
@@ -16,17 +16,17 @@ class CpuManager(SceneObject):
 
     def setup(self):
         logical_id = 0
-        for i in range(self._stage_config.cpu_config.num_cores):
+        for i in range(self._cpu_config.num_cores):
             physical_id = i + 1
             physical_core = []
-            for j in range(self._stage_config.cpu_config.num_threads_for_core[i]):
+            for j in range(self._cpu_config.num_threads_for_core[i]):
                 logical_id += 1
                 logical_core = Cpu(
                     physical_id,
                     logical_id,
                     self,
-                    process_happiness_ms=self._stage_config.cpu_config.process_happiness_ms_for_core[i],
-                    penalty_ms=self._stage_config.cpu_config.penalty_ms_for_core[i],
+                    process_happiness_ms=self._cpu_config.process_happiness_ms_for_core[i],
+                    penalty_ms=self._cpu_config.penalty_ms_for_core[i],
                 )
                 physical_core.append(logical_core)
             self._physical_cores.append(physical_core)
@@ -49,7 +49,7 @@ class CpuManager(SceneObject):
 
     def select_free_cpu(self) -> Cpu | None:
         max_num_threads = max(
-            self._stage_config.cpu_config.num_threads_for_core
+            self._cpu_config.num_threads_for_core
         )
         for thread_index in range(max_num_threads):
             for physical_core in self._physical_cores:

@@ -69,7 +69,7 @@ class ProcessManager(SceneObject):
         super().__init__(ProcessManagerView(self))
 
     def setup(self):
-        self._cpu_manager = CpuManager(self._stage_config)
+        self._cpu_manager = CpuManager(self._stage_config.cpu_config)
         self._cpu_manager.setup()
         self.children.append(self._cpu_manager)
         self._alive_process_list = []
