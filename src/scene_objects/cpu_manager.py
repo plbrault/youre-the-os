@@ -1,14 +1,17 @@
+from config.cpu_config import CpuConfig, CoreType
 from scene_objects.cpu import Cpu
 from scene_objects.process import Process
 from scene_objects.views.cpu_manager_view import CpuManagerView
 from engine.scene_object import SceneObject
 
 class CpuManager(SceneObject):
-    def __init__(self, cpu_config: 'CpuConfig'):
+    def __init__(self, cpu_config: CpuConfig):
         super().__init__(CpuManagerView(self))
 
         self._cpu_config = cpu_config
         self._physical_cores: [[Cpu]] = []
+        self._standard_or_p_cores: [[Cpu]] = []
+        self._e_cores: [[Cpu]] = []
 
     @property
     def _cpu_list(self):
@@ -32,6 +35,15 @@ class CpuManager(SceneObject):
                 physical_core.append(logical_core)
             self._physical_cores.append(physical_core)
 
+        self._standard_or_p_cores = [
+            core for core in self._physical_cores
+                if core[0].core_type != CoreType.EFFICIENT
+        ]
+        self._e_cores = [
+            core for core in self._physical_cores
+                if core[0].core_type == CoreType.EFFICIENT
+        ]
+
         x = 50
         y = 50
         for i, physical_core in enumerate(self._physical_cores):
@@ -48,12 +60,13 @@ class CpuManager(SceneObject):
             return None
         return self._cpu_list[logical_id - 1]
 
-    def select_free_cpu(self) -> Cpu | None:
+    def select_free_cpu(self, use_e_core: bool = False) -> Cpu | None:
         max_num_threads = max(
             self._cpu_config.num_threads_for_core
         )
+        physical_cores = self._e_cores if use_e_core else self._standard_or_p_cores
         for thread_index in range(max_num_threads):
-            for physical_core in self._physical_cores:
+            for physical_core in physical_cores:
                 if thread_index < len(physical_core):
                     cpu = physical_core[thread_index]
                     if not cpu.has_process:
