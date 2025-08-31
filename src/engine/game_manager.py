@@ -11,6 +11,7 @@ from engine.window_config import WindowConfig
 
 
 _LEFT_MOUSE_BUTTON = 1
+_RIGHT_MOUSE_BUTTON = 3
 
 class GameManager():
     window_config: WindowConfig
@@ -38,6 +39,7 @@ class GameManager():
         self._startup_scene = None
 
         self._mouse_left_down = False
+        self._mouse_right_down = False
         self._shift_down = False
 
     @property
@@ -81,6 +83,8 @@ class GameManager():
                                 event.key), 'shift': self._shift_down}))
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == _LEFT_MOUSE_BUTTON:
                 self._mouse_left_down = True
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == _RIGHT_MOUSE_BUTTON:
+                self._mouse_right_down = True
             elif event.type == pygame.MOUSEBUTTONUP and event.button == _LEFT_MOUSE_BUTTON:
                 self._mouse_left_down = False
                 if mouse_event_added and mouse_motion_event:
@@ -93,10 +97,23 @@ class GameManager():
                             GameEventType.MOUSE_LEFT_CLICK, {
                                 'position': event.pos, 'shift': self._shift_down }))
                     mouse_event_added = True
+            elif event.type == pygame.MOUSEBUTTONUP and event.button == _RIGHT_MOUSE_BUTTON:
+                self._mouse_right_down = False
+                if mouse_event_added and mouse_motion_event:
+                    events.remove(mouse_motion_event)
+                    mouse_event_added = False
+                    mouse_motion_event = None
+                if not mouse_event_added:
+                    events.append(
+                        GameEvent(
+                            GameEventType.MOUSE_RIGHT_CLICK, {
+                                'position': event.pos, 'shift': self._shift_down }))
+                    mouse_event_added = True
             elif event.type == pygame.MOUSEMOTION and not mouse_event_added:
                 game_event = GameEvent(GameEventType.MOUSE_MOTION,
                                   {'position': event.pos,
                                    'left_button_down': self._mouse_left_down,
+                                   'right_button_down': self._mouse_right_down,
                                    'shift': self._shift_down})
                 events.append(game_event)
                 mouse_event_added = True
