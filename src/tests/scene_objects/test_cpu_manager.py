@@ -1,6 +1,6 @@
 import pytest
 
-from config.cpu_config import CpuConfig
+from config.cpu_config import CpuConfig, CoreType
 from config.stage_config import StageConfig
 from factories.process_factory import ProcessFactory
 from scene_objects.cpu_manager import CpuManager
@@ -23,6 +23,28 @@ class TestCPUManager:
             num_cores=4,
             num_threads_per_core=2,
             process_happiness_ms=5000,
+            penalty_ms=1000,
+        )
+
+    @pytest.fixture
+    def cpu_config_hybrid_no_hyperthreading(self):
+        return CpuConfig(
+            num_cores=4,
+            num_threads_per_core=1,
+            core_types=[CoreType.PERFORMANT, CoreType.PERFORMANT,
+                        CoreType.EFFICIENT, CoreType.EFFICIENT],
+            process_happiness_ms=[5000, 5000, 6000, 6000],
+            penalty_ms=0,
+        )
+
+    @pytest.fixture
+    def cpu_config_hybrid_hyperthreading(self):
+        return CpuConfig(
+            num_cores=4,
+            num_threads_per_core=[2, 2, 1, 1],
+            core_types=[CoreType.PERFORMANT, CoreType.PERFORMANT,
+                        CoreType.EFFICIENT, CoreType.EFFICIENT],
+            process_happiness_ms=[5000, 5000, 6000, 6000],
             penalty_ms=1000,
         )
 
