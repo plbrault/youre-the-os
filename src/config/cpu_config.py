@@ -50,6 +50,6 @@ class CpuConfig:
 
     @property
     def type_for_core(self) -> list[CoreType]:
-        if isinstance(self.core_types, CoreType.__class__):
-            return [self.core_types] * self.num_cores
-        return self.core_types
+        if isinstance(self.core_types, list):
+            return self.core_types
+        return [self.core_types] * self.num_cores
