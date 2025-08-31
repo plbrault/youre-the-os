@@ -132,9 +132,9 @@ class Process(SceneObject):
         return ((self._view.target_x is not None or self._view.target_y is not None)
             and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
 
-    def use_cpu(self):
+    def use_cpu(self, use_e_core=False):
         if not self.has_cpu:
-            cpu = self._cpu_manager.select_free_cpu()
+            cpu = self._cpu_manager.select_free_cpu(use_e_core=use_e_core)
             if cpu is not None:
                 cpu.process = self
                 self._cpu = cpu
@@ -235,6 +235,19 @@ class Process(SceneObject):
             self._process_manager.del_process(self)
             game_monitor.notify_process_killed(self._pid)
 
+    def toggle(self, right_click=False):
+        if self.starvation_level < DEAD_STARVATION_LEVEL:
+            if self.has_cpu and not right_click:
+                self.yield_cpu()
+            else:
+                self.use_cpu(use_e_core=right_click)
+
+    def _on_left_click(self):
+        self.toggle()
+
+    def _on_right_click(self):
+        self.toggle(right_click=True)
+
     def _check_if_clicked_on(self, event):
         if (
             event.type == GameEventType.MOUSE_LEFT_CLICK
@@ -243,24 +256,22 @@ class Process(SceneObject):
                 and event.get_property('left_button_down')
             )
         ):
-            return self._view.collides(*event.get_property('position'))
-        return False
-
-    def toggle(self):
-        if self.starvation_level < DEAD_STARVATION_LEVEL:
-            if self.has_cpu:
-                self.yield_cpu()
-            else:
-                self.use_cpu()
-
-    def _on_click(self):
-        self.toggle()
+            if self._view.collides(*event.get_property('position')):
+                self._on_left_click()
+        elif (
+            event.type == GameEventType.MOUSE_RIGHT_CLICK
+            or (
+                event.type == GameEventType.MOUSE_MOTION
+                and event.get_property('right_button_down')
+            )
+        ):
+            if self._view.collides(*event.get_property('position')):
+                self._on_right_click()
 
     def _handle_events(self, events):
         if not self.is_in_motion:
             for event in events:
-                if self._check_if_clicked_on(event):
-                    self._on_click()
+                self._check_if_clicked_on(event)
 
     def _handle_unavailable_pages(self):
         unavailable_pages = 0
