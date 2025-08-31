@@ -21,7 +21,7 @@ class TestProcess:
 
     @pytest.fixture
     def process_custom_config(self):
-        def create_config(io_probability=0.01, graceful_termination_probability=0.01, 
+        def create_config(io_probability=0.01, graceful_termination_probability=0.01,
                          time_between_starvation_levels_ms=10000):
             return ProcessConfig(
                 io_probability=io_probability,
