@@ -1,4 +1,11 @@
 from dataclasses import dataclass
+from enum import Enum
+
+CoreType = Enum('CoreType', [
+    'STANDARD',
+    'PERFORMANCE',
+    'EFFICIENT'
+])
 
 @dataclass(frozen=True)
 class CpuConfig:
@@ -11,6 +18,7 @@ class CpuConfig:
     """
 
     num_cores: int = 4
+    core_types: CoreType | list[CoreType] = CoreType.STANDARD
     num_threads_per_core: int | list[int] = 1
     process_happiness_ms: int | list[int] = 5000
 
@@ -39,3 +47,9 @@ class CpuConfig:
         if isinstance(self.penalty_ms, int):
             return [self.penalty_ms] * self.num_cores
         return self.penalty_ms
+
+    @property
+    def type_for_core(self) -> list[CoreType]:
+        if isinstance(self.core_types, CoreType.__class__):
+            return [self.core_types] * self.num_cores
+        return self.core_types

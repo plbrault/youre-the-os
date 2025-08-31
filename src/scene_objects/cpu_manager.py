@@ -25,6 +25,7 @@ class CpuManager(SceneObject):
                     physical_id,
                     logical_id,
                     self,
+                    core_type=self._cpu_config.type_for_core[i],
                     process_happiness_ms=self._cpu_config.process_happiness_ms_for_core[i],
                     penalty_ms=self._cpu_config.penalty_ms_for_core[i],
                 )

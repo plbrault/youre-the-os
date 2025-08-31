@@ -1,12 +1,15 @@
+from config.cpu_config import CoreType
 from engine.scene_object import SceneObject
 from scene_objects.views.cpu_view import CpuView
 
 
 class Cpu(SceneObject):
-    def __init__(self, physical_id, logical_id, cpu_manager, *, process_happiness_ms, penalty_ms):
+    def __init__(self, physical_id, logical_id, cpu_manager, *
+                 , core_type: CoreType = CoreType.STANDARD, process_happiness_ms, penalty_ms):
         self._physical_id = physical_id
         self._logical_id = logical_id
         self._cpu_manager = cpu_manager
+        self._core_type = core_type
         self._process_happiness_ms = process_happiness_ms
         self._penalty_ms = penalty_ms
 
@@ -21,6 +24,10 @@ class Cpu(SceneObject):
     @property
     def logical_id(self):
         return self._logical_id
+
+    @property
+    def core_type(self) -> CoreType:
+        return self._core_type
 
     @property
     def process_happiness_ms(self):
