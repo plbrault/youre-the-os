@@ -31,7 +31,7 @@ class TestCPUManager:
         return CpuConfig(
             num_cores=4,
             num_threads_per_core=1,
-            core_types=[CoreType.PERFORMANT, CoreType.PERFORMANT,
+            core_types=[CoreType.PERFORMANCE, CoreType.PERFORMANCE,
                         CoreType.EFFICIENT, CoreType.EFFICIENT],
             process_happiness_ms=[5000, 5000, 6000, 6000],
             penalty_ms=0,
@@ -42,7 +42,7 @@ class TestCPUManager:
         return CpuConfig(
             num_cores=4,
             num_threads_per_core=[2, 2, 1, 1],
-            core_types=[CoreType.PERFORMANT, CoreType.PERFORMANT,
+            core_types=[CoreType.PERFORMANCE, CoreType.PERFORMANCE,
                         CoreType.EFFICIENT, CoreType.EFFICIENT],
             process_happiness_ms=[5000, 5000, 6000, 6000],
             penalty_ms=1000,
@@ -136,6 +136,51 @@ class TestCPUManager:
         cpu4.process = None
         cpu = cpu_manager.select_free_cpu()
         assert cpu is cpu4
+
+    def test_select_free_cpu_with_hybrid_cpu_and_no_hyperthreading(self, cpu_config_hybrid_no_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_hybrid_no_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+        process3 = create_process(cpu_manager, 3)
+        process4 = create_process(cpu_manager, 4)
+
+        cpu1 = cpu_manager.get_cpu_by_logical_id(1)  # PERFORMANT
+        cpu2 = cpu_manager.get_cpu_by_logical_id(2)  # PERFORMANT
+        cpu3 = cpu_manager.get_cpu_by_logical_id(3)  # EFFICIENT
+        cpu4 = cpu_manager.get_cpu_by_logical_id(4)  # EFFICIENT
+
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1
+
+        cpu1.process = process1
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu2
+
+        cpu2.process = process2
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is None
+
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is cpu3
+
+        cpu3.process = process3
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is cpu4
+
+        cpu4.process = process4
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is None
+
+        cpu1.process = None
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1
+
+        cpu1.process = None
+        cpu3.process = None
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is cpu3
 
     def test_select_free_cpu_with_hyperthreading(self, cpu_config_hyperthreading, create_process):
         cpu_manager = CpuManager(cpu_config_hyperthreading)
