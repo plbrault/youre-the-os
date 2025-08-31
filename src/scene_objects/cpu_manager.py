@@ -60,7 +60,7 @@ class CpuManager(SceneObject):
             return None
         return self._cpu_list[logical_id - 1]
 
-    def select_free_cpu(self, use_e_core: bool = False) -> Cpu | None:
+    def select_free_cpu(self, *, use_e_core: bool = False) -> Cpu | None:
         max_num_threads = max(
             self._cpu_config.num_threads_for_core
         )
