@@ -63,6 +63,7 @@ class GameManager():
         self._scene_manager.register_scene(scene)
 
     def _get_events(self):
+        # pylint: disable=too-many-branches
         events = []
         mouse_motion_event = None
 
