@@ -237,6 +237,63 @@ class TestCPUManager:
         cpu = cpu_manager.select_free_cpu()
         assert cpu is cpu4_1
 
+    def test_select_free_cpu_with_hybrid_cpu_and_hyperthreading(self, cpu_config_hybrid_hyperthreading, create_process):
+        cpu_manager = CpuManager(cpu_config_hybrid_hyperthreading)
+        cpu_manager.setup()
+
+        process1 = create_process(cpu_manager, 1)
+        process2 = create_process(cpu_manager, 2)
+        process3 = create_process(cpu_manager, 3)
+        process4 = create_process(cpu_manager, 4)
+        process5 = create_process(cpu_manager, 5)
+        process6 = create_process(cpu_manager, 6)
+
+        cpu1_1 = cpu_manager.get_cpu_by_logical_id(1)
+        cpu1_2 = cpu_manager.get_cpu_by_logical_id(2)
+        cpu2_1 = cpu_manager.get_cpu_by_logical_id(3)
+        cpu2_2 = cpu_manager.get_cpu_by_logical_id(4)
+        cpu3_1 = cpu_manager.get_cpu_by_logical_id(5)
+        cpu4_1 = cpu_manager.get_cpu_by_logical_id(6)
+
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1_1
+
+        cpu1_1.process = process1
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu2_1
+
+        cpu2_1.process = process2
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1_2
+
+        cpu1_2.process = process3
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu2_2
+
+        cpu2_2.process = process4
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is None
+
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is cpu3_1
+
+        cpu3_1.process = process5
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is cpu4_1
+
+        cpu4_1.process = process6
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is None
+
+        cpu1_1.process = None
+        cpu = cpu_manager.select_free_cpu()
+        assert cpu is cpu1_1
+
+        cpu1_1.process = None
+        cpu3_1.process = None
+        cpu = cpu_manager.select_free_cpu(use_e_core=True)
+        assert cpu is cpu3_1
+
     def test_check_cpu_for_penalty_with_no_hyperthreading(self, cpu_config_no_hyperthreading, create_process):
         cpu_manager = CpuManager(cpu_config_no_hyperthreading)
         cpu_manager.setup()
