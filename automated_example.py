@@ -105,50 +105,66 @@ class SimpleScheduler:
         self.processes[event.pid].pages.append(page)
 
     def _update_PAGE_USE(self, event):
-        self.pages[(event.pid, event.idx)].in_use = event.use
+        page = self.pages.get((event.pid, event.idx))
+        if page:
+            page.in_use = event.use
 
     def _update_PAGE_SWAP(self, event):
-        self.pages[(event.pid, event.idx)].on_disk = event.swap
+        page = self.pages.get((event.pid, event.idx))
+        if page:
+            page.on_disk = event.swap
 
     def _update_PAGE_FREE(self, event):
-        page = self.pages.pop((event.pid, event.idx))
-        try:
-            self.processes[event.pid].pages.remove(page)
-        except ValueError:
-            pass
+        page = self.pages.pop((event.pid, event.idx), None)
+        if page:
+            proc = self.processes.get(event.pid)
+            if proc and page in proc.pages:
+                proc.pages.remove(page)
 
     def _update_PROC_NEW(self, event):
         self.processes[event.pid] = Process(event.pid)
 
     def _update_PROC_CPU(self, event):
-        self.processes[event.pid].cpu = event.cpu
-        if event.cpu:
-            self.used_cpus += 1
-        else:
-            self.used_cpus -= 1
+        proc = self.processes.get(event.pid)
+        if proc:
+            proc.cpu = event.cpu
+            if event.cpu:
+                self.used_cpus += 1
+            else:
+                self.used_cpus -= 1
 
     def _update_PROC_STARV(self, event):
-        self.processes[event.pid].starvation_level = event.starvation_level
+        proc = self.processes.get(event.pid)
+        if proc:
+            proc.starvation_level = event.starvation_level
 
     def _update_PROC_WAIT_IO(self, event):
-        self.processes[event.pid].waiting_for_io = event.waiting_for_io
+        proc = self.processes.get(event.pid)
+        if proc:
+            proc.waiting_for_io = event.waiting_for_io
 
     def _update_PROC_WAIT_PAGE(self, event):
-        self.processes[event.pid].waiting_for_page = event.waiting_for_page
+        proc = self.processes.get(event.pid)
+        if proc:
+            proc.waiting_for_page = event.waiting_for_page
 
     def _update_PROC_TERM(self, event):
-        self.processes[event.pid].has_ended = True
+        proc = self.processes.get(event.pid)
+        if proc:
+            proc.has_ended = True
 
     def _update_PROC_KILL(self, event):
-        proc = self.processes.pop(event.pid)
-        for page in proc.pages:
-            self.pages.pop(page.key, None)
+        proc = self.processes.pop(event.pid, None)
+        if proc:
+            for page in proc.pages:
+                self.pages.pop(page.key, None)
 
     def _update_PROC_END(self, event):
-        proc = self.processes.pop(event.pid)
-        self.used_cpus -= 1
-        for page in proc.pages:
-            self.pages.pop(page.key, None)
+        proc = self.processes.pop(event.pid, None)
+        if proc:
+            self.used_cpus -= 1
+            for page in proc.pages:
+                self.pages.pop(page.key, None)
 
     def schedule(self):
         self._handle_io_queue()
@@ -157,9 +173,9 @@ class SimpleScheduler:
         self._schedule_processes()
 
     def _handle_io_queue(self):
-        while self.io_queue.io_count > 0:
+        """Process one I/O event per frame if any are available"""
+        if self.io_queue.io_count > 0:
             self.do_io()
-            self.io_queue.io_count -= 1
 
     def _handle_page_swaps(self):
         for proc in self.processes.values():
