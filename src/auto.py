@@ -87,19 +87,18 @@ def compile_auto_script(source_file):
     return compile(source, source_file, 'exec')
 
 
-script_filename, stage_or_config = parse_arguments()
-compiled_script = compile_auto_script(script_filename)
-
-if isinstance(stage_or_config, Stage):
-    stage_scene = stage_or_config
-    stage_scene.standalone = True
-    stage_scene._script = compiled_script  # pylint: disable=protected-access
-else:
-    stage_config, stage_name = stage_or_config
-    stage_scene = Stage(stage_name, stage_config, script=compiled_script, standalone=True)
-
-
 async def main():
+    script_filename, stage_or_config = parse_arguments()
+    compiled_script = compile_auto_script(script_filename)
+
+    if isinstance(stage_or_config, Stage):
+        stage_scene = stage_or_config
+        stage_scene.standalone = True
+        stage_scene._script = compiled_script  # pylint: disable=protected-access
+    else:
+        stage_config, stage_name = stage_or_config
+        stage_scene = Stage(stage_name, stage_config, script=compiled_script, standalone=True)
+
     game_manager = GameManager()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
@@ -108,4 +107,6 @@ async def main():
 
     await game_manager.play(ignore_events=True)
 
-asyncio.run(main())
+
+if __name__ == '__main__':
+    asyncio.run(main())

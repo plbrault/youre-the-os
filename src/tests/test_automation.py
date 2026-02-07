@@ -770,3 +770,173 @@ x = 1
         
         # Should not raise
         stage.update(0, [])
+
+
+class TestAutoModule:
+    """Tests for the auto.py module functions."""
+
+    @pytest.fixture
+    def temp_script(self, tmp_path):
+        """Create a temporary script file."""
+        script_file = tmp_path / "test_script.py"
+        script_file.write_text("def run_os(events): return []\n")
+        return str(script_file)
+
+    @pytest.fixture
+    def temp_sandbox_module(self, tmp_path, monkeypatch):
+        """Create a temporary sandbox module with a stage."""
+        module_dir = tmp_path / "test_sandbox"
+        module_dir.mkdir()
+        (module_dir / "__init__.py").write_text("")
+
+        stage_file = module_dir / "test_config.py"
+        stage_file.write_text('''
+from config.stage_config import StageConfig
+from config.cpu_config import CpuConfig
+from scenes.stage import Stage
+
+config = StageConfig(
+    cpu_config=CpuConfig(num_cores=2),
+    num_processes_at_startup=5,
+    num_ram_rows=4,
+)
+stage = Stage("Test Sandbox", config)
+''')
+        monkeypatch.syspath_prepend(str(tmp_path))
+        return "test_sandbox.test_config"
+
+    def test_parse_arguments_default_difficulty(self, temp_script, monkeypatch):
+        """Test parse_arguments with default (normal) difficulty."""
+        import sys
+        from auto import parse_arguments
+        from config.difficulty_levels import default_difficulty
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script])
+        filename, result = parse_arguments()
+
+        assert filename == temp_script
+        config, name = result
+        assert config == default_difficulty.config
+        assert "NORMAL" in name.upper()
+
+    def test_parse_arguments_easy_difficulty(self, temp_script, monkeypatch):
+        """Test parse_arguments with --easy flag."""
+        import sys
+        from auto import parse_arguments
+        from config.difficulty_levels import difficulty_levels_map
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--easy'])
+        filename, result = parse_arguments()
+
+        config, name = result
+        assert config == difficulty_levels_map['easy'].config
+        assert "EASY" in name.upper()
+
+    def test_parse_arguments_hard_difficulty(self, temp_script, monkeypatch):
+        """Test parse_arguments with --hard flag."""
+        import sys
+        from auto import parse_arguments
+        from config.difficulty_levels import difficulty_levels_map
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--hard'])
+        filename, result = parse_arguments()
+
+        config, name = result
+        assert config == difficulty_levels_map['hard'].config
+        assert "HARD" in name.upper()
+
+    def test_parse_arguments_harder_difficulty(self, temp_script, monkeypatch):
+        """Test parse_arguments with --harder flag."""
+        import sys
+        from auto import parse_arguments
+        from config.difficulty_levels import difficulty_levels_map
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--harder'])
+        filename, result = parse_arguments()
+
+        config, name = result
+        assert config == difficulty_levels_map['harder'].config
+        assert "HARDER" in name.upper()
+
+    def test_parse_arguments_insane_difficulty(self, temp_script, monkeypatch):
+        """Test parse_arguments with --insane flag."""
+        import sys
+        from auto import parse_arguments
+        from config.difficulty_levels import difficulty_levels_map
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--insane'])
+        filename, result = parse_arguments()
+
+        config, name = result
+        assert config == difficulty_levels_map['insane'].config
+        assert "INSANE" in name.upper()
+
+    def test_parse_arguments_sandbox_with_stage(self, temp_script, temp_sandbox_module, monkeypatch):
+        """Test parse_arguments with --sandbox flag loads stage from module."""
+        import sys
+        from auto import parse_arguments
+        from scenes.stage import Stage
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--sandbox', temp_sandbox_module])
+        filename, result = parse_arguments()
+
+        assert isinstance(result, Stage)
+        assert result.name == "Test Sandbox"
+
+    def test_parse_arguments_sandbox_not_found(self, temp_script, monkeypatch, capsys):
+        """Test parse_arguments with --sandbox for non-existent module."""
+        import sys
+        from auto import parse_arguments
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--sandbox', 'nonexistent.module'])
+
+        with pytest.raises(SystemExit) as exc_info:
+            parse_arguments()
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "not found" in captured.err
+
+    def test_parse_arguments_sandbox_missing_stage(self, temp_script, tmp_path, monkeypatch, capsys):
+        """Test parse_arguments with --sandbox when module has no stage."""
+        import sys
+        from auto import parse_arguments
+
+        module_dir = tmp_path / "bad_sandbox"
+        module_dir.mkdir()
+        (module_dir / "__init__.py").write_text("")
+        (module_dir / "no_stage.py").write_text("x = 1\n")
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        monkeypatch.setattr(sys, 'argv', ['auto', temp_script, '--sandbox', 'bad_sandbox.no_stage'])
+
+        with pytest.raises(SystemExit) as exc_info:
+            parse_arguments()
+
+        assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "stage" in captured.err
+
+    def test_compile_auto_script_absolute_path(self, temp_script):
+        """Test compile_auto_script with absolute path."""
+        from auto import compile_auto_script
+
+        compiled = compile_auto_script(temp_script)
+        assert compiled is not None
+        assert hasattr(compiled, 'co_filename')
+
+    def test_compile_auto_script_relative_path(self, tmp_path, monkeypatch):
+        """Test compile_auto_script with relative path."""
+        from auto import compile_auto_script
+        import os
+
+        script_file = tmp_path / "rel_script.py"
+        script_file.write_text("def run_os(events): return []\n")
+
+        monkeypatch.chdir(tmp_path)
+        os.makedirs("../subdir", exist_ok=True)
+        rel_script = tmp_path.parent / "subdir" / "script.py"
+        rel_script.write_text("def run_os(events): return []\n")
+
+        compiled = compile_auto_script(str(rel_script))
+        assert compiled is not None
