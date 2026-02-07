@@ -1,7 +1,7 @@
 """Example automation script with a simple scheduling algorithm.
 
 This script demonstrates how to implement an automated OS scheduler
-using the RunOs framework from automation_api.py.
+using the RunOs framework from the automation package.
 
 The scheduling algorithm is a simple priority-based scheduler:
 1. Process any pending I/O events first
@@ -10,13 +10,9 @@ The scheduling algorithm is a simple priority-based scheduler:
 4. Schedule processes to CPUs, prioritizing highest starvation
 
 Run with:
-    pipenv run auto automated_example.py [--easy|--normal|--hard|--harder|--insane]
+    pipenv run auto automation/example.py [--easy|--normal|--hard|--harder|--insane]
 """
-import sys
-from os.path import dirname, abspath
-sys.path.insert(0, dirname(abspath(__file__)))
-
-from automation_api import RunOs
+from automation import RunOs
 
 
 class SimpleScheduler(RunOs):

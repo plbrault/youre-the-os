@@ -201,6 +201,13 @@ class Stage(Scene):
         if self._script is None:
             return
 
+        # Add project root to sys.path so scripts can import from automation package
+        import sys
+        from os.path import dirname, abspath
+        project_root = dirname(dirname(abspath(self._script.co_filename)))
+        if project_root not in sys.path:
+            sys.path.insert(0, project_root)
+
         num_cols = PageManager.get_num_cols()
         script_globals = {
             'num_cpus': self._config.cpu_config.total_threads,

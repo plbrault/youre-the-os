@@ -12,7 +12,7 @@ class TestRunOsDataClasses:
         # Import locally to avoid polluting module namespace
         import sys
         sys.path.insert(0, '..')
-        from automation_api import Page
+        from automation.api import Page
         
         page = Page(pid=1, idx=2, on_disk=False, in_use=True)
         assert page.pid == 1
@@ -23,7 +23,7 @@ class TestRunOsDataClasses:
 
     def test_page_equality(self):
         """Test Page equality comparison with tuple."""
-        from automation_api import Page
+        from automation.api import Page
         
         page = Page(pid=1, idx=2, on_disk=False, in_use=True)
         assert page == (1, 2)
@@ -31,7 +31,7 @@ class TestRunOsDataClasses:
 
     def test_process_dataclass(self):
         """Test Process dataclass properties."""
-        from automation_api import Process
+        from automation.api import Process
         
         process = Process(pid=42)
         assert process.pid == 42
@@ -45,7 +45,7 @@ class TestRunOsDataClasses:
 
     def test_process_equality(self):
         """Test Process equality comparison with int."""
-        from automation_api import Process
+        from automation.api import Process
         
         process = Process(pid=42)
         assert process == 42
@@ -53,7 +53,7 @@ class TestRunOsDataClasses:
 
     def test_io_queue_dataclass(self):
         """Test IoQueue dataclass."""
-        from automation_api import IoQueue
+        from automation.api import IoQueue
         
         io_queue = IoQueue()
         assert io_queue.io_count == 0
@@ -68,7 +68,7 @@ class TestRunOsStateUpdates:
     @pytest.fixture
     def run_os(self):
         """Create a fresh RunOs instance for each test."""
-        from automation_api import RunOs
+        from automation.api import RunOs
         instance = RunOs()
         instance.processes = {}
         instance.pages = {}
@@ -233,7 +233,7 @@ class TestRunOsActionGeneration:
     @pytest.fixture
     def run_os(self):
         """Create a fresh RunOs instance for each test."""
-        from automation_api import RunOs
+        from automation.api import RunOs
         instance = RunOs()
         instance.processes = {}
         instance.pages = {}
@@ -314,7 +314,7 @@ class TestRunOsIntegration:
     @pytest.fixture
     def run_os(self):
         """Create a fresh RunOs instance for each test."""
-        from automation_api import RunOs
+        from automation.api import RunOs
         instance = RunOs()
         instance.processes = {}
         instance.pages = {}

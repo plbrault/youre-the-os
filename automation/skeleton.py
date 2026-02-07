@@ -4,7 +4,7 @@ This is a minimal template that imports the automation API
 and provides a skeleton for implementing your own scheduler.
 
 To use:
-1. Copy this file to create your own automation script
+1. Copy this file anywhere in the project to create your own automation script
 2. Implement the schedule() method in the MyScheduler class
 3. Run with: pipenv run auto your_script.py
 
@@ -13,13 +13,9 @@ Globals available:
 - `num_ram_pages`: number of pages that fit on RAM  
 - `num_swap_pages`: number of pages that fit on SWAP
 
-See automation_api.py for full documentation of the API.
+See automation/api.py for full documentation of the API.
 """
-import sys
-from os.path import dirname, abspath
-sys.path.insert(0, dirname(abspath(__file__)))
-
-from automation_api import RunOs
+from automation import RunOs
 
 
 class MyScheduler(RunOs):
