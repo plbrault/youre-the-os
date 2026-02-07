@@ -22,7 +22,7 @@ from window_size import WINDOW_SIZE
 def parse_arguments():
     """Parse command line arguments.
 
-    Returns the script filename and either a Stage or (name, config) tuple.
+    Returns the script filename and either a Stage or (config, name) tuple.
     """
     parser = argparse.ArgumentParser(
         prog="pipenv run auto",
@@ -88,15 +88,15 @@ def compile_auto_script(source_file):
 
 
 async def main():
-    script_filename, stage_or_config = parse_arguments()
+    script_filename, stage_or_difficulty = parse_arguments()
     compiled_script = compile_auto_script(script_filename)
 
-    if isinstance(stage_or_config, Stage):
-        stage_scene = stage_or_config
+    if isinstance(stage_or_difficulty, Stage):
+        stage_scene = stage_or_difficulty
         stage_scene.standalone = True
         stage_scene._script = compiled_script  # pylint: disable=protected-access
     else:
-        stage_config, stage_name = stage_or_config
+        stage_config, stage_name = stage_or_difficulty
         stage_scene = Stage(stage_name, stage_config, script=compiled_script, standalone=True)
 
     game_manager = GameManager()
