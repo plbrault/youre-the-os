@@ -22,7 +22,7 @@ from window_size import WINDOW_SIZE
 def parse_arguments():
     """Parse command line arguments.
 
-    Returns the script filename, stage name, and stage configuration.
+    Returns the script filename and either a Stage or (name, config) tuple.
     """
     parser = argparse.ArgumentParser(
         prog="pipenv run auto",
@@ -52,11 +52,9 @@ def parse_arguments():
     args = parser.parse_args()
 
     if args.sandbox is not None:
-        config, name = _load_sandbox_module(args.sandbox)
-    else:
-        config, name = _get_difficulty_config(args.difficulty)
+        return args.filename, _load_sandbox_module(args.sandbox)
 
-    return args.filename, name, config
+    return args.filename, _get_difficulty_config(args.difficulty)
 
 
 def _load_sandbox_module(module_path):
@@ -66,15 +64,11 @@ def _load_sandbox_module(module_path):
         print(f"Error: sandbox module '{module_path}' not found.", file=sys.stderr)
         sys.exit(1)
 
-    if hasattr(config_module, 'config'):
-        return config_module.config, 'Custom Config'
+    if not hasattr(config_module, 'stage'):
+        print("Error: Sandbox module must define 'stage'.", file=sys.stderr)
+        sys.exit(1)
 
-    if hasattr(config_module, 'stage'):
-        stage = config_module.stage
-        return stage._config, stage.name or 'Custom Config'  # pylint: disable=protected-access
-
-    print("Error: Sandbox module must define 'config' or 'stage'.", file=sys.stderr)
-    sys.exit(1)
+    return config_module.stage
 
 
 def _get_difficulty_config(difficulty_name):
@@ -93,10 +87,16 @@ def compile_auto_script(source_file):
     return compile(source, source_file, 'exec')
 
 
-script_filename, stage_name, stage_config = parse_arguments()
+script_filename, stage_or_config = parse_arguments()
 compiled_script = compile_auto_script(script_filename)
 
-stage_scene = Stage(stage_name, stage_config, script=compiled_script, standalone=True)
+if isinstance(stage_or_config, Stage):
+    stage_scene = stage_or_config
+    stage_scene.standalone = True
+    stage_scene._script = compiled_script  # pylint: disable=protected-access
+else:
+    stage_config, stage_name = stage_or_config
+    stage_scene = Stage(stage_name, stage_config, script=compiled_script, standalone=True)
 
 
 async def main():
