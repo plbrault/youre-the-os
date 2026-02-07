@@ -243,10 +243,12 @@ class TestRunOsActionGeneration:
 
     def test_move_page_returns_page_action(self, run_os):
         """Test move_page generates a page action returned by __call__."""
-        # First process events, then call actions, then call again to get results
-        run_os([])  # Clear any state
-        run_os.move_page(pid=1, idx=2)
-        result = run_os([])  # Get queued actions
+        # Actions must be generated within schedule() during __call__
+        def custom_schedule():
+            run_os.move_page(pid=1, idx=2)
+        run_os.schedule = custom_schedule
+        
+        result = run_os([])
         
         assert len(result) == 1
         assert result[0]['type'] == 'page'
@@ -255,8 +257,10 @@ class TestRunOsActionGeneration:
 
     def test_move_process_returns_process_action(self, run_os):
         """Test move_process generates a process action returned by __call__."""
-        run_os([])  # Clear any state
-        run_os.move_process(pid=42)
+        def custom_schedule():
+            run_os.move_process(pid=42)
+        run_os.schedule = custom_schedule
+        
         result = run_os([])
         
         assert len(result) == 1
@@ -265,8 +269,10 @@ class TestRunOsActionGeneration:
 
     def test_do_io_returns_io_action(self, run_os):
         """Test do_io generates an io_queue action returned by __call__."""
-        run_os([])  # Clear any state
-        run_os.do_io()
+        def custom_schedule():
+            run_os.do_io()
+        run_os.schedule = custom_schedule
+        
         result = run_os([])
         
         assert len(result) == 1
@@ -274,21 +280,31 @@ class TestRunOsActionGeneration:
 
     def test_multiple_actions_accumulated(self, run_os):
         """Test multiple actions accumulate and are returned together."""
-        run_os([])  # Clear any state
-        run_os.move_process(1)
-        run_os.move_page(1, 0)
-        run_os.do_io()
+        def custom_schedule():
+            run_os.move_process(1)
+            run_os.move_page(1, 0)
+            run_os.do_io()
+        run_os.schedule = custom_schedule
+        
         result = run_os([])
         
         assert len(result) == 3
 
     def test_call_returns_fresh_actions(self, run_os):
-        """Test __call__ returns only new actions each time."""
-        run_os.move_process(1)
-        result1 = run_os([])
-        result2 = run_os([])
+        """Test __call__ clears actions between calls."""
+        call_count = [0]
+        def custom_schedule():
+            call_count[0] += 1
+            if call_count[0] == 1:
+                run_os.move_process(1)
+        run_os.schedule = custom_schedule
         
+        result1 = run_os([])
+        # Note: result1 references the internal queue, so we must check it
+        # before the next call clears the queue
         assert len(result1) == 1
+        
+        result2 = run_os([])
         assert result2 == []
 
 
@@ -408,7 +424,7 @@ def run_os(events):
         game_monitor.notify_process_new(1)
         
         # Call update to trigger script processing
-        stage_with_script.update()
+        stage_with_script.update(0, [])
         
         assert 1 in toggled_pids
 
@@ -418,7 +434,7 @@ def run_os(events):
         game_monitor.notify_process_new(1)
         
         # Should not raise
-        stage_without_script.update()
+        stage_without_script.update(0, [])
 
     def test_script_with_page_action(self, Stage, stage_config, scene_manager, monkeypatch):
         """Test that script page actions trigger page swaps."""
@@ -453,7 +469,7 @@ def run_os(events):
         game_monitor.clear_events()
         game_monitor.notify_page_new(1, 0, False, True)
         
-        stage.update()
+        stage.update(0, [])
         
         assert (1, 0) in swapped_pages
 
@@ -483,7 +499,7 @@ def run_os(events):
         game_monitor.clear_events()
         game_monitor.notify_io_event_count(5)
         
-        stage.update()
+        stage.update(0, [])
         
         assert len(io_processed) == 1
 
@@ -503,7 +519,7 @@ def run_os(events):
         game_monitor.notify_process_new(1)
         
         # Should not raise
-        stage_with_script.update()
+        stage_with_script.update(0, [])
         
         # Error should be printed to stderr
         captured = capsys.readouterr()
@@ -524,4 +540,4 @@ x = 1
         game_monitor.notify_process_new(1)
         
         # Should not raise
-        stage.update()
+        stage.update(0, [])
