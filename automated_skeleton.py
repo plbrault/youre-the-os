@@ -185,7 +185,7 @@ class RunOs:
             .idx: index of page in process
             .use: bool, if page is in use
         """
-        self.pages[(event.pid, event.idx)].use = event.use
+        self.pages[(event.pid, event.idx)].in_use = event.use
 
     def _update_PAGE_SWAP(self, event):
         """A page was swapped
@@ -197,7 +197,7 @@ class RunOs:
             .idx: index of page in process
             .swap: bool, where it is now
         """
-        self.pages[(event.pid, event.idx)].swap = event.swap
+        self.pages[(event.pid, event.idx)].on_disk = event.swap
 
     def _update_PAGE_FREE(self, event):
         """A page is freed
