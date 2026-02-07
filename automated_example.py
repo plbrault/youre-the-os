@@ -1,183 +1,48 @@
+"""Example automation script with a simple scheduling algorithm.
+
+This script demonstrates how to implement an automated OS scheduler
+using the RunOs framework from automation_api.py.
+
+The scheduling algorithm is a simple priority-based scheduler:
+1. Process any pending I/O events first
+2. Swap in pages that are needed by waiting processes
+3. Remove terminated and happy processes from CPUs
+4. Schedule processes to CPUs, prioritizing highest starvation
+
+Run with:
+    pipenv run auto automated_example.py [--easy|--normal|--hard|--harder|--insane]
 """
-Example automation script based on automated_skeleton.py.
-"""
+import sys
+from os.path import dirname, abspath
+sys.path.insert(0, dirname(abspath(__file__)))
 
-from dataclasses import dataclass, field
+from automation_api import RunOs
 
-@dataclass
-class Page:
-    pid: int
-    idx: int
-    on_disk: bool
-    in_use: bool
 
-    @property
-    def key(self):
-        return self.pid, self.idx
-
-    def __eq__(self, other: tuple[int, int]):
-        return self.key == other
-
-@dataclass
-class Process:
-    pid: int
-    cpu: bool = False
-    starvation_level: int = 1
-    waiting_for_io: bool = False
-    waiting_for_page: bool = False
-    has_ended: bool = False
-    pages: list = field(default_factory=list)
-
-    @property
-    def key(self):
-        return self.pid
-
-    def __eq__(self, other: int):
-        return self.key == other
-
-    @property
-    def is_runnable(self):
-        return (
-            not self.cpu
-            and not self.waiting_for_io
-            and not self.waiting_for_page
-            and not self.has_ended
-        )
-
-@dataclass
-class IoQueue:
-    io_count: int = 0
-
-class SimpleScheduler:
-    processes: dict[int, Process] = {}
-    pages: dict[tuple[int, int], Page] = {}
-    used_cpus: int = 0
-    io_queue: IoQueue = IoQueue()
-    _event_queue: list = []
-
-    def __init__(self):
-        self.processes = {}
-        self.pages = {}
-        self.used_cpus = 0
-        self.io_queue = IoQueue()
-        self._event_queue = []
-
-    def move_page(self, pid, idx):
-        self._event_queue.append({
-            'type': 'page',
-            'pid': pid,
-            'idx': idx
-        })
-
-    def move_process(self, pid):
-        self._event_queue.append({
-            'type': 'process',
-            'pid': pid
-        })
-
-    def do_io(self):
-        self._event_queue.append({
-            'type': 'io_queue'
-        })
-
-    def __call__(self, events: list):
-        self._event_queue.clear()
-        
-        # Update internal state from game events
-        for event in events:
-            handler = getattr(self, f"_update_{event.etype}", None)
-            if handler is not None:
-                handler(event)
-        
-        # Run the scheduling algorithm
-        self.schedule()
-        
-        return self._event_queue
-
-    # ==================== Event Handlers ====================
-
-    def _update_IO_QUEUE(self, event):
-        self.io_queue.io_count = event.io_count
-
-    def _update_PAGE_NEW(self, event):
-        page = Page(event.pid, event.idx, event.swap, event.use)
-        self.pages[(event.pid, event.idx)] = page
-        self.processes[event.pid].pages.append(page)
-
-    def _update_PAGE_USE(self, event):
-        page = self.pages.get((event.pid, event.idx))
-        if page:
-            page.in_use = event.use
-
-    def _update_PAGE_SWAP(self, event):
-        page = self.pages.get((event.pid, event.idx))
-        if page:
-            page.on_disk = event.swap
-
-    def _update_PAGE_FREE(self, event):
-        page = self.pages.pop((event.pid, event.idx), None)
-        if page:
-            proc = self.processes.get(event.pid)
-            if proc and page in proc.pages:
-                proc.pages.remove(page)
-
-    def _update_PROC_NEW(self, event):
-        self.processes[event.pid] = Process(event.pid)
-
-    def _update_PROC_CPU(self, event):
-        proc = self.processes.get(event.pid)
-        if proc:
-            proc.cpu = event.cpu
-            if event.cpu:
-                self.used_cpus += 1
-            else:
-                self.used_cpus -= 1
-
-    def _update_PROC_STARV(self, event):
-        proc = self.processes.get(event.pid)
-        if proc:
-            proc.starvation_level = event.starvation_level
-
-    def _update_PROC_WAIT_IO(self, event):
-        proc = self.processes.get(event.pid)
-        if proc:
-            proc.waiting_for_io = event.waiting_for_io
-
-    def _update_PROC_WAIT_PAGE(self, event):
-        proc = self.processes.get(event.pid)
-        if proc:
-            proc.waiting_for_page = event.waiting_for_page
-
-    def _update_PROC_TERM(self, event):
-        proc = self.processes.get(event.pid)
-        if proc:
-            proc.has_ended = True
-
-    def _update_PROC_KILL(self, event):
-        proc = self.processes.pop(event.pid, None)
-        if proc:
-            for page in proc.pages:
-                self.pages.pop(page.key, None)
-
-    def _update_PROC_END(self, event):
-        proc = self.processes.pop(event.pid, None)
-        if proc:
-            self.used_cpus -= 1
-            for page in proc.pages:
-                self.pages.pop(page.key, None)
+class SimpleScheduler(RunOs):
+    """A simple OS scheduler implementation.
+    
+    This scheduler uses a priority-based approach:
+    1. Handle I/O events to unblock waiting processes
+    2. Swap pages to RAM for processes waiting on pages
+    3. Remove happy (starvation=0) processes from CPUs
+    4. Schedule highest-starvation processes to available CPUs
+    """
 
     def schedule(self):
+        """Main scheduling logic - called each frame."""
         self._handle_io_queue()
         self._handle_page_swaps()
         self._handle_terminated_processes()
         self._schedule_processes()
 
     def _handle_io_queue(self):
-        """Process one I/O event per frame if any are available"""
+        """Process one I/O event per frame if any are available."""
         if self.io_queue.io_count > 0:
             self.do_io()
 
     def _handle_page_swaps(self):
+        """Swap in pages for processes that are waiting for pages."""
         for proc in self.processes.values():
             if proc.waiting_for_page:
                 for page in proc.pages:
@@ -188,6 +53,7 @@ class SimpleScheduler:
                         break
 
     def _make_room_in_ram(self):
+        """Swap out an unused page from RAM to make room."""
         for page in self.pages.values():
             if not page.on_disk and not page.in_use:
                 self.move_page(page.pid, page.idx)
@@ -196,22 +62,31 @@ class SimpleScheduler:
         return False
 
     def _handle_terminated_processes(self):
+        """Remove terminated processes from CPU."""
         for proc in list(self.processes.values()):
             if proc.has_ended and proc.cpu:
                 self.move_process(proc.pid)
 
     def _schedule_processes(self):
+        """Schedule runnable processes with proper rotation.
+        
+        Strategy:
+        - Remove happy processes (starvation=0) from CPUs immediately
+        - Fill empty CPU slots with highest-starvation waiting processes
+        """
         active_procs = [p for p in self.processes.values() if not p.has_ended]
         
         running = [p for p in active_procs if p.cpu]
         waiting = [p for p in active_procs if not p.cpu 
                    and not p.waiting_for_io and not p.waiting_for_page]
         
+        # Remove happy processes from CPUs immediately
         for proc in running[:]:
             if proc.starvation_level == 0:
                 self.move_process(proc.pid)
                 running.remove(proc)
         
+        # Fill available CPU slots with highest-starvation waiting processes
         waiting.sort(key=lambda p: p.starvation_level, reverse=True)
         available_cpus = num_cpus - len(running)
         
@@ -230,6 +105,7 @@ class SimpleScheduler:
 
             self.move_process(proc.pid)
             available_cpus -= 1
+
 
 # Create the run_os callable that the game expects
 run_os = SimpleScheduler()

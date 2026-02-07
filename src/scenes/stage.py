@@ -207,6 +207,7 @@ class Stage(Scene):
             'num_ram_pages': num_cols * self._config.num_ram_rows,
             'num_swap_pages':
                 num_cols * (PageManager.get_total_rows() - self._config.num_ram_rows),
+            '__file__': self._script.co_filename,
         }
 
         exec(self._script, script_globals)
