@@ -63,6 +63,10 @@ def _load_sandbox_module(module_path):
         print(f"Error: sandbox module '{module_path}' not found.", file=sys.stderr)
         sys.exit(1)
 
+    if not hasattr(config_module, 'stage'):
+        print("Error: Sandbox module must define 'stage'.", file=sys.stderr)
+        sys.exit(1)
+
     return config_module.stage
 
 def _get_difficulty_config(difficulty_name):
