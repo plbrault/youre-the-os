@@ -2,7 +2,6 @@ import pytest
 
 import game_monitor
 
-
 class TestGameMonitor:
     """Tests for the game_monitor module that collects game events."""
 
@@ -17,7 +16,8 @@ class TestGameMonitor:
     def test_clear_events(self):
         """Test that clear_events removes all events."""
         game_monitor.notify_process_new(1)
-        assert len(game_monitor.get_events()) == 1
+        game_monitor.notify_page_new(1, 0, False, True)
+        assert len(game_monitor.get_events()) == 2
         game_monitor.clear_events()
         assert len(game_monitor.get_events()) == 0
 
