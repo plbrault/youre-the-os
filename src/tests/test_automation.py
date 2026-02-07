@@ -415,7 +415,7 @@ def run_os(events):
                 toggled_pids.append(self.pid)
         
         monkeypatch.setattr(
-            stage_with_script._process_manager, 
+            stage_with_script.process_manager, 
             'get_process', 
             lambda pid: MockProcess(pid)
         )
@@ -461,7 +461,7 @@ def run_os(events):
                 swapped_pages.append((self.pid, self.idx))
         
         monkeypatch.setattr(
-            stage._page_manager,
+            stage.page_manager,
             'get_page',
             lambda pid, idx: MockPage(pid, idx)
         )
@@ -491,7 +491,7 @@ def run_os(events):
         io_processed = []
         
         monkeypatch.setattr(
-            stage._process_manager.io_queue,
+            stage.process_manager.io_queue,
             'process_events',
             lambda: io_processed.append(True)
         )
@@ -510,7 +510,7 @@ def run_os(events):
             raise ValueError("Test error")
         
         monkeypatch.setattr(
-            stage_with_script._process_manager,
+            stage_with_script.process_manager,
             'get_process',
             raise_error
         )
