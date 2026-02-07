@@ -375,6 +375,86 @@ class TestRunOsIntegration:
         assert (1, 1) not in run_os.pages
 
 
+class TestGameObjectsEmitEvents:
+    """Tests that real game objects emit events to game_monitor.
+    
+    These tests verify that the actual game objects (ProcessManager, PageManager, etc.)
+    call the appropriate game_monitor.notify_* functions when state changes occur.
+    """
+
+    def test_process_manager_emits_process_new_event(self, stage):
+        """Test that ProcessManager._create_process emits PROC_NEW event."""
+        game_monitor.clear_events()
+        
+        # Create a process using the internal method
+        # (this is what gets called during gameplay)
+        stage.process_manager._create_process()
+        
+        events = game_monitor.get_events()
+        proc_new_events = [e for e in events if e.etype == 'PROC_NEW']
+        
+        assert len(proc_new_events) >= 1, "ProcessManager._create_process should emit PROC_NEW event"
+        assert proc_new_events[0].pid == 1, "First process should have pid=1"
+
+    def test_process_emits_page_new_event_when_using_cpu(self, stage, monkeypatch):
+        """Test that Process emits PAGE_NEW event when it starts using CPU and creates pages."""
+        # Create a process
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        
+        # Ensure CPU is available
+        cpu = stage.process_manager._cpu_manager.select_free_cpu()
+        assert cpu is not None, "Need a free CPU for this test"
+        
+        game_monitor.clear_events()
+        
+        # When process uses CPU for the first time, it creates pages
+        process.use_cpu()
+        
+        events = game_monitor.get_events()
+        page_new_events = [e for e in events if e.etype == 'PAGE_NEW']
+        
+        assert len(page_new_events) >= 1, "Process.use_cpu should emit PAGE_NEW events when creating pages"
+
+    def test_io_queue_emits_io_queue_event_on_process(self, stage):
+        """Test that IoQueue emits IO_QUEUE event when processing events."""
+        io_queue = stage.process_manager.io_queue
+        
+        # Add a subscriber so there's something to process
+        callback_called = []
+        io_queue.wait_for_event(lambda: callback_called.append(True))
+        
+        # Simulate time passing so event becomes available
+        io_queue._event_count = 1
+        
+        game_monitor.clear_events()
+        
+        # Process events - this should emit IO_QUEUE event
+        io_queue.process_events()
+        
+        events = game_monitor.get_events()
+        io_queue_events = [e for e in events if e.etype == 'IO_QUEUE']
+        
+        assert len(io_queue_events) >= 1, "IoQueue.process_events should emit IO_QUEUE event"
+        assert io_queue_events[0].io_count == 0, "After processing, io_count should be 0"
+
+    def test_process_emits_cpu_event_when_toggled(self, stage):
+        """Test that Process emits PROC_CPU event when toggled on/off CPU."""
+        # Create a process
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        
+        game_monitor.clear_events()
+        
+        # Toggle process (should assign to CPU)
+        process.toggle()
+        
+        events = game_monitor.get_events()
+        proc_cpu_events = [e for e in events if e.etype == 'PROC_CPU']
+        
+        assert len(proc_cpu_events) >= 1, "Process.toggle should emit PROC_CPU event"
+
+
 class TestStageAutomationIntegration:
     """Integration tests for Stage scene automation via public interface."""
 
