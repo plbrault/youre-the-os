@@ -53,7 +53,7 @@ pipenv run sandbox sandbox.sample
 
 **Run with an automated script:**
 
-_(Implemented by [@Wiguwbe](https://github.com/Wiguwbe))_
+_(Original implementation by [@Wiguwbe](https://github.com/Wiguwbe))_
 
 ```bash
 pipenv run auto <script.py> [args]
@@ -61,7 +61,7 @@ pipenv run auto <script.py> [args]
 pipenv run auto --help
 ```
 
-See `automated_skeleton.py` for more info on API.
+See `automation/skeleton.py` for information on how to write your script.
 
 **Build web version without running:**
 
