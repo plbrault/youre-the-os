@@ -454,6 +454,155 @@ class TestGameObjectsEmitEvents:
         
         assert len(proc_cpu_events) >= 1, "Process.toggle should emit PROC_CPU event"
 
+    def test_process_emits_starvation_event_when_level_changes(self, stage):
+        """Test that Process emits PROC_STARV event when starvation level changes."""
+        # Create a process
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        
+        # Put process on CPU first
+        process.toggle()
+        
+        game_monitor.clear_events()
+        
+        # Simulate enough time passing for happiness (starvation -> 0)
+        # by calling _update_starvation_level with appropriate timing
+        process._last_state_change_time = 0
+        process._update_starvation_level(process.cpu.process_happiness_ms + 1)
+        
+        events = game_monitor.get_events()
+        starv_events = [e for e in events if e.etype == 'PROC_STARV']
+        
+        assert len(starv_events) >= 1, "Process should emit PROC_STARV when starvation level changes"
+
+    def test_process_emits_wait_page_event(self, stage):
+        """Test that Process emits PROC_WAIT_PAGE event when waiting for page."""
+        # Create a process and put on CPU (creates pages)
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        # Ensure process has pages
+        assert len(process._pages) > 0, "Process should have pages after using CPU"
+        
+        # Swap a page to disk
+        page = process._pages[0]
+        page._on_disk = True
+        
+        game_monitor.clear_events()
+        
+        # Check for unavailable pages (should trigger wait_page event)
+        process._handle_unavailable_pages()
+        
+        events = game_monitor.get_events()
+        wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE']
+        
+        assert len(wait_page_events) >= 1, "Process should emit PROC_WAIT_PAGE when waiting for page"
+
+    def test_page_emits_swap_event_when_swap_completes(self, stage):
+        """Test that Page emits PAGE_SWAP event when swap completes."""
+        # Create a process and put on CPU (creates pages)
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        # Get a page
+        page = process._pages[0]
+        
+        game_monitor.clear_events()
+        
+        # Request swap
+        page.request_swap()
+        
+        # Run update loop until swap completes
+        current_time = 0
+        max_iterations = 1000
+        for _ in range(max_iterations):
+            stage.page_manager.update(current_time, [])
+            page.update(current_time, [])
+            current_time += 100
+            if page.on_disk:
+                break
+        
+        events = game_monitor.get_events()
+        swap_events = [e for e in events if e.etype == 'PAGE_SWAP']
+        
+        assert len(swap_events) >= 1, "Page should emit PAGE_SWAP when swap completes"
+
+    def test_process_emits_page_free_when_killed(self, stage):
+        """Test that Process emits PAGE_FREE events when killed."""
+        # Create a process and put on CPU (creates pages)
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        num_pages = len(process._pages)
+        assert num_pages > 0, "Process should have pages"
+        
+        game_monitor.clear_events()
+        
+        # Kill the process
+        process._terminate_by_user()
+        
+        events = game_monitor.get_events()
+        page_free_events = [e for e in events if e.etype == 'PAGE_FREE']
+        
+        assert len(page_free_events) == num_pages, \
+            f"Process should emit PAGE_FREE for all {num_pages} pages when killed"
+
+    def test_process_emits_proc_kill_when_killed(self, stage):
+        """Test that Process emits PROC_KILL event when killed."""
+        # Create a process
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        
+        game_monitor.clear_events()
+        
+        # Kill the process
+        process._terminate_by_user()
+        
+        events = game_monitor.get_events()
+        kill_events = [e for e in events if e.etype == 'PROC_KILL']
+        
+        assert len(kill_events) >= 1, "Process should emit PROC_KILL when killed"
+
+    def test_process_emits_proc_term_when_gracefully_terminated(self, stage):
+        """Test that Process emits PROC_TERM event when gracefully terminated."""
+        # Create a process and put on CPU
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        game_monitor.clear_events()
+        
+        # Gracefully terminate the process
+        process._terminate_gracefully()
+        
+        events = game_monitor.get_events()
+        term_events = [e for e in events if e.etype == 'PROC_TERM']
+        
+        assert len(term_events) >= 1, "Process should emit PROC_TERM when gracefully terminated"
+
+    def test_process_emits_proc_end_when_terminated_and_yields_cpu(self, stage):
+        """Test that Process emits PROC_END event when terminated process yields CPU."""
+        # Create a process and put on CPU
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        # Gracefully terminate
+        process._terminate_gracefully()
+        
+        game_monitor.clear_events()
+        
+        # Yield CPU (this should trigger PROC_END)
+        process.yield_cpu()
+        
+        events = game_monitor.get_events()
+        end_events = [e for e in events if e.etype == 'PROC_END']
+        
+        assert len(end_events) >= 1, "Process should emit PROC_END when terminated process yields CPU"
+
 
 class TestStageAutomationIntegration:
     """Integration tests for Stage scene automation via public interface."""
