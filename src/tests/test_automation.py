@@ -771,7 +771,6 @@ x = 1
         # Should not raise
         stage.update(0, [])
 
-
 class TestAutoModule:
     """Tests for the auto.py module functions."""
 

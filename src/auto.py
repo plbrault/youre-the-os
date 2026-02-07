@@ -1,8 +1,9 @@
 """
 Entry point to run the game with an automated script.
 
-Runs a Stage scene with an automation script. Configuration can be
-provided via difficulty presets or a sandbox-style config module.
+This just runs the Stage scene, with the difficulty and script
+provided from the command line. A sandbox config module can
+also be provided.
 """
 
 import asyncio
@@ -18,7 +19,6 @@ from scenes.stage import Stage
 from game_info import TITLE
 from window_size import WINDOW_SIZE
 
-
 def parse_arguments():
     """Parse command line arguments.
 
@@ -33,7 +33,7 @@ def parse_arguments():
     parser.add_argument('filename',
         help="filename of the automated script")
 
-    # base difficulty (only one can be provided)
+    # built-in difficulties (only one can be provided)
     config_group = parser.add_mutually_exclusive_group()
 
     config_group.add_argument('--easy', action='store_const',
@@ -56,7 +56,6 @@ def parse_arguments():
 
     return args.filename, _get_difficulty_config(args.difficulty)
 
-
 def _load_sandbox_module(module_path):
     try:
         config_module = import_module(module_path)
@@ -64,12 +63,7 @@ def _load_sandbox_module(module_path):
         print(f"Error: sandbox module '{module_path}' not found.", file=sys.stderr)
         sys.exit(1)
 
-    if not hasattr(config_module, 'stage'):
-        print("Error: Sandbox module must define 'stage'.", file=sys.stderr)
-        sys.exit(1)
-
     return config_module.stage
-
 
 def _get_difficulty_config(difficulty_name):
     """Get configuration for a difficulty preset."""
@@ -77,7 +71,6 @@ def _get_difficulty_config(difficulty_name):
     if difficulty_name is not None:
         difficulty = difficulty_levels_map[difficulty_name]
     return difficulty.config, f"Difficulty: {difficulty.name.upper()}"
-
 
 def compile_auto_script(source_file):
     if not path.isabs(source_file):
@@ -106,7 +99,6 @@ async def main():
     game_manager.startup_scene = stage_scene
 
     await game_manager.play(ignore_events=True)
-
 
 if __name__ == '__main__':
     asyncio.run(main())
