@@ -91,6 +91,7 @@ class Page(SceneObject):
         self._swapping_from = swapping_from
         self._waiting_to_swap = True
         self._swap_percentage_completed = 0
+        game_monitor.notify_page_swap_queue(self.pid, self.idx, True)
 
     def start_swap(self, current_time: int, swapping_to : PageSlot):
         """The method called by the page manager to actually start the swap."""
@@ -98,6 +99,7 @@ class Page(SceneObject):
         self._started_swap_at = current_time
         self._swapping_to = swapping_to
         swapping_to.page = self
+        game_monitor.notify_page_swap_start(self.pid, self.idx)
 
     def request_swap_cancellation(self, cancel_whole_row : bool = False):
         """The method called when the player clicks on the page to cancel swapping."""
@@ -114,6 +116,7 @@ class Page(SceneObject):
             self._swapping_to = None
             self._started_swap_at = None
             self._swap_percentage_completed = 0
+            game_monitor.notify_page_swap_queue(self.pid, self.idx, False)
 
     def _update_swap(self, current_time):
         """This method is called at each update. If a swap is in progress, it performs

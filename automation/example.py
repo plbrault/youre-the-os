@@ -1,6 +1,6 @@
-from automation import RunOs
+from automation import Scheduler
 
-class SimpleScheduler(RunOs):
+class SimpleScheduler(Scheduler):
     def schedule(self):
         self._handle_io_queue()
         self._handle_page_swaps()
@@ -15,17 +15,16 @@ class SimpleScheduler(RunOs):
         for proc in self.processes.values():
             if proc.waiting_for_page:
                 for page in proc.pages:
-                    if page.on_disk:
+                    if page.on_disk and not page.swap_in_progress and not page.waiting_to_swap:
                         self._make_room_in_ram()
                         self.move_page(page.pid, page.idx)
-                        page.on_disk = False
                         break
 
     def _make_room_in_ram(self):
         for page in self.pages.values():
-            if not page.on_disk and not page.in_use:
+            if (not page.on_disk and not page.in_use 
+                    and not page.swap_in_progress and not page.waiting_to_swap):
                 self.move_page(page.pid, page.idx)
-                page.on_disk = True
                 return True
         return False
 
@@ -53,15 +52,15 @@ class SimpleScheduler(RunOs):
             if available_cpus <= 0:
                 break
             
-            pages_on_disk = [p for p in proc.pages if p.on_disk]
+            pages_on_disk = [p for p in proc.pages 
+                             if p.on_disk and not p.swap_in_progress and not p.waiting_to_swap]
             if pages_on_disk:
                 for page in pages_on_disk:
                     if self._make_room_in_ram():
                         self.move_page(page.pid, page.idx)
-                        page.on_disk = False
                 continue 
 
             self.move_process(proc.pid)
             available_cpus -= 1
 
-run_os = SimpleScheduler()
+scheduler = SimpleScheduler()

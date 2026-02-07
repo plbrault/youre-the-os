@@ -218,7 +218,7 @@ class Stage(Scene):
 
         exec(self._script, script_globals)
         try:
-            self._script_callback = script_globals['run_os']
+            self._script_callback = script_globals['scheduler']
         except KeyError:
             pass
 
