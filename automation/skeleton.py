@@ -15,9 +15,9 @@ Globals available:
 
 See automation/api.py for full documentation of the API.
 """
-from automation import RunOs
+from automation import Scheduler
 
-class MyScheduler(RunOs):
+class MyScheduler(Scheduler):
     """Your custom scheduler implementation.
     
     Override the schedule() method to implement your scheduling logic.
@@ -45,5 +45,5 @@ class MyScheduler(RunOs):
         pass
 
 
-# The game expects a callable named `run_os`
-run_os = MyScheduler()
+# The game expects a callable named `scheduler`
+scheduler = MyScheduler()

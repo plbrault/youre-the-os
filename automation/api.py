@@ -3,22 +3,22 @@
 This module provides the base classes and infrastructure for creating
 automation scripts. It handles:
 - Data classes for tracking game state (Process, Page, IoQueue)
-- The RunOs base class with event handling and action dispatching
+- The Scheduler base class with event handling and action dispatching
 
 To create an automation script:
-1. Subclass RunOs
+1. Subclass Scheduler
 2. Override the schedule() method with your scheduling logic
-3. Create an instance and expose it as `run_os`
+3. Create an instance and expose it as `scheduler`
 
 Example:
-    from automation_api import RunOs
+    from automation import Scheduler
 
-    class MyScheduler(RunOs):
+    class MyScheduler(Scheduler):
         def schedule(self):
             # Your scheduling logic here
             pass
 
-    run_os = MyScheduler()
+    scheduler = MyScheduler()
 
 Globals available in automation scripts:
 - `num_cpus`: number of available CPUs
@@ -29,6 +29,8 @@ Event types received:
 - 'IO_QUEUE': I/O queue count changed
 - 'PAGE_NEW': New memory page created
 - 'PAGE_USE': Page use flag changed
+- 'PAGE_SWAP_QUEUE': Page queued for swap (or cancelled)
+- 'PAGE_SWAP_START': Page swap started
 - 'PAGE_SWAP': Page swapped between RAM and disk
 - 'PAGE_FREE': Page freed
 - 'PROC_NEW': New process created
@@ -53,11 +55,17 @@ class Page:
         idx: Index of the page within the process (0-based)
         on_disk: True if page is in swap, False if in RAM
         in_use: True if page is currently being used
+        waiting_to_swap: True if page is queued for swap but not yet started
+        swap_in_progress: True if page is actively being swapped
+        swap_percentage_completed: Progress of current swap (0.0 to 1.0)
     """
     pid: int
     idx: int
     on_disk: bool
     in_use: bool
+    waiting_to_swap: bool = False
+    swap_in_progress: bool = False
+    swap_percentage_completed: float = 0.0
 
     @property
     def key(self):
@@ -118,7 +126,7 @@ class IoQueue:
     io_count: int = 0
 
 
-class RunOs:
+class Scheduler:
     """Base class for automation scripts.
     
     This class handles:
@@ -238,8 +246,37 @@ class RunOs:
         if page:
             page.in_use = event.use
 
+    def _update_PAGE_SWAP_QUEUE(self, event):
+        """Handle page queued for swap (or cancelled).
+        
+        Args:
+            event.pid: Owner process ID
+            event.idx: Page index
+            event.waiting: True if queued, False if cancelled
+        """
+        page = self.pages.get((event.pid, event.idx))
+        if page:
+            page.waiting_to_swap = event.waiting
+            if not event.waiting:
+                # Swap was cancelled
+                page.swap_in_progress = False
+                page.swap_percentage_completed = 0.0
+
+    def _update_PAGE_SWAP_START(self, event):
+        """Handle page swap started.
+        
+        Args:
+            event.pid: Owner process ID
+            event.idx: Page index
+        """
+        page = self.pages.get((event.pid, event.idx))
+        if page:
+            page.waiting_to_swap = False
+            page.swap_in_progress = True
+            page.swap_percentage_completed = 0.0
+
     def _update_PAGE_SWAP(self, event):
-        """Handle page swap (RAM <-> disk).
+        """Handle page swap completed (RAM <-> disk).
         
         Args:
             event.pid: Owner process ID
@@ -249,6 +286,8 @@ class RunOs:
         page = self.pages.get((event.pid, event.idx))
         if page:
             page.on_disk = event.swap
+            page.swap_in_progress = False
+            page.swap_percentage_completed = 0.0
 
     def _update_PAGE_FREE(self, event):
         """Handle page being freed.

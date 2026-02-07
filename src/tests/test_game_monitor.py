@@ -57,6 +57,35 @@ class TestGameMonitor:
         assert events[0].idx == 2
         assert events[0].use is True
 
+    def test_notify_page_swap_queue(self):
+        """Test page swap queue event generation."""
+        game_monitor.notify_page_swap_queue(pid=1, idx=0, waiting=True)
+        events = game_monitor.get_events()
+        assert len(events) == 1
+        assert events[0].etype == 'PAGE_SWAP_QUEUE'
+        assert events[0].pid == 1
+        assert events[0].idx == 0
+        assert events[0].waiting is True
+
+    def test_notify_page_swap_queue_cancelled(self):
+        """Test page swap queue cancelled event generation."""
+        game_monitor.notify_page_swap_queue(pid=1, idx=0, waiting=False)
+        events = game_monitor.get_events()
+        assert len(events) == 1
+        assert events[0].etype == 'PAGE_SWAP_QUEUE'
+        assert events[0].pid == 1
+        assert events[0].idx == 0
+        assert events[0].waiting is False
+
+    def test_notify_page_swap_start(self):
+        """Test page swap start event generation."""
+        game_monitor.notify_page_swap_start(pid=1, idx=0)
+        events = game_monitor.get_events()
+        assert len(events) == 1
+        assert events[0].etype == 'PAGE_SWAP_START'
+        assert events[0].pid == 1
+        assert events[0].idx == 0
+
     def test_notify_page_swap(self):
         """Test page swap event generation."""
         game_monitor.notify_page_swap(pid=1, idx=0, swap=True)

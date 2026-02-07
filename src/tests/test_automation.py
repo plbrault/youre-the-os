@@ -4,8 +4,8 @@ from types import SimpleNamespace
 import game_monitor
 
 
-class TestRunOsDataClasses:
-    """Tests for the data classes used in the RunOs skeleton."""
+class TestSchedulerDataClasses:
+    """Tests for the data classes used in the Scheduler skeleton."""
 
     def test_page_dataclass(self):
         """Test Page dataclass properties."""
@@ -20,6 +20,28 @@ class TestRunOsDataClasses:
         assert page.on_disk is False
         assert page.in_use is True
         assert page.key == (1, 2)
+        # Verify new swap state fields have correct defaults
+        assert page.waiting_to_swap is False
+        assert page.swap_in_progress is False
+        assert page.swap_percentage_completed == 0.0
+
+    def test_page_dataclass_swap_state_fields(self):
+        """Test Page dataclass swap state fields can be set."""
+        from automation.api import Page
+        
+        page = Page(
+            pid=1, idx=0, on_disk=False, in_use=True,
+            waiting_to_swap=True, swap_in_progress=False, swap_percentage_completed=0.0
+        )
+        assert page.waiting_to_swap is True
+        assert page.swap_in_progress is False
+        
+        page.swap_in_progress = True
+        page.waiting_to_swap = False
+        page.swap_percentage_completed = 0.5
+        assert page.swap_in_progress is True
+        assert page.waiting_to_swap is False
+        assert page.swap_percentage_completed == 0.5
 
     def test_page_equality(self):
         """Test Page equality comparison with tuple."""
@@ -62,283 +84,327 @@ class TestRunOsDataClasses:
         assert io_queue.io_count == 5
 
 
-class TestRunOsStateUpdates:
-    """Tests for RunOs state update handlers via public interface."""
+class TestSchedulerStateUpdates:
+    """Tests for Scheduler state update handlers via public interface."""
 
     @pytest.fixture
-    def run_os(self):
-        """Create a fresh RunOs instance for each test."""
-        from automation.api import RunOs
-        instance = RunOs()
+    def scheduler(self):
+        """Create a fresh Scheduler instance for each test."""
+        from automation.api import Scheduler
+        instance = Scheduler()
         instance.processes = {}
         instance.pages = {}
         instance.used_cpus = 0
         instance.io_queue.io_count = 0
         return instance
 
-    def test_io_queue_event_updates_state(self, run_os):
+    def test_io_queue_event_updates_state(self, scheduler):
         """Test IO_QUEUE event updates io_count."""
         events = [SimpleNamespace(etype='IO_QUEUE', io_count=3)]
-        run_os(events)
-        assert run_os.io_queue.io_count == 3
+        scheduler(events)
+        assert scheduler.io_queue.io_count == 3
 
-    def test_proc_new_event_creates_process(self, run_os):
+    def test_proc_new_event_creates_process(self, scheduler):
         """Test PROC_NEW event creates a new process."""
         events = [SimpleNamespace(etype='PROC_NEW', pid=1)]
-        run_os(events)
+        scheduler(events)
         
-        assert 1 in run_os.processes
-        assert run_os.processes[1].pid == 1
-        assert run_os.processes[1].starvation_level == 1
+        assert 1 in scheduler.processes
+        assert scheduler.processes[1].pid == 1
+        assert scheduler.processes[1].starvation_level == 1
 
-    def test_proc_cpu_event_assigns_to_cpu(self, run_os):
+    def test_proc_cpu_event_assigns_to_cpu(self, scheduler):
         """Test PROC_CPU event when assigning to CPU."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.processes[1].cpu is True
-        assert run_os.used_cpus == 1
+        assert scheduler.processes[1].cpu is True
+        assert scheduler.used_cpus == 1
 
-    def test_proc_cpu_event_releases_from_cpu(self, run_os):
+    def test_proc_cpu_event_releases_from_cpu(self, scheduler):
         """Test PROC_CPU event when releasing from CPU."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
             SimpleNamespace(etype='PROC_CPU', pid=1, cpu=False),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.processes[1].cpu is False
-        assert run_os.used_cpus == 0
+        assert scheduler.processes[1].cpu is False
+        assert scheduler.used_cpus == 0
 
-    def test_proc_starv_event_updates_starvation(self, run_os):
+    def test_proc_starv_event_updates_starvation(self, scheduler):
         """Test PROC_STARV event updates starvation level."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_STARV', pid=1, starvation_level=4),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.processes[1].starvation_level == 4
+        assert scheduler.processes[1].starvation_level == 4
 
-    def test_proc_wait_io_event_updates_state(self, run_os):
+    def test_proc_wait_io_event_updates_state(self, scheduler):
         """Test PROC_WAIT_IO event updates waiting_for_io."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_WAIT_IO', pid=1, waiting_for_io=True),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.processes[1].waiting_for_io is True
+        assert scheduler.processes[1].waiting_for_io is True
 
-    def test_proc_wait_page_event_updates_state(self, run_os):
+    def test_proc_wait_page_event_updates_state(self, scheduler):
         """Test PROC_WAIT_PAGE event updates waiting_for_page."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_WAIT_PAGE', pid=1, waiting_for_page=True),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.processes[1].waiting_for_page is True
+        assert scheduler.processes[1].waiting_for_page is True
 
-    def test_proc_term_event_marks_ended(self, run_os):
+    def test_proc_term_event_marks_ended(self, scheduler):
         """Test PROC_TERM event marks process as ended."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_TERM', pid=1),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.processes[1].has_ended is True
+        assert scheduler.processes[1].has_ended is True
 
-    def test_proc_kill_event_removes_process(self, run_os):
+    def test_proc_kill_event_removes_process(self, scheduler):
         """Test PROC_KILL event removes process."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_KILL', pid=1),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert 1 not in run_os.processes
+        assert 1 not in scheduler.processes
 
-    def test_proc_end_event_removes_process(self, run_os):
+    def test_proc_end_event_removes_process(self, scheduler):
         """Test PROC_END event removes process and decrements used_cpus."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
             SimpleNamespace(etype='PROC_END', pid=1),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert 1 not in run_os.processes
-        assert run_os.used_cpus == 0
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 0
 
-    def test_page_new_event_creates_page(self, run_os):
+    def test_page_new_event_creates_page(self, scheduler):
         """Test PAGE_NEW event creates a new page."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=True),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert (1, 0) in run_os.pages
-        page = run_os.pages[(1, 0)]
+        assert (1, 0) in scheduler.pages
+        page = scheduler.pages[(1, 0)]
         assert page.pid == 1
         assert page.idx == 0
         assert page.on_disk is False
         assert page.in_use is True
-        assert page in run_os.processes[1].pages
+        assert page in scheduler.processes[1].pages
 
-    def test_page_use_event_updates_state(self, run_os):
+    def test_page_use_event_updates_state(self, scheduler):
         """Test PAGE_USE event updates page in_use status."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=False),
             SimpleNamespace(etype='PAGE_USE', pid=1, idx=0, use=True),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.pages[(1, 0)].in_use is True
+        assert scheduler.pages[(1, 0)].in_use is True
 
-    def test_page_swap_event_updates_state(self, run_os):
-        """Test PAGE_SWAP event updates page on_disk status."""
+    def test_page_swap_queue_event_updates_state(self, scheduler):
+        """Test PAGE_SWAP_QUEUE event updates waiting_to_swap status."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=True),
+            SimpleNamespace(etype='PAGE_SWAP_QUEUE', pid=1, idx=0, waiting=True),
+        ]
+        scheduler(events)
+        
+        assert scheduler.pages[(1, 0)].waiting_to_swap is True
+        assert scheduler.pages[(1, 0)].swap_in_progress is False
+
+    def test_page_swap_queue_cancelled_resets_state(self, scheduler):
+        """Test PAGE_SWAP_QUEUE with waiting=False resets swap state."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=True),
+            SimpleNamespace(etype='PAGE_SWAP_QUEUE', pid=1, idx=0, waiting=True),
+            SimpleNamespace(etype='PAGE_SWAP_QUEUE', pid=1, idx=0, waiting=False),
+        ]
+        scheduler(events)
+        
+        assert scheduler.pages[(1, 0)].waiting_to_swap is False
+        assert scheduler.pages[(1, 0)].swap_in_progress is False
+        assert scheduler.pages[(1, 0)].swap_percentage_completed == 0.0
+
+    def test_page_swap_start_event_updates_state(self, scheduler):
+        """Test PAGE_SWAP_START event updates swap_in_progress status."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=True),
+            SimpleNamespace(etype='PAGE_SWAP_QUEUE', pid=1, idx=0, waiting=True),
+            SimpleNamespace(etype='PAGE_SWAP_START', pid=1, idx=0),
+        ]
+        scheduler(events)
+        
+        assert scheduler.pages[(1, 0)].waiting_to_swap is False
+        assert scheduler.pages[(1, 0)].swap_in_progress is True
+        assert scheduler.pages[(1, 0)].swap_percentage_completed == 0.0
+
+    def test_page_swap_event_updates_state(self, scheduler):
+        """Test PAGE_SWAP event updates page on_disk status and resets swap state."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=True),
+            SimpleNamespace(etype='PAGE_SWAP_QUEUE', pid=1, idx=0, waiting=True),
+            SimpleNamespace(etype='PAGE_SWAP_START', pid=1, idx=0),
             SimpleNamespace(etype='PAGE_SWAP', pid=1, idx=0, swap=True),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert run_os.pages[(1, 0)].on_disk is True
+        assert scheduler.pages[(1, 0)].on_disk is True
+        assert scheduler.pages[(1, 0)].swap_in_progress is False
+        assert scheduler.pages[(1, 0)].swap_percentage_completed == 0.0
 
-    def test_page_free_event_removes_page(self, run_os):
+    def test_page_free_event_removes_page(self, scheduler):
         """Test PAGE_FREE event removes page."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
             SimpleNamespace(etype='PAGE_NEW', pid=1, idx=0, swap=False, use=True),
             SimpleNamespace(etype='PAGE_FREE', pid=1, idx=0),
         ]
-        run_os(events)
+        scheduler(events)
         
-        assert (1, 0) not in run_os.pages
-        assert len(run_os.processes[1].pages) == 0
+        assert (1, 0) not in scheduler.pages
+        assert len(scheduler.processes[1].pages) == 0
 
 
-class TestRunOsActionGeneration:
-    """Tests for RunOs action generation methods via public interface."""
+class TestSchedulerActionGeneration:
+    """Tests for Scheduler action generation methods via public interface."""
 
     @pytest.fixture
-    def run_os(self):
-        """Create a fresh RunOs instance for each test."""
-        from automation.api import RunOs
-        instance = RunOs()
+    def scheduler(self):
+        """Create a fresh Scheduler instance for each test."""
+        from automation.api import Scheduler
+        instance = Scheduler()
         instance.processes = {}
         instance.pages = {}
         instance.used_cpus = 0
         instance.io_queue.io_count = 0
         return instance
 
-    def test_move_page_returns_page_action(self, run_os):
+    def test_move_page_returns_page_action(self, scheduler):
         """Test move_page generates a page action returned by __call__."""
         # Actions must be generated within schedule() during __call__
         def custom_schedule():
-            run_os.move_page(pid=1, idx=2)
-        run_os.schedule = custom_schedule
+            scheduler.move_page(pid=1, idx=2)
+        scheduler.schedule = custom_schedule
         
-        result = run_os([])
+        result = scheduler([])
         
         assert len(result) == 1
         assert result[0]['type'] == 'page'
         assert result[0]['pid'] == 1
         assert result[0]['idx'] == 2
 
-    def test_move_process_returns_process_action(self, run_os):
+    def test_move_process_returns_process_action(self, scheduler):
         """Test move_process generates a process action returned by __call__."""
         def custom_schedule():
-            run_os.move_process(pid=42)
-        run_os.schedule = custom_schedule
+            scheduler.move_process(pid=42)
+        scheduler.schedule = custom_schedule
         
-        result = run_os([])
+        result = scheduler([])
         
         assert len(result) == 1
         assert result[0]['type'] == 'process'
         assert result[0]['pid'] == 42
 
-    def test_do_io_returns_io_action(self, run_os):
+    def test_do_io_returns_io_action(self, scheduler):
         """Test do_io generates an io_queue action returned by __call__."""
         def custom_schedule():
-            run_os.do_io()
-        run_os.schedule = custom_schedule
+            scheduler.do_io()
+        scheduler.schedule = custom_schedule
         
-        result = run_os([])
+        result = scheduler([])
         
         assert len(result) == 1
         assert result[0]['type'] == 'io_queue'
 
-    def test_multiple_actions_accumulated(self, run_os):
+    def test_multiple_actions_accumulated(self, scheduler):
         """Test multiple actions accumulate and are returned together."""
         def custom_schedule():
-            run_os.move_process(1)
-            run_os.move_page(1, 0)
-            run_os.do_io()
-        run_os.schedule = custom_schedule
+            scheduler.move_process(1)
+            scheduler.move_page(1, 0)
+            scheduler.do_io()
+        scheduler.schedule = custom_schedule
         
-        result = run_os([])
+        result = scheduler([])
         
         assert len(result) == 3
 
-    def test_call_returns_fresh_actions(self, run_os):
+    def test_call_returns_fresh_actions(self, scheduler):
         """Test __call__ clears actions between calls."""
         call_count = [0]
         def custom_schedule():
             call_count[0] += 1
             if call_count[0] == 1:
-                run_os.move_process(1)
-        run_os.schedule = custom_schedule
+                scheduler.move_process(1)
+        scheduler.schedule = custom_schedule
         
-        result1 = run_os([])
+        result1 = scheduler([])
         # Note: result1 references the internal queue, so we must check it
         # before the next call clears the queue
         assert len(result1) == 1
         
-        result2 = run_os([])
+        result2 = scheduler([])
         assert result2 == []
 
 
-class TestRunOsIntegration:
-    """Integration tests for RunOs __call__ method."""
+class TestSchedulerIntegration:
+    """Integration tests for Scheduler __call__ method."""
 
     @pytest.fixture
-    def run_os(self):
-        """Create a fresh RunOs instance for each test."""
-        from automation.api import RunOs
-        instance = RunOs()
+    def scheduler(self):
+        """Create a fresh Scheduler instance for each test."""
+        from automation.api import Scheduler
+        instance = Scheduler()
         instance.processes = {}
         instance.pages = {}
         instance.used_cpus = 0
         instance.io_queue.io_count = 0
         return instance
 
-    def test_call_processes_events_and_returns_actions(self, run_os):
+    def test_call_processes_events_and_returns_actions(self, scheduler):
         """Test that __call__ processes input events and returns action events."""
         events = [SimpleNamespace(etype='PROC_NEW', pid=1)]
         
-        result = run_os(events)
+        result = scheduler(events)
         
-        assert 1 in run_os.processes
+        assert 1 in scheduler.processes
         assert result == []
 
-    def test_call_handles_unknown_events_gracefully(self, run_os):
+    def test_call_handles_unknown_events_gracefully(self, scheduler):
         """Test that unknown event types don't cause errors."""
         events = [SimpleNamespace(etype='UNKNOWN_EVENT', data='test')]
         
-        result = run_os(events)
+        result = scheduler(events)
         assert result == []
 
-    def test_full_process_lifecycle(self, run_os):
+    def test_full_process_lifecycle(self, scheduler):
         """Test a complete process lifecycle through events."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
@@ -350,14 +416,14 @@ class TestRunOsIntegration:
             SimpleNamespace(etype='PROC_CPU', pid=1, cpu=False),
         ]
         
-        run_os(events)
+        scheduler(events)
         
-        assert 1 in run_os.processes
-        assert run_os.processes[1].has_ended is True
-        assert run_os.processes[1].cpu is False
-        assert run_os.used_cpus == 0
+        assert 1 in scheduler.processes
+        assert scheduler.processes[1].has_ended is True
+        assert scheduler.processes[1].cpu is False
+        assert scheduler.used_cpus == 0
 
-    def test_process_killed_cleans_up(self, run_os):
+    def test_process_killed_cleans_up(self, scheduler):
         """Test that PROC_KILL properly cleans up process and its pages."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
@@ -368,11 +434,11 @@ class TestRunOsIntegration:
             SimpleNamespace(etype='PROC_KILL', pid=1),
         ]
         
-        run_os(events)
+        scheduler(events)
         
-        assert 1 not in run_os.processes
-        assert (1, 0) not in run_os.pages
-        assert (1, 1) not in run_os.pages
+        assert 1 not in scheduler.processes
+        assert (1, 0) not in scheduler.pages
+        assert (1, 1) not in scheduler.pages
 
 
 class TestGameObjectsEmitEvents:
@@ -529,6 +595,78 @@ class TestGameObjectsEmitEvents:
         
         assert len(swap_events) >= 1, "Page should emit PAGE_SWAP when swap completes"
 
+    def test_page_emits_swap_queue_event_when_swap_requested(self, stage):
+        """Test that Page emits PAGE_SWAP_QUEUE event when swap is requested."""
+        # Create a process and put on CPU (creates pages)
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        # Get a page
+        page = process._pages[0]
+        
+        game_monitor.clear_events()
+        
+        # Request swap
+        page.request_swap()
+        
+        events = game_monitor.get_events()
+        swap_queue_events = [e for e in events if e.etype == 'PAGE_SWAP_QUEUE']
+        
+        assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap requested"
+        assert swap_queue_events[0].pid == page.pid
+        assert swap_queue_events[0].idx == page.idx
+        assert swap_queue_events[0].waiting is True
+
+    def test_page_emits_swap_start_event_when_swap_begins(self, stage):
+        """Test that Page emits PAGE_SWAP_START event when swap actually starts."""
+        # Create a process and put on CPU (creates pages)
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        # Get a page
+        page = process._pages[0]
+        
+        game_monitor.clear_events()
+        
+        # Request swap
+        page.request_swap()
+        
+        # Run update to start the swap
+        stage.page_manager.update(0, [])
+        
+        events = game_monitor.get_events()
+        swap_start_events = [e for e in events if e.etype == 'PAGE_SWAP_START']
+        
+        assert len(swap_start_events) >= 1, "Page should emit PAGE_SWAP_START when swap starts"
+        assert swap_start_events[0].pid == page.pid
+        assert swap_start_events[0].idx == page.idx
+
+    def test_page_emits_swap_queue_cancelled_when_swap_cancelled(self, stage):
+        """Test that Page emits PAGE_SWAP_QUEUE with waiting=False when swap is cancelled."""
+        # Create a process and put on CPU (creates pages)
+        stage.process_manager._create_process()
+        process = stage.process_manager.get_process(1)
+        process.toggle()
+        
+        # Get a page
+        page = process._pages[0]
+        
+        # Request swap
+        page.request_swap()
+        
+        game_monitor.clear_events()
+        
+        # Cancel swap
+        page.request_swap_cancellation()
+        
+        events = game_monitor.get_events()
+        swap_queue_events = [e for e in events if e.etype == 'PAGE_SWAP_QUEUE']
+        
+        assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap cancelled"
+        assert swap_queue_events[0].waiting is False
+
     def test_process_emits_page_free_when_killed(self, stage):
         """Test that Process emits PAGE_FREE events when killed."""
         # Create a process and put on CPU (creates pages)
@@ -611,7 +749,7 @@ class TestStageAutomationIntegration:
     def stage_with_script(self, Stage, stage_config, scene_manager):
         """Create a stage with a simple automation script."""
         script_source = '''
-def run_os(events):
+def scheduler(events):
     actions = []
     for event in events:
         if event.etype == 'PROC_NEW':
@@ -668,7 +806,7 @@ def run_os(events):
     def test_script_with_page_action(self, Stage, stage_config, scene_manager, monkeypatch):
         """Test that script page actions trigger page swaps."""
         script_source = '''
-def run_os(events):
+def scheduler(events):
     actions = []
     for event in events:
         if event.etype == 'PAGE_NEW':
@@ -705,7 +843,7 @@ def run_os(events):
     def test_script_with_io_action(self, Stage, stage_config, scene_manager, monkeypatch):
         """Test that script io_queue actions trigger IO processing."""
         script_source = '''
-def run_os(events):
+def scheduler(events):
     actions = []
     for event in events:
         if event.etype == 'IO_QUEUE' and event.io_count > 0:
@@ -754,10 +892,10 @@ def run_os(events):
         captured = capsys.readouterr()
         assert 'ValueError' in captured.err
 
-    def test_script_without_run_os_function(self, Stage, stage_config, scene_manager):
-        """Test that script without run_os function is handled gracefully."""
+    def test_script_without_scheduler_function(self, Stage, stage_config, scene_manager):
+        """Test that script without scheduler function is handled gracefully."""
         script_source = '''
-# No run_os defined
+# No scheduler defined
 x = 1
 '''
         compiled = compile(script_source, '<test>', 'exec')
@@ -778,7 +916,7 @@ class TestAutoModule:
     def temp_script(self, tmp_path):
         """Create a temporary script file."""
         script_file = tmp_path / "test_script.py"
-        script_file.write_text("def run_os(events): return []\n")
+        script_file.write_text("def scheduler(events): return []\n")
         return str(script_file)
 
     @pytest.fixture
@@ -930,12 +1068,12 @@ stage = Stage("Test Sandbox", config)
         import os
 
         script_file = tmp_path / "rel_script.py"
-        script_file.write_text("def run_os(events): return []\n")
+        script_file.write_text("def scheduler(events): return []\n")
 
         monkeypatch.chdir(tmp_path)
         os.makedirs("../subdir", exist_ok=True)
         rel_script = tmp_path.parent / "subdir" / "script.py"
-        rel_script.write_text("def run_os(events): return []\n")
+        rel_script.write_text("def scheduler(events): return []\n")
 
         compiled = compile_auto_script(str(rel_script))
         assert compiled is not None

@@ -12,6 +12,8 @@ EventType = Enum('_et', [
 
     'PAGE_NEW',
     'PAGE_USE',
+    'PAGE_SWAP_QUEUE',
+    'PAGE_SWAP_START',
     'PAGE_SWAP',
     'PAGE_FREE',
 
@@ -36,6 +38,19 @@ def _add_event(typ, data):
 def notify_io_event_count(count):
     _add_event(EventType.IO_QUEUE, {
         'io_count': count
+    })
+
+def notify_page_swap_queue(pid, idx, waiting):
+    _add_event(EventType.PAGE_SWAP_QUEUE, {
+        'pid': pid,
+        'idx': idx,
+        'waiting': waiting
+    })
+
+def notify_page_swap_start(pid, idx):
+    _add_event(EventType.PAGE_SWAP_START, {
+        'pid': pid,
+        'idx': idx
     })
 
 def notify_page_swap(pid, idx, swap):
