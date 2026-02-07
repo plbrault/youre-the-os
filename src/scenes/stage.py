@@ -1,4 +1,5 @@
 import sys
+from os.path import dirname, abspath
 
 from constants import ONE_SECOND
 import game_monitor
@@ -202,8 +203,6 @@ class Stage(Scene):
             return
 
         # Add project root to sys.path so scripts can import from automation package
-        import sys
-        from os.path import dirname, abspath
         project_root = dirname(dirname(abspath(self._script.co_filename)))
         if project_root not in sys.path:
             sys.path.insert(0, project_root)
