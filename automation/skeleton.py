@@ -17,7 +17,6 @@ See automation/api.py for full documentation of the API.
 """
 from automation import RunOs
 
-
 class MyScheduler(RunOs):
     """Your custom scheduler implementation.
     

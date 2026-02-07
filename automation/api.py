@@ -44,7 +44,6 @@ See `src/game_monitor.py` for more details on events.
 """
 from dataclasses import dataclass, field
 
-
 @dataclass
 class Page:
     """Represents a memory page in the game.
