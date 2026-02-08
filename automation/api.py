@@ -75,7 +75,6 @@ class Page:
     def __eq__(self, other: tuple[int, int]):
         return self.key == other
 
-
 @dataclass
 class Process:
     """Represents a process in the game.
@@ -104,17 +103,6 @@ class Process:
 
     def __eq__(self, other: int):
         return self.key == other
-
-    @property
-    def is_runnable(self):
-        """Check if process can be scheduled to a CPU."""
-        return (
-            not self.cpu
-            and not self.waiting_for_io
-            and not self.waiting_for_page
-            and not self.has_ended
-        )
-
 
 @dataclass
 class IoQueue:
