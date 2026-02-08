@@ -1246,19 +1246,18 @@ class TestProcess:
     def test_time_to_termination_for_idle_process(self, stage, process_config):
         process = Process(1, stage, process_config)
 
-        expected_time = (DEAD_STARVATION_LEVEL - process.starvation_level) * process.time_between_starvation_levels
-        assert process.time_to_termination == expected_time
+        assert process.starvation_level == 1
+        assert process.time_to_termination == 50000
 
     def test_time_to_termination_decreases_with_starvation(self, stage, process_config):
         process = Process(1, stage, process_config)
 
-        initial_time = process.time_to_termination
+        assert process.time_to_termination == 50000
 
-        process.update(process.time_between_starvation_levels, [])
+        process.update(10000, [])
 
         assert process.starvation_level == 2
-        assert process.time_to_termination < initial_time
-        assert process.time_to_termination == (DEAD_STARVATION_LEVEL - 2) * process.time_between_starvation_levels
+        assert process.time_to_termination == 40000
 
     def test_time_to_termination_infinity_when_running(self, stage, process_config):
         process = Process(1, stage, process_config)
@@ -1302,12 +1301,7 @@ class TestProcess:
     def test_time_to_termination_accounts_for_partial_starvation_level(self, stage, process_config):
         process = Process(1, stage, process_config)
 
-        half_starvation_time = process.time_between_starvation_levels // 2
-        process.update(half_starvation_time, [])
+        process.update(5000, [])
 
         assert process.starvation_level == 1
-        expected_time = (
-            (DEAD_STARVATION_LEVEL - process.starvation_level - 1) * process.time_between_starvation_levels
-            + (process.time_between_starvation_levels - half_starvation_time)
-        )
-        assert process.time_to_termination == expected_time
+        assert process.time_to_termination == 45000
