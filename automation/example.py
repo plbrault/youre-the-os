@@ -2,6 +2,8 @@ from automation import Scheduler
 
 class SimpleScheduler(Scheduler):
     def schedule(self):
+        self._pending_swap_outs = set()
+        self._pending_swap_ins = set()
         self._handle_io_queue()
         self._handle_page_swaps()
         self._handle_terminated_processes()
@@ -16,15 +18,19 @@ class SimpleScheduler(Scheduler):
             if proc.waiting_for_page:
                 for page in proc.pages:
                     if page.on_disk and not page.swap_in_progress and not page.waiting_to_swap:
-                        self._make_room_in_ram()
-                        self.move_page(page.pid, page.idx)
+                        if page.key not in self._pending_swap_ins:
+                            if self._make_room_in_ram():
+                                self.move_page(page.pid, page.idx)
+                                self._pending_swap_ins.add(page.key)
                         break
 
     def _make_room_in_ram(self):
         for page in self.pages.values():
             if (not page.on_disk and not page.in_use 
-                    and not page.swap_in_progress and not page.waiting_to_swap):
+                    and not page.swap_in_progress and not page.waiting_to_swap
+                    and page.key not in self._pending_swap_outs):
                 self.move_page(page.pid, page.idx)
+                self._pending_swap_outs.add(page.key)
                 return True
         return False
 
@@ -53,11 +59,13 @@ class SimpleScheduler(Scheduler):
                 break
             
             pages_on_disk = [p for p in proc.pages 
-                             if p.on_disk and not p.swap_in_progress and not p.waiting_to_swap]
+                             if p.on_disk and not p.swap_in_progress and not p.waiting_to_swap
+                             and p.key not in self._pending_swap_ins]
             if pages_on_disk:
                 for page in pages_on_disk:
                     if self._make_room_in_ram():
                         self.move_page(page.pid, page.idx)
+                        self._pending_swap_ins.add(page.key)
                 continue 
 
             self.move_process(proc.pid)
