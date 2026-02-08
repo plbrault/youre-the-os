@@ -78,10 +78,22 @@ class Process(SceneObject):
     @property
     def is_blocked(self):
         return self.is_waiting_for_io or self.is_waiting_for_page
+    
+    @property
+    def is_running(self):
+        return self.has_cpu and not self.is_blocked and not self.has_ended
+    
+    @property
+    def is_idle(self):
+        return not self.has_cpu and not self.is_blocked and not self.has_ended
 
     @property
     def has_ended(self):
         return self._has_ended
+    
+    @property
+    def has_ended_gracefully(self):
+        return self._has_ended and self.starvation_level == 0
 
     @property
     def starvation_level(self):
@@ -100,15 +112,29 @@ class Process(SceneObject):
     def current_starvation_level_duration(self):
         """Time in milliseconds since starvation level changed."""
         return self._last_update_time - self._last_starvation_level_change_time
-
+    
     @property
     def is_progressing_to_happiness(self):
         return (
             self.has_cpu
             and self.starvation_level > 0
-            and not self.is_blocked
-            and not self.has_ended
+            and self.is_running
         )
+    
+    @property
+    def time_to_death(self):
+        """Time in milliseconds until process is terminated due to starvation.
+        Returns infinity if process is currently running.
+        Also returns infinity if process has gracefully terminated.
+        Returns 0 if process is already dead.
+        """
+        if self.starvation_level >= LAST_ALIVE_STARVATION_LEVEL:
+            return 0
+        if self.is_running or self.has_ended_gracefully:
+            return float('inf')
+        remaining_starvation_levels = DEAD_STARVATION_LEVEL - self.starvation_level
+        remaining_time_for_current_level = self.time_between_starvation_levels - self.current_starvation_level_duration
+        return (remaining_starvation_levels * self.time_between_starvation_levels) + remaining_time_for_current_level    
 
     @property
     def sort_key(self):
