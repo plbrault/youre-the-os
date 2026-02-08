@@ -134,7 +134,11 @@ class Process(SceneObject):
             return float('inf')
         remaining_starvation_levels = DEAD_STARVATION_LEVEL - self.starvation_level
         remaining_time_for_current_level = self.time_between_starvation_levels - self.current_starvation_level_duration
-        return (remaining_starvation_levels - 1) * self.time_between_starvation_levels + remaining_time_for_current_level    
+        time_to_termination = max(
+            0,
+            (remaining_starvation_levels - 1) * self.time_between_starvation_levels + remaining_time_for_current_level    
+        )
+        return time_to_termination
 
     @property
     def sort_key(self):
