@@ -57,7 +57,7 @@ class TestSchedulerDataClasses:
         
         process = Process(pid=42)
         assert process.pid == 42
-        assert process.cpu is False
+        assert process.has_cpu is False
         assert process.starvation_level == 1
         assert process.waiting_for_io is False
         assert process.waiting_for_page is False
@@ -121,7 +121,7 @@ class TestSchedulerStateUpdates:
         ]
         scheduler(events)
         
-        assert scheduler.processes[1].cpu is True
+        assert scheduler.processes[1].has_cpu is True
         assert scheduler.used_cpus == 1
 
     def test_proc_cpu_event_releases_from_cpu(self, scheduler):
@@ -133,7 +133,7 @@ class TestSchedulerStateUpdates:
         ]
         scheduler(events)
         
-        assert scheduler.processes[1].cpu is False
+        assert scheduler.processes[1].has_cpu is False
         assert scheduler.used_cpus == 0
 
     def test_proc_starv_event_updates_starvation(self, scheduler):
@@ -420,7 +420,7 @@ class TestSchedulerIntegration:
         
         assert 1 in scheduler.processes
         assert scheduler.processes[1].has_ended is True
-        assert scheduler.processes[1].cpu is False
+        assert scheduler.processes[1].has_cpu is False
         assert scheduler.used_cpus == 0
 
     def test_process_killed_cleans_up(self, scheduler):

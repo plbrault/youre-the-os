@@ -89,7 +89,7 @@ class Process:
         pages: List of Page objects owned by this process
     """
     pid: int
-    cpu: bool = False
+    has_cpu: bool = False
     starvation_level: int = 1
     waiting_for_io: bool = False
     waiting_for_page: bool = False
@@ -307,7 +307,7 @@ class Scheduler:
         """
         proc = self.processes.get(event.pid)
         if proc:
-            proc.cpu = event.cpu
+            proc.has_cpu = event.cpu
             if event.cpu:
                 self.used_cpus += 1
             else:
