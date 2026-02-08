@@ -122,7 +122,7 @@ class Process(SceneObject):
         )
     
     @property
-    def time_to_death(self):
+    def time_to_termination(self):
         """Time in milliseconds until process is terminated due to starvation.
         Returns infinity if process is currently running.
         Also returns infinity if process has gracefully terminated.
