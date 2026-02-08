@@ -128,7 +128,7 @@ class Process(SceneObject):
         Also returns infinity if process has gracefully terminated.
         Returns 0 if process is already dead.
         """
-        if self.starvation_level >= LAST_ALIVE_STARVATION_LEVEL:
+        if self.starvation_level >= DEAD_STARVATION_LEVEL:
             return 0
         if self.is_running or self.has_ended_gracefully:
             return float('inf')

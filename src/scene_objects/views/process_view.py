@@ -90,14 +90,9 @@ class ProcessView(Drawable):
             and not self._process.is_running
         ):
             progress_bar_width = (
-                self.width
-                    - 4
-                    - (
-                        self._process.current_starvation_level_duration
-                        / self._process.time_between_starvation_levels
-                    )
-                    * (self.width - 4)
-            )
+                self._process.time_to_death
+                / self._process.time_between_starvation_levels
+            ) * (self.width - 4)
             progress_bar_height = 2
             pygame.draw.rect(surface, Color.BLUE, pygame.Rect(
                 self._x + 2,
