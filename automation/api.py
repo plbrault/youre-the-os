@@ -83,11 +83,11 @@ class Process:
         pid: Process ID
         cpu: True if process is currently on a CPU
         starvation_level: Current starvation level (0=happy, 6=dead)
-        time_to_termination: Time in ms until process dies from starvation (inf if running)
+        time_to_termination: Time in ms until process dies from starvation (float('inf') if running or has gracefully terminated)
         waiting_for_io: True if blocked waiting for I/O
         waiting_for_page: True if blocked waiting for a page swap
         has_ended: True if process has terminated
-         pages: List of Page objects owned by this process
+        pages: List of Page objects owned by this process
     """
     pid: int
     cpu: bool = False
