@@ -83,14 +83,16 @@ class Process:
         pid: Process ID
         cpu: True if process is currently on a CPU
         starvation_level: Current starvation level (0=happy, 6=dead)
+        time_to_termination: Time in ms until process dies from starvation (inf if running)
         waiting_for_io: True if blocked waiting for I/O
         waiting_for_page: True if blocked waiting for a page swap
         has_ended: True if process has terminated
-        pages: List of Page objects owned by this process
+         pages: List of Page objects owned by this process
     """
     pid: int
     cpu: bool = False
     starvation_level: int = 1
+    time_to_termination: float = float('inf')    
     waiting_for_io: bool = False
     waiting_for_page: bool = False
     has_ended: bool = False
@@ -319,10 +321,12 @@ class Scheduler:
         Args:
             event.pid: Process ID
             event.starvation_level: New starvation level (0-6)
+            event.time_to_termination: Time in ms until process dies from starvation
         """
         proc = self.processes.get(event.pid)
         if proc:
             proc.starvation_level = event.starvation_level
+            proc.time_to_termination = event.time_to_termination
 
     def _update_PROC_WAIT_IO(self, event):
         """Handle process I/O wait status change.

@@ -315,13 +315,13 @@ class Process(SceneObject):
             if current_time - self._last_state_change_time >= self.cpu.process_happiness_ms:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
-                game_monitor.notify_process_starvation(self._pid, self._starvation_level)
+                game_monitor.notify_process_starvation(self._pid, self._starvation_level, self.time_to_termination)
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
                 self._starvation_level += 1
                 game_monitor.notify_process_starvation(
-                    self._pid, self._starvation_level)
+                    self._pid, self._starvation_level, self.time_to_termination)
             else:
                 self._terminate_by_user()
 
