@@ -120,9 +120,9 @@ class Process(SceneObject):
     @property
     def time_to_termination(self):
         """Time in milliseconds until process is terminated due to starvation.
-        Returns infinity if process is currently running.
-        Also returns infinity if process has gracefully terminated.
-        Returns 0 if process is already dead.
+        Returns float('inf') if process is currently running or if it has
+        terminated gracefully. Returns 0 if process has already been 
+        terminated due to starvation.
         """
         if self.starvation_level >= DEAD_STARVATION_LEVEL:
             return 0
