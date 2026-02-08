@@ -55,6 +55,8 @@ pipenv run sandbox sandbox.sample
 
 _(Original implementation by [@Wiguwbe](https://github.com/Wiguwbe))_
 
+> **WARNING:** Running automation scripts (including the provided example) may cause rapidly changing colors on the screen.
+
 ```bash
 pipenv run auto <script.py> [args]
 # to get all the available options
