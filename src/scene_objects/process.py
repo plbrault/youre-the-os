@@ -82,10 +82,6 @@ class Process(SceneObject):
     @property
     def is_running(self):
         return self.has_cpu and not self.is_blocked and not self.has_ended
-    
-    @property
-    def is_idle(self):
-        return not self.has_cpu and not self.is_blocked and not self.has_ended
 
     @property
     def has_ended(self):

@@ -1153,57 +1153,6 @@ class TestProcess:
         assert process.has_ended == True
         assert process.is_running == False
 
-    def test_is_idle_when_no_cpu_and_not_blocked(self, stage, process_config):
-        process = Process(1, stage, process_config)
-
-        assert process.is_idle == True
-
-        process.use_cpu()
-
-        assert process.is_idle == False
-
-        process.yield_cpu()
-
-        assert process.is_idle == True
-
-    def test_is_idle_false_when_blocked_for_io(self, stage_custom_config, monkeypatch, process_custom_config):
-        config = process_custom_config(
-            io_probability=0.1,
-            graceful_termination_probability=0
-        )
-        stage = stage_custom_config(StageConfig(
-            cpu_config=CpuConfig(num_cores=4),
-            num_processes_at_startup=14,
-            num_ram_rows=8,
-            new_process_probability=0,
-            io_probability=0.1,
-            graceful_termination_probability=0
-        ))
-
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-
-        process = Process(1, stage, config)
-        process.use_cpu()
-        process.update(ONE_SECOND, [])
-
-        assert process.is_waiting_for_io == True
-
-        process.yield_cpu()
-
-        assert process.has_cpu == False
-        assert process.is_idle == False
-
-    def test_is_idle_false_when_ended(self, stage, process_config):
-        process = Process(1, stage, process_config)
-
-        assert process.is_idle == True
-
-        for i in range(1, DEAD_STARVATION_LEVEL + 1):
-            process.update(i * process.time_between_starvation_levels, [])
-
-        assert process.has_ended == True
-        assert process.is_idle == False
-
     def test_has_ended_gracefully_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
             io_probability=0,
