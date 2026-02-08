@@ -1079,3 +1079,178 @@ class TestProcess:
 
         assert process_1.sort_key == process_2.sort_key
         assert process_1.sort_key < process_3.sort_key
+
+    def test_is_running_when_has_cpu_and_not_blocked(self, stage, process_config):
+        process = Process(1, stage, process_config)
+
+        assert process.is_running == False
+
+        process.use_cpu()
+
+        assert process.is_running == True
+
+    def test_is_running_false_when_blocked_for_io(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+
+        assert process.is_running == True
+
+        process.update(ONE_SECOND, [])
+
+        assert process.is_waiting_for_io == True
+        assert process.is_running == False
+
+    def test_is_running_false_when_blocked_for_page(self, stage, monkeypatch, process_config):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+
+        assert process.is_running == True
+
+        stage.page_manager.get_page(1, 0).request_swap()
+        stage.page_manager.update(1000, [])
+        process.update(0, [])
+
+        assert process.is_waiting_for_page == True
+        assert process.is_running == False
+
+    def test_is_running_false_when_ended(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0,
+            graceful_termination_probability=0.01
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0.01
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+        process.update(ONE_SECOND, [])
+
+        assert process.has_ended == True
+        assert process.is_running == False
+
+    def test_has_ended_gracefully_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0,
+            graceful_termination_probability=0.01
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0.01
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+
+        assert process.has_ended_gracefully == False
+
+        process.use_cpu()
+        process.update(ONE_SECOND, [])
+
+        assert process.has_ended == True
+        assert process.starvation_level == 0
+        assert process.has_ended_gracefully == True
+
+    def test_has_ended_gracefully_false_after_starvation_death(self, stage, process_config):
+        process = Process(1, stage, process_config)
+
+        assert process.has_ended_gracefully == False
+
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(i * process.time_between_starvation_levels, [])
+
+        assert process.has_ended == True
+        assert process.starvation_level == DEAD_STARVATION_LEVEL
+        assert process.has_ended_gracefully == False
+
+    def test_time_to_termination_for_idle_process(self, stage, process_config):
+        process = Process(1, stage, process_config)
+
+        assert process.starvation_level == 1
+        assert process.time_to_termination == 50000
+
+    def test_time_to_termination_decreases_with_starvation(self, stage, process_config):
+        process = Process(1, stage, process_config)
+
+        assert process.time_to_termination == 50000
+
+        process.update(10000, [])
+
+        assert process.starvation_level == 2
+        assert process.time_to_termination == 40000
+
+    def test_time_to_termination_infinity_when_running(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+
+        assert process.is_running == True
+        assert process.time_to_termination == float('inf')
+
+    def test_time_to_termination_infinity_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0,
+            graceful_termination_probability=0.01
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0.01
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+        process.update(ONE_SECOND, [])
+
+        assert process.has_ended_gracefully == True
+        assert process.time_to_termination == float('inf')
+
+    def test_time_to_termination_zero_when_dead(self, stage, process_config):
+        process = Process(1, stage, process_config)
+
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(i * process.time_between_starvation_levels, [])
+
+        assert process.starvation_level == DEAD_STARVATION_LEVEL
+        assert process.time_to_termination == 0
+
+    def test_time_to_termination_accounts_for_partial_starvation_level(self, stage, process_config):
+        process = Process(1, stage, process_config)
+
+        process.update(5000, [])
+
+        assert process.starvation_level == 1
+        assert process.time_to_termination == 45000

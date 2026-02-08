@@ -52,7 +52,7 @@ class ProcessView(Drawable):
         super().__init__()
 
     def draw(self, surface):
-        if self._process.has_ended and self._process.starvation_level == 0:
+        if self._process.has_ended_gracefully:
             color = Color.LIGHT_BLUE
             starvation_emoji_surface = _gracefully_terminated_emoji
         else:
@@ -87,17 +87,12 @@ class ProcessView(Drawable):
             ))
         elif (
             self._process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
-            and not self._process.has_cpu
+            and not self._process.is_running
         ):
             progress_bar_width = (
-                self.width
-                    - 4
-                    - (
-                        self._process.current_starvation_level_duration
-                        / self._process.time_between_starvation_levels
-                    )
-                    * (self.width - 4)
-            )
+                self._process.time_to_termination
+                / self._process.time_between_starvation_levels
+            ) * (self.width - 4)
             progress_bar_height = 2
             pygame.draw.rect(surface, Color.BLUE, pygame.Rect(
                 self._x + 2,
