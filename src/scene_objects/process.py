@@ -197,7 +197,7 @@ class Process(SceneObject):
                 page.in_use = False
                 game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
             if self.has_ended:
-                if self.starvation_level == 0:
+                if self.has_ended_gracefully:
                     self.view.target_y = -self.view.height
                 for page in self._pages:
                     game_monitor.notify_page_free(page.pid, page.idx)
@@ -308,7 +308,7 @@ class Process(SceneObject):
         self._set_waiting_for_page(unavailable_pages > 0)
 
     def _update_starvation_level(self, current_time):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if current_time - self._last_state_change_time >= self.cpu.process_happiness_ms:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
@@ -323,7 +323,7 @@ class Process(SceneObject):
                 self._terminate_by_user()
 
     def _handle_io_probability(self):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if (
                 not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
                 and not self._is_on_io_cooldown
@@ -332,7 +332,7 @@ class Process(SceneObject):
                 self._wait_for_io()
 
     def _handle_new_page_probability(self):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if (
                 len(self._pages) < MAX_PAGES_PER_PROCESS
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
@@ -344,7 +344,7 @@ class Process(SceneObject):
                     new_page.pid, new_page.idx, new_page.on_disk, new_page.in_use)
 
     def _handle_graceful_termination_probability(self, current_time):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if (
                 current_time - self._last_state_change_time
                     >= ONE_SECOND
