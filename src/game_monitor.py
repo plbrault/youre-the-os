@@ -103,10 +103,11 @@ def notify_process_killed(pid):
         'pid': pid
     })
 
-def notify_process_starvation(pid, level):
+def notify_process_starvation(pid, level, time_to_termination):
     _add_event(EventType.PROC_STARV, {
         'pid' : pid,
-        'starvation_level': level
+        'starvation_level': level,
+        'time_to_termination': time_to_termination
     })
 
 def notify_process_new(pid):

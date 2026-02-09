@@ -125,12 +125,13 @@ class TestGameMonitor:
 
     def test_notify_process_starvation(self):
         """Test process starvation level event generation."""
-        game_monitor.notify_process_starvation(pid=1, level=3)
+        game_monitor.notify_process_starvation(pid=1, level=3, time_to_termination=30000)
         events = game_monitor.get_events()
         assert len(events) == 1
         assert events[0].etype == 'PROC_STARV'
         assert events[0].pid == 1
         assert events[0].starvation_level == 3
+        assert events[0].time_to_termination == 30000
 
     def test_notify_process_wait_io(self):
         """Test process waiting for IO event generation."""

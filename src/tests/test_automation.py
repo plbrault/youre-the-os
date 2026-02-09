@@ -137,14 +137,15 @@ class TestSchedulerStateUpdates:
         assert scheduler.used_cpus == 0
 
     def test_proc_starv_event_updates_starvation(self, scheduler):
-        """Test PROC_STARV event updates starvation level."""
+        """Test PROC_STARV event updates starvation level and time_to_termination."""
         events = [
             SimpleNamespace(etype='PROC_NEW', pid=1),
-            SimpleNamespace(etype='PROC_STARV', pid=1, starvation_level=4),
+            SimpleNamespace(etype='PROC_STARV', pid=1, starvation_level=4, time_to_termination=20000),
         ]
         scheduler(events)
         
         assert scheduler.processes[1].starvation_level == 4
+        assert scheduler.processes[1].time_to_termination == 20000
 
     def test_proc_wait_io_event_updates_state(self, scheduler):
         """Test PROC_WAIT_IO event updates waiting_for_io."""

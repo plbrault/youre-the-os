@@ -22,7 +22,9 @@ class CustomSettingsDialog(SceneObject):
         super().__init__(CustomSettingsDialogView(self))
 
         self._num_cpus_selector = OptionSelector(
-            [str(i) for i in range(MIN_CPU_COUNT, MAX_CPU_COUNT + 1)], default_config.num_cpus - 1)
+            [str(i) for i in range(MIN_CPU_COUNT, MAX_CPU_COUNT + 1)],
+            default_config.cpu_config.num_cores - 1
+        )
         self.children.append(self._num_cpus_selector)
 
         self._num_processes_at_startup_selector = OptionSelector(

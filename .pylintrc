@@ -415,6 +415,7 @@ disable=missing-module-docstring,
         missing-function-docstring,
         too-many-instance-attributes,
         too-many-arguments,
+        too-many-public-methods
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

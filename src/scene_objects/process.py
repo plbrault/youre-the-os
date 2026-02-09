@@ -80,8 +80,16 @@ class Process(SceneObject):
         return self.is_waiting_for_io or self.is_waiting_for_page
 
     @property
+    def is_running(self):
+        return self.has_cpu and not self.is_blocked and not self.has_ended
+
+    @property
     def has_ended(self):
         return self._has_ended
+
+    @property
+    def has_ended_gracefully(self):
+        return self._has_ended and self.starvation_level == 0
 
     @property
     def starvation_level(self):
@@ -106,9 +114,30 @@ class Process(SceneObject):
         return (
             self.has_cpu
             and self.starvation_level > 0
-            and not self.is_blocked
-            and not self.has_ended
+            and self.is_running
         )
+
+    @property
+    def time_to_termination(self):
+        """Time in milliseconds until process is terminated due to starvation.
+        Returns float('inf') if process is currently running or if it has
+        terminated gracefully. Returns 0 if process has already been 
+        terminated due to starvation.
+        """
+        if self.starvation_level >= DEAD_STARVATION_LEVEL:
+            return 0
+        if self.is_running or self.has_ended_gracefully:
+            return float('inf')
+        remaining_starvation_levels = DEAD_STARVATION_LEVEL - self.starvation_level
+        remaining_time_for_current_level = (
+            self.time_between_starvation_levels - self.current_starvation_level_duration
+        )
+        time_to_termination = max(
+            0,
+            (remaining_starvation_levels - 1)
+            * self.time_between_starvation_levels + remaining_time_for_current_level
+        )
+        return time_to_termination
 
     @property
     def sort_key(self):
@@ -171,7 +200,7 @@ class Process(SceneObject):
                 page.in_use = False
                 game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
             if self.has_ended:
-                if self.starvation_level == 0:
+                if self.has_ended_gracefully:
                     self.view.target_y = -self.view.height
                 for page in self._pages:
                     game_monitor.notify_page_free(page.pid, page.idx)
@@ -282,22 +311,24 @@ class Process(SceneObject):
         self._set_waiting_for_page(unavailable_pages > 0)
 
     def _update_starvation_level(self, current_time):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if current_time - self._last_state_change_time >= self.cpu.process_happiness_ms:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
-                game_monitor.notify_process_starvation(self._pid, self._starvation_level)
+                game_monitor.notify_process_starvation(
+                    self._pid,self._starvation_level, self.time_to_termination
+                )
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
                 self._starvation_level += 1
                 game_monitor.notify_process_starvation(
-                    self._pid, self._starvation_level)
+                    self._pid, self._starvation_level, self.time_to_termination)
             else:
                 self._terminate_by_user()
 
     def _handle_io_probability(self):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if (
                 not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
                 and not self._is_on_io_cooldown
@@ -306,7 +337,7 @@ class Process(SceneObject):
                 self._wait_for_io()
 
     def _handle_new_page_probability(self):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if (
                 len(self._pages) < MAX_PAGES_PER_PROCESS
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
@@ -318,7 +349,7 @@ class Process(SceneObject):
                     new_page.pid, new_page.idx, new_page.on_disk, new_page.in_use)
 
     def _handle_graceful_termination_probability(self, current_time):
-        if self.has_cpu and not self.is_blocked:
+        if self.is_running:
             if (
                 current_time - self._last_state_change_time
                     >= ONE_SECOND
