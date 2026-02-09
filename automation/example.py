@@ -62,13 +62,13 @@ class SimpleScheduler(Scheduler):
 
     def _handle_terminated_processes(self):
         for proc in list(self.processes.values()):
-            if proc.has_ended and proc.cpu:
+            if proc.has_ended and proc.has_cpu:
                 self.move_process(proc.pid)
 
     def _schedule_processes(self):
         active_procs = [p for p in self.processes.values() if not p.has_ended]
-        running = [p for p in active_procs if p.cpu]
-        waiting = [p for p in active_procs if not p.cpu and not p.waiting_for_io and not p.waiting_for_page and p.starvation_level > 0]
+        running = [p for p in active_procs if p.has_cpu]
+        waiting = [p for p in active_procs if not p.has_cpu and not p.waiting_for_io and not p.waiting_for_page and p.starvation_level > 0]
         waiting.sort(key=lambda p: p.starvation_level, reverse=True)
         recently_moved = set()
         for s in self._recently_moved_processes:

@@ -6,7 +6,7 @@ automation scripts. It handles:
 - The Scheduler base class with event handling and action dispatching
 
 To create an automation script:
-1. Subclass Scheduler
+1. Create a subclass of Scheduler
 2. Override the schedule() method with your scheduling logic
 3. Create an instance and expose it as `scheduler`
 
@@ -81,7 +81,7 @@ class Process:
     
     Attributes:
         pid: Process ID
-        cpu: True if process is currently on a CPU
+        has_cpu: True if process is currently on a CPU
         starvation_level: Current starvation level (0=happy, 6=dead)
         time_to_termination: Time in ms until process dies from starvation
                              (float('inf') if running or has gracefully terminated)
@@ -91,7 +91,7 @@ class Process:
         pages: List of Page objects owned by this process
     """
     pid: int
-    cpu: bool = False
+    has_cpu: bool = False
     starvation_level: int = 1
     time_to_termination: float = float('inf')    
     waiting_for_io: bool = False
@@ -310,7 +310,7 @@ class Scheduler:
         """
         proc = self.processes.get(event.pid)
         if proc:
-            proc.cpu = event.cpu
+            proc.has_cpu = event.cpu
             if event.cpu:
                 self.used_cpus += 1
             else:
@@ -393,6 +393,6 @@ class Scheduler:
         have been processed. Use the action methods (move_page,
         move_process, do_io) to send commands back to the game.
         
-        Access self.processes and self.pages for current state.
+        Access self.processes, self.pages, self.io_queue and self.used_cpus for current state.
         """
         pass
