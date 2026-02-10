@@ -215,6 +215,12 @@ class Stage(Scene):
                 num_cols * (PageManager.get_total_rows() - self._config.num_ram_rows),
             '__file__': self._script.co_filename,
         }
+        script_globals['cpu_core_types'] = []
+        for i in range(self._config.cpu_config.num_cores):
+            for j in range(self._config.cpu_config.num_threads_for_core[i]):
+                script_globals['cpu_core_types'].append(
+                    self._config.cpu_config.type_for_core[i].name
+                )
 
         exec(self._script, script_globals)
         try:
