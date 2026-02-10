@@ -781,6 +781,8 @@ def scheduler(events):
                 self.pid = pid
             def toggle(self):
                 toggled_pids.append(self.pid)
+            def has_cpu(self):
+                return False
         
         monkeypatch.setattr(
             stage_with_script.process_manager, 

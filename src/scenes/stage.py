@@ -188,8 +188,12 @@ class Stage(Scene):
                 if event['type'] == 'io_queue':
                     self._process_manager.io_queue.process_events()
                 elif event['type'] == 'process':
-                    self._process_manager.get_process(
-                        event['pid']).toggle()
+                    process = self._process_manager.get_process(event['pid'])
+                    if process is not None:
+                        if process.has_cpu:
+                            process.toggle()
+                        else:
+                            process.toggle(to_e_core=event.get('to_e_core', False))
                 elif event['type'] == 'page':
                     self._page_manager.get_page(
                         event['pid'], event['idx']).request_swap()

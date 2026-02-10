@@ -264,18 +264,18 @@ class Process(SceneObject):
             self._process_manager.del_process(self)
             game_monitor.notify_process_killed(self._pid)
 
-    def toggle(self, right_click=False):
+    def toggle(self, to_e_core=False):
         if self.starvation_level < DEAD_STARVATION_LEVEL:
-            if self.has_cpu and not right_click:
+            if self.has_cpu and not to_e_core:
                 self.yield_cpu()
             else:
-                self.use_cpu(use_e_core=right_click)
+                self.use_cpu(use_e_core=to_e_core)
 
     def _on_left_click(self):
         self.toggle()
 
     def _on_right_click(self):
-        self.toggle(right_click=True)
+        self.toggle(to_e_core=True)
 
     def _check_if_clicked_on(self, event):
         if (
