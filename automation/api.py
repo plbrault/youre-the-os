@@ -22,6 +22,7 @@ Example:
 
 Globals available in automation scripts:
 - `num_cpus`: number of available CPUs
+- `cpu_core_types`: list of core types for each CPU, either 'STANDARD', 'PERFORMANCE', or 'EFFICIENT'
 - `num_ram_pages`: number of pages that fit on RAM
 - `num_swap_pages`: number of pages that fit on SWAP
 
@@ -152,15 +153,17 @@ class Scheduler:
             'idx': idx
         })
 
-    def move_process(self, pid):
+    def move_process(self, pid, to_e_core=False):
         """Toggle a process on/off a CPU.
         
         Args:
             pid: Process ID to move
+            to_e_core: whether to move to an efficient core (True) or standard/performance core (False) when moving process onto CPU.
         """
         self._event_queue.append({
             'type': 'process',
-            'pid': pid
+            'pid': pid,
+            'to_e_core': to_e_core
         })
 
     def do_io(self):

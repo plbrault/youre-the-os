@@ -10,6 +10,7 @@ To use:
 
 Globals available:
 - `num_cpus`: number of available CPUs
+- `cpu_core_types`: list of core types for each CPU, either 'STANDARD', 'PERFORMANCE', or 'EFFICIENT'
 - `num_ram_pages`: number of pages that fit on RAM  
 - `num_swap_pages`: number of pages that fit on SWAP
 
