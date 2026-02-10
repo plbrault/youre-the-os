@@ -333,6 +333,33 @@ class TestSchedulerActionGeneration:
         assert len(result) == 1
         assert result[0]['type'] == 'process'
         assert result[0]['pid'] == 42
+        assert result[0]['to_e_core'] is False
+
+    def test_move_process_with_to_e_core_returns_process_action(self, scheduler):
+        """Test move_process with to_e_core=True generates correct action."""
+        def custom_schedule():
+            scheduler.move_process(pid=42, to_e_core=True)
+        scheduler.schedule = custom_schedule
+        
+        result = scheduler([])
+        
+        assert len(result) == 1
+        assert result[0]['type'] == 'process'
+        assert result[0]['pid'] == 42
+        assert result[0]['to_e_core'] is True
+
+    def test_move_process_with_default_to_e_core_returns_process_action(self, scheduler):
+        """Test move_process with default to_e_core=False generates correct action."""
+        def custom_schedule():
+            scheduler.move_process(pid=42)
+        scheduler.schedule = custom_schedule
+        
+        result = scheduler([])
+        
+        assert len(result) == 1
+        assert result[0]['type'] == 'process'
+        assert result[0]['pid'] == 42
+        assert result[0]['to_e_core'] is False
 
     def test_do_io_returns_io_action(self, scheduler):
         """Test do_io generates an io_queue action returned by __call__."""
@@ -348,7 +375,7 @@ class TestSchedulerActionGeneration:
     def test_multiple_actions_accumulated(self, scheduler):
         """Test multiple actions accumulate and are returned together."""
         def custom_schedule():
-            scheduler.move_process(1)
+            scheduler.move_process(1, to_e_core=True)
             scheduler.move_page(1, 0)
             scheduler.do_io()
         scheduler.schedule = custom_schedule
@@ -356,6 +383,9 @@ class TestSchedulerActionGeneration:
         result = scheduler([])
         
         assert len(result) == 3
+        # Check that the move_process action includes to_e_core parameter
+        process_action = next(a for a in result if a['type'] == 'process')
+        assert process_action['to_e_core'] is True
 
     def test_call_returns_fresh_actions(self, scheduler):
         """Test __call__ clears actions between calls."""
@@ -774,15 +804,16 @@ def scheduler(events):
     def test_stage_with_script_responds_to_process_events(
             self, stage_with_script, monkeypatch):
         """Test that stage with script handles process events via update."""
-        toggled_pids = []
+        toggled_calls = []
         
         class MockProcess:
             def __init__(self, pid):
                 self.pid = pid
-            def toggle(self):
-                toggled_pids.append(self.pid)
+                self._has_cpu = False
+            def toggle(self, to_e_core=False):
+                toggled_calls.append((self.pid, to_e_core))
             def has_cpu(self):
-                return False
+                return self._has_cpu
         
         monkeypatch.setattr(
             stage_with_script.process_manager, 
@@ -796,7 +827,60 @@ def scheduler(events):
         # Call update to trigger script processing
         stage_with_script.update(0, [])
         
-        assert 1 in toggled_pids
+        # Verify the toggle was called with the correct parameters
+        assert len(toggled_calls) == 1
+        pid, to_e_core = toggled_calls[0]
+        assert pid == 1
+        assert to_e_core is False  # Default value when not specified
+
+    def test_script_uses_to_e_core_parameter(self, Stage, stage_config, scene_manager, monkeypatch):
+        """Test that script can use to_e_core parameter in move_process."""
+        script_source = '''
+def scheduler(events):
+    actions = []
+    for event in events:
+        if event.etype == 'PROC_NEW':
+            # Move process to efficient core
+            actions.append({'type': 'process', 'pid': event.pid, 'to_e_core': True})
+    return actions
+'''
+        compiled = compile(script_source, '<test>', 'exec')
+        stage = Stage('Test Stage', stage_config, script=compiled, standalone=True)
+        stage.scene_manager = scene_manager
+        stage.setup()
+        
+        toggle_calls = []
+        
+        class MockProcess:
+            def __init__(self, pid):
+                self.pid = pid
+                self._has_cpu = False
+            def toggle(self, to_e_core=False):
+                toggle_calls.append((self.pid, to_e_core, self._has_cpu))
+            @property
+            def has_cpu(self):
+                return self._has_cpu
+        
+        # Create a mock process instance
+        mock_process = MockProcess(1)
+        
+        monkeypatch.setattr(
+            stage.process_manager, 
+            'get_process', 
+            lambda pid: mock_process
+        )
+        
+        game_monitor.clear_events()
+        game_monitor.notify_process_new(1)
+        
+        stage.update(0, [])
+        
+        # Verify toggle was called with to_e_core=True when has_cpu is False
+        assert len(toggle_calls) == 1
+        pid, to_e_core, had_cpu = toggle_calls[0]
+        assert pid == 1
+        assert to_e_core is True
+        assert had_cpu is False  # Process didn't have CPU, so should toggle with to_e_core=True
 
     def test_stage_without_script_does_not_crash(self, stage_without_script):
         """Test that stage without script handles update without errors."""
@@ -911,6 +995,38 @@ x = 1
         
         # Should not raise
         stage.update(0, [])
+
+    def test_script_has_access_to_cpu_core_types(self, Stage, stage_config, scene_manager):
+        """Test that script has access to cpu_core_types global variable."""
+        script_source = '''
+def scheduler(events):
+    # Store cpu_core_types in a global variable to verify it's available
+    global test_cpu_core_types
+    test_cpu_core_types = cpu_core_types
+    return []
+'''
+        compiled = compile(script_source, '<test>', 'exec')
+        stage = Stage('Test Stage', stage_config, script=compiled, standalone=True)
+        stage.scene_manager = scene_manager
+        stage.setup()
+        
+        game_monitor.clear_events()
+        game_monitor.notify_process_new(1)
+        
+        # Update to trigger script execution
+        stage.update(0, [])
+        
+        # The script should have set the global variable
+        # We need to access it through the scheduler's globals
+        scheduler_function = stage._script_callback
+        scheduler_globals = scheduler_function.__globals__
+        
+        assert 'test_cpu_core_types' in scheduler_globals
+        cpu_core_types = scheduler_globals['test_cpu_core_types']
+        assert len(cpu_core_types) > 0
+        # Verify all entries are valid core type names
+        valid_types = {'STANDARD', 'PERFORMANCE', 'EFFICIENT'}
+        assert all(core_type in valid_types for core_type in cpu_core_types)
 
 class TestAutoModule:
     """Tests for the auto.py module functions."""
