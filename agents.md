@@ -40,4 +40,4 @@
 ## Coding Restrictions
 
 * Use the "Open-closed principle" as a loose guideline. As such, try to avoid solutions that alter existing implementations or interfaces. If such changes appear to be unavoidable, discuss them with the user first.
-* Do not make breaking changes to the [automation API](automation/api.py)unless explicitly instructed to.
+* Do not make breaking changes to the [automation API](automation/api.py) unless explicitly instructed to.
