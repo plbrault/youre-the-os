@@ -7,6 +7,7 @@ from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
 from scene_objects.process import Process
+from scene_objects.process_state import ProcessState
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
@@ -59,6 +60,7 @@ class TestProcess:
         assert process.current_starvation_level_duration == 0
         assert process.cpu == None
         assert process.has_cpu == False
+        assert process.state == ProcessState.IDLE
         assert process.is_waiting_for_io == False
         assert process.io_event_arrived == False
         assert process.is_waiting_for_page == False
@@ -69,6 +71,17 @@ class TestProcess:
         assert process.current_state_duration == 0
         assert process.is_progressing_to_happiness == False
         assert process.is_in_motion == False
+
+    def test_state_transitions(self, stage, stage_config, process_config):
+        process = Process(1, stage, process_config)
+
+        assert process.state == ProcessState.IDLE
+
+        process.use_cpu()
+        assert process.state == ProcessState.RUNNING
+
+        process.yield_cpu()
+        assert process.state == ProcessState.IDLE
 
     def test_starvation_when_idle(self, stage, process_config):
         process = Process(1, stage, process_config)
