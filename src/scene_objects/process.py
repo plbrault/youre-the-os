@@ -95,6 +95,10 @@ class Process(SceneObject):
         return self._state == ProcessState.IO_EVENT_AVAILABLE
 
     @property
+    def state(self):
+        return self._state
+
+    @property
     def starvation_level(self):
         return self._starvation_level
 
