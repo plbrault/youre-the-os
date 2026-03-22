@@ -60,6 +60,7 @@ class TestProcess:
         assert process.cpu == None
         assert process.has_cpu == False
         assert process.is_waiting_for_io == False
+        assert process.io_event_arrived == False
         assert process.is_waiting_for_page == False
         assert process.is_blocked == False
         assert process.has_ended == False
@@ -621,7 +622,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.is_waiting_for_page == False
 
-    def test_starvation_while_waiting_for_io_event(self, stage_custom_config, monkeypatch, process_custom_config):
+    def test_starvation_suspended_while_waiting_for_io_event(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
             io_probability=0.1,
             graceful_termination_probability=0
@@ -635,7 +636,6 @@ class TestProcess:
             graceful_termination_probability=0
         ))
 
-        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, stage, config)
@@ -643,18 +643,51 @@ class TestProcess:
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
+        assert process.io_event_arrived == False
 
-        for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
-            process.update(i * process.time_between_starvation_levels, [])
-            assert process.starvation_level == i + 1
+        stage.process_manager.io_queue.update(5000, [])
+        assert process.io_event_arrived == False
 
-        process.update(LAST_ALIVE_STARVATION_LEVEL * process.time_between_starvation_levels, [])
-        assert process.starvation_level == DEAD_STARVATION_LEVEL
-        assert process.has_ended == True
-        assert process.is_blocked == False
-        assert process.is_waiting_for_io == False
+        process.update(20000, [])
+        assert process.starvation_level == 1
 
-    def test_process_unblocks_when_io_event_is_processed(self, stage_custom_config, monkeypatch, process_custom_config):
+    def test_starvation_resumes_when_io_event_arrives(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0,
+            time_between_starvation_levels_ms=10000
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+
+        process.use_cpu()
+        process.update(1000, [])
+        assert process.is_waiting_for_io == True
+        assert process.io_event_arrived == False
+
+        stage.process_manager.io_queue.update(5000, [])
+        assert process.io_event_arrived == False
+
+        process.update(20000, [])
+        assert process.starvation_level == 1
+
+        stage.process_manager.io_queue.update(7000, [])
+        assert process.io_event_arrived == True
+
+        process.update(30000, [])
+        assert process.starvation_level >= 1
+
+    def test_starvation_resets_when_io_event_is_delivered(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
             io_probability=0.1,
             graceful_termination_probability=0
@@ -668,7 +701,6 @@ class TestProcess:
             graceful_termination_probability=0
         ))
 
-        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process = Process(1, stage, config)
@@ -676,11 +708,20 @@ class TestProcess:
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
+        assert process.io_event_arrived == False
 
-        stage.process_manager.io_queue.update(1000, [])
+        stage.process_manager.io_queue.update(5000, [])
+        assert process.io_event_arrived == False
+
+        process.update(20000, [])
+        assert process.starvation_level == 1
+
+        stage.process_manager.io_queue.update(7000, [])
+        assert process.io_event_arrived == True
+
         stage.process_manager.io_queue.process_events()
 
-        assert process.is_blocked == False
+        assert process.starvation_level == 0
         assert process.is_waiting_for_io == False
 
     def test_no_io_event_at_last_alive_starvation_level(self, stage_custom_config, monkeypatch, process_custom_config):
@@ -742,24 +783,21 @@ class TestProcess:
         process1 = Process(1, stage, config)
         process2 = Process(2, stage, config)
 
-        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process1.use_cpu()
         process1.update(1000, [])
         assert process1.is_waiting_for_io == True
 
-        # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         process2.use_cpu()
         process2.update(1000, [])
         assert process2.is_waiting_for_io == False
 
-        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        stage.process_manager.io_queue.update(1000, [])
+        stage.process_manager.io_queue.update(7000, [])
         stage.process_manager.io_queue.process_events()
         assert process1.is_waiting_for_io == False
 
@@ -784,14 +822,13 @@ class TestProcess:
 
         process = Process(1, stage, config)
 
-        # Cause the random number generator to always provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
 
-        stage.process_manager.io_queue.update(1000, [])
+        stage.process_manager.io_queue.update(7000, [])
         stage.process_manager.io_queue.process_events()
         assert process.is_waiting_for_io == False
 
@@ -955,7 +992,6 @@ class TestProcess:
         process_highest_starvation = Process(2, stage, config)
         process_blocked = Process(6, stage, config)
 
-        # Cause the random number generator to never provoke an I/O event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
         time = 0
@@ -980,13 +1016,6 @@ class TestProcess:
         process_blocked.update(time, [])
 
         time += ONE_SECOND
-        # Cause the random number generator to always provoke an I/O event
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-        process_blocked.use_cpu()
-        process_blocked.update(time, [])
-        # Cause the random number generator to never provoke an I/O event
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
-        process_blocked.yield_cpu()
         process_blocked.update(time, [])
 
         time += process_highest_starvation.time_between_starvation_levels - ONE_SECOND
@@ -1004,7 +1033,7 @@ class TestProcess:
         assert not process_medium_starvation_2.is_blocked
         assert not process_medium_starvation_plus_one_second.is_blocked
         assert not process_highest_starvation.is_blocked
-        assert process_blocked.is_blocked
+        assert not process_blocked.is_blocked
 
         assert not process_lowest_starvation.has_cpu
         assert not process_medium_starvation_1.has_cpu
@@ -1013,11 +1042,11 @@ class TestProcess:
         assert not process_highest_starvation.has_cpu
         assert not process_blocked.has_cpu
 
-        assert process_highest_starvation.sort_key < process_medium_starvation_plus_one_second.sort_key
+        assert process_highest_starvation.sort_key < process_blocked.sort_key
+        assert process_blocked.sort_key < process_medium_starvation_plus_one_second.sort_key
         assert process_medium_starvation_plus_one_second.sort_key < process_medium_starvation_1.sort_key
         assert process_medium_starvation_1.sort_key == process_medium_starvation_2.sort_key
         assert process_medium_starvation_2.sort_key < process_lowest_starvation.sort_key
-        assert process_lowest_starvation.sort_key < process_blocked.sort_key
 
     def test_sort_key_different_time_between_starvation_levels(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -1254,3 +1283,34 @@ class TestProcess:
 
         assert process.starvation_level == 1
         assert process.time_to_termination == 45000
+
+    def test_io_event_arrived_property(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+
+        assert process.io_event_arrived == False
+
+        process.use_cpu()
+        process.update(1000, [])
+        assert process.is_waiting_for_io == True
+        assert process.io_event_arrived == False
+
+        stage.process_manager.io_queue.update(7000, [])
+        assert process.io_event_arrived == True
+
+        stage.process_manager.io_queue.process_events()
+        assert process.io_event_arrived == False

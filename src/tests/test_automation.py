@@ -519,7 +519,7 @@ class TestGameObjectsEmitEvents:
         
         # Add a subscriber so there's something to process
         callback_called = []
-        io_queue.wait_for_event(lambda: callback_called.append(True))
+        io_queue.wait_for_event(io_queue._current_time, None, lambda: callback_called.append(True))
         
         # Simulate time passing so event becomes available
         io_queue._event_count = 1

@@ -10,17 +10,22 @@ _BLINKING_INTERVAL_MS = 333
 _EVENT_PROBABILITY_DENOMINATOR = 3
 
 class _IoEventWaiter:
-    def __init__(self, current_time, callback):
+    def __init__(self, current_time, on_arrival_callback, on_delivery_callback):
         self._waiting_since = current_time
-        self._callback = callback
+        self._on_arrival_callback = on_arrival_callback
+        self._on_delivery_callback = on_delivery_callback
 
     @property
     def waiting_since(self):
         return self._waiting_since
 
     @property
-    def callback(self):
-        return self._callback
+    def on_arrival_callback(self):
+        return self._on_arrival_callback
+
+    @property
+    def on_delivery_callback(self):
+        return self._on_delivery_callback
 
 class IoQueue(SceneObject):
 
@@ -37,9 +42,9 @@ class IoQueue(SceneObject):
 
         super().__init__(IoQueueView(self))
 
-    def wait_for_event(self, callback):
+    def wait_for_event(self, current_time, on_arrival_callback, on_delivery_callback):
         self._subscriber_queue.append(
-            _IoEventWaiter(self._current_time, callback)
+            _IoEventWaiter(current_time, on_arrival_callback, on_delivery_callback)
         )
 
     @property
@@ -53,8 +58,8 @@ class IoQueue(SceneObject):
     def process_events(self):
         while self.event_count > 0:
             self._event_count -= 1
-            callback = self._subscriber_queue.popleft().callback
-            callback()
+            waiter = self._subscriber_queue.popleft()
+            waiter.on_delivery_callback()
         game_monitor.notify_io_event_count(self.event_count)
 
     def _check_if_clicked_on(self, event):
@@ -81,19 +86,29 @@ class IoQueue(SceneObject):
                 self._subscriber_queue[self._event_count].waiting_since + self._max_waiting_time_ms
         ):
             self._last_update_time = current_time
+            waiter = self._subscriber_queue[self._event_count]
+            if waiter.on_arrival_callback:
+                waiter.on_arrival_callback()
             self._event_count += 1
 
         elif current_time >= self._last_update_time + self._min_waiting_time_ms:
             self._last_update_time = current_time
 
-            if (
-                self._event_count < len(self._subscriber_queue)
-                and randint(1, _EVENT_PROBABILITY_DENOMINATOR) == 1
-            ):
-                self._event_count = randint(
-                    self._event_count + 1, len(self._subscriber_queue)
-                )
-                game_monitor.notify_io_event_count(self._event_count)
+            if self._event_count < len(self._subscriber_queue):
+                waiter = self._subscriber_queue[self._event_count]
+                if (
+                    waiter.waiting_since + self._max_waiting_time_ms <= current_time
+                    and randint(1, _EVENT_PROBABILITY_DENOMINATOR) == 1
+                ):
+                    new_event_count = randint(
+                        self._event_count + 1, len(self._subscriber_queue)
+                    )
+                    for i in range(self._event_count, new_event_count):
+                        waiter = self._subscriber_queue[i]
+                        if waiter.on_arrival_callback:
+                            waiter.on_arrival_callback()
+                    self._event_count = new_event_count
+                    game_monitor.notify_io_event_count(self._event_count)
 
         self._display_blink_color = False
         if self._event_count > 0:
