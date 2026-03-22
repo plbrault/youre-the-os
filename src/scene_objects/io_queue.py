@@ -87,8 +87,7 @@ class IoQueue(SceneObject):
         ):
             self._last_update_time = current_time
             waiter = self._subscriber_queue[self._event_count]
-            if waiter.on_arrival_callback:
-                waiter.on_arrival_callback()
+            waiter.on_arrival_callback()
             self._event_count += 1
 
         elif current_time >= self._last_update_time + self._min_waiting_time_ms:
@@ -105,8 +104,7 @@ class IoQueue(SceneObject):
                     )
                     for i in range(self._event_count, new_event_count):
                         waiter = self._subscriber_queue[i]
-                        if waiter.on_arrival_callback:
-                            waiter.on_arrival_callback()
+                        waiter.on_arrival_callback()
                     self._event_count = new_event_count
                     game_monitor.notify_io_event_count(self._event_count)
 
