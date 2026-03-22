@@ -34,7 +34,7 @@
 * If you need to do something that can be done by running one of the commands listed in the readme, this is how you should do it.
 * Do not make any changes to the Git repository, unless explicitly instructed to. Read-only commands such as `git log` are allowed.
 * If the user instructs you to commit your changes, you should create a new commit and NEVER amend the previous commit or do anything else that would alter the Git history.
-* Do not EVER force push to GitHub.
+* Do not EVER force push with Git.
 * Do not run any command other than the ones listed in the readme or in this file without asking the user first. Commands that you need to make requested changes to the source code of this repository are obviously allowed. You are also allowed to use basic text search commands such as `grep`.
 * Do not make any change to the project's dependencies without asking the user first.
 * Do not install any kind of software package without asking the user first.
