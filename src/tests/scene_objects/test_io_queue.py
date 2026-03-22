@@ -1,0 +1,159 @@
+import pytest
+
+from engine.random import Random
+from scene_objects.io_queue import IoQueue
+
+
+class TestIoQueue:
+    @pytest.fixture
+    def io_queue(self):
+        return IoQueue(min_waiting_time_ms=1000, max_waiting_time_ms=5000)
+
+    def test_initial_state(self, io_queue):
+        assert io_queue.event_count == 0
+        assert io_queue.display_blink_color == False
+
+    def test_wait_for_event_registers_waiter(self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: None, lambda: None)
+
+        io_queue.update(6000, [])
+        assert io_queue.event_count == 1
+
+        io_queue.wait_for_event(6000, lambda: None, lambda: None)
+        io_queue.update(11000, [])
+        assert io_queue.event_count == 2
+
+    def test_event_arrives_after_max_time(self, io_queue):
+        arrival_callback_called = []
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+
+        io_queue.update(6000, [])
+        assert io_queue.event_count == 1
+        assert arrival_callback_called == [1]
+
+    def test_event_not_arrives_before_max_time(self, io_queue):
+        arrival_callback_called = []
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+
+        io_queue.update(4000, [])
+        assert io_queue.event_count == 0
+        assert arrival_callback_called == []
+
+    def test_multiple_events_processed_in_order(self, io_queue, monkeypatch):
+        arrival_callback_called = []
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(2), lambda: None)
+
+        io_queue.update(6000, [])
+        assert io_queue.event_count == 1
+        assert arrival_callback_called == [1]
+
+        io_queue.update(11000, [])
+        assert io_queue.event_count == 2
+        assert arrival_callback_called == [1, 2]
+
+    def test_probabilistic_event_arrives(self, io_queue, monkeypatch):
+        arrival_callback_called = []
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(2), lambda: None)
+
+        io_queue.update(6000, [])
+        assert io_queue.event_count == 1
+
+        io_queue.update(7000, [])
+        assert io_queue.event_count == 2
+        assert arrival_callback_called == [1, 2]
+
+    def test_no_event_before_min_waiting_time(self, io_queue, monkeypatch):
+        arrival_callback_called = []
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+
+        io_queue.update(500, [])
+        assert io_queue.event_count == 0
+        assert arrival_callback_called == []
+
+    def test_process_events_calls_delivery_callback(self, io_queue, monkeypatch):
+        delivery_callback_called = []
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(1))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(2))
+
+        io_queue.update(6000, [])
+        io_queue.update(11000, [])
+
+        assert io_queue.event_count == 2
+        assert delivery_callback_called == []
+
+        io_queue.process_events()
+        assert delivery_callback_called == [1, 2]
+        assert io_queue.event_count == 0
+
+    def test_process_events_empty_queue(self, io_queue):
+        io_queue.process_events()
+        assert io_queue.event_count == 0
+
+    def test_blink_color_false_when_no_events(self, io_queue):
+        io_queue.update(0, [])
+        assert io_queue.display_blink_color == False
+
+        io_queue.update(1000, [])
+        assert io_queue.display_blink_color == False
+
+    def test_blink_color_toggles_when_events_present(self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: None, lambda: None)
+
+        io_queue.update(6000, [])
+        assert io_queue.event_count == 1
+
+        io_queue.update(6000, [])
+        assert io_queue.display_blink_color == False
+
+        io_queue.update(6333, [])
+        assert io_queue.display_blink_color == True
+
+        io_queue.update(6666, [])
+        assert io_queue.display_blink_color == False
+
+    def test_delivery_callback_order(self, io_queue, monkeypatch):
+        delivery_callback_called = []
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(1))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(2))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(3))
+
+        io_queue.update(6000, [])
+        io_queue.update(11000, [])
+        io_queue.update(16000, [])
+
+        io_queue.process_events()
+        assert delivery_callback_called == [1, 2, 3]
+
+    def test_event_arrives_when_max_time_elapsed_regardless_of_probability(self, io_queue, monkeypatch):
+        arrival_callback_called = []
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+
+        io_queue.update(6000, [])
+        assert io_queue.event_count == 1
+        assert arrival_callback_called == [1]

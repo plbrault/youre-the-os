@@ -517,16 +517,13 @@ class TestGameObjectsEmitEvents:
         """Test that IoQueue emits IO_QUEUE event when processing events."""
         io_queue = stage.process_manager.io_queue
         
-        # Add a subscriber so there's something to process
         callback_called = []
-        io_queue.wait_for_event(io_queue._current_time, None, lambda: callback_called.append(True))
+        io_queue.wait_for_event(0, lambda: None, lambda: callback_called.append(True))
         
-        # Simulate time passing so event becomes available
-        io_queue._event_count = 1
+        io_queue.update(6000, [])
         
         game_monitor.clear_events()
         
-        # Process events - this should emit IO_QUEUE event
         io_queue.process_events()
         
         events = game_monitor.get_events()
