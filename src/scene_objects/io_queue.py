@@ -70,6 +70,42 @@ class IoQueue(SceneObject):
     def _on_click(self):
         self.process_events()
 
+    def _handle_max_time_elapsed(self, current_time):
+        if self._event_count >= len(self._subscriber_queue):
+            return
+
+        waiter = self._subscriber_queue[self._event_count]
+        if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
+            self._last_update_time = current_time
+            waiter.on_arrival_callback()
+            self._event_count += 1
+
+    def _handle_probabilistic_events(self, current_time):
+        if current_time < self._last_update_time + self._min_waiting_time_ms:
+            return
+        if self._event_count >= len(self._subscriber_queue):
+            return
+
+        waiter = self._subscriber_queue[self._event_count]
+        if waiter.waiting_since + self._max_waiting_time_ms > current_time:
+            return
+
+        self._last_update_time = current_time
+
+        if randint(1, _EVENT_PROBABILITY_DENOMINATOR) != 1:
+            return
+
+        new_event_count = randint(self._event_count + 1, len(self._subscriber_queue))
+        for i in range(self._event_count, new_event_count):
+            self._subscriber_queue[i].on_arrival_callback()
+        self._event_count = new_event_count
+        game_monitor.notify_io_event_count(self._event_count)
+
+    def _update_blink_color(self, current_time):
+        self._display_blink_color = (
+            int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1 if self._event_count > 0 else False
+        )
+
     def update(self, current_time, events):
         self._current_time = current_time
 
@@ -80,34 +116,6 @@ class IoQueue(SceneObject):
                 if event.get_property('key') == 'space':
                     self.process_events()
 
-        if (
-            self._event_count < len(self._subscriber_queue)
-            and current_time >=
-                self._subscriber_queue[self._event_count].waiting_since + self._max_waiting_time_ms
-        ):
-            self._last_update_time = current_time
-            waiter = self._subscriber_queue[self._event_count]
-            waiter.on_arrival_callback()
-            self._event_count += 1
-
-        elif current_time >= self._last_update_time + self._min_waiting_time_ms:
-            self._last_update_time = current_time
-
-            if self._event_count < len(self._subscriber_queue):
-                waiter = self._subscriber_queue[self._event_count]
-                if (
-                    waiter.waiting_since + self._max_waiting_time_ms <= current_time
-                    and randint(1, _EVENT_PROBABILITY_DENOMINATOR) == 1
-                ):
-                    new_event_count = randint(
-                        self._event_count + 1, len(self._subscriber_queue)
-                    )
-                    for i in range(self._event_count, new_event_count):
-                        waiter = self._subscriber_queue[i]
-                        waiter.on_arrival_callback()
-                    self._event_count = new_event_count
-                    game_monitor.notify_io_event_count(self._event_count)
-
-        self._display_blink_color = False
-        if self._event_count > 0:
-            self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
+        self._handle_max_time_elapsed(current_time)
+        self._handle_probabilistic_events(current_time)
+        self._update_blink_color(current_time)
