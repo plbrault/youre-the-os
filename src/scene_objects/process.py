@@ -68,7 +68,7 @@ class Process(SceneObject):
 
     @property
     def is_waiting_for_io(self):
-        return self._state in (ProcessState.WAITING_FOR_IO, ProcessState.IO_EVENT_AVAILABLE)
+        return self._state in (ProcessState.IO_EVENT_REQUESTED, ProcessState.IO_EVENT_AVAILABLE)
 
     @property
     def is_waiting_for_page(self):
@@ -229,7 +229,7 @@ class Process(SceneObject):
 
     def _set_waiting_for_io(self, waiting_for_io):
         if waiting_for_io:
-            self._update_blocking_condition(ProcessState.WAITING_FOR_IO)
+            self._update_blocking_condition(ProcessState.IO_EVENT_REQUESTED)
         else:
             self._update_blocking_condition(ProcessState.IDLE)
 
@@ -242,7 +242,7 @@ class Process(SceneObject):
             self._update_blocking_condition(ProcessState.IDLE)
 
     def _wait_for_io(self):
-        self._update_blocking_condition(ProcessState.WAITING_FOR_IO)
+        self._update_blocking_condition(ProcessState.IO_EVENT_REQUESTED)
         self._is_on_io_cooldown = True
         self._process_manager.io_queue.wait_for_event(
             self._last_update_time,
@@ -334,7 +334,7 @@ class Process(SceneObject):
                     self._pid, self._starvation_level, self.time_to_termination
                 )
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
-            if self._state == ProcessState.WAITING_FOR_IO:
+            if self._state == ProcessState.IO_EVENT_REQUESTED:
                 return
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
