@@ -41,7 +41,7 @@
 
 * Do not make any changes to the Git repository, unless explicitly instructed to. Read-only commands such as `git log` are allowed.
 * If the user instructs you to commit your changes, you should create a new commit and NEVER amend the previous commit or do anything else that would alter the Git history.
-* Do not EVER force push with Git.
+* Do not EVER do a force push.
 * If during a coding session, you are instructed by the user to commit and/or push your changes, do not assume that you are allowed to do that again without being explicitly instructed to for the rest of the coding session.
 
 ## Coding Restrictions
