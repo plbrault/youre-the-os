@@ -214,7 +214,9 @@ class Process(SceneObject):
                 self._process_manager.del_process(self)
                 game_monitor.notify_process_end(self.pid)
             else:
-                if not self.is_waiting_for_io:
+                if self.is_waiting_for_io:
+                    self._state = ProcessState.IO_EVENT_REQUESTED
+                else:
                     self._state = ProcessState.IDLE
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
