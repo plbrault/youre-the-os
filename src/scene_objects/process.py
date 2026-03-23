@@ -334,7 +334,7 @@ class Process(SceneObject):
                     self._pid, self._starvation_level, self.time_to_termination
                 )
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
-            if self._state == ProcessState.IO_EVENT_REQUESTED:
+            if self._state in (ProcessState.IO_EVENT_REQUESTED, ProcessState.IO_EVENT_AVAILABLE):
                 return
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
