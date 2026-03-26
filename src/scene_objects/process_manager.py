@@ -291,6 +291,7 @@ class ProcessManager(SceneObject):
             ],
             'blocked_active_process_count': cpu_manager_stats['blocked_active_process_count'],
             'io_event_count': self._io_queue.event_count,
+            'wasted_io_press_count': self._io_queue.wasted_press_count,
             'gracefully_terminated_process_count': self._gracefully_terminated_process_count,
             'user_terminated_process_count': self._user_terminated_process_count,
         }

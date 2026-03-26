@@ -32,6 +32,7 @@ class IoQueue(SceneObject):
         self._event_count = 0
         self._current_time = 0
         self._last_update_time = 0
+        self._wasted_press_count = 0
 
         self._display_blink_color = False
 
@@ -45,6 +46,10 @@ class IoQueue(SceneObject):
     @property
     def event_count(self):
         return self._event_count
+
+    @property
+    def wasted_press_count(self):
+        return self._wasted_press_count
 
     @property
     def display_blink_color(self):
@@ -63,7 +68,13 @@ class IoQueue(SceneObject):
         return False
 
     def _on_click(self):
-        self.process_events()
+        self._handle_press()
+
+    def _handle_press(self):
+        if self.event_count > 0:
+            self.process_events()
+        else:
+            self._wasted_press_count += 1
 
     def update(self, current_time, events):
         self._current_time = current_time
@@ -73,7 +84,7 @@ class IoQueue(SceneObject):
                 self._on_click()
             if event.type == GameEventType.KEY_UP:
                 if event.get_property('key') == 'space':
-                    self.process_events()
+                    self._handle_press()
 
         if (
             self._event_count < len(self._subscriber_queue)
