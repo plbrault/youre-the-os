@@ -89,6 +89,14 @@ pipenv run pylint
 pipenv run pytest
 ```
 
+## Contributing
+
+Pull requests that address open issues labeled `bug` or `help wanted` are welcome.
+
+If you use AI, please ensure your agent follows all instructions in `AGENTS.md`.
+
+If you have an idea for an improvement to this game, please share it in the [Discussions](https://github.com/plbrault/youre-the-os/discussions) tab.
+
 ## License
 
 Copyright © 2023-present Pier-Luc Brault <pier-luc@brault.me>
