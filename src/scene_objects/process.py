@@ -264,7 +264,6 @@ class Process(SceneObject):
         if self.has_ended:
             return
         self._state = ProcessState.IDLE
-        self.yield_cpu()
         game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):

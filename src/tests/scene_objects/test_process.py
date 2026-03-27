@@ -1403,10 +1403,20 @@ class TestProcess:
         # OK, according to the intended behavior, starvation should be suspended in both states
         # So the process won't starve until the event is processed
 
-        # Process the I/O event to make the process idle
+        # Process the I/O event - process should stay on CPU and resume running
         stage.process_manager.io_queue.process_events()
         assert process.is_waiting_for_io == False
         assert process.state == ProcessState.IDLE
+        assert process.has_cpu == True
+        assert process.is_running == True
+
+        # Since process is running, starvation is reset and won't progress
+        assert process.starvation_level == 0
+
+        # Now manually yield the CPU so process can starve
+        process.yield_cpu()
+        assert process.has_cpu == False
+        assert process.is_running == False
 
         # Now trigger starvation death
         for i in range(1, DEAD_STARVATION_LEVEL + 1):
