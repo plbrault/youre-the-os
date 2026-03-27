@@ -1327,3 +1327,44 @@ class TestProcess:
 
         stage.process_manager.io_queue.process_events()
         assert process.io_event_arrived == False
+
+    def test_termination_while_waiting_for_io_updates_state_timing(self, stage_custom_config, monkeypatch, process_custom_config):
+        """
+        Test that when a process is terminated while waiting for I/O,
+        current_state_duration is reset because the state changed from blocked to ended.
+        """
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+
+        process.use_cpu()
+        process.update(1000, [])
+        assert process.is_waiting_for_io == True
+        assert process.is_blocked == True
+
+        # Let time pass while blocked
+        process.update(5000, [])
+        duration_before_termination = process.current_state_duration
+        assert duration_before_termination == 4000
+
+        # Trigger starvation death by letting time pass until termination
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(1000 + i * process.time_between_starvation_levels, [])
+
+        assert process.has_ended == True
+        assert process.is_blocked == False
+        # After termination, the state changed, so duration should be reset
+        assert process.current_state_duration == 0

@@ -157,3 +157,23 @@ class TestIoQueue:
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
         assert arrival_callback_called == [1]
+
+    def test_probabilistic_event_fires_between_min_and_max_time(self, io_queue, monkeypatch):
+        """
+        Test that probabilistic events can fire after min_waiting_time_ms
+        but before max_waiting_time_ms has elapsed.
+        """
+        arrival_callback_called = []
+
+        # Force random to always trigger the probabilistic event
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+
+        # Update at 2500ms - this is after min_time (1000ms) but before max_time (5000ms)
+        # The probabilistic event should fire here
+        io_queue.update(2500, [])
+
+        # The event should have arrived via probabilistic path
+        assert io_queue.event_count == 1
+        assert arrival_callback_called == [1]
