@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from typing import Type
 from math import sqrt
 
@@ -5,7 +6,6 @@ from config.process_config import ProcessConfig
 from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 )
-from enum import Enum, auto
 import game_monitor
 from engine.drawable import Drawable
 from engine.scene_object import SceneObject
