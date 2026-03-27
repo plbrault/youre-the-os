@@ -233,7 +233,7 @@ class Process(SceneObject):
     def _set_waiting_for_io(self, waiting_for_io):
         if waiting_for_io:
             self._update_blocking_condition(ProcessState.IO_EVENT_REQUESTED)
-        else:
+        elif not self.is_waiting_for_page:
             self._update_blocking_condition(ProcessState.IDLE)
 
     def _set_waiting_for_page(self, waiting_for_page):
@@ -241,7 +241,7 @@ class Process(SceneObject):
             game_monitor.notify_process_wait_page(self.pid, waiting_for_page)
         if waiting_for_page:
             self._update_blocking_condition(ProcessState.WAITING_FOR_PAGE)
-        else:
+        elif not self.is_waiting_for_io:
             self._update_blocking_condition(ProcessState.IDLE)
 
     def _wait_for_io(self):
@@ -254,27 +254,30 @@ class Process(SceneObject):
         )
         game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
-    def _on_io_event_arrived(self):
+    def _on_io_event_arrived(self, current_time):
         if not self.has_ended:
+            self._starvation_level = 0
+            self._last_starvation_level_change_time = current_time
             self._state = ProcessState.IO_EVENT_AVAILABLE
 
     def _on_io_event(self):
         if self.has_ended:
             return
-        self._starvation_level = 0
-        self._last_starvation_level_change_time = self._last_update_time
         self._state = ProcessState.IDLE
+        self.yield_cpu()
         game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
             game_monitor.notify_process_terminated(self._pid)
             self._state = ProcessState.ENDED
+            self._last_state_change_time = self._last_update_time
             self._starvation_level = 0
 
     def _terminate_by_user(self):
         if self._process_manager.terminate_process(self, True):
             self._state = ProcessState.ENDED
+            self._last_state_change_time = self._last_update_time
             self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
                 game_monitor.notify_page_free(page.pid, page.idx)
@@ -337,7 +340,7 @@ class Process(SceneObject):
                     self._pid, self._starvation_level, self.time_to_termination
                 )
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
-            if self._state in (ProcessState.IO_EVENT_REQUESTED, ProcessState.IO_EVENT_AVAILABLE):
+            if self._state == ProcessState.IO_EVENT_REQUESTED:
                 return
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:

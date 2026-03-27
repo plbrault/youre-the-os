@@ -518,7 +518,7 @@ class TestGameObjectsEmitEvents:
         io_queue = stage.process_manager.io_queue
         
         callback_called = []
-        io_queue.wait_for_event(0, lambda: None, lambda: callback_called.append(True))
+        io_queue.wait_for_event(0, lambda _: None, lambda: callback_called.append(True))
         
         io_queue.update(6000, [])
         

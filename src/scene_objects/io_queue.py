@@ -77,7 +77,7 @@ class IoQueue(SceneObject):
         waiter = self._subscriber_queue[self._event_count]
         if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
             self._last_update_time = current_time
-            waiter.on_arrival_callback()
+            waiter.on_arrival_callback(current_time)
             self._event_count += 1
 
     def _handle_probabilistic_events(self, current_time):
@@ -87,7 +87,7 @@ class IoQueue(SceneObject):
             return
 
         waiter = self._subscriber_queue[self._event_count]
-        if waiter.waiting_since + self._max_waiting_time_ms > current_time:
+        if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
             return
 
         self._last_update_time = current_time
@@ -97,7 +97,7 @@ class IoQueue(SceneObject):
 
         new_event_count = randint(self._event_count + 1, len(self._subscriber_queue))
         for i in range(self._event_count, new_event_count):
-            self._subscriber_queue[i].on_arrival_callback()
+            self._subscriber_queue[i].on_arrival_callback(current_time)
         self._event_count = new_event_count
         game_monitor.notify_io_event_count(self._event_count)
 

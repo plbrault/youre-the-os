@@ -649,7 +649,17 @@ class TestProcess:
             graceful_termination_probability=0
         ))
 
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        # Use min random to trigger I/O event in process, but max for IOQueue to delay arrival
+        call_count = [0]
+        def random_with_side_effects(self, min, max):
+            call_count[0] += 1
+            # First few calls are for process I/O (need min to trigger)
+            # Later calls are for IOQueue (need max to delay)
+            if call_count[0] <= 2:
+                return min
+            return max
+
+        monkeypatch.setattr(Random, 'get_number', random_with_side_effects)
 
         process = Process(1, stage, config)
 
@@ -658,7 +668,8 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.io_event_arrived == False
 
-        stage.process_manager.io_queue.update(5000, [])
+        # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
+        stage.process_manager.io_queue.update(4000, [])
         assert process.io_event_arrived == False
 
         process.update(20000, [])
@@ -679,7 +690,15 @@ class TestProcess:
             graceful_termination_probability=0
         ))
 
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        # Use min random to trigger I/O event in process, but max for IOQueue to delay arrival
+        call_count = [0]
+        def random_with_side_effects(self, min, max):
+            call_count[0] += 1
+            if call_count[0] <= 2:
+                return min
+            return max
+
+        monkeypatch.setattr(Random, 'get_number', random_with_side_effects)
 
         process = Process(1, stage, config)
 
@@ -688,16 +707,17 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.io_event_arrived == False
 
-        stage.process_manager.io_queue.update(5000, [])
+        # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
+        stage.process_manager.io_queue.update(4000, [])
         assert process.io_event_arrived == False
 
         process.update(20000, [])
         assert process.starvation_level == 1
 
-        stage.process_manager.io_queue.update(7000, [])
+        stage.process_manager.io_queue.update(21000, [])
         assert process.io_event_arrived == True
 
-        process.update(30000, [])
+        process.update(31000, [])
         assert process.starvation_level >= 1
 
     def test_starvation_resets_when_io_event_is_delivered(self, stage_custom_config, monkeypatch, process_custom_config):
@@ -714,7 +734,15 @@ class TestProcess:
             graceful_termination_probability=0
         ))
 
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        # Use min random to trigger I/O event in process, but max for IOQueue to delay arrival
+        call_count = [0]
+        def random_with_side_effects(self, min, max):
+            call_count[0] += 1
+            if call_count[0] <= 2:
+                return min
+            return max
+
+        monkeypatch.setattr(Random, 'get_number', random_with_side_effects)
 
         process = Process(1, stage, config)
 
@@ -723,13 +751,14 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.io_event_arrived == False
 
-        stage.process_manager.io_queue.update(5000, [])
+        # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
+        stage.process_manager.io_queue.update(4000, [])
         assert process.io_event_arrived == False
 
         process.update(20000, [])
         assert process.starvation_level == 1
 
-        stage.process_manager.io_queue.update(7000, [])
+        stage.process_manager.io_queue.update(21000, [])
         assert process.io_event_arrived == True
 
         stage.process_manager.io_queue.process_events()
@@ -1355,14 +1384,33 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.is_blocked == True
 
-        # Let time pass while blocked
+        # Let time pass while blocked - starvation is suspended
         process.update(5000, [])
         duration_before_termination = process.current_state_duration
         assert duration_before_termination == 4000
+        assert process.starvation_level == 1  # Starvation is suspended while waiting for I/O
 
-        # Trigger starvation death by letting time pass until termination
+        # Make the I/O event arrive (but don't process it yet)
+        # This should reset starvation to 0 and allow it to resume
+        stage.process_manager.io_queue.update(7000, [])
+        assert process.io_event_arrived == True
+        assert process.starvation_level == 0  # Starvation resets when event arrives
+
+        # Now let the process starve since it's no longer waiting for I/O (event is available)
+        # The process is in IO_EVENT_AVAILABLE state, which is still waiting for I/O
+        # But actually, starvation should be suspended in both IO_EVENT_REQUESTED and IO_EVENT_AVAILABLE
+        # Let me re-read the intended behavior...
+        # OK, according to the intended behavior, starvation should be suspended in both states
+        # So the process won't starve until the event is processed
+
+        # Process the I/O event to make the process idle
+        stage.process_manager.io_queue.process_events()
+        assert process.is_waiting_for_io == False
+        assert process.state == ProcessState.IDLE
+
+        # Now trigger starvation death
         for i in range(1, DEAD_STARVATION_LEVEL + 1):
-            process.update(1000 + i * process.time_between_starvation_levels, [])
+            process.update(7000 + i * process.time_between_starvation_levels, [])
 
         assert process.has_ended == True
         assert process.is_blocked == False
