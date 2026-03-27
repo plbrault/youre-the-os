@@ -256,7 +256,6 @@ class Process(SceneObject):
 
     def _on_io_event_arrived(self, current_time):
         if not self.has_ended:
-            self._starvation_level = 0
             self._last_starvation_level_change_time = current_time
             self._state = ProcessState.IO_EVENT_AVAILABLE
 
