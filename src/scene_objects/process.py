@@ -5,16 +5,24 @@ from config.process_config import ProcessConfig
 from constants import (
     ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 )
+from enum import Enum, auto
 import game_monitor
 from engine.drawable import Drawable
 from engine.scene_object import SceneObject
 from engine.game_event_type import GameEventType
 from engine.random import randint
-from scene_objects.process_state import ProcessState
 from scene_objects.views.process_view import ProcessView
 
 _NEW_PAGE_PROBABILITY_DENOMINATOR = 20
 _BLINKING_INTERVAL_MS = 200
+
+class ProcessState(Enum):
+    RUNNING = auto()
+    IDLE = auto()
+    IO_EVENT_REQUESTED = auto()
+    IO_EVENT_AVAILABLE = auto()
+    WAITING_FOR_PAGE = auto()
+    ENDED = auto()
 
 class Process(SceneObject):
     _ANIMATION_SPEED = 35

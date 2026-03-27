@@ -6,8 +6,7 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
-from scene_objects.process import Process
-from scene_objects.process_state import ProcessState
+from scene_objects.process import Process, ProcessState
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
