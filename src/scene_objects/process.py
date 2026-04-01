@@ -135,13 +135,13 @@ class Process(SceneObject):
     @property
     def time_to_termination(self):
         """Time in milliseconds until process is terminated due to starvation.
-        Returns float('inf') if process is currently running or if it has
-        terminated gracefully. Returns 0 if process has already been 
-        terminated due to starvation.
+        Returns float('inf') if process is currently running, if it is waiting
+        for an I/O event that is not yet available, or if it has terminated gracefully.
+        Returns 0 if process has already been terminated due to starvation.
         """
         if self.starvation_level >= DEAD_STARVATION_LEVEL:
             return 0
-        if self.is_running or self.has_ended_gracefully:
+        if self.state in [ProcessState.RUNNING, ProcessState.BLOCKED_IO_REQUESTED] or self.has_ended_gracefully:
             return float('inf')
         remaining_starvation_levels = DEAD_STARVATION_LEVEL - self.starvation_level
         remaining_time_for_current_level = (
