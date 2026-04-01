@@ -84,11 +84,11 @@ class Process(SceneObject):
 
     @property
     def is_blocked(self):
-        return self.is_waiting_for_io or self.is_waiting_for_page
+        return self._state in (ProcessState.BLOCKED_IO_REQUESTED, ProcessState.BLOCKED_IO_AVAILABLE, ProcessState.BLOCKED_PAGE_FAULT)
 
     @property
     def is_running(self):
-        return self.has_cpu and not self.is_blocked and not self.has_ended
+        return self._state == ProcessState.RUNNING
 
     @property
     def has_ended(self):
