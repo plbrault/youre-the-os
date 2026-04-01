@@ -1290,6 +1290,67 @@ class TestProcess:
         assert process.is_running == True
         assert process.time_to_termination == float('inf')
 
+    def test_time_to_termination_infinity_when_waiting_for_io(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        # Use min random to trigger I/O event in process, but max for IOQueue to delay arrival
+        call_count = [0]
+        def random_with_side_effects(self, min, max):
+            call_count[0] += 1
+            print(f'randint({min}, {max}) called, count={call_count[0]}')
+            if call_count[0] <= 2:
+                return min
+            return max
+
+        monkeypatch.setattr(Random, 'get_number', random_with_side_effects)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+        process.update(1000, [])
+
+        assert process.is_waiting_for_io == True
+        assert process.state == ProcessState.BLOCKED_IO_REQUESTED
+        assert process.time_to_termination == float('inf')
+
+    def test_time_to_termination_finite_when_io_available(self, stage_custom_config, monkeypatch, process_custom_config):
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        # Use min random to trigger I/O event in process and let it arrive
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+        process.update(1000, [])
+
+        assert process.state == ProcessState.BLOCKED_IO_REQUESTED
+
+        # Let I/O event arrive but don't process it yet
+        stage.process_manager.io_queue.update(5000, [])
+        assert process.state == ProcessState.BLOCKED_IO_AVAILABLE
+        assert process.time_to_termination != float('inf')
+
     def test_time_to_termination_infinity_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
             io_probability=0,
