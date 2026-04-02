@@ -26,6 +26,19 @@ class ProcessState(Enum):
     BLOCKED_OFF_CPU_IO_AVAILABLE = auto()
     ENDED = auto()
 
+
+class StateTransition(Enum):
+    ASSIGN_TO_CPU = auto()
+    TERMINATE_FROM_STARVATION = auto()
+    REMOVE_FROM_CPU = auto()
+    REQUEST_IO = auto()
+    PAGE_FAULT = auto()
+    TERMINATE_GRACEFULLY = auto()
+    IO_AVAILABLE = auto()
+    IO_DELIVERED = auto()
+    PAGE_AVAILABLE = auto()
+
+
 class Process(SceneObject):
     _ANIMATION_SPEED = 35
 
@@ -195,6 +208,51 @@ class Process(SceneObject):
     def is_in_motion(self):
         return ((self._view.target_x is not None or self._view.target_y is not None)
             and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
+
+    def apply_state_transition(self, transition: StateTransition):
+        """Apply a state transition if valid from current state.
+
+        If the transition is not valid from the current state, it is silently ignored.
+        Only changes the _state attribute; side effects are handled elsewhere.
+        """
+        transitions = {
+            ProcessState.IDLE: {
+                StateTransition.ASSIGN_TO_CPU: ProcessState.RUNNING,
+                StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            },
+            ProcessState.RUNNING: {
+                StateTransition.REMOVE_FROM_CPU: ProcessState.IDLE,
+                StateTransition.REQUEST_IO: ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+                StateTransition.PAGE_FAULT: ProcessState.BLOCKED_ON_CPU_PAGE_FAULT,
+                StateTransition.TERMINATE_GRACEFULLY: ProcessState.ENDED,
+            },
+            ProcessState.BLOCKED_ON_CPU_IO_REQUESTED: {
+                StateTransition.IO_AVAILABLE: ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+                StateTransition.REMOVE_FROM_CPU: ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED,
+            },
+            ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE: {
+                StateTransition.IO_DELIVERED: ProcessState.RUNNING,
+                StateTransition.REMOVE_FROM_CPU: ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE,
+                StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            },
+            ProcessState.BLOCKED_ON_CPU_PAGE_FAULT: {
+                StateTransition.PAGE_AVAILABLE: ProcessState.RUNNING,
+                StateTransition.REMOVE_FROM_CPU: ProcessState.IDLE,
+                StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            },
+            ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED: {
+                StateTransition.IO_AVAILABLE: ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE,
+                StateTransition.ASSIGN_TO_CPU: ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+            },
+            ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE: {
+                StateTransition.IO_DELIVERED: ProcessState.IDLE,
+                StateTransition.ASSIGN_TO_CPU: ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+                StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            },
+        }
+
+        if self._state in transitions and transition in transitions[self._state]:
+            self._state = transitions[self._state][transition]
 
     def use_cpu(self, use_e_core=False):
         if not self.has_cpu:
