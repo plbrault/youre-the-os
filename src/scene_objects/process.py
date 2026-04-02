@@ -398,7 +398,7 @@ class Process(SceneObject):
                 self._check_if_clicked_on(event)
 
     def _handle_pages(self):
-        page_fault = any(page for page in self._pages if page.in_use and not page.on_disk and not page.swap_in_progress)
+        page_fault = any(page for page in self._pages if page.in_use and (page.on_disk or page.swap_in_progress))
         if self.state == ProcessState.RUNNING and page_fault:
             self.apply_state_transition(StateTransition.PAGE_FAULT)
             game_monitor.notify_process_wait_page(self.pid, True)

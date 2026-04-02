@@ -575,22 +575,22 @@ class TestGameObjectsEmitEvents:
         stage.process_manager._create_process()
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
+
         # Ensure process has pages
         assert len(process._pages) > 0, "Process should have pages after using CPU"
-        
+
         # Swap a page to disk
         page = process._pages[0]
         page._on_disk = True
-        
+
         game_monitor.clear_events()
-        
-        # Check for unavailable pages (should trigger wait_page event)
-        process._handle_unavailable_pages()
-        
+
+        # Update process to trigger page availability check
+        process.update(0, [])
+
         events = game_monitor.get_events()
         wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE']
-        
+
         assert len(wait_page_events) >= 1, "Process should emit PROC_WAIT_PAGE when waiting for page"
 
     def test_page_emits_swap_event_when_swap_completes(self, stage):
