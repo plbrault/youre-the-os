@@ -317,14 +317,6 @@ class Process(SceneObject):
         elif not self.is_waiting_for_page:
             self._set_unblocked_state()
 
-    def _set_waiting_for_page(self, waiting_for_page):
-        if waiting_for_page != self.is_waiting_for_page:
-            game_monitor.notify_process_wait_page(self.pid, waiting_for_page)
-        if waiting_for_page:
-            self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_PAGE_FAULT)
-        elif not self.is_waiting_for_io:
-            self._set_unblocked_state()
-
     def _wait_for_io(self):
         self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
         self._is_on_io_cooldown = True
@@ -405,13 +397,16 @@ class Process(SceneObject):
             for event in events:
                 self._check_if_clicked_on(event)
 
-    def _handle_unavailable_pages(self):
-        unavailable_pages = 0
-        if self.has_cpu:
-            for page in self._pages:
-                if page.on_disk or page.swap_in_progress:
-                    unavailable_pages += 1
-        self._set_waiting_for_page(unavailable_pages > 0)
+    def _handle_pages(self):
+        page_fault = any(page for page in self._pages if page.in_use and not page.on_disk and not page.swap_in_progress)
+        if self.state == ProcessState.RUNNING and page_fault:
+            self.apply_state_transition(StateTransition.PAGE_FAULT)
+            game_monitor.notify_process_wait_page(self.pid, True)
+            self._last_state_change_time = self._last_update_time
+        elif self.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT and not page_fault:
+            self.apply_state_transition(StateTransition.PAGE_AVAILABLE)
+            game_monitor.notify_process_wait_page(self.pid, False)
+            self._last_state_change_time = self._last_update_time
 
     def _update_starvation_level(self, current_time):
         if self.is_running:
@@ -475,9 +470,9 @@ class Process(SceneObject):
     def update(self, current_time, events):
         self._last_update_time = current_time
         self._handle_events(events)
+        self._handle_pages()
 
         if not self.has_ended:
-            self._handle_unavailable_pages()
             if current_time >= self._last_event_check_time + ONE_SECOND:
                 self._last_event_check_time = current_time
                 self._update_starvation_level(current_time)
