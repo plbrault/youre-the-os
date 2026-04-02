@@ -249,7 +249,8 @@ class Process(SceneObject):
             if cpu is not None:
                 cpu.process = self
                 self._cpu = cpu
-                self._state = ProcessState.RUNNING
+                self.apply_state_transition(StateTransition.ASSIGN_TO_CPU)
+
                 self.view.set_target_xy(cpu.view.x, cpu.view.y)
                 game_monitor.notify_process_cpu(self._pid, self.has_cpu)
 
@@ -272,6 +273,8 @@ class Process(SceneObject):
         if self.has_cpu:
             self._cpu.process = None
             self._cpu = None
+            self.apply_state_transition(StateTransition.REMOVE_FROM_CPU)
+
             if not self.is_waiting_for_io:
                 self._is_on_io_cooldown = False
             if not self.has_ended:
@@ -280,6 +283,7 @@ class Process(SceneObject):
             for page in self._pages:
                 page.in_use = False
                 game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
+
             if self.has_ended:
                 if self.has_ended_gracefully:
                     self.view.target_y = -self.view.height
@@ -289,10 +293,6 @@ class Process(SceneObject):
                 self._process_manager.del_process(self)
                 game_monitor.notify_process_end(self.pid)
             else:
-                if self.is_waiting_for_io:
-                    self._state = ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
-                else:
-                    self._state = ProcessState.IDLE
                 for slot in self._process_manager.process_slots:
                     if slot.process is None:
                         slot.process = self
