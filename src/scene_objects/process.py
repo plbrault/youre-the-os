@@ -17,11 +17,13 @@ _NEW_PAGE_PROBABILITY_DENOMINATOR = 20
 _BLINKING_INTERVAL_MS = 200
 
 class ProcessState(Enum):
-    RUNNING = auto()
     IDLE = auto()
-    BLOCKED_IO_REQUESTED = auto()
-    BLOCKED_IO_AVAILABLE = auto()
-    BLOCKED_PAGE_FAULT = auto()
+    RUNNING = auto()
+    BLOCKED_ON_CPU_IO_REQUESTED = auto()
+    BLOCKED_ON_CPU_IO_AVAILABLE = auto()
+    BLOCKED_ON_CPU_PAGE_FAULT = auto()
+    BLOCKED_OFF_CPU_IO_REQUESTED = auto()
+    BLOCKED_OFF_CPU_IO_AVAILABLE = auto()
     ENDED = auto()
 
 class Process(SceneObject):
@@ -76,15 +78,26 @@ class Process(SceneObject):
 
     @property
     def is_waiting_for_io(self):
-        return self._state in (ProcessState.BLOCKED_IO_REQUESTED, ProcessState.BLOCKED_IO_AVAILABLE)
+        return self._state in (
+            ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+            ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+            ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED,
+            ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        )
 
     @property
     def is_waiting_for_page(self):
-        return self._state == ProcessState.BLOCKED_PAGE_FAULT
+        return self._state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
 
     @property
     def is_blocked(self):
-        return self._state in (ProcessState.BLOCKED_IO_REQUESTED, ProcessState.BLOCKED_IO_AVAILABLE, ProcessState.BLOCKED_PAGE_FAULT)
+        return self._state in (
+            ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+            ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+            ProcessState.BLOCKED_ON_CPU_PAGE_FAULT,
+            ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED,
+            ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        )
 
     @property
     def is_running(self):
@@ -100,7 +113,10 @@ class Process(SceneObject):
 
     @property
     def io_event_arrived(self):
-        return self._state == ProcessState.BLOCKED_IO_AVAILABLE
+        return self._state in (
+            ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+            ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        )
 
     @property
     def state(self):
@@ -141,7 +157,11 @@ class Process(SceneObject):
         """
         if self.starvation_level >= DEAD_STARVATION_LEVEL:
             return 0
-        if self.state in [ProcessState.RUNNING, ProcessState.BLOCKED_IO_REQUESTED] or self.has_ended_gracefully:
+        if self.state in [
+            ProcessState.RUNNING,
+            ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+            ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
+        ] or self.has_ended_gracefully:
             return float('inf')
         remaining_starvation_levels = DEAD_STARVATION_LEVEL - self.starvation_level
         remaining_time_for_current_level = (
@@ -223,7 +243,7 @@ class Process(SceneObject):
                 game_monitor.notify_process_end(self.pid)
             else:
                 if self.is_waiting_for_io:
-                    self._state = ProcessState.BLOCKED_IO_REQUESTED
+                    self._state = ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
                 else:
                     self._state = ProcessState.IDLE
                 for slot in self._process_manager.process_slots:
@@ -246,7 +266,7 @@ class Process(SceneObject):
 
     def _set_waiting_for_io(self, waiting_for_io):
         if waiting_for_io:
-            self._update_blocking_condition(ProcessState.BLOCKED_IO_REQUESTED)
+            self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
         elif not self.is_waiting_for_page:
             self._set_unblocked_state()
 
@@ -254,12 +274,12 @@ class Process(SceneObject):
         if waiting_for_page != self.is_waiting_for_page:
             game_monitor.notify_process_wait_page(self.pid, waiting_for_page)
         if waiting_for_page:
-            self._update_blocking_condition(ProcessState.BLOCKED_PAGE_FAULT)
+            self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_PAGE_FAULT)
         elif not self.is_waiting_for_io:
             self._set_unblocked_state()
 
     def _wait_for_io(self):
-        self._update_blocking_condition(ProcessState.BLOCKED_IO_REQUESTED)
+        self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
         self._is_on_io_cooldown = True
         self._process_manager.io_queue.wait_for_event(
             self._last_update_time,
@@ -271,7 +291,10 @@ class Process(SceneObject):
     def _on_io_event_arrived(self, current_time):
         if not self.has_ended:
             self._last_starvation_level_change_time = current_time
-            self._state = ProcessState.BLOCKED_IO_AVAILABLE
+            if self.has_cpu:
+                self._state = ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+            else:
+                self._state = ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
 
     def _on_io_event(self):
         if self.has_ended:
@@ -352,7 +375,7 @@ class Process(SceneObject):
                     self._pid, self._starvation_level, self.time_to_termination
                 )
         elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
-            if self._state == ProcessState.BLOCKED_IO_REQUESTED:
+            if self._state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED:
                 return
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:

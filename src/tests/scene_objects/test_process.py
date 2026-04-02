@@ -1320,7 +1320,7 @@ class TestProcess:
         process.update(1000, [])
 
         assert process.is_waiting_for_io == True
-        assert process.state == ProcessState.BLOCKED_IO_REQUESTED
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
         assert process.time_to_termination == float('inf')
 
     def test_time_to_termination_finite_when_io_available(self, stage_custom_config, monkeypatch, process_custom_config):
@@ -1344,11 +1344,11 @@ class TestProcess:
         process.use_cpu()
         process.update(1000, [])
 
-        assert process.state == ProcessState.BLOCKED_IO_REQUESTED
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
 
         # Let I/O event arrive but don't process it yet
         stage.process_manager.io_queue.update(5000, [])
-        assert process.state == ProcessState.BLOCKED_IO_AVAILABLE
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
         assert process.time_to_termination != float('inf')
 
     def test_time_to_termination_infinity_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
