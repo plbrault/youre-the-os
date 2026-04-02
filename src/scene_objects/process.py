@@ -238,11 +238,17 @@ class Process(SceneObject):
         if was_blocked != self.is_blocked:
             self._last_state_change_time = self._last_update_time
 
+    def _set_unblocked_state(self):
+        if self.has_cpu:
+            self._update_blocking_condition(ProcessState.RUNNING)
+        else:
+            self._update_blocking_condition(ProcessState.IDLE)
+
     def _set_waiting_for_io(self, waiting_for_io):
         if waiting_for_io:
             self._update_blocking_condition(ProcessState.BLOCKED_IO_REQUESTED)
         elif not self.is_waiting_for_page:
-            self._update_blocking_condition(ProcessState.IDLE)
+            self._set_unblocked_state()
 
     def _set_waiting_for_page(self, waiting_for_page):
         if waiting_for_page != self.is_waiting_for_page:
@@ -250,7 +256,7 @@ class Process(SceneObject):
         if waiting_for_page:
             self._update_blocking_condition(ProcessState.BLOCKED_PAGE_FAULT)
         elif not self.is_waiting_for_io:
-            self._update_blocking_condition(ProcessState.IDLE)
+            self._set_unblocked_state()
 
     def _wait_for_io(self):
         self._update_blocking_condition(ProcessState.BLOCKED_IO_REQUESTED)
@@ -270,7 +276,7 @@ class Process(SceneObject):
     def _on_io_event(self):
         if self.has_ended:
             return
-        self._state = ProcessState.IDLE
+        self._set_unblocked_state()
         game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):

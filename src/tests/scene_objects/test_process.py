@@ -1464,7 +1464,7 @@ class TestProcess:
         # Process the I/O event - process should stay on CPU and resume running
         stage.process_manager.io_queue.process_events()
         assert process.is_waiting_for_io == False
-        assert process.state == ProcessState.IDLE
+        assert process.state == ProcessState.RUNNING
         assert process.has_cpu == True
         assert process.is_running == True
 
