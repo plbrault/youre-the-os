@@ -1337,7 +1337,6 @@ class TestProcess:
         call_count = [0]
         def random_with_side_effects(self, min, max):
             call_count[0] += 1
-            print(f'randint({min}, {max}) called, count={call_count[0]}')
             if call_count[0] <= 2:
                 return min
             return max
