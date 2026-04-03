@@ -284,18 +284,6 @@ class Process(SceneObject):
                         self.view.set_target_xy(slot.view.x, slot.view.y)
                         break
 
-    def _update_blocking_condition(self, new_state):
-        was_blocked = self.is_blocked
-        self._state = new_state
-        if was_blocked != self.is_blocked:
-            self._last_state_change_time = self._last_update_time
-
-    def _set_unblocked_state(self):
-        if self.has_cpu:
-            self._update_blocking_condition(ProcessState.RUNNING)
-        else:
-            self._update_blocking_condition(ProcessState.IDLE)
-
     def _on_io_event_available(self, current_time):
         if self._state != ProcessState.ENDED:
             self._last_starvation_level_change_time = current_time
