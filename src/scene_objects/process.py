@@ -446,7 +446,7 @@ class Process(SceneObject):
                 game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _handle_new_page_probability(self):
-        if self.is_running:
+        if self.state == ProcessState.RUNNING:
             if (
                 len(self._pages) < MAX_PAGES_PER_PROCESS
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
