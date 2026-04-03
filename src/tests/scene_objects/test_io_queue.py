@@ -88,7 +88,7 @@ class TestIoQueue:
         assert io_queue.event_count == 0
         assert arrival_callback_called == []
 
-    def test_process_events_calls_delivery_callback(self, io_queue, monkeypatch):
+    def test_handle_player_action_calls_delivery_callback(self, io_queue, monkeypatch):
         delivery_callback_called = []
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -102,12 +102,12 @@ class TestIoQueue:
         assert io_queue.event_count == 2
         assert delivery_callback_called == []
 
-        io_queue.process_events()
+        io_queue.handle_player_action()
         assert delivery_callback_called == [1, 2]
         assert io_queue.event_count == 0
 
-    def test_process_events_empty_queue(self, io_queue):
-        io_queue.process_events()
+    def test_handle_player_action_empty_queue(self, io_queue):
+        io_queue.handle_player_action()
         assert io_queue.event_count == 0
 
     def test_blink_color_false_when_no_events(self, io_queue):
@@ -147,7 +147,7 @@ class TestIoQueue:
         io_queue.update(11000, [])
         io_queue.update(16000, [])
 
-        io_queue.process_events()
+        io_queue.handle_player_action()
         assert delivery_callback_called == [1, 2, 3]
 
     def test_event_arrives_when_max_time_elapsed_regardless_of_probability(self, io_queue, monkeypatch):

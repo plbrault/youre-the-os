@@ -55,7 +55,7 @@ class IoQueue(SceneObject):
     def display_blink_color(self):
         return self._display_blink_color
 
-    def process_events(self):
+    def handle_player_action(self):
         while self.event_count > 0:
             self._event_count -= 1
             waiter = self._subscriber_queue.popleft()
@@ -68,7 +68,7 @@ class IoQueue(SceneObject):
         return False
 
     def _on_click(self):
-        self.process_events()
+        self.handle_player_action()
 
     def _handle_max_time_elapsed(self, current_time):
         if self._event_count >= len(self._subscriber_queue):
@@ -114,7 +114,7 @@ class IoQueue(SceneObject):
                 self._on_click()
             if player_action.type == GameEventType.KEY_UP:
                 if player_action.get_property('key') == 'space':
-                    self.process_events()
+                    self.handle_player_action()
 
         self._handle_max_time_elapsed(current_time)
         self._handle_probabilistic_events(current_time)

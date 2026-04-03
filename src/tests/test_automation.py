@@ -534,12 +534,12 @@ class TestGameObjectsEmitEvents:
         
         game_monitor.clear_events()
         
-        io_queue.process_events()
+        io_queue.handle_player_action()
         
         events = game_monitor.get_events()
         io_queue_events = [e for e in events if e.etype == 'IO_QUEUE']
         
-        assert len(io_queue_events) >= 1, "IoQueue.process_events should emit IO_QUEUE event"
+        assert len(io_queue_events) >= 1, "IoQueue.handle_player_action should emit IO_QUEUE event"
         assert io_queue_events[0].io_count == 0, "After processing, io_count should be 0"
 
     def test_process_emits_cpu_event_when_toggled(self, stage):
@@ -1048,7 +1048,7 @@ def scheduler(events):
         
         monkeypatch.setattr(
             stage.process_manager.io_queue,
-            'process_events',
+            'handle_player_action',
             lambda: io_processed.append(True)
         )
         

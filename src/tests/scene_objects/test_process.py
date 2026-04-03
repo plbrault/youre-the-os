@@ -789,7 +789,7 @@ class TestProcess:
         assert process.starvation_level == 1
 
         spy_apply_event.clear()
-        stage.process_manager.io_queue.process_events()
+        stage.process_manager.io_queue.handle_player_action()
 
         assert process.is_waiting_for_io == False
         # After delivery, process is running so starvation should be reset
@@ -873,7 +873,7 @@ class TestProcess:
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         stage.process_manager.io_queue.update(7000, [])
-        stage.process_manager.io_queue.process_events()
+        stage.process_manager.io_queue.handle_player_action()
         assert process1.is_waiting_for_io == False
 
         process1.update(2000, [])
@@ -904,7 +904,7 @@ class TestProcess:
         assert process.is_waiting_for_io == True
 
         stage.process_manager.io_queue.update(7000, [])
-        stage.process_manager.io_queue.process_events()
+        stage.process_manager.io_queue.handle_player_action()
         assert process.is_waiting_for_io == False
 
         process.yield_cpu()
@@ -1448,7 +1448,7 @@ class TestProcess:
         stage.process_manager.io_queue.update(7000, [])
         assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
 
-        stage.process_manager.io_queue.process_events()
+        stage.process_manager.io_queue.handle_player_action()
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
     def test_termination_while_waiting_for_io_updates_state_timing(self, stage_custom_config, monkeypatch, process_custom_config):
@@ -1491,7 +1491,7 @@ class TestProcess:
         assert process.starvation_level == 1  # Starvation level stays the same when event arrives
 
         # Process the I/O event - process should stay on CPU and resume running
-        stage.process_manager.io_queue.process_events()
+        stage.process_manager.io_queue.handle_player_action()
         assert process.is_waiting_for_io == False
         assert process.state == ProcessState.RUNNING
         assert process.has_cpu == True
