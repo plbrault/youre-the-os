@@ -67,9 +67,6 @@ class IoQueue(SceneObject):
             return self._view.collides(*event.get_property('position'))
         return False
 
-    def _on_click(self):
-        self.handle_player_action()
-
     def _handle_max_time_elapsed(self, current_time):
         if self._event_count >= len(self._subscriber_queue):
             return
@@ -110,11 +107,11 @@ class IoQueue(SceneObject):
         self._current_time = current_time
 
         for player_action in player_actions:
-            if self._check_if_clicked_on(player_action):
-                self._on_click()
-            if player_action.type == GameEventType.KEY_UP:
-                if player_action.get_property('key') == 'space':
-                    self.handle_player_action()
+            if (
+                self._check_if_clicked_on(player_action)
+                or (player_action.type == GameEventType.KEY_UP and player_action.get_property('key') == 'space')
+            ):
+                self.handle_player_action()
 
         self._handle_max_time_elapsed(current_time)
         self._handle_probabilistic_events(current_time)
