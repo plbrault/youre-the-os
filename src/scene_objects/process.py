@@ -93,7 +93,7 @@ class Process(SceneObject):
         self._starvation_level = 1
 
         self._last_update_time = stage.current_time
-        self._last_event_check_time = self._last_update_time
+        self._last_periodic_update_time = self._last_update_time
         self._last_state_change_time = self._last_update_time
         self._last_starvation_level_change_time = self._last_update_time
 
@@ -325,30 +325,30 @@ class Process(SceneObject):
     def _on_right_click(self):
         self.toggle(to_e_core=True)
 
-    def _check_if_clicked_on(self, event):
+    def _check_if_clicked_on(self, player_action):
         if (
-            event.type == GameEventType.MOUSE_LEFT_CLICK
+            player_action.type == GameEventType.MOUSE_LEFT_CLICK
             or (
-                event.type == GameEventType.MOUSE_MOTION
-                and event.get_property('left_button_down')
+                player_action.type == GameEventType.MOUSE_MOTION
+                and player_action.get_property('left_button_down')
             )
         ):
-            if self._view.collides(*event.get_property('position')):
+            if self._view.collides(*player_action.get_property('position')):
                 self._on_left_click()
         elif (
-            event.type == GameEventType.MOUSE_RIGHT_CLICK
+            player_action.type == GameEventType.MOUSE_RIGHT_CLICK
             or (
-                event.type == GameEventType.MOUSE_MOTION
-                and event.get_property('right_button_down')
+                player_action.type == GameEventType.MOUSE_MOTION
+                and player_action.get_property('right_button_down')
             )
         ):
-            if self._view.collides(*event.get_property('position')):
+            if self._view.collides(*player_action.get_property('position')):
                 self._on_right_click()
 
-    def _handle_events(self, events):
+    def _handle_player_actions(self, player_actions):
         if not self.is_in_motion:
-            for event in events:
-                self._check_if_clicked_on(event)
+            for player_action in player_actions:
+                self._check_if_clicked_on(player_action)
 
     def _handle_pages(self):
         page_fault = any(page for page in self._pages if page.in_use and (page.on_disk or page.swap_in_progress))
@@ -422,13 +422,13 @@ class Process(SceneObject):
         else:
             self._display_blink_color = False
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_actions):
         self._last_update_time = current_time
-        self._handle_events(events)
+        self._handle_player_actions(player_actions)
         self._handle_pages()
 
-        if current_time >= self._last_event_check_time + ONE_SECOND:
-            self._last_event_check_time = current_time
+        if current_time >= self._last_periodic_update_time + ONE_SECOND:
+            self._last_periodic_update_time = current_time
             self._update_starvation_level(current_time)
             self._handle_io_probability()
             self._handle_new_page_probability()
