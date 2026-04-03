@@ -34,7 +34,7 @@ class TestIoQueue:
         assert io_queue.event_count == 1
         assert arrival_callback_called == [1]
 
-    def test_event_not_arrives_before_max_time(self, io_queue, monkeypatch):
+    def test_event_not_does_arrives_before_max_time(self, io_queue, monkeypatch):
         arrival_callback_called = []
 
         # Force random to NOT trigger the probabilistic event
