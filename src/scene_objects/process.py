@@ -467,7 +467,7 @@ class Process(SceneObject):
                 self._terminate_gracefully()
 
     def _handle_blinking_animation(self, current_time):
-        if self.is_waiting_for_page:
+        if self.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:
             self._display_blink_color = False
