@@ -296,16 +296,6 @@ class Process(SceneObject):
         else:
             self._update_blocking_condition(ProcessState.IDLE)
 
-    def _wait_for_io(self):
-        self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
-        self._is_on_io_cooldown = True
-        self._process_manager.io_queue.wait_for_event(
-            self._last_update_time,
-            self._on_io_event_arrived,
-            self._on_io_event
-        )
-        game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
-
     def _on_io_event_arrived(self, current_time):
         if self._state != ProcessState.ENDED:
             self._last_starvation_level_change_time = current_time
