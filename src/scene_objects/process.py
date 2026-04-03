@@ -163,12 +163,12 @@ class Process(SceneObject):
     @property
     def current_state_duration(self):
         """Time in milliseconds since process state changed between running, idle or blocked."""
-        return self._last_update_time - self._last_state_change_time
+        return max(self._last_update_time - self._last_state_change_time, 0)
 
     @property
     def current_starvation_level_duration(self):
         """Time in milliseconds since starvation level changed."""
-        return self._last_update_time - self._last_starvation_level_change_time
+        return max(self._last_update_time - self._last_starvation_level_change_time, 0)
 
     @property
     def is_progressing_to_happiness(self):
