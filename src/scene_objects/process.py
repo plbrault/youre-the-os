@@ -172,9 +172,8 @@ class Process(SceneObject):
     @property
     def is_progressing_to_happiness(self):
         return (
-            self.has_cpu
+            self._state == ProcessState.RUNNING
             and self.starvation_level > 0
-            and self._state == ProcessState.RUNNING
         )
 
     @property
