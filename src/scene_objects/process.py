@@ -296,19 +296,15 @@ class Process(SceneObject):
         else:
             self._update_blocking_condition(ProcessState.IDLE)
 
-    def _on_io_event_arrived(self, current_time):
+    def _on_io_event_available(self, current_time):
         if self._state != ProcessState.ENDED:
             self._last_starvation_level_change_time = current_time
-            if self.has_cpu:
-                self._state = ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-            else:
-                self._state = ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+            self.apply_state_transition(StateTransition.IO_AVAILABLE)
 
-    def _on_io_event(self):
-        if self._state == ProcessState.ENDED:
-            return
-        self._set_unblocked_state()
-        game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
+    def _on_io_event_delivered(self):
+        if self._state != ProcessState.ENDED:
+            self.apply_state_transition(StateTransition.IO_DELIVERED)
+            game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
@@ -409,8 +405,8 @@ class Process(SceneObject):
 
                 self._process_manager.io_queue.wait_for_event(
                     self._last_update_time,
-                    self._on_io_event_arrived,
-                    self._on_io_event
+                    self._on_io_event_available,
+                    self._on_io_event_delivered
                 )
                 game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
