@@ -1513,233 +1513,234 @@ class TestProcess:
         # After termination, state should be ENDED
         assert process.state == ProcessState.ENDED
 
-    class TestStateEvents:
-        """Test suite for the state event logic."""
 
-        def test_idle_assign_to_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
+class TestStateEvents(TestProcess):
+    """Test suite for the state event logic."""
+
+    def test_idle_assign_to_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        assert process.state == ProcessState.IDLE
+        process.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
+        assert process.state == ProcessState.RUNNING
+
+    def test_idle_terminate_from_starvation(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        assert process.state == ProcessState.IDLE
+        process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
+        assert process.state == ProcessState.ENDED
+
+    def test_idle_invalid_events(self, stage, process_config):
+        """Test that invalid events from IDLE are silently ignored."""
+        process = Process(1, stage, process_config)
+        assert process.state == ProcessState.IDLE
+        invalid_events = [
+            StateEvent.REMOVE_FROM_CPU,
+            StateEvent.REQUEST_IO,
+            StateEvent.PAGE_FAULT,
+            StateEvent.TERMINATE_GRACEFULLY,
+            StateEvent.IO_AVAILABLE,
+            StateEvent.IO_DELIVERED,
+            StateEvent.PAGE_AVAILABLE,
+        ]
+        for event in invalid_events:
+            process.apply_state_transition(event)
             assert process.state == ProcessState.IDLE
-            process.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
+
+    def test_running_remove_from_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        assert process.state == ProcessState.RUNNING
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        assert process.state == ProcessState.IDLE
+
+    def test_running_request_io(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        assert process.state == ProcessState.RUNNING
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+
+    def test_running_page_fault(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        assert process.state == ProcessState.RUNNING
+        process.apply_state_transition(StateEvent.PAGE_FAULT)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+
+    def test_running_terminate_gracefully(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        assert process.state == ProcessState.RUNNING
+        process.apply_state_transition(StateEvent.TERMINATE_GRACEFULLY)
+        assert process.state == ProcessState.ENDED
+
+    def test_running_invalid_events(self, stage, process_config):
+        """Test that invalid events from RUNNING are silently ignored."""
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        assert process.state == ProcessState.RUNNING
+        invalid_events = [
+            StateEvent.ASSIGN_TO_CPU,
+            StateEvent.TERMINATE_FROM_STARVATION,
+            StateEvent.IO_AVAILABLE,
+            StateEvent.IO_DELIVERED,
+            StateEvent.PAGE_AVAILABLE,
+        ]
+        for event in invalid_events:
+            process.apply_state_transition(event)
             assert process.state == ProcessState.RUNNING
 
-        def test_idle_terminate_from_starvation(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            assert process.state == ProcessState.IDLE
-            process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
-            assert process.state == ProcessState.ENDED
+    def test_blocked_on_cpu_io_requested_io_available(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
 
-        def test_idle_invalid_events(self, stage, process_config):
-            """Test that invalid events from IDLE are silently ignored."""
-            process = Process(1, stage, process_config)
-            assert process.state == ProcessState.IDLE
-            invalid_events = [
-                StateEvent.REMOVE_FROM_CPU,
-                StateEvent.REQUEST_IO,
-                StateEvent.PAGE_FAULT,
-                StateEvent.TERMINATE_GRACEFULLY,
-                StateEvent.IO_AVAILABLE,
-                StateEvent.IO_DELIVERED,
-                StateEvent.PAGE_AVAILABLE,
-            ]
-            for event in invalid_events:
-                process.apply_state_transition(event)
-                assert process.state == ProcessState.IDLE
+    def test_blocked_on_cpu_io_requested_remove_from_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
 
-        def test_running_remove_from_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            assert process.state == ProcessState.RUNNING
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            assert process.state == ProcessState.IDLE
-
-        def test_running_request_io(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            assert process.state == ProcessState.RUNNING
-            process.apply_state_transition(StateEvent.REQUEST_IO)
+    def test_blocked_on_cpu_io_requested_invalid_events(self, stage, process_config):
+        """Test that invalid events from BLOCKED_ON_CPU_IO_REQUESTED are silently ignored."""
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+        invalid_events = [
+            StateEvent.ASSIGN_TO_CPU,
+            StateEvent.TERMINATE_FROM_STARVATION,
+            StateEvent.REQUEST_IO,
+            StateEvent.PAGE_FAULT,
+            StateEvent.TERMINATE_GRACEFULLY,
+            StateEvent.IO_DELIVERED,
+            StateEvent.PAGE_AVAILABLE,
+        ]
+        for event in invalid_events:
+            process.apply_state_transition(event)
             assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
 
-        def test_running_page_fault(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            assert process.state == ProcessState.RUNNING
-            process.apply_state_transition(StateEvent.PAGE_FAULT)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+    def test_blocked_on_cpu_io_available_io_delivered(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+        process.apply_state_transition(StateEvent.IO_DELIVERED)
+        assert process.state == ProcessState.RUNNING
 
-        def test_running_terminate_gracefully(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            assert process.state == ProcessState.RUNNING
-            process.apply_state_transition(StateEvent.TERMINATE_GRACEFULLY)
+    def test_blocked_on_cpu_io_available_remove_from_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+
+    def test_blocked_on_cpu_io_available_terminate_from_starvation(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+        process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
+        assert process.state == ProcessState.ENDED
+
+    def test_blocked_on_cpu_page_fault_page_available(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.PAGE_FAULT)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        process.apply_state_transition(StateEvent.PAGE_AVAILABLE)
+        assert process.state == ProcessState.RUNNING
+
+    def test_blocked_on_cpu_page_fault_remove_from_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.PAGE_FAULT)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        assert process.state == ProcessState.IDLE
+
+    def test_blocked_on_cpu_page_fault_terminate_from_starvation(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.PAGE_FAULT)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
+        assert process.state == ProcessState.ENDED
+
+    def test_blocked_off_cpu_io_requested_io_available(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+
+    def test_blocked_off_cpu_io_requested_assign_to_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
+        process.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+
+    def test_blocked_off_cpu_io_available_io_delivered(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        process.apply_state_transition(StateEvent.IO_DELIVERED)
+        assert process.state == ProcessState.IDLE
+
+    def test_blocked_off_cpu_io_available_assign_to_cpu(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        process.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+
+    def test_blocked_off_cpu_io_available_terminate_from_starvation(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        process.use_cpu()
+        process.apply_state_transition(StateEvent.REQUEST_IO)
+        process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
+        process.apply_state_transition(StateEvent.IO_AVAILABLE)
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
+        assert process.state == ProcessState.ENDED
+
+    def test_ended_state_no_events(self, stage, process_config):
+        """Test that ENDED state ignores all events."""
+        process = Process(1, stage, process_config)
+        process._state = ProcessState.ENDED
+
+        all_events = [
+            StateEvent.ASSIGN_TO_CPU,
+            StateEvent.TERMINATE_FROM_STARVATION,
+            StateEvent.REMOVE_FROM_CPU,
+            StateEvent.REQUEST_IO,
+            StateEvent.PAGE_FAULT,
+            StateEvent.TERMINATE_GRACEFULLY,
+            StateEvent.IO_AVAILABLE,
+            StateEvent.IO_DELIVERED,
+            StateEvent.PAGE_AVAILABLE,
+        ]
+
+        for event in all_events:
+            process.apply_state_transition(event)
             assert process.state == ProcessState.ENDED
-
-        def test_running_invalid_events(self, stage, process_config):
-            """Test that invalid events from RUNNING are silently ignored."""
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            assert process.state == ProcessState.RUNNING
-            invalid_events = [
-                StateEvent.ASSIGN_TO_CPU,
-                StateEvent.TERMINATE_FROM_STARVATION,
-                StateEvent.IO_AVAILABLE,
-                StateEvent.IO_DELIVERED,
-                StateEvent.PAGE_AVAILABLE,
-            ]
-            for event in invalid_events:
-                process.apply_state_transition(event)
-                assert process.state == ProcessState.RUNNING
-
-        def test_blocked_on_cpu_io_requested_io_available(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-
-        def test_blocked_on_cpu_io_requested_remove_from_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
-
-        def test_blocked_on_cpu_io_requested_invalid_events(self, stage, process_config):
-            """Test that invalid events from BLOCKED_ON_CPU_IO_REQUESTED are silently ignored."""
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
-            invalid_events = [
-                StateEvent.ASSIGN_TO_CPU,
-                StateEvent.TERMINATE_FROM_STARVATION,
-                StateEvent.REQUEST_IO,
-                StateEvent.PAGE_FAULT,
-                StateEvent.TERMINATE_GRACEFULLY,
-                StateEvent.IO_DELIVERED,
-                StateEvent.PAGE_AVAILABLE,
-            ]
-            for event in invalid_events:
-                process.apply_state_transition(event)
-                assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
-
-        def test_blocked_on_cpu_io_available_io_delivered(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-            process.apply_state_transition(StateEvent.IO_DELIVERED)
-            assert process.state == ProcessState.RUNNING
-
-        def test_blocked_on_cpu_io_available_remove_from_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
-
-        def test_blocked_on_cpu_io_available_terminate_from_starvation(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-            process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
-            assert process.state == ProcessState.ENDED
-
-        def test_blocked_on_cpu_page_fault_page_available(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.PAGE_FAULT)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
-            process.apply_state_transition(StateEvent.PAGE_AVAILABLE)
-            assert process.state == ProcessState.RUNNING
-
-        def test_blocked_on_cpu_page_fault_remove_from_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.PAGE_FAULT)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            assert process.state == ProcessState.IDLE
-
-        def test_blocked_on_cpu_page_fault_terminate_from_starvation(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.PAGE_FAULT)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
-            process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
-            assert process.state == ProcessState.ENDED
-
-        def test_blocked_off_cpu_io_requested_io_available(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
-
-        def test_blocked_off_cpu_io_requested_assign_to_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
-            process.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
-
-        def test_blocked_off_cpu_io_available_io_delivered(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
-            process.apply_state_transition(StateEvent.IO_DELIVERED)
-            assert process.state == ProcessState.IDLE
-
-        def test_blocked_off_cpu_io_available_assign_to_cpu(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
-            process.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
-            assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-
-        def test_blocked_off_cpu_io_available_terminate_from_starvation(self, stage, process_config):
-            process = Process(1, stage, process_config)
-            process.use_cpu()
-            process.apply_state_transition(StateEvent.REQUEST_IO)
-            process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
-            process.apply_state_transition(StateEvent.IO_AVAILABLE)
-            assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
-            process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
-            assert process.state == ProcessState.ENDED
-
-        def test_ended_state_no_events(self, stage, process_config):
-            """Test that ENDED state ignores all events."""
-            process = Process(1, stage, process_config)
-            process._state = ProcessState.ENDED
-
-            all_events = [
-                StateEvent.ASSIGN_TO_CPU,
-                StateEvent.TERMINATE_FROM_STARVATION,
-                StateEvent.REMOVE_FROM_CPU,
-                StateEvent.REQUEST_IO,
-                StateEvent.PAGE_FAULT,
-                StateEvent.TERMINATE_GRACEFULLY,
-                StateEvent.IO_AVAILABLE,
-                StateEvent.IO_DELIVERED,
-                StateEvent.PAGE_AVAILABLE,
-            ]
-
-            for event in all_events:
-                process.apply_state_transition(event)
-                assert process.state == ProcessState.ENDED
