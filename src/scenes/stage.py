@@ -186,7 +186,7 @@ class Stage(Scene):
         for event in self._get_script_events():
             try:
                 if event['type'] == 'io_queue':
-                    self._process_manager.io_queue.process_events()
+                    self._process_manager.io_queue.handle_player_action()
                 elif event['type'] == 'process':
                     process = self._process_manager.get_process(event['pid'])
                     if process is not None:
