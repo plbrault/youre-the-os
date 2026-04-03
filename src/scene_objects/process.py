@@ -26,7 +26,7 @@ class ProcessState(Enum):
     BLOCKED_OFF_CPU_IO_AVAILABLE = auto()
     ENDED = auto()
 
-class StateTransition(Enum):
+class StateEvent(Enum):
     ASSIGN_TO_CPU = auto()
     TERMINATE_FROM_STARVATION = auto()
     REMOVE_FROM_CPU = auto()
@@ -39,43 +39,42 @@ class StateTransition(Enum):
 
 class Process(SceneObject):
     ProcessState = ProcessState
-    StateTransition = StateTransition
 
     _ANIMATION_SPEED = 35
 
     _state_transitions = {
         ProcessState.IDLE: {
-            StateTransition.ASSIGN_TO_CPU: ProcessState.RUNNING,
-            StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            StateEvent.ASSIGN_TO_CPU: ProcessState.RUNNING,
+            StateEvent.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
         },
         ProcessState.RUNNING: {
-            StateTransition.REMOVE_FROM_CPU: ProcessState.IDLE,
-            StateTransition.REQUEST_IO: ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
-            StateTransition.PAGE_FAULT: ProcessState.BLOCKED_ON_CPU_PAGE_FAULT,
-            StateTransition.TERMINATE_GRACEFULLY: ProcessState.ENDED,
+            StateEvent.REMOVE_FROM_CPU: ProcessState.IDLE,
+            StateEvent.REQUEST_IO: ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+            StateEvent.PAGE_FAULT: ProcessState.BLOCKED_ON_CPU_PAGE_FAULT,
+            StateEvent.TERMINATE_GRACEFULLY: ProcessState.ENDED,
         },
         ProcessState.BLOCKED_ON_CPU_IO_REQUESTED: {
-            StateTransition.IO_AVAILABLE: ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
-            StateTransition.REMOVE_FROM_CPU: ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED,
+            StateEvent.IO_AVAILABLE: ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+            StateEvent.REMOVE_FROM_CPU: ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED,
         },
         ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE: {
-            StateTransition.IO_DELIVERED: ProcessState.RUNNING,
-            StateTransition.REMOVE_FROM_CPU: ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE,
-            StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            StateEvent.IO_DELIVERED: ProcessState.RUNNING,
+            StateEvent.REMOVE_FROM_CPU: ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE,
+            StateEvent.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
         },
         ProcessState.BLOCKED_ON_CPU_PAGE_FAULT: {
-            StateTransition.PAGE_AVAILABLE: ProcessState.RUNNING,
-            StateTransition.REMOVE_FROM_CPU: ProcessState.IDLE,
-            StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            StateEvent.PAGE_AVAILABLE: ProcessState.RUNNING,
+            StateEvent.REMOVE_FROM_CPU: ProcessState.IDLE,
+            StateEvent.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
         },
         ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED: {
-            StateTransition.IO_AVAILABLE: ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE,
-            StateTransition.ASSIGN_TO_CPU: ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+            StateEvent.IO_AVAILABLE: ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE,
+            StateEvent.ASSIGN_TO_CPU: ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
         },
         ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE: {
-            StateTransition.IO_DELIVERED: ProcessState.IDLE,
-            StateTransition.ASSIGN_TO_CPU: ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
-            StateTransition.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
+            StateEvent.IO_DELIVERED: ProcessState.IDLE,
+            StateEvent.ASSIGN_TO_CPU: ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
+            StateEvent.TERMINATE_FROM_STARVATION: ProcessState.ENDED,
         },
     }
 
@@ -226,9 +225,9 @@ class Process(SceneObject):
         return ((self._view.target_x is not None or self._view.target_y is not None)
             and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
 
-    def apply_state_transition(self, transition: StateTransition):
-        if self._state in self._state_transitions and transition in Process._state_transitions[self._state]:
-            new_state = self._state_transitions[self._state][transition]
+    def apply_state_transition(self, event: StateEvent):
+        if self._state in self._state_transitions and event in Process._state_transitions[self._state]:
+            new_state = self._state_transitions[self._state][event]
             if new_state != self._state:
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
@@ -239,7 +238,7 @@ class Process(SceneObject):
             if cpu is not None:
                 cpu.process = self
                 self._cpu = cpu
-                self.apply_state_transition(StateTransition.ASSIGN_TO_CPU)
+                self.apply_state_transition(StateEvent.ASSIGN_TO_CPU)
 
                 self.view.set_target_xy(cpu.view.x, cpu.view.y)
                 game_monitor.notify_process_cpu(self._pid, self.has_cpu)
@@ -262,7 +261,7 @@ class Process(SceneObject):
         if self.has_cpu:
             self._cpu.process = None
             self._cpu = None
-            self.apply_state_transition(StateTransition.REMOVE_FROM_CPU)
+            self.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
 
             if not self.is_waiting_for_io:
                 self._is_on_io_cooldown = False
@@ -290,22 +289,22 @@ class Process(SceneObject):
     def _on_io_event_available(self, current_time):
         if self._state != ProcessState.ENDED:
             self._last_starvation_level_change_time = current_time
-            self.apply_state_transition(StateTransition.IO_AVAILABLE)
+            self.apply_state_transition(StateEvent.IO_AVAILABLE)
 
     def _on_io_event_delivered(self):
         if self._state != ProcessState.ENDED:
-            self.apply_state_transition(StateTransition.IO_DELIVERED)
+            self.apply_state_transition(StateEvent.IO_DELIVERED)
             game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
-            self.apply_state_transition(StateTransition.TERMINATE_GRACEFULLY)
+            self.apply_state_transition(StateEvent.TERMINATE_GRACEFULLY)
             self._starvation_level = 0
             game_monitor.notify_process_terminated(self._pid)
 
     def _terminate_from_starvation(self):
         if self._process_manager.terminate_process(self, True):
-            self.apply_state_transition(StateTransition.TERMINATE_FROM_STARVATION)
+            self.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
             self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
                 game_monitor.notify_page_free(page.pid, page.idx)
@@ -354,10 +353,10 @@ class Process(SceneObject):
     def _handle_pages(self):
         page_fault = any(page for page in self._pages if page.in_use and (page.on_disk or page.swap_in_progress))
         if self.state == ProcessState.RUNNING and page_fault:
-            self.apply_state_transition(StateTransition.PAGE_FAULT)
+            self.apply_state_transition(StateEvent.PAGE_FAULT)
             game_monitor.notify_process_wait_page(self.pid, True)
         elif self.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT and not page_fault:
-            self.apply_state_transition(StateTransition.PAGE_AVAILABLE)
+            self.apply_state_transition(StateEvent.PAGE_AVAILABLE)
             game_monitor.notify_process_wait_page(self.pid, False)
 
     def _update_starvation_level(self, current_time):
@@ -386,7 +385,7 @@ class Process(SceneObject):
                 and not self._is_on_io_cooldown
                 and randint(1, 100) <= self._io_probability_numerator
             ):
-                self.apply_state_transition(StateTransition.REQUEST_IO)
+                self.apply_state_transition(StateEvent.REQUEST_IO)
                 self._is_on_io_cooldown = True
 
                 self._process_manager.io_queue.wait_for_event(

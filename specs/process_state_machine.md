@@ -13,7 +13,7 @@ A process has the following possible states:
 
 Below are the possible transitions between states. Transitions are expressed using the following format:
 
-`START_STATE` -> `TRANSITION_NAME` -> `NEW_STATE`
+`START_STATE` -> `EVENT_NAME` -> `NEW_STATE`
 
 ## Possible Transitions
 
