@@ -344,11 +344,11 @@ class Process(SceneObject):
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
             game_monitor.notify_process_terminated(self._pid)
-            self._state = ProcessState.ENDED
+            self.apply_state_transition(StateTransition.TERMINATE_GRACEFULLY)
             self._last_state_change_time = self._last_update_time
             self._starvation_level = 0
 
-    def _terminate_by_user(self):
+    def _terminate_from_starvation(self):
         if self._process_manager.terminate_process(self, True):
             self.apply_state_transition(StateTransition.TERMINATE_FROM_STARVATION)
             self._last_state_change_time = self._last_update_time
@@ -425,7 +425,7 @@ class Process(SceneObject):
                 game_monitor.notify_process_starvation(
                     self._pid, self._starvation_level, self.time_to_termination)
             else:
-                self._terminate_by_user()
+                self._terminate_from_starvation()
 
     def _handle_io_probability(self):
         if self.state == ProcessState.RUNNING:
@@ -458,7 +458,7 @@ class Process(SceneObject):
                     new_page.pid, new_page.idx, new_page.on_disk, new_page.in_use)
 
     def _handle_graceful_termination_probability(self, current_time):
-        if self.is_running:
+        if self.state == ProcessState.RUNNING:
             if (
                 current_time - self._last_state_change_time
                     >= ONE_SECOND

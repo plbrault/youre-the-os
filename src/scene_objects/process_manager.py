@@ -197,11 +197,10 @@ class ProcessManager(SceneObject):
             return True
         return False
 
-    def terminate_process(self, process, by_user):
-        # `by_user` refers to in-game user, not to the player.
+    def terminate_process(self, process, from_starvation):
         can_terminate = False
 
-        if by_user:
+        if from_starvation:
             if (
                 self._user_terminated_process_count
                 < self._stage_config.max_processes_terminated_by_user
