@@ -3,7 +3,6 @@ from types import SimpleNamespace
 
 import game_monitor
 from constants import DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
-from config.process_config import ProcessConfig
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 
