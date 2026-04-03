@@ -2,6 +2,10 @@ import pytest
 from types import SimpleNamespace
 
 import game_monitor
+from constants import DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from config.process_config import ProcessConfig
+from config.stage_config import StageConfig
+from config.cpu_config import CpuConfig
 
 
 class TestSchedulerDataClasses:
@@ -480,37 +484,43 @@ class TestGameObjectsEmitEvents:
     """
 
     def test_process_manager_emits_process_new_event(self, stage):
-        """Test that ProcessManager._create_process emits PROC_NEW event."""
-        game_monitor.clear_events()
-        
-        # Create a process using the internal method
-        # (this is what gets called during gameplay)
-        stage.process_manager._create_process()
-        
+        """Test that ProcessManager emits PROC_NEW event when creating processes at startup."""
+        # Run updates to trigger process creation at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
         events = game_monitor.get_events()
         proc_new_events = [e for e in events if e.etype == 'PROC_NEW']
-        
-        assert len(proc_new_events) >= 1, "ProcessManager._create_process should emit PROC_NEW event"
+
+        # Stage config has num_processes_at_startup = 14
+        assert len(proc_new_events) >= 14, "ProcessManager should emit PROC_NEW for each process at startup"
         assert proc_new_events[0].pid == 1, "First process should have pid=1"
 
     def test_process_emits_page_new_event_when_using_cpu(self, stage, monkeypatch):
         """Test that Process emits PAGE_NEW event when it starts using CPU and creates pages."""
-        # Create a process
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
-        
+
         # Ensure CPU is available
-        cpu = stage.process_manager._cpu_manager.select_free_cpu()
+        cpu = stage.process_manager.cpu_manager.select_free_cpu()
         assert cpu is not None, "Need a free CPU for this test"
-        
+
         game_monitor.clear_events()
-        
+
         # When process uses CPU for the first time, it creates pages
         process.use_cpu()
-        
+
         events = game_monitor.get_events()
         page_new_events = [e for e in events if e.etype == 'PAGE_NEW']
-        
+
         assert len(page_new_events) >= 1, "Process.use_cpu should emit PAGE_NEW events when creating pages"
 
     def test_io_queue_emits_io_queue_event_on_process(self, stage):
@@ -534,12 +544,17 @@ class TestGameObjectsEmitEvents:
 
     def test_process_emits_cpu_event_when_toggled(self, stage):
         """Test that Process emits PROC_CPU event when toggled on/off CPU."""
-        # Create a process
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
-        
+
         game_monitor.clear_events()
-        
+
         # Toggle process (should assign to CPU)
         process.toggle()
         
@@ -550,43 +565,57 @@ class TestGameObjectsEmitEvents:
 
     def test_process_emits_starvation_event_when_level_changes(self, stage):
         """Test that Process emits PROC_STARV event when starvation level changes."""
-        # Create a process
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
-        
-        # Put process on CPU first
+
+        # Put process on CPU first so it becomes happy
         process.toggle()
-        
+
         game_monitor.clear_events()
-        
-        # Simulate enough time passing for happiness (starvation -> 0)
-        # by calling _update_starvation_level with appropriate timing
-        process._last_state_change_time = 0
-        process._update_starvation_level(process.cpu.process_happiness_ms + 1)
-        
+
+        # Run update to trigger happiness (starvation -> 0)
+        process.update(current_time + process.cpu.process_happiness_ms + 1000, [])
+
         events = game_monitor.get_events()
         starv_events = [e for e in events if e.etype == 'PROC_STARV']
-        
+
         assert len(starv_events) >= 1, "Process should emit PROC_STARV when starvation level changes"
 
     def test_process_emits_wait_page_event(self, stage):
         """Test that Process emits PROC_WAIT_PAGE event when waiting for page."""
-        # Create a process and put on CPU (creates pages)
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
         process.toggle()
 
-        # Ensure process has pages
-        assert len(process._pages) > 0, "Process should have pages after using CPU"
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
 
-        # Swap a page to disk
-        page = process._pages[0]
-        page._on_disk = True
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
 
         game_monitor.clear_events()
 
         # Update process to trigger page availability check
-        process.update(0, [])
+        process.update(swap_time, [])
 
         events = game_monitor.get_events()
         wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE']
@@ -595,52 +624,62 @@ class TestGameObjectsEmitEvents:
 
     def test_page_emits_swap_event_when_swap_completes(self, stage):
         """Test that Page emits PAGE_SWAP event when swap completes."""
-        # Create a process and put on CPU (creates pages)
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
-        # Get a page
-        page = process._pages[0]
-        
+
+        # Get page through PageManager
+        page = stage.page_manager.get_page(process.pid, 0)
+
         game_monitor.clear_events()
-        
+
         # Request swap
         page.request_swap()
-        
+
         # Run update loop until swap completes
-        current_time = 0
+        swap_time = current_time
         max_iterations = 1000
         for _ in range(max_iterations):
-            stage.page_manager.update(current_time, [])
-            page.update(current_time, [])
-            current_time += 100
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
             if page.on_disk:
                 break
-        
+
         events = game_monitor.get_events()
         swap_events = [e for e in events if e.etype == 'PAGE_SWAP']
-        
+
         assert len(swap_events) >= 1, "Page should emit PAGE_SWAP when swap completes"
 
     def test_page_emits_swap_queue_event_when_swap_requested(self, stage):
         """Test that Page emits PAGE_SWAP_QUEUE event when swap is requested."""
-        # Create a process and put on CPU (creates pages)
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
-        # Get a page
-        page = process._pages[0]
-        
+
+        # Get page through PageManager
+        page = stage.page_manager.get_page(process.pid, 0)
+
         game_monitor.clear_events()
-        
+
         # Request swap
         page.request_swap()
-        
+
         events = game_monitor.get_events()
         swap_queue_events = [e for e in events if e.etype == 'PAGE_SWAP_QUEUE']
-        
+
         assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap requested"
         assert swap_queue_events[0].pid == page.pid
         assert swap_queue_events[0].idx == page.idx
@@ -648,47 +687,57 @@ class TestGameObjectsEmitEvents:
 
     def test_page_emits_swap_start_event_when_swap_begins(self, stage):
         """Test that Page emits PAGE_SWAP_START event when swap actually starts."""
-        # Create a process and put on CPU (creates pages)
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
-        # Get a page
-        page = process._pages[0]
-        
+
+        # Get page through PageManager
+        page = stage.page_manager.get_page(process.pid, 0)
+
         game_monitor.clear_events()
-        
+
         # Request swap
         page.request_swap()
-        
+
         # Run update to start the swap
-        stage.page_manager.update(0, [])
-        
+        stage.page_manager.update(current_time, [])
+
         events = game_monitor.get_events()
         swap_start_events = [e for e in events if e.etype == 'PAGE_SWAP_START']
-        
+
         assert len(swap_start_events) >= 1, "Page should emit PAGE_SWAP_START when swap starts"
         assert swap_start_events[0].pid == page.pid
         assert swap_start_events[0].idx == page.idx
 
     def test_page_emits_swap_queue_cancelled_when_swap_cancelled(self, stage):
         """Test that Page emits PAGE_SWAP_QUEUE with waiting=False when swap is cancelled."""
-        # Create a process and put on CPU (creates pages)
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
-        # Get a page
-        page = process._pages[0]
-        
+
+        # Get page through PageManager
+        page = stage.page_manager.get_page(process.pid, 0)
+
         # Request swap
         page.request_swap()
-        
+
         game_monitor.clear_events()
-        
+
         # Cancel swap
         page.request_swap_cancellation()
-        
+
         events = game_monitor.get_events()
         swap_queue_events = [e for e in events if e.etype == 'PAGE_SWAP_QUEUE']
         
@@ -697,76 +746,132 @@ class TestGameObjectsEmitEvents:
 
     def test_process_emits_page_free_when_killed(self, stage):
         """Test that Process emits PAGE_FREE events when killed."""
-        # Create a process and put on CPU (creates pages)
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup and put on CPU (creates pages)
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
-        num_pages = len(process._pages)
-        assert num_pages > 0, "Process should have pages"
-        
+
+        # Count how many pages were actually created by checking page manager
+        pages_for_process = []
+        for idx in range(MAX_PAGES_PER_PROCESS):
+            try:
+                page = stage.page_manager.get_page(process.pid, idx)
+                if page is not None:
+                    pages_for_process.append(page)
+            except KeyError:
+                pass  # Page doesn't exist
+        num_pages = len(pages_for_process)
+        assert num_pages > 0, "Process should have created at least one page"
+
         game_monitor.clear_events()
-        
-        # Kill the process
-        process._terminate_by_user()
-        
+
+        # Remove process from CPU so it can starve
+        process.yield_cpu()
+
+        # Starve the process to death
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(current_time + i * process.time_between_starvation_levels, [])
+
         events = game_monitor.get_events()
         page_free_events = [e for e in events if e.etype == 'PAGE_FREE']
-        
+
         assert len(page_free_events) == num_pages, \
             f"Process should emit PAGE_FREE for all {num_pages} pages when killed"
 
     def test_process_emits_proc_kill_when_killed(self, stage):
         """Test that Process emits PROC_KILL event when killed."""
-        # Create a process
-        stage.process_manager._create_process()
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
-        
+
         game_monitor.clear_events()
-        
-        # Kill the process
-        process._terminate_by_user()
-        
+
+        # Starve the process to death
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(current_time + i * process.time_between_starvation_levels, [])
+
         events = game_monitor.get_events()
         kill_events = [e for e in events if e.etype == 'PROC_KILL']
-        
+
         assert len(kill_events) >= 1, "Process should emit PROC_KILL when killed"
 
-    def test_process_emits_proc_term_when_gracefully_terminated(self, stage):
+    def test_process_emits_proc_term_when_gracefully_terminated(self, stage_custom_config):
         """Test that Process emits PROC_TERM event when gracefully terminated."""
-        # Create a process and put on CPU
-        stage.process_manager._create_process()
+        # Create stage with 100% graceful termination probability
+        config = StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=1.0  # 100%
+        )
+        stage = stage_custom_config(config)
+
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup and put on CPU
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
+
         game_monitor.clear_events()
-        
-        # Gracefully terminate the process
-        process._terminate_gracefully()
-        
+
+        # Update process to trigger graceful termination
+        process.update(current_time + 1000, [])
+
         events = game_monitor.get_events()
         term_events = [e for e in events if e.etype == 'PROC_TERM']
-        
+
         assert len(term_events) >= 1, "Process should emit PROC_TERM when gracefully terminated"
 
-    def test_process_emits_proc_end_when_terminated_and_yields_cpu(self, stage):
+    def test_process_emits_proc_end_when_terminated_and_yields_cpu(self, stage_custom_config):
         """Test that Process emits PROC_END event when terminated process yields CPU."""
-        # Create a process and put on CPU
-        stage.process_manager._create_process()
+        # Create stage with 100% graceful termination probability
+        config = StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=1.0  # 100%
+        )
+        stage = stage_custom_config(config)
+
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup and put on CPU
         process = stage.process_manager.get_process(1)
         process.toggle()
-        
-        # Gracefully terminate
-        process._terminate_gracefully()
-        
+
+        # Gracefully terminate via update
+        process.update(current_time + 1000, [])
+
         game_monitor.clear_events()
-        
+
         # Yield CPU (this should trigger PROC_END)
         process.yield_cpu()
-        
+
         events = game_monitor.get_events()
         end_events = [e for e in events if e.etype == 'PROC_END']
-        
+
         assert len(end_events) >= 1, "Process should emit PROC_END when terminated process yields CPU"
 
 
