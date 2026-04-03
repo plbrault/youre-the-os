@@ -103,13 +103,16 @@ class IoQueue(SceneObject):
             int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1 if self._event_count > 0 else False
         )
 
-    def update(self, current_time, player_actions):
+    def update(self, current_time, player_actions): # pylint: disable=arguments-renamed
         self._current_time = current_time
 
         for player_action in player_actions:
             if (
                 self._check_if_clicked_on(player_action)
-                or (player_action.type == GameEventType.KEY_UP and player_action.get_property('key') == 'space')
+                or (
+                    player_action.type == GameEventType.KEY_UP
+                    and player_action.get_property('key') == 'space'
+                )
             ):
                 self.handle_player_action()
 
