@@ -36,7 +36,7 @@ class IoQueue(SceneObject):
         self._subscriber_queue = deque([])
         self._event_count = 0
         self._current_time = 0
-        self._last_update_time = 0
+        self._last_event_check_time = 0
 
         self._display_blink_color = False
 
@@ -73,12 +73,12 @@ class IoQueue(SceneObject):
 
         waiter = self._subscriber_queue[self._event_count]
         if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
-            self._last_update_time = current_time
+            self._last_event_check_time = current_time
             waiter.on_arrival_callback(current_time)
             self._event_count += 1
 
     def _handle_probabilistic_events(self, current_time):
-        if current_time < self._last_update_time + self._min_waiting_time_ms:
+        if current_time < self._last_event_check_time + self._min_waiting_time_ms:
             return
         if self._event_count >= len(self._subscriber_queue):
             return
@@ -87,7 +87,7 @@ class IoQueue(SceneObject):
         if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
             return
 
-        self._last_update_time = current_time
+        self._last_event_check_time = current_time
 
         if randint(1, _EVENT_PROBABILITY_DENOMINATOR) != 1:
             return
