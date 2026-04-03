@@ -134,10 +134,6 @@ class Process(SceneObject):
         )
 
     @property
-    def is_waiting_for_page(self):
-        return self._state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
-
-    @property
     def is_blocked(self):
         return self._state in (
             ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
@@ -315,7 +311,7 @@ class Process(SceneObject):
     def _set_waiting_for_io(self, waiting_for_io):
         if waiting_for_io:
             self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
-        elif not self.is_waiting_for_page:
+        elif self._state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT:
             self._set_unblocked_state()
 
     def _wait_for_io(self):

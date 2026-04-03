@@ -62,7 +62,7 @@ class TestProcess:
         assert process.state == ProcessState.IDLE
         assert process.is_waiting_for_io == False
         assert process.io_event_arrived == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
         assert process.starvation_level == 1
@@ -144,7 +144,7 @@ class TestProcess:
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
 
@@ -171,7 +171,7 @@ class TestProcess:
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
 
@@ -197,7 +197,7 @@ class TestProcess:
             assert cpu.process.pid == i + 2
 
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
 
@@ -216,7 +216,7 @@ class TestProcess:
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
 
@@ -239,7 +239,7 @@ class TestProcess:
         assert cpu.process == None
 
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
 
@@ -254,7 +254,7 @@ class TestProcess:
             assert cpu.process == None
 
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.has_ended == False
 
@@ -433,7 +433,7 @@ class TestProcess:
         process.update(0, [])
 
         assert process.is_blocked == True
-        assert process.is_waiting_for_page == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
 
     def test_set_page_to_swap_before_running(self, stage, monkeypatch, process_config):
@@ -455,7 +455,7 @@ class TestProcess:
         process.update(0, [])
 
         assert process.is_blocked == True
-        assert process.is_waiting_for_page == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
 
     def test_remove_page_from_swap_while_running(self, stage, monkeypatch, process_config):
@@ -478,7 +478,7 @@ class TestProcess:
         process.update(0, [])
 
         assert process.is_blocked == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
 
     def test_yield_cpu_while_waiting_for_page(self, stage, monkeypatch, process_config):
@@ -492,13 +492,13 @@ class TestProcess:
         stage.page_manager.get_page(1, 0).request_swap()
         stage.page_manager.update(1000, [])
         process.update(0, [])
-        assert process.is_waiting_for_page == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
 
         process.yield_cpu()
         process.update(0, [])
 
         assert process.is_blocked == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
 
     def test_starvation_while_waiting_for_page(self, stage, monkeypatch, process_config):
@@ -512,7 +512,7 @@ class TestProcess:
         stage.page_manager.get_page(1, 0).request_swap()
         stage.page_manager.update(1000, [])
         process.update(0, [])
-        assert process.is_waiting_for_page == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
 
         for i in range(1, LAST_ALIVE_STARVATION_LEVEL):
             process.update(i * process.time_between_starvation_levels, [])
@@ -603,7 +603,7 @@ class TestProcess:
 
         assert process.is_blocked == True
         assert process.is_waiting_for_io == True
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
 
     def test_process_continues_when_no_io_event(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -632,7 +632,7 @@ class TestProcess:
 
         assert process.is_blocked == False
         assert process.is_waiting_for_io == False
-        assert process.is_waiting_for_page == False
+        assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
 
     def test_starvation_suspended_while_waiting_for_io_event(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -1202,7 +1202,7 @@ class TestProcess:
         stage.page_manager.update(1000, [])
         process.update(0, [])
 
-        assert process.is_waiting_for_page == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_running == False
 
     def test_is_running_false_when_ended(self, stage_custom_config, monkeypatch, process_custom_config):
