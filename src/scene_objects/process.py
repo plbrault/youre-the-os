@@ -350,7 +350,7 @@ class Process(SceneObject):
 
     def _terminate_by_user(self):
         if self._process_manager.terminate_process(self, True):
-            self._state = ProcessState.ENDED
+            self.apply_state_transition(StateTransition.TERMINATE_FROM_STARVATION)
             self._last_state_change_time = self._last_update_time
             self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
@@ -409,15 +409,15 @@ class Process(SceneObject):
             self._last_state_change_time = self._last_update_time
 
     def _update_starvation_level(self, current_time):
-        if self.is_running:
+        if self.state == ProcessState.RUNNING:
             if current_time - self._last_state_change_time >= self.cpu.process_happiness_ms:
                 self._last_starvation_level_change_time = current_time
                 self._starvation_level = 0
                 game_monitor.notify_process_starvation(
                     self._pid, self._starvation_level, self.time_to_termination
                 )
-        elif self.current_starvation_level_duration >= self.time_between_starvation_levels:
-            if self._state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED:
+        elif self.state != ProcessState.ENDED and self.current_starvation_level_duration >= self.time_between_starvation_levels:
+            if self._state in [ProcessState.BLOCKED_ON_CPU_IO_REQUESTED, ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED]:
                 return
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
@@ -472,13 +472,12 @@ class Process(SceneObject):
         self._handle_events(events)
         self._handle_pages()
 
-        if not self.has_ended:
-            if current_time >= self._last_event_check_time + ONE_SECOND:
-                self._last_event_check_time = current_time
-                self._update_starvation_level(current_time)
-                self._handle_io_probability()
-                self._handle_new_page_probability()
-                self._handle_graceful_termination_probability(current_time)
+        if current_time >= self._last_event_check_time + ONE_SECOND:
+            self._last_event_check_time = current_time
+            self._update_starvation_level(current_time)
+            self._handle_io_probability()
+            self._handle_new_page_probability()
+            self._handle_graceful_termination_probability(current_time)
 
         self.view.move_towards_target_xy(self._ANIMATION_SPEED)
         self._handle_blinking_animation(current_time)
