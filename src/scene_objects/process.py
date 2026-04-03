@@ -225,7 +225,10 @@ class Process(SceneObject):
 
     def apply_state_transition(self, transition: StateTransition):
         if self._state in self._state_transitions and transition in Process._state_transitions[self._state]:
-            self._state = self._state_transitions[self._state][transition]
+            new_state = self._state_transitions[self._state][transition]
+            if new_state != self._state:
+                self._state = new_state
+                self._last_state_change_time = self._last_update_time
 
     def use_cpu(self, use_e_core=False):
         if not self.has_cpu:
@@ -238,7 +241,6 @@ class Process(SceneObject):
                 self.view.set_target_xy(cpu.view.x, cpu.view.y)
                 game_monitor.notify_process_cpu(self._pid, self.has_cpu)
 
-                self._last_state_change_time = self._last_update_time
                 for slot in self._process_manager.process_slots:
                     if slot.process == self:
                         slot.process = None
@@ -263,7 +265,6 @@ class Process(SceneObject):
                 self._is_on_io_cooldown = False
             if self._state != ProcessState.ENDED:
                 game_monitor.notify_process_cpu(self._pid, self.has_cpu)
-            self._last_state_change_time = self._last_update_time
             for page in self._pages:
                 page.in_use = False
                 game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
@@ -296,14 +297,12 @@ class Process(SceneObject):
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
             self.apply_state_transition(StateTransition.TERMINATE_GRACEFULLY)
-            self._last_state_change_time = self._last_update_time
             self._starvation_level = 0
             game_monitor.notify_process_terminated(self._pid)
 
     def _terminate_from_starvation(self):
         if self._process_manager.terminate_process(self, True):
             self.apply_state_transition(StateTransition.TERMINATE_FROM_STARVATION)
-            self._last_state_change_time = self._last_update_time
             self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
                 game_monitor.notify_page_free(page.pid, page.idx)
@@ -354,11 +353,9 @@ class Process(SceneObject):
         if self.state == ProcessState.RUNNING and page_fault:
             self.apply_state_transition(StateTransition.PAGE_FAULT)
             game_monitor.notify_process_wait_page(self.pid, True)
-            self._last_state_change_time = self._last_update_time
         elif self.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT and not page_fault:
             self.apply_state_transition(StateTransition.PAGE_AVAILABLE)
             game_monitor.notify_process_wait_page(self.pid, False)
-            self._last_state_change_time = self._last_update_time
 
     def _update_starvation_level(self, current_time):
         if self.state == ProcessState.RUNNING:
@@ -387,7 +384,6 @@ class Process(SceneObject):
                 and randint(1, 100) <= self._io_probability_numerator
             ):
                 self.apply_state_transition(StateTransition.REQUEST_IO)
-                self._last_state_change_time = self._last_update_time
                 self._is_on_io_cooldown = True
 
                 self._process_manager.io_queue.wait_for_event(
