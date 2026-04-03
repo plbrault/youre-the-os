@@ -61,7 +61,7 @@ class TestProcess:
         assert process.has_cpu == False
         assert process.state == ProcessState.IDLE
         assert process.is_waiting_for_io == False
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
         assert process.state != ProcessState.ENDED
@@ -665,11 +665,11 @@ class TestProcess:
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
         stage.process_manager.io_queue.update(4000, [])
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         process.update(20000, [])
         assert process.starvation_level == 1
@@ -704,17 +704,17 @@ class TestProcess:
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
         stage.process_manager.io_queue.update(4000, [])
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         process.update(20000, [])
         assert process.starvation_level == 1
 
         stage.process_manager.io_queue.update(21000, [])
-        assert process.io_event_arrived == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
 
         process.update(31000, [])
         assert process.starvation_level >= 1
@@ -748,17 +748,17 @@ class TestProcess:
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
         stage.process_manager.io_queue.update(4000, [])
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         process.update(20000, [])
         assert process.starvation_level == 1
 
         stage.process_manager.io_queue.update(21000, [])
-        assert process.io_event_arrived == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
         # When I/O event arrives, starvation level stays the same but timer resets
         assert process.starvation_level == 1
 
@@ -1409,18 +1409,18 @@ class TestProcess:
 
         process = Process(1, stage, config)
 
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         process.use_cpu()
         process.update(1000, [])
         assert process.is_waiting_for_io == True
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
         stage.process_manager.io_queue.update(7000, [])
-        assert process.io_event_arrived == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
 
         stage.process_manager.io_queue.process_events()
-        assert process.io_event_arrived == False
+        assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
     def test_termination_while_waiting_for_io_updates_state_timing(self, stage_custom_config, monkeypatch, process_custom_config):
         """
@@ -1458,7 +1458,7 @@ class TestProcess:
         # Make the I/O event arrive (but don't process it yet)
         # Starvation level stays the same but timer resets to 0
         stage.process_manager.io_queue.update(7000, [])
-        assert process.io_event_arrived == True
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
         assert process.starvation_level == 1  # Starvation level stays the same when event arrives
 
         # Process the I/O event - process should stay on CPU and resume running

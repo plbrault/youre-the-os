@@ -148,13 +148,6 @@ class Process(SceneObject):
         return self._state == ProcessState.ENDED and self.starvation_level == 0
 
     @property
-    def io_event_arrived(self):
-        return self._state in (
-            ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE,
-            ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
-        )
-
-    @property
     def state(self):
         return self._state
 
