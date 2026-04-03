@@ -106,14 +106,14 @@ class IoQueue(SceneObject):
             int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1 if self._event_count > 0 else False
         )
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_actions):
         self._current_time = current_time
 
-        for event in events:
-            if self._check_if_clicked_on(event):
+        for player_action in player_actions:
+            if self._check_if_clicked_on(player_action):
                 self._on_click()
-            if event.type == GameEventType.KEY_UP:
-                if event.get_property('key') == 'space':
+            if player_action.type == GameEventType.KEY_UP:
+                if player_action.get_property('key') == 'space':
                     self.process_events()
 
         self._handle_max_time_elapsed(current_time)
