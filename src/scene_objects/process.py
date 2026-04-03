@@ -296,10 +296,10 @@ class Process(SceneObject):
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
-            game_monitor.notify_process_terminated(self._pid)
             self.apply_state_transition(StateTransition.TERMINATE_GRACEFULLY)
             self._last_state_change_time = self._last_update_time
             self._starvation_level = 0
+            game_monitor.notify_process_terminated(self._pid)
 
     def _terminate_from_starvation(self):
         if self._process_manager.terminate_process(self, True):
