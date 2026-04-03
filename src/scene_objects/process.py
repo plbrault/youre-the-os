@@ -92,7 +92,6 @@ class Process(SceneObject):
 
         self._last_update_time = stage.current_time
         self._last_event_check_time = self._last_update_time
-        # Last time process state changed between running, idle or blocked
         self._last_state_change_time = self._last_update_time
         self._last_starvation_level_change_time = self._last_update_time
 
