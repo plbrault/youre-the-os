@@ -64,7 +64,7 @@ class TestProcess:
         assert process.io_event_arrived == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
         assert process.starvation_level == 1
         assert process.display_blink_color == False
         assert process.current_state_duration == 0
@@ -100,7 +100,7 @@ class TestProcess:
         process.update(DEAD_STARVATION_LEVEL * process.time_between_starvation_levels, [])
 
         assert process.starvation_level == DEAD_STARVATION_LEVEL
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
 
     def test_starvation_with_custom_time_between_starvation_levels(self, stage, process_custom_config):
         default_config = process_custom_config()
@@ -146,7 +146,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
 
     def test_use_cpu_when_first_cpu_is_unavailable(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
@@ -173,7 +173,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
 
     def test_use_cpu_when_all_cpus_are_unavailable(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
@@ -199,7 +199,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
 
     def test_use_cpu_when_already_using_cpu(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
@@ -218,7 +218,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
 
     def test_yield_cpu(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
@@ -241,7 +241,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
 
     def test_yield_cpu_when_already_idle(self, stage, stage_config, process_config):
         process = Process(1, stage, process_config)
@@ -256,7 +256,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_blocked == False
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
 
     def test_toggle(self, stage, process_config):
         process = Process(1, stage, process_config)
@@ -309,7 +309,7 @@ class TestProcess:
 
         process.update(1000, [])
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
         assert process.starvation_level == 0
 
     def test_use_cpu_min_page_creation(self, stage, monkeypatch, process_config):
@@ -520,7 +520,7 @@ class TestProcess:
 
         process.update(LAST_ALIVE_STARVATION_LEVEL * process.time_between_starvation_levels, [])
         assert process.starvation_level == DEAD_STARVATION_LEVEL
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
 
     def test_page_deletion_when_process_is_killed(self, stage, monkeypatch, process_config):
         # Should cause the creation of the maximum number of pages when the process is run
@@ -534,7 +534,7 @@ class TestProcess:
 
         for i in range(1, DEAD_STARVATION_LEVEL):
             process.update(i * process.time_between_starvation_levels, [])
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
 
         with pytest.raises(KeyError):
             for i in range(1, 5):
@@ -561,7 +561,7 @@ class TestProcess:
         process = Process(1, stage, config)
         process.use_cpu()
         process.update(1000, [])
-        assert process.has_ended == False
+        assert process.state != ProcessState.ENDED
         assert stage.page_manager.get_page(1, 0).pid == 1
 
         # Should cause graceful termination
@@ -569,7 +569,7 @@ class TestProcess:
 
         process.update(2000, [])
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
         assert process.starvation_level == 0
 
         with pytest.raises(KeyError):
@@ -973,7 +973,7 @@ class TestProcess:
         process.view.y = process.view.target_y
         process.view.target_x = process.view.target_y = None
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
 
         mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(2000, [mouse_click_event])
@@ -1225,7 +1225,7 @@ class TestProcess:
         process.use_cpu()
         process.update(ONE_SECOND, [])
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
         assert process.state != ProcessState.RUNNING
 
     def test_has_ended_gracefully_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
@@ -1251,7 +1251,7 @@ class TestProcess:
         process.use_cpu()
         process.update(ONE_SECOND, [])
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
         assert process.starvation_level == 0
         assert process.has_ended_gracefully == True
 
@@ -1263,7 +1263,7 @@ class TestProcess:
         for i in range(1, DEAD_STARVATION_LEVEL + 1):
             process.update(i * process.time_between_starvation_levels, [])
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.has_ended_gracefully == False
 
@@ -1480,7 +1480,7 @@ class TestProcess:
         for i in range(1, DEAD_STARVATION_LEVEL + 1):
             process.update(7000 + i * process.time_between_starvation_levels, [])
 
-        assert process.has_ended == True
+        assert process.state == ProcessState.ENDED
         assert process.is_blocked == False
         # After termination, state should be ENDED
         assert process.state == ProcessState.ENDED

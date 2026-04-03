@@ -144,10 +144,6 @@ class Process(SceneObject):
         )
 
     @property
-    def has_ended(self):
-        return self._state == ProcessState.ENDED
-
-    @property
     def has_ended_gracefully(self):
         return self._state == ProcessState.ENDED and self.starvation_level == 0
 
@@ -201,7 +197,7 @@ class Process(SceneObject):
             ProcessState.RUNNING,
             ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
             ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
-        ] or self.has_ended_gracefully:
+        ] or (self._state == ProcessState.ENDED and self.starvation_level == 0):
             return float('inf')
         remaining_starvation_levels = DEAD_STARVATION_LEVEL - self.starvation_level
         remaining_time_for_current_level = (
@@ -270,14 +266,14 @@ class Process(SceneObject):
 
             if not self.is_waiting_for_io:
                 self._is_on_io_cooldown = False
-            if not self.has_ended:
+            if self._state != ProcessState.ENDED:
                 game_monitor.notify_process_cpu(self._pid, self.has_cpu)
             self._last_state_change_time = self._last_update_time
             for page in self._pages:
                 page.in_use = False
                 game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
 
-            if self.has_ended:
+            if self._state == ProcessState.ENDED:
                 if self.has_ended_gracefully:
                     self.view.target_y = -self.view.height
                 for page in self._pages:
@@ -321,7 +317,7 @@ class Process(SceneObject):
         game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _on_io_event_arrived(self, current_time):
-        if not self.has_ended:
+        if self._state != ProcessState.ENDED:
             self._last_starvation_level_change_time = current_time
             if self.has_cpu:
                 self._state = ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
@@ -329,7 +325,7 @@ class Process(SceneObject):
                 self._state = ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
 
     def _on_io_event(self):
-        if self.has_ended:
+        if self._state == ProcessState.ENDED:
             return
         self._set_unblocked_state()
         game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)

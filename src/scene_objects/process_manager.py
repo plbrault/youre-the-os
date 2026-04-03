@@ -10,7 +10,7 @@ from factories.process_factory import ProcessFactory
 from scene_objects.checkbox import Checkbox
 from scene_objects.cpu_manager import CpuManager
 from scene_objects.io_queue import IoQueue
-from scene_objects.process import Process
+from scene_objects.process import Process, ProcessState
 from scene_objects.views.process_manager_view import ProcessManagerView
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
@@ -350,7 +350,7 @@ class ProcessManager(SceneObject):
             scene_object.update(current_time, events)
             if (
                 isinstance(scene_object, Process)
-                and scene_object.has_ended
+                and scene_object.state == ProcessState.ENDED
                 and scene_object.view.y <= -scene_object.view.height
             ):
                 self.children.remove(scene_object)

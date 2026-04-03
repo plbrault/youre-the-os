@@ -1,6 +1,6 @@
 from config.cpu_config import CpuConfig, CoreType
 from scene_objects.cpu import Cpu
-from scene_objects.process import Process
+from scene_objects.process import Process, ProcessState
 from scene_objects.views.cpu_manager_view import CpuManagerView
 from engine.scene_object import SceneObject
 
@@ -94,12 +94,12 @@ class CpuManager(SceneObject):
     def get_current_stats(self):
         active_process_count_by_starvation_level = [0, 0, 0, 0, 0, 0]
         for cpu in self._cpu_list:
-            if cpu.process is not None and not cpu.process.has_ended:
+            if cpu.process is not None and cpu.process.state != ProcessState.ENDED:
                 active_process_count_by_starvation_level[cpu.process.starvation_level] += 1
         return {
             'active_process_count': len([
                 cpu for cpu in self._cpu_list
-                    if cpu.process is not None and not cpu.process.has_ended
+                    if cpu.process is not None and cpu.process.state != ProcessState.ENDED
             ]),
             'active_process_count_by_starvation_level': active_process_count_by_starvation_level,
             'blocked_active_process_count': len([
