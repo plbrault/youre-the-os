@@ -76,6 +76,7 @@ class IoQueue(SceneObject):
             self._last_event_check_time = current_time
             waiter.on_arrival_callback()
             self._event_count += 1
+            game_monitor.notify_io_event_count(self._event_count)
 
     def _handle_probabilistic_events(self, current_time):
         if current_time < self._last_event_check_time + self._min_waiting_time_ms:
