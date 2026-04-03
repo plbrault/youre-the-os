@@ -225,6 +225,10 @@ class Process(SceneObject):
         return ((self._view.target_x is not None or self._view.target_y is not None)
             and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
 
+    def apply_state_transition(self, transition: StateTransition):
+        if self._state in self._state_transitions and transition in Process._state_transitions[self._state]:
+            self._state = self._state_transitions[self._state][transition]
+
     def use_cpu(self, use_e_core=False):
         if not self.has_cpu:
             cpu = self._cpu_manager.select_free_cpu(use_e_core=use_e_core)
@@ -453,10 +457,6 @@ class Process(SceneObject):
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
         else:
             self._display_blink_color = False
-
-    def apply_state_transition(self, transition: StateTransition):
-        if self._state in self._state_transitions and transition in Process._state_transitions[self._state]:
-            self._state = self._state_transitions[self._state][transition]
 
     def update(self, current_time, events):
         self._last_update_time = current_time
