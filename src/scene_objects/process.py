@@ -109,6 +109,10 @@ class Process(SceneObject):
         super().__init__(view_class(self))
 
     @property
+    def state(self):
+        return self._state
+
+    @property
     def pid(self):
         return self._pid
 
@@ -146,10 +150,6 @@ class Process(SceneObject):
     @property
     def has_ended_gracefully(self):
         return self._state == ProcessState.ENDED and self.starvation_level == 0
-
-    @property
-    def state(self):
-        return self._state
 
     @property
     def starvation_level(self):
