@@ -29,21 +29,6 @@
 * When writing tests, expected results should be hardcoded rather than generated.
 * If you believe an existing implementation contains a bug, always discuss it with the user before attempting to fix it.
 
-## Commands
-
-* If you need to do something that can be done by running one of the commands listed in the readme, this is how you should do it.
-* Do not run any command other than the ones listed in the readme or in this file without asking the user first. Commands that you need to make requested changes to the source code of this repository are obviously allowed. You are also allowed to use basic text search commands such as `grep`.
-* Do not make any change to the project's dependencies without asking the user first.
-* Do not install any kind of software package without asking the user first.
-* If the user allows you to do something once, do not assume you are allowed to do it again in the future.
-
-### Git
-
-* Do not make any changes to the Git repository, unless explicitly instructed to. Read-only commands such as `git log` are allowed.
-* If the user instructs you to commit your changes, you should create a new commit and NEVER amend the previous commit or do anything else that would alter the Git history.
-* Do not EVER do a force push.
-* If during a coding session, you are instructed by the user to commit and/or push your changes, do not assume that you are allowed to do that again without being explicitly instructed to for the rest of the coding session.
-
 ## Coding Restrictions
 
 * Use the "Open-closed principle" as a loose guideline. As such, try to avoid solutions that alter existing implementations or interfaces. If such changes appear to be unavoidable, discuss them with the user first.
