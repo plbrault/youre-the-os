@@ -287,9 +287,9 @@ class Process(SceneObject):
                         self.view.set_target_xy(slot.view.x, slot.view.y)
                         break
 
-    def _on_io_event_available(self, current_time):
+    def _on_io_event_available(self):
         if self._state != ProcessState.ENDED:
-            self._last_starvation_level_change_time = current_time
+            self._last_starvation_level_change_time = self._last_update_time
             self.apply_state_transition(StateEvent.IO_AVAILABLE)
 
     def _on_io_event_delivered(self):

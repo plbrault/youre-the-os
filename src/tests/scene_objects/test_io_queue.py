@@ -16,19 +16,19 @@ class TestIoQueue:
     def test_wait_for_event_registers_waiter(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: None, lambda: None)
+        io_queue.wait_for_event(0, lambda: None, lambda: None)
 
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
 
-        io_queue.wait_for_event(6000, lambda _: None, lambda: None)
+        io_queue.wait_for_event(6000, lambda: None, lambda: None)
         io_queue.update(11000, [])
         assert io_queue.event_count == 2
 
     def test_event_arrives_after_max_time(self, io_queue):
         arrival_callback_called = []
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
 
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
@@ -40,7 +40,7 @@ class TestIoQueue:
         # Force random to NOT trigger the probabilistic event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
 
         io_queue.update(4000, [])
         assert io_queue.event_count == 0
@@ -51,8 +51,8 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(2), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(2), lambda: None)
 
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
@@ -67,8 +67,8 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(2), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(2), lambda: None)
 
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
@@ -82,7 +82,7 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
 
         io_queue.update(500, [])
         assert io_queue.event_count == 0
@@ -93,8 +93,8 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: None, lambda: delivery_callback_called.append(1))
-        io_queue.wait_for_event(0, lambda _: None, lambda: delivery_callback_called.append(2))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(1))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(2))
 
         io_queue.update(6000, [])
         io_queue.update(11000, [])
@@ -120,7 +120,7 @@ class TestIoQueue:
     def test_blink_color_toggles_when_events_present(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: None, lambda: None)
+        io_queue.wait_for_event(0, lambda: None, lambda: None)
 
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
@@ -139,9 +139,9 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: None, lambda: delivery_callback_called.append(1))
-        io_queue.wait_for_event(0, lambda _: None, lambda: delivery_callback_called.append(2))
-        io_queue.wait_for_event(0, lambda _: None, lambda: delivery_callback_called.append(3))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(1))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(2))
+        io_queue.wait_for_event(0, lambda: None, lambda: delivery_callback_called.append(3))
 
         io_queue.update(6000, [])
         io_queue.update(11000, [])
@@ -155,7 +155,7 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
 
         io_queue.update(6000, [])
         assert io_queue.event_count == 1
@@ -171,7 +171,7 @@ class TestIoQueue:
         # Force random to always trigger the probabilistic event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_event(0, lambda _: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_event(0, lambda: arrival_callback_called.append(1), lambda: None)
 
         # Update at 2500ms - this is after min_time (1000ms) but before max_time (5000ms)
         # The probabilistic event should fire here
