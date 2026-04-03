@@ -226,7 +226,8 @@ class Process(SceneObject):
             and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
 
     def apply_state_transition(self, event: StateEvent):
-        if self._state in self._state_transitions and event in Process._state_transitions[self._state]:
+        if (self._state in self._state_transitions
+                and event in Process._state_transitions[self._state]):
             new_state = self._state_transitions[self._state][event]
             if new_state != self._state:
                 self._state = new_state
@@ -351,7 +352,10 @@ class Process(SceneObject):
                 self._check_if_clicked_on(player_action)
 
     def _handle_pages(self):
-        page_fault = any(page for page in self._pages if page.in_use and (page.on_disk or page.swap_in_progress))
+        page_fault = any(
+            page for page in self._pages
+            if page.in_use and (page.on_disk or page.swap_in_progress)
+        )
         if self.state == ProcessState.RUNNING and page_fault:
             self.apply_state_transition(StateEvent.PAGE_FAULT)
             game_monitor.notify_process_wait_page(self.pid, True)
@@ -367,8 +371,10 @@ class Process(SceneObject):
                 game_monitor.notify_process_starvation(
                     self._pid, self._starvation_level, self.time_to_termination
                 )
-        elif self.state != ProcessState.ENDED and self.current_starvation_level_duration >= self.time_between_starvation_levels:
-            if self._state in [ProcessState.BLOCKED_ON_CPU_IO_REQUESTED, ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED]:
+        elif (self.state != ProcessState.ENDED
+              and self.current_starvation_level_duration >= self.time_between_starvation_levels):
+            if self._state in [ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+                               ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED]:
                 return
             self._last_starvation_level_change_time = current_time
             if self._starvation_level < LAST_ALIVE_STARVATION_LEVEL:
@@ -422,7 +428,7 @@ class Process(SceneObject):
         else:
             self._display_blink_color = False
 
-    def update(self, current_time, player_actions):
+    def update(self, current_time, player_actions):  # pylint: disable=arguments-renamed
         self._last_update_time = current_time
         self._handle_player_actions(player_actions)
         self._handle_pages()
