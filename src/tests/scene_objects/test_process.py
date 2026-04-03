@@ -1158,11 +1158,11 @@ class TestProcess:
     def test_is_running_when_has_cpu_and_not_blocked(self, stage, process_config):
         process = Process(1, stage, process_config)
 
-        assert process.is_running == False
+        assert process.state != ProcessState.RUNNING
 
         process.use_cpu()
 
-        assert process.is_running == True
+        assert process.state == ProcessState.RUNNING
 
     def test_is_running_false_when_blocked_for_io(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -1183,12 +1183,12 @@ class TestProcess:
         process = Process(1, stage, config)
         process.use_cpu()
 
-        assert process.is_running == True
+        assert process.state == ProcessState.RUNNING
 
         process.update(ONE_SECOND, [])
 
         assert process.is_waiting_for_io == True
-        assert process.is_running == False
+        assert process.state != ProcessState.RUNNING
 
     def test_is_running_false_when_blocked_for_page(self, stage, monkeypatch, process_config):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -1196,14 +1196,14 @@ class TestProcess:
         process = Process(1, stage, process_config)
         process.use_cpu()
 
-        assert process.is_running == True
+        assert process.state == ProcessState.RUNNING
 
         stage.page_manager.get_page(1, 0).request_swap()
         stage.page_manager.update(1000, [])
         process.update(0, [])
 
         assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
-        assert process.is_running == False
+        assert process.state != ProcessState.RUNNING
 
     def test_is_running_false_when_ended(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -1226,7 +1226,7 @@ class TestProcess:
         process.update(ONE_SECOND, [])
 
         assert process.has_ended == True
-        assert process.is_running == False
+        assert process.state != ProcessState.RUNNING
 
     def test_has_ended_gracefully_after_graceful_termination(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -1287,7 +1287,7 @@ class TestProcess:
         process = Process(1, stage, process_config)
         process.use_cpu()
 
-        assert process.is_running == True
+        assert process.state == ProcessState.RUNNING
         assert process.time_to_termination == float('inf')
 
     def test_time_to_termination_infinity_when_waiting_for_io(self, stage_custom_config, monkeypatch, process_custom_config):
@@ -1466,7 +1466,7 @@ class TestProcess:
         assert process.is_waiting_for_io == False
         assert process.state == ProcessState.RUNNING
         assert process.has_cpu == True
-        assert process.is_running == True
+        assert process.state == ProcessState.RUNNING
 
         # Since process is running, starvation level stays same until happiness threshold
         assert process.starvation_level == 1
@@ -1474,7 +1474,7 @@ class TestProcess:
         # Now manually yield the CPU so process can starve
         process.yield_cpu()
         assert process.has_cpu == False
-        assert process.is_running == False
+        assert process.state != ProcessState.RUNNING
 
         # Now trigger starvation death
         for i in range(1, DEAD_STARVATION_LEVEL + 1):

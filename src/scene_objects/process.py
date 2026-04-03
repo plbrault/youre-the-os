@@ -144,10 +144,6 @@ class Process(SceneObject):
         )
 
     @property
-    def is_running(self):
-        return self._state == ProcessState.RUNNING
-
-    @property
     def has_ended(self):
         return self._state == ProcessState.ENDED
 
@@ -189,7 +185,7 @@ class Process(SceneObject):
         return (
             self.has_cpu
             and self.starvation_level > 0
-            and self.is_running
+            and self._state == ProcessState.RUNNING
         )
 
     @property
