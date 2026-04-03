@@ -296,12 +296,6 @@ class Process(SceneObject):
         else:
             self._update_blocking_condition(ProcessState.IDLE)
 
-    def _set_waiting_for_io(self, waiting_for_io):
-        if waiting_for_io:
-            self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
-        elif self._state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT:
-            self._set_unblocked_state()
-
     def _wait_for_io(self):
         self._update_blocking_condition(ProcessState.BLOCKED_ON_CPU_IO_REQUESTED)
         self._is_on_io_cooldown = True
