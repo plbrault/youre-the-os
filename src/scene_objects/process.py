@@ -428,13 +428,22 @@ class Process(SceneObject):
                 self._terminate_by_user()
 
     def _handle_io_probability(self):
-        if self.is_running:
+        if self.state == ProcessState.RUNNING:
             if (
                 not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
                 and not self._is_on_io_cooldown
                 and randint(1, 100) <= self._io_probability_numerator
             ):
-                self._wait_for_io()
+                self.apply_state_transition(StateTransition.REQUEST_IO)
+                self._last_state_change_time = self._last_update_time
+                self._is_on_io_cooldown = True
+
+                self._process_manager.io_queue.wait_for_event(
+                    self._last_update_time,
+                    self._on_io_event_arrived,
+                    self._on_io_event
+                )
+                game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _handle_new_page_probability(self):
         if self.is_running:
