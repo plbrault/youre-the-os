@@ -38,6 +38,9 @@ class StateTransition(Enum):
     PAGE_AVAILABLE = auto()
 
 class Process(SceneObject):
+    ProcessState = ProcessState
+    StateTransition = StateTransition
+
     _ANIMATION_SPEED = 35
 
     _state_transitions = {
