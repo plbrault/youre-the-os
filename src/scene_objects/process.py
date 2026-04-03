@@ -387,8 +387,7 @@ class Process(SceneObject):
     def _handle_io_probability(self):
         if self.state == ProcessState.RUNNING:
             if (
-                not self.starvation_level == LAST_ALIVE_STARVATION_LEVEL
-                and not self._is_on_io_cooldown
+                not self._is_on_io_cooldown
                 and randint(1, 100) <= self._io_probability_numerator
             ):
                 self.apply_state_transition(StateEvent.REQUEST_IO)

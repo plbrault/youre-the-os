@@ -798,7 +798,9 @@ class TestProcess:
         assert process.has_cpu == True
         assert StateEvent.IO_DELIVERED in spy_apply_event
 
-    def test_no_io_event_at_last_alive_starvation_level(self, stage_custom_config, monkeypatch, process_custom_config):
+    def test_io_event_at_last_alive_starvation_level(self, stage_custom_config, monkeypatch, process_custom_config):
+        # Test that a process at LAST_ALIVE_STARVATION_LEVEL can still request I/O
+        # since starvation is now suspended during I/O
         config = process_custom_config(
             io_probability=0.1,
             graceful_termination_probability=0
@@ -821,7 +823,6 @@ class TestProcess:
             process1.update(current_time, [])
 
         # Cause the random number generator to always provoke an I/O event
-        # (excepted in tested case)
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         process1.use_cpu()
@@ -836,8 +837,8 @@ class TestProcess:
         process1.update(current_time, [])
         process2.update(current_time, [])
 
-        assert process1.starvation_level == LAST_ALIVE_STARVATION_LEVEL
-        assert process1.is_waiting_for_io == False
+        # Both processes should be able to request I/O, even at LAST_ALIVE_STARVATION_LEVEL
+        assert process1.is_waiting_for_io == True
         assert process2.is_waiting_for_io == True
 
     def test_io_cooldown(self, stage_custom_config, monkeypatch, process_custom_config):
