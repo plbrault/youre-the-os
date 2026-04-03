@@ -78,6 +78,8 @@ class Process(SceneObject):
 
     def __init__(self, pid: int, stage: 'Stage', config: ProcessConfig,
                  *, view_class: Type[Drawable] = ProcessView):
+        self._state = ProcessState.IDLE
+
         self._pid = pid
         self._process_manager = stage.process_manager
         self._cpu_manager = stage.process_manager.cpu_manager
@@ -85,7 +87,6 @@ class Process(SceneObject):
         self._config = config
 
         self._cpu = None
-        self._state = ProcessState.IDLE
         self._is_on_io_cooldown = False
         self._starvation_level = 1
 
