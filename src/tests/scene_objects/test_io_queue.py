@@ -180,3 +180,20 @@ class TestIoQueue:
         # The event should have arrived via probabilistic path
         assert io_queue.event_count == 1
         assert arrival_callback_called == [1]
+
+    def test_event_arrival_via_max_time_emits_io_queue_event(self, io_queue, monkeypatch):
+        """Test that IO_QUEUE event is emitted when event arrives via max waiting time."""
+        import game_monitor
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+
+        io_queue.wait_for_event(0, lambda: None, lambda: None)
+
+        game_monitor.clear_events()
+
+        io_queue.update(6000, [])
+
+        events = game_monitor.get_events()
+        io_queue_events = [e for e in events if e.etype == 'IO_QUEUE']
+        assert len(io_queue_events) == 1
+        assert io_queue_events[0].io_count == 1
