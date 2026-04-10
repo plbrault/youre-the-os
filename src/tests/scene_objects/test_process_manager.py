@@ -8,7 +8,7 @@ from engine.random import Random
 from scene_objects.checkbox import Checkbox
 from scene_objects.cpu import Cpu
 from scene_objects.io_queue import IoQueue
-from scene_objects.process import Process
+from scene_objects.process import Process, ProcessState
 from scene_objects.process_manager import ProcessManager
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
@@ -256,7 +256,7 @@ class TestProcessManager:
         time = 2000
 
         process_manager.update(time, [])
-        assert process.has_ended
+        assert process.state == ProcessState.ENDED
 
         process.yield_cpu()
 
