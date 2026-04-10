@@ -35,7 +35,7 @@ class IoQueue(SceneObject):
 
         self._subscriber_queue = deque([])
         self._event_count = 0
-        self._wasted_press_count = 0
+        self._wasted_action_count = 0
         self._current_time = 0
         self._last_event_check_time = 0
 
@@ -53,8 +53,8 @@ class IoQueue(SceneObject):
         return self._event_count
 
     @property
-    def wasted_press_count(self):
-        return self._wasted_press_count
+    def wasted_action_count(self):
+        return self._wasted_action_count
 
     @property
     def display_blink_color(self):
@@ -62,7 +62,7 @@ class IoQueue(SceneObject):
 
     def handle_player_action(self):
         if self.event_count == 0:
-            self._wasted_press_count += 1
+            self._wasted_action_count += 1
             return
         while self.event_count > 0:
             self._event_count -= 1

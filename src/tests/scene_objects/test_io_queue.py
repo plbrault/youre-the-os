@@ -11,6 +11,7 @@ class TestIoQueue:
 
     def test_initial_state(self, io_queue):
         assert io_queue.event_count == 0
+        assert io_queue.wasted_action_count == 0
         assert io_queue.display_blink_color == False
 
     def test_wait_for_event_registers_waiter(self, io_queue, monkeypatch):
@@ -109,6 +110,7 @@ class TestIoQueue:
     def test_handle_player_action_empty_queue(self, io_queue):
         io_queue.handle_player_action()
         assert io_queue.event_count == 0
+        assert io_queue.wasted_action_count == 1
 
     def test_blink_color_false_when_no_events(self, io_queue):
         io_queue.update(0, [])
@@ -197,3 +199,21 @@ class TestIoQueue:
         io_queue_events = [e for e in events if e.etype == 'IO_QUEUE']
         assert len(io_queue_events) == 1
         assert io_queue_events[0].io_count == 1
+
+    def test_wasted_action_count_does_not_increment_when_events_pending(self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_event(0, lambda: None, lambda: None)
+        io_queue.update(6000, [])
+
+        assert io_queue.event_count == 1
+        io_queue.handle_player_action()
+        assert io_queue.wasted_action_count == 0
+
+    def test_wasted_action_count_increments_each_time(self, io_queue):
+        io_queue.handle_player_action()
+        assert io_queue.wasted_action_count == 1
+        io_queue.handle_player_action()
+        assert io_queue.wasted_action_count == 2
+        io_queue.handle_player_action()
+        assert io_queue.wasted_action_count == 3
