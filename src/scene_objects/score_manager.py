@@ -14,6 +14,7 @@ class ScoreManager(SceneObject):
         self._last_update_time = 0
         self._gracefully_terminated_process_count = 0
         self._user_terminated_process_count = 0
+        self._wasted_io_action_count = 0
 
         super().__init__(ScoreManagerView(self))
 
@@ -36,6 +37,11 @@ class ScoreManager(SceneObject):
 
             points = points_per_second / (ONE_SECOND / _UPDATE_INTERVAL)
             self._score = max(self._score + points, 0)
+
+            if stats['io_wasted_action_count'] != self._wasted_io_action_count:
+                wasted_actions = stats['io_wasted_action_count'] - self._wasted_io_action_count
+                self._wasted_io_action_count = stats['io_wasted_action_count']
+                self._score = max(0, self._score - 50 * wasted_actions)
 
             if stats['user_terminated_process_count'] != self._user_terminated_process_count:
                 self._user_terminated_process_count = stats['user_terminated_process_count']
