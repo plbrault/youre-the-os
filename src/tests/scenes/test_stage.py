@@ -1,12 +1,11 @@
 import pytest
 
 from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
 from engine.game_manager import GameManager
 from engine.random import Random
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
+from scene_objects.process import Process
 from scenes.stage import Stage
 
 
@@ -63,7 +62,6 @@ class TestStage:
 
         assert stage.process_manager is not None
         assert stage.page_manager is not None
-        assert stage._score_manager is not None
         assert stage.uptime_manager is not None
 
     def test_game_over_initially_false(self, stage_custom_config):
@@ -139,8 +137,8 @@ class TestStage:
         while process_in_motion:
             process_manager.update(time, [])
             process_in_motion = False
-            for scene_object in process_manager.children:
-                if hasattr(scene_object, 'is_in_motion') and scene_object.is_in_motion:
+            for child in process_manager.children:
+                if isinstance(child, Process) and child.is_in_motion:
                     process_in_motion = True
                     break
             time += ONE_SECOND / FRAMERATE
@@ -173,8 +171,8 @@ class TestStage:
         while process_in_motion:
             process_manager.update(time, [])
             process_in_motion = False
-            for scene_object in process_manager.children:
-                if hasattr(scene_object, 'is_in_motion') and scene_object.is_in_motion:
+            for child in process_manager.children:
+                if isinstance(child, Process) and child.is_in_motion:
                     process_in_motion = True
                     break
             time += ONE_SECOND / FRAMERATE
@@ -201,10 +199,10 @@ class TestStage:
             process.update(time, [])
             time += ONE_SECOND
 
-        assert process_manager.user_terminated_process_count >= 1
+        assert process_manager.user_terminated_process_count == 1
 
         any_in_motion = any(
-            hasattr(so, 'is_in_motion') and so.is_in_motion
+            isinstance(so, Process) and so.is_in_motion
             for so in process_manager.children
         )
         if any_in_motion:
