@@ -1,12 +1,10 @@
-import pygame
-
-from engine.drawable import Drawable
+from engine.modal_view import ModalView
 from ui.fonts import FONT_SECONDARY_MEDIUM, FONT_PRIMARY_XXLARGE
 from ui.color import Color
 
 _OPTION_VERTICAL_SPACING = 25
 
-class CustomSettingsDialogView(Drawable):
+class CustomSettingsDialogView(ModalView):
     def __init__(self, custom_settings_dialog):
         self._custom_settings_dialog = custom_settings_dialog
         super().__init__()
@@ -86,21 +84,7 @@ class CustomSettingsDialogView(Drawable):
     def graceful_termination_y(self):
         return self.io_probability_y + self.label_height + _OPTION_VERTICAL_SPACING
 
-    def draw(self, surface):
-        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
-            self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(
-            surface,
-            (70,
-             70,
-             70),
-            pygame.Rect(
-                self.x + 2,
-                self.y + 2,
-                self.width - 4,
-                self.height - 4),
-            border_radius=3)
-
+    def draw_content(self, surface):
         surface.blit(self._title_text, (self.x + (self.width -
                      self._title_text.get_width()) / 2, self.y + 18))
         surface.blit(self._num_cpus_label_text, (self.x + 20, self.num_cpus_y))

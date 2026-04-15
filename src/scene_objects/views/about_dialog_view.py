@@ -1,12 +1,10 @@
-import pygame
-
 from game_info import TITLE, VERSION, COPYRIGHT_YEAR
-from engine.drawable import Drawable
+from engine.modal_view import ModalView
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL, FONT_SECONDARY_XSMALL
 
 
-class AboutDialogView(Drawable):
+class AboutDialogView(ModalView):
     def __init__(self, about_dialog):
         self.about_dialog = about_dialog
         super().__init__()
@@ -56,22 +54,8 @@ class AboutDialogView(Drawable):
     def height(self):
         return 540
 
-    def draw(self, surface):
+    def draw_content(self, surface):
         y = self.y + 40
-
-        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
-            self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(
-            surface,
-            (70,
-             70,
-             70),
-            pygame.Rect(
-                self.x + 2,
-                self.y + 2,
-                self.width - 4,
-                self.height - 4),
-            border_radius=3)
 
         surface.blit(self._title_text, (self.x + (self.width -
                      self._title_text.get_width()) / 2, self.y + 30))
