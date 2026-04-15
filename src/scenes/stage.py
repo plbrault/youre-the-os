@@ -30,11 +30,8 @@ class Stage(Scene):
         self._process_manager = None
         self._page_manager = None
 
-        self._in_game_menu_dialog = None
-
         self._game_over = False
         self._game_over_time = None
-        self._game_over_dialog = None
 
         self._score_manager = None
         self._uptime_manager = None
@@ -50,11 +47,8 @@ class Stage(Scene):
 
         self._scene_objects = []
 
-        self._in_game_menu_dialog = None
-
         self._game_over = False
         self._game_over_time = None
-        self._game_over_dialog = None
 
         self._process_manager = ProcessManager(self, self._config)
         self._page_manager = PageManager(self, self._config)
@@ -154,23 +148,9 @@ class Stage(Scene):
             self._total_paused_time += self.current_time - paused_since
 
     def _open_in_game_menu(self):
-        if self._in_game_menu_dialog is None:
-            self._pause()
-            self._in_game_menu_dialog = InGameMenuDialog(
-                self.setup, self._return_to_main_menu, self._close_in_game_menu)
-            self._in_game_menu_dialog.view.set_xy(
-                (self.screen.get_width() - self._in_game_menu_dialog.view.width) / 2,
-                (self.screen.get_height() - self._in_game_menu_dialog.view.height) / 2)
-            # Must be before menu button as both handles same key,
-            # otherwise close will detect menu as open in same cycle
-            menu_button_index = self._scene_objects.index(self._open_in_game_menu_button)
-            self._scene_objects.insert(menu_button_index, self._in_game_menu_dialog)
-
-    def _close_in_game_menu(self):
-        if self._in_game_menu_dialog:
-            self._unpause()
-            self._scene_objects.remove(self._in_game_menu_dialog)
-            self._in_game_menu_dialog = None
+        if self._modal is None:
+            self.show_modal(InGameMenuDialog(
+                self.setup, self._return_to_main_menu))
 
     def _return_to_main_menu(self):
         self.scene_manager.start_scene('main_menu')
@@ -240,38 +220,21 @@ class Stage(Scene):
             if not self._process_manager.any_process_in_motion:
                 self._game_over = True
 
-    def update(self, current_time, events):
-        dialog = None
-
-        if self._in_game_menu_dialog:
-            dialog = self._in_game_menu_dialog
-        elif self._game_over:
-            display_game_over_dialog = self._game_over_time is not None and current_time - \
-                self._game_over_time > ONE_SECOND
+    def _update(self, current_time, events):
+        if self._game_over:
             if self._game_over_time is None:
                 self._game_over_time = current_time
-            elif display_game_over_dialog:
-                if self._game_over_dialog is None:
-                    self._game_over_dialog = GameOverDialog(
-                        uptime = self._uptime_manager.uptime_text,
-                        stage_name = self.name,
-                        score = self._score_manager.score,
-                        restart_game_fn = self.setup,
-                        main_menu_fn = self._return_to_main_menu,
-                        standalone = self._standalone)
-                    self._game_over_dialog.view.set_xy(
-                        (self.screen.get_width() -
-                         self._game_over_dialog.view.width) / 2,
-                        (self.screen.get_height() -
-                         self._game_over_dialog.view.height) / 2
-                    )
-                    self._scene_objects.append(self._game_over_dialog)
-                dialog = self._game_over_dialog
+            elif current_time - self._game_over_time > ONE_SECOND:
+                self.show_modal(GameOverDialog(
+                    uptime=self._uptime_manager.uptime_text,
+                    stage_name=self.name,
+                    score=self._score_manager.score,
+                    restart_game_fn=self.setup,
+                    main_menu_fn=self._return_to_main_menu,
+                    standalone=self._standalone))
+                return
 
-        if dialog is not None:
-            dialog.update(current_time, events)
-        else:
-            self._process_script_events()
-            for scene_object in self._scene_objects:
-                scene_object.update(current_time, events)
-            self._check_game_over()
+        self._process_script_events()
+        for scene_object in self._scene_objects:
+            scene_object.update(current_time, events)
+        self._check_game_over()

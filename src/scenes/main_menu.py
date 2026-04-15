@@ -17,9 +17,6 @@ class MainMenu(Scene):
         self._custom_config = StageConfig()
 
         self._difficulty_selector = None
-        self._custom_settings_dialog = None
-        self._about_dialog = None
-        self._hotkey_dialog = None
 
     def setup(self):
         self._scene_objects = []
@@ -71,8 +68,6 @@ class MainMenu(Scene):
         )
         self._scene_objects.append(about_button)
 
-        self._custom_settings_dialog = None
-
         if self._selected_difficulty_id is not None:
             self._difficulty_selector.selected_option_id = self._selected_difficulty_id
 
@@ -85,52 +80,26 @@ class MainMenu(Scene):
             self._start_game(difficulty_level)
 
     def _open_custom_settings_dialog(self):
-        self._custom_settings_dialog = CustomSettingsDialog(
+        dialog = CustomSettingsDialog(
             lambda: self._start_game(
                 DifficultyLevel(
                     'Custom',
-                    self._custom_settings_dialog.config
+                    self._modal.config
                 )
             ),
-            self._close_custom_settings_dialog,
             self._custom_config
         )
-        self._custom_settings_dialog.view.set_xy(
-            self.screen.get_width() / 2 - self._custom_settings_dialog.view.width / 2,
-            self.screen.get_height() / 2 - self._custom_settings_dialog.view.height / 2)
-        self._scene_objects.append(self._custom_settings_dialog)
+        self.show_modal(dialog)
 
     def _open_about_dialog(self):
-        self._about_dialog = AboutDialog(self._close_about_dialog)
-        self._about_dialog.view.set_xy(
-            self.screen.get_width() / 2 - self._about_dialog.view.width / 2,
-            self.screen.get_height() / 2 - self._about_dialog.view.height / 2
-        )
-        self._scene_objects.append(self._about_dialog)
-
-    def _close_about_dialog(self):
-        self._scene_objects.remove(self._about_dialog)
-        self._about_dialog = None
+        self.show_modal(AboutDialog())
 
     def _open_hotkey_dialog(self):
-        self._hotkey_dialog = HokeyDialog(
-            self._close_hotkey_dialog)
-        self._hotkey_dialog.view.set_xy(
-            self.screen.get_width() / 2 - self._hotkey_dialog.view.width / 2,
-            self.screen.get_height() / 2 - self._hotkey_dialog.view.height / 2)
-        self._scene_objects.append(self._hotkey_dialog)
-
-    def _close_custom_settings_dialog(self):
-        self._scene_objects.remove(self._custom_settings_dialog)
-        self._custom_settings_dialog = None
-
-    def _close_hotkey_dialog(self):
-        self._scene_objects.remove(self._hotkey_dialog)
-        self._hotkey_dialog = None
+        self.show_modal(HokeyDialog())
 
     def _start_game(self, difficulty_level):
-        if self._custom_settings_dialog is not None:
-            self._custom_config = self._custom_settings_dialog.config
+        if self._modal is not None and isinstance(self._modal, CustomSettingsDialog):
+            self._custom_config = self._modal.config
         stage_name = 'Difficulty: ' + difficulty_level.name.upper()
         stage_config = difficulty_level.config
         stage = Stage(stage_name, stage_config)
@@ -138,14 +107,3 @@ class MainMenu(Scene):
 
     def _start_how_to_play(self):
         self.scene_manager.start_scene('how_to_play')
-
-    def update(self, current_time, events):
-        if self._about_dialog is not None:
-            self._about_dialog.update(current_time, events)
-        elif self._custom_settings_dialog is not None:
-            self._custom_settings_dialog.update(current_time, events)
-        elif self._hotkey_dialog is not None:
-            self._hotkey_dialog.update(current_time, events)
-        else:
-            for scene_object in self._scene_objects:
-                scene_object.update(current_time, events)
