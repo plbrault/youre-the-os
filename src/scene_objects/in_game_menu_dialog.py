@@ -1,16 +1,16 @@
-from engine.scene_object import SceneObject
+from engine.modal import Modal
 from scene_objects.button import Button
 from scene_objects.views.in_game_menu_dialog_view import InGameMenuDialogView
 
 
-class InGameMenuDialog(SceneObject):
+class InGameMenuDialog(Modal):
 
-    def __init__(self, restart_game_fn, main_menu_fn, close_menu_fn):
+    def __init__(self, restart_game_fn, main_menu_fn):
         super().__init__(InGameMenuDialogView(self))
 
         self._restart_button = Button('Restart Game', restart_game_fn)
         self._main_menu_button = Button('Return to Main Menu', main_menu_fn)
-        self._close_menu_button = Button('Close', close_menu_fn, key_bind='escape')
+        self._close_menu_button = Button('Close', self.close, key_bind='escape')
 
         self.children.append(self._restart_button)
         self.children.append(self._main_menu_button)

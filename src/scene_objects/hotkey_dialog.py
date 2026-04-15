@@ -1,14 +1,14 @@
-from engine.scene_object import SceneObject
+from engine.modal import Modal
 from scene_objects.button import Button
 from scene_objects.views.hotkey_dialog_view import HokeyDialogView
 
 
-class HokeyDialog(SceneObject):
+class HokeyDialog(Modal):
 
-    def __init__(self, close_fn):
+    def __init__(self):
         super().__init__(HokeyDialogView(self))
 
-        self._close_button = Button('Close', close_fn)
+        self._close_button = Button('Close', self.close)
         self.children.append(self._close_button)
 
     def update(self, current_time, events):

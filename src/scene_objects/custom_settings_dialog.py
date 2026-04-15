@@ -5,7 +5,7 @@ from constants import (
     MAX_PROCESSES_AT_STARTUP, MAX_PROCESSES, MIN_RAM_ROWS, MAX_RAM_ROWS,
     SWAP_DELAY_NAMES, SWAP_DELAY_NAMES_TO_MS, PAGES_PER_ROW
 )
-from engine.scene_object import SceneObject
+from engine.modal import Modal
 from scene_objects.button import Button
 from scene_objects.option_selector import OptionSelector
 from scene_objects.views.custom_settings_dialog_view import CustomSettingsDialogView
@@ -16,9 +16,9 @@ _swap_delay_ms_to_ids = {
     SWAP_DELAY_NAMES_TO_MS[name]: idx for idx, name in enumerate(SWAP_DELAY_NAMES)
 }
 
-class CustomSettingsDialog(SceneObject):
+class CustomSettingsDialog(Modal):
 
-    def __init__(self, start_fn, cancel_fn, default_config : StageConfig = StageConfig()):
+    def __init__(self, start_fn, default_config : StageConfig = StageConfig()):
         super().__init__(CustomSettingsDialogView(self))
 
         self._num_cpus_selector = OptionSelector(
@@ -103,7 +103,7 @@ class CustomSettingsDialog(SceneObject):
         self._start_button = Button('Start', start_fn)
         self.children.append(self._start_button)
 
-        self._cancel_button = Button('Cancel', cancel_fn)
+        self._cancel_button = Button('Cancel', self.close)
         self.children.append(self._cancel_button)
 
     @property
