@@ -42,6 +42,10 @@ class GameManager():
         self._mouse_right_down = False
         self._shift_down = False
 
+        self._paused_since = None
+        self._frozen_time = None
+        self._total_paused_time = 0
+
     @property
     def current_scene(self):
         return self._current_scene
@@ -125,6 +129,22 @@ class GameManager():
                 mouse_motion_event = game_event
         return events
 
+    def _get_adjusted_time(self, scene):
+        raw_time = pygame.time.get_ticks()
+        if scene.modal is not None:
+            if self._frozen_time is None:
+                self._frozen_time = scene.current_time
+                raw_at_freeze = scene.current_time + self._total_paused_time
+                self._total_paused_time += raw_time - raw_at_freeze
+            self._paused_since = raw_time
+            return self._frozen_time
+
+        if self._frozen_time is not None:
+            self._frozen_time = None
+            self._paused_since = None
+
+        return raw_time - self._total_paused_time
+
     async def _main_loop(self, ignore_events=False):
         clock = pygame.time.Clock()
 
@@ -139,12 +159,22 @@ class GameManager():
 
             scene = self._scene_manager.current_scene
 
-            scene.update(self._scene_manager.current_scene.current_time, events)
+            adjusted_time = self._get_adjusted_time(scene)
+            scene.current_time = adjusted_time
+
+            if scene.modal is not None:
+                scene.modal.update(adjusted_time, events)
+            else:
+                scene.update(adjusted_time, events)
+
             if scene != self._scene_manager.current_scene:
                 scene = self._scene_manager.current_scene
-                self._scene_manager.current_scene.update(
-                    self._scene_manager.current_scene.current_time, []
-                )
+                adjusted_time = self._get_adjusted_time(scene)
+                scene.current_time = adjusted_time
+                if scene.modal is not None:
+                    scene.modal.update(adjusted_time, [])
+                else:
+                    scene.update(adjusted_time, [])
 
             scene.render()
 
