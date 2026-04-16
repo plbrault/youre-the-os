@@ -24,9 +24,6 @@ class Stage(Scene):
         self._script_callback = None
         self._standalone = standalone
 
-        self._paused_since = None
-        self._total_paused_time = 0
-
         self._process_manager = None
         self._page_manager = None
 
@@ -43,9 +40,6 @@ class Stage(Scene):
 
     def setup(self):
         self.close_modal()
-
-        self._paused_since = None
-        self._total_paused_time = 0
 
         self._scene_objects = []
 
@@ -129,28 +123,8 @@ class Stage(Scene):
     def uptime_manager(self):
         return self._uptime_manager
 
-    @property
-    def is_paused(self):
-        return self._paused_since is not None
-
-    @Scene.current_time.getter
-    def current_time(self): # pylint: disable=invalid-overridden-method
-        if self.is_paused:
-            return self._paused_since
-        return super().current_time - self._total_paused_time
-
-    def _pause(self):
-        if not self._paused_since:
-            self._paused_since = self.current_time
-
-    def _unpause(self):
-        if self._paused_since:
-            paused_since = self._paused_since
-            self._paused_since = None
-            self._total_paused_time += self.current_time - paused_since
-
     def _open_in_game_menu(self):
-        if self._modal is None:
+        if self.modal is None:
             self.show_modal(InGameMenuDialog(
                 self.setup, self._return_to_main_menu))
 
@@ -222,7 +196,7 @@ class Stage(Scene):
             if not self._process_manager.any_process_in_motion:
                 self._game_over = True
 
-    def _update(self, current_time, events):
+    def update(self, current_time, events):
         if self._game_over:
             if self._game_over_time is None:
                 self._game_over_time = current_time

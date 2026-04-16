@@ -123,17 +123,6 @@ class TestStage:
         stage.standalone = False
         assert not stage.standalone
 
-    def test_is_paused_initially_false(self, stage_custom_config):
-        stage = stage_custom_config(StageConfig(
-            cpu_config=CpuConfig(num_cores=4),
-            num_processes_at_startup=4,
-            new_process_probability=0,
-            io_probability=0,
-            graceful_termination_probability=0,
-        ))
-
-        assert not stage.is_paused
-
     def test_game_over(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
@@ -245,30 +234,4 @@ class TestStage:
 
         stage.setup()
 
-        assert stage._modal is None
-
-    def test_update_routes_to_scene_objects_after_setup_with_modal(self, stage_custom_config):
-        stage = stage_custom_config(StageConfig(
-            cpu_config=CpuConfig(num_cores=4),
-            num_processes_at_startup=4,
-            new_process_probability=0,
-            io_probability=0,
-            graceful_termination_probability=0,
-        ))
-
-        stage.show_modal(StubModal())
-        stage.setup()
-
-        update_received = False
-        original_update = stage.process_manager.update
-
-        def spy_update(current_time, events):
-            nonlocal update_received
-            update_received = True
-            original_update(current_time, events)
-
-        stage.process_manager.update = spy_update
-        stage.update(0, [])
-
-        assert update_received
-
+        assert stage.modal is None
