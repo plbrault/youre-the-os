@@ -232,3 +232,7 @@ class HowToPlay(Scene):
 
     def _return_to_main_menu(self):
         self.scene_manager.start_scene('main_menu')
+
+    def update(self, current_time, events):
+        for scene_object in self._scene_objects:
+            scene_object.update(current_time, events)

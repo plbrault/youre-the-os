@@ -107,3 +107,7 @@ class MainMenu(Scene):
 
     def _start_how_to_play(self):
         self.scene_manager.start_scene('how_to_play')
+
+    def update(self, current_time, events):
+        for scene_object in self._scene_objects:
+            scene_object.update(current_time, events)
