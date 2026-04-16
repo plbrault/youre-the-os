@@ -42,6 +42,8 @@ class Stage(Scene):
         super().__init__('stage')
 
     def setup(self):
+        self.close_modal()
+
         self._paused_since = None
         self._total_paused_time = 0
 
