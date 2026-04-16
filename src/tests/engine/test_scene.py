@@ -57,6 +57,23 @@ class StubScene(Scene):
         self._unpause_called = True
 
 
+class TestSceneCurrentTime:
+    def test_current_time_default_is_zero(self):
+        scene = StubScene()
+        assert scene.current_time == 0
+
+    def test_current_time_returns_stored_value(self):
+        scene = StubScene()
+        scene.current_time = 5000
+        assert scene.current_time == 5000
+
+    def test_current_time_can_be_updated(self):
+        scene = StubScene()
+        scene.current_time = 1000
+        scene.current_time = 2000
+        assert scene.current_time == 2000
+
+
 class TestSceneModalIntegration:
     @pytest.fixture
     def scene(self):

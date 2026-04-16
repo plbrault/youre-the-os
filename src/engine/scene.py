@@ -13,6 +13,7 @@ class Scene(ABC):
         self._is_started = False
         self._scene_objects = []
         self._modal = None
+        self._current_time = 0
 
     @property
     def screen(self) -> pygame.Surface:
@@ -24,7 +25,15 @@ class Scene(ABC):
 
     @property
     def current_time(self):
-        return pygame.time.get_ticks()
+        return self._current_time
+
+    @current_time.setter
+    def current_time(self, value):
+        self._current_time = value
+
+    @property
+    def modal(self):
+        return self._modal
 
     @abstractmethod
     def setup(self):
