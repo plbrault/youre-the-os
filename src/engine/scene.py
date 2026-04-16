@@ -39,15 +39,9 @@ class Scene(ABC):
     def setup(self):
         pass
 
+    @abstractmethod
     def update(self, current_time, events):
-        if self._modal is not None:
-            self._modal.update(current_time, events)
-        else:
-            self._update(current_time, events)
-
-    def _update(self, current_time, events):
-        for scene_object in self._scene_objects:
-            scene_object.update(current_time, events)
+        pass
 
     def show_modal(self, modal):
         if self._modal is not None:
@@ -59,7 +53,6 @@ class Scene(ABC):
         )
         self._scene_objects.append(modal)
         self._modal = modal
-        self._pause()
         modal.on_open()
 
     def close_modal(self):
@@ -68,14 +61,7 @@ class Scene(ABC):
         self._scene_objects.remove(self._modal)
         modal = self._modal
         self._modal = None
-        self._unpause()
         modal.on_close()
-
-    def _pause(self):
-        pass
-
-    def _unpause(self):
-        pass
 
     def render(self):
         self.screen.fill(self.background_color)
