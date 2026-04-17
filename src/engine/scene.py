@@ -39,6 +39,10 @@ class Scene(ABC):
     def setup(self):
         pass
 
+    def reset(self):
+        self.close_modal()
+        self.setup()
+
     @abstractmethod
     def update(self, current_time, events):
         pass

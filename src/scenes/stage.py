@@ -39,8 +39,6 @@ class Stage(Scene):
         super().__init__('stage')
 
     def setup(self):
-        self.close_modal()
-
         self._scene_objects = []
 
         self._game_over = False
@@ -125,7 +123,7 @@ class Stage(Scene):
 
     def _open_in_game_menu(self):
         self.show_modal(InGameMenuDialog(
-            self.setup, self._return_to_main_menu))
+            self.reset, self._return_to_main_menu))
 
     def _return_to_main_menu(self):
         self.scene_manager.start_scene('main_menu')
@@ -204,7 +202,7 @@ class Stage(Scene):
                     uptime=self._uptime_manager.uptime_text,
                     stage_name=self.name,
                     score=self._score_manager.score,
-                    restart_game_fn=self.setup,
+                    restart_game_fn=self.reset,
                     main_menu_fn=self._return_to_main_menu,
                     standalone=self._standalone))
                 return

@@ -47,6 +47,20 @@ class StubScene(Scene):
             scene_object.update(current_time, events)
 
 
+class SetupTrackingScene(Scene):
+    def __init__(self):
+        self.setup_call_count = 0
+        super().__init__('test')
+
+    def setup(self):
+        self.setup_call_count += 1
+        self._scene_objects = []
+
+    def update(self, current_time, events):
+        for scene_object in self._scene_objects:
+            scene_object.update(current_time, events)
+
+
 class TestSceneCurrentTime:
     def test_current_time_default_is_zero(self):
         scene = StubScene()
@@ -142,3 +156,32 @@ class TestSceneModalLifecycle:
 
     def test_close_modal_without_modal_does_not_crash(self, scene):
         scene.close_modal()
+
+
+class TestSceneReset:
+    @pytest.fixture
+    def scene(self):
+        scene = SetupTrackingScene()
+        scene.scene_manager = type('FakeSceneManager', (), {
+            'screen': __import__('pygame').Surface(WINDOW_SIZE)
+        })()
+        scene.setup()
+        return scene
+
+    def test_reset_calls_setup(self, scene):
+        initial_count = scene.setup_call_count
+        scene.reset()
+
+        assert scene.setup_call_count == initial_count + 1
+
+    def test_reset_closes_active_modal(self, scene):
+        scene.show_modal(StubModal())
+        scene.reset()
+
+        assert scene.modal is None
+
+    def test_reset_works_with_no_modal(self, scene):
+        scene.reset()
+
+        assert scene.modal is None
+        assert scene.setup_call_count == 2
