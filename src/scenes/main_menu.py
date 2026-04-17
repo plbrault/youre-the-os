@@ -84,7 +84,7 @@ class MainMenu(Scene):
             lambda: self._start_game(
                 DifficultyLevel(
                     'Custom',
-                    self._modal.config
+                    self.modal.config
                 )
             ),
             self._custom_config
@@ -98,8 +98,8 @@ class MainMenu(Scene):
         self.show_modal(HokeyDialog())
 
     def _start_game(self, difficulty_level):
-        if self._modal is not None and isinstance(self._modal, CustomSettingsDialog):
-            self._custom_config = self._modal.config
+        if self.modal is not None and isinstance(self.modal, CustomSettingsDialog):
+            self._custom_config = self.modal.config
         stage_name = 'Difficulty: ' + difficulty_level.name.upper()
         stage_config = difficulty_level.config
         stage = Stage(stage_name, stage_config)
