@@ -92,8 +92,9 @@ class TestGameManagerTimeFreeze:
 
         adjusted = self._tick(game_manager, scene, monkeypatch, 6000)
 
-        # 6000 - 4000 (paused from 1000 to 5000) = 2000
-        assert adjusted == 2000
+        # Pause started at raw 5000 (first frame with modal), ended at raw 6000
+        # Paused duration: 1000. Adjusted: 6000 - 1000 = 5000
+        assert adjusted == 5000
 
     def test_adjusted_time_freeze_accumulates_across_multiple_pauses(self, game_manager, scene, monkeypatch):
         self._tick(game_manager, scene, monkeypatch, 1000)
@@ -113,8 +114,10 @@ class TestGameManagerTimeFreeze:
 
         adjusted = self._tick(game_manager, scene, monkeypatch, 8000)
 
-        # 8000 - 2000 (first pause: 1000 to 3000) - 3000 (second pause: 4000 to 7000) = 3000
-        assert adjusted == 3000
+        # First pause: raw 3000 to raw 4000 = 1000
+        # Second pause: raw 7000 to raw 8000 = 1000
+        # Total paused: 2000. Adjusted: 8000 - 2000 = 6000
+        assert adjusted == 6000
 
     def test_scene_current_time_set_to_adjusted_time(self, game_manager, scene, monkeypatch):
         self._tick(game_manager, scene, monkeypatch, 5000)
@@ -129,3 +132,21 @@ class TestGameManagerTimeFreeze:
         assert self._tick(game_manager, scene, monkeypatch, 2000) == 1000
         assert self._tick(game_manager, scene, monkeypatch, 3000) == 1000
         assert self._tick(game_manager, scene, monkeypatch, 4000) == 1000
+
+    def test_adjusted_time_resumes_correctly_after_multi_frame_pause(self, game_manager, scene, monkeypatch):
+        self._tick(game_manager, scene, monkeypatch, 1000)
+
+        scene.show_modal(StubModal())
+
+        self._tick(game_manager, scene, monkeypatch, 2000)
+        self._tick(game_manager, scene, monkeypatch, 3000)
+        self._tick(game_manager, scene, monkeypatch, 4000)
+        self._tick(game_manager, scene, monkeypatch, 5000)
+
+        scene.close_modal()
+
+        adjusted = self._tick(game_manager, scene, monkeypatch, 5016)
+
+        # Pause started at raw 2000 (first frame with modal), ended at raw 5016
+        # Paused duration: 3016. Adjusted: 5016 - 3016 = 2000
+        assert adjusted == 2000

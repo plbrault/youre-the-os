@@ -44,6 +44,7 @@ class GameManager():
 
         self._paused_since = None
         self._frozen_time = None
+        self._pause_raw_time = None
         self._total_paused_time = 0
 
     @property
@@ -134,14 +135,13 @@ class GameManager():
         if scene.modal is not None:
             if self._frozen_time is None:
                 self._frozen_time = scene.current_time
-                raw_at_freeze = scene.current_time + self._total_paused_time
-                self._total_paused_time += raw_time - raw_at_freeze
-            self._paused_since = raw_time
+                self._pause_raw_time = raw_time
             return self._frozen_time
 
         if self._frozen_time is not None:
+            self._total_paused_time += raw_time - self._pause_raw_time
             self._frozen_time = None
-            self._paused_since = None
+            self._pause_raw_time = None
 
         return raw_time - self._total_paused_time
 
