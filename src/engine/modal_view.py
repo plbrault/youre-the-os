@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import pygame
 
 from engine.drawable import Drawable
@@ -28,5 +30,6 @@ class ModalView(Drawable):
         )
         self.draw_content(surface)
 
+    @abstractmethod
     def draw_content(self, surface):
         pass
