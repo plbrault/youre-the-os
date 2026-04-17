@@ -124,9 +124,8 @@ class Stage(Scene):
         return self._uptime_manager
 
     def _open_in_game_menu(self):
-        if self.modal is None:
-            self.show_modal(InGameMenuDialog(
-                self.setup, self._return_to_main_menu))
+        self.show_modal(InGameMenuDialog(
+            self.setup, self._return_to_main_menu))
 
     def _return_to_main_menu(self):
         self.scene_manager.start_scene('main_menu')
