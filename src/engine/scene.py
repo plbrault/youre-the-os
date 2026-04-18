@@ -66,7 +66,9 @@ class Scene(ABC):
         """Close the currently active modal, if any."""
         if self._modal is None:
             return
-        self._scene_objects.remove(self._modal)
+        modal = self._modal
+        self._scene_objects.remove(modal)
+        modal.scene = None
         self._modal = None
 
     def render(self):
