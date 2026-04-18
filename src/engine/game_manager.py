@@ -42,7 +42,6 @@ class GameManager():
         self._mouse_right_down = False
         self._shift_down = False
 
-        self._paused_since = None
         self._frozen_time = None
         self._pause_raw_time = None
         self._total_paused_time = 0
