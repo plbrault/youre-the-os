@@ -13,10 +13,9 @@ class GameOverDialog(Modal):
         self.standalone = standalone
         super().__init__(GameOverDialogView(self))
 
-        self._play_again_button = Button('Play Again', restart_game_fn)
-        self.children.append(self._play_again_button)
+        self.play_again_button = Button('Play Again', restart_game_fn)
+        self.children.append(self.play_again_button)
 
         if not self.standalone:
-            self._main_menu_button = Button('Main Menu', main_menu_fn)
-            self.children.append(self._main_menu_button)
-
+            self.main_menu_button = Button('Main Menu', main_menu_fn)
+            self.children.append(self.main_menu_button)

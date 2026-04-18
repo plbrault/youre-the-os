@@ -29,25 +29,25 @@ class GameOverDialogView(ModalView):
         self._x = value
         dialog = self._game_over_dialog
         if dialog.standalone:
-            dialog._play_again_button.view.x = (
-                self.x + (self.width / 2) - (dialog._play_again_button.view.width / 2))
+            dialog.play_again_button.view.x = (
+                self.x + (self.width / 2) - (dialog.play_again_button.view.width / 2))
         else:
-            dialog._play_again_button.view.x = (
-                self.x + (self.width / 2) - dialog._play_again_button.view.width - 10)
-            dialog._main_menu_button.view.x = self.x + (self.width / 2) + 10
+            dialog.play_again_button.view.x = (
+                self.x + (self.width / 2) - dialog.play_again_button.view.width - 10)
+            dialog.main_menu_button.view.x = self.x + (self.width / 2) + 10
 
     @ModalView.y.setter
     def y(self, value):
         self._y = value
         dialog = self._game_over_dialog
         if dialog.standalone:
-            dialog._play_again_button.view.y = (
-                self.y + self.height - dialog._play_again_button.view.height - 20)
+            dialog.play_again_button.view.y = (
+                self.y + self.height - dialog.play_again_button.view.height - 20)
         else:
-            dialog._play_again_button.view.y = (
-                self.y + self.height - dialog._play_again_button.view.height - 20)
-            dialog._main_menu_button.view.y = (
-                self.y + self.height - dialog._play_again_button.view.height - 20)
+            dialog.play_again_button.view.y = (
+                self.y + self.height - dialog.play_again_button.view.height - 20)
+            dialog.main_menu_button.view.y = (
+                self.y + self.height - dialog.play_again_button.view.height - 20)
 
     @property
     def width(self):

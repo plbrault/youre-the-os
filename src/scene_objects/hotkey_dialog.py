@@ -10,4 +10,3 @@ class HokeyDialog(Modal):
 
         self.close_button = Button('Close', self.close)
         self.children.append(self.close_button)
-
