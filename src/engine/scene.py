@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 import pygame
 
 from engine.modal import Modal
@@ -24,7 +25,7 @@ class Scene(ABC):
         return self._scene_id
 
     @property
-    def modal(self) -> Modal:
+    def modal(self) -> Optional[Modal]:
         """Get the currently active modal, if any."""
         return self._modal
 
