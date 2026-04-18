@@ -38,7 +38,12 @@ class StubScene(Scene):
         self.update_times = []
         self.update_events_list = []
         self.update_call_count = 0
+        self._test_screen = pygame.Surface(WINDOW_SIZE)
         super().__init__('test')
+
+    @property
+    def screen(self):
+        return self._test_screen
 
     def setup(self):
         self._scene_objects = []
@@ -52,11 +57,7 @@ class StubScene(Scene):
 class TestGameManagerTimeFreeze:
     @pytest.fixture
     def game_manager(self):
-        gm = GameManager()
-        screen = pygame.Surface(WINDOW_SIZE)
-        gm._screen = screen
-        gm._scene_manager.screen = screen
-        return gm
+        return GameManager()
 
     @pytest.fixture
     def scene(self, game_manager):
