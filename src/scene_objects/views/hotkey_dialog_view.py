@@ -5,7 +5,7 @@ from ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL
 
 class HotkeyDialogView(ModalView):
     def __init__(self, dialog):
-        self.about_dialog = dialog
+        self.dialog = dialog
         super().__init__()
 
         self._title_text = FONT_PRIMARY_XXLARGE.render(
@@ -53,14 +53,14 @@ class HotkeyDialogView(ModalView):
     @ModalView.x.setter
     def x(self, value):
         self._x = value
-        self.about_dialog.close_button.view.x = self.x + (
-            self.width - self.about_dialog.close_button.view.width) / 2
+        self.dialog.close_button.view.x = self.x + (
+            self.width - self.dialog.close_button.view.width) / 2
 
     @ModalView.y.setter
     def y(self, value):
         self._y = value
-        self.about_dialog.close_button.view.y = (
-            self.y + self.height - self.about_dialog.close_button.view.height - 40)
+        self.dialog.close_button.view.y = (
+            self.y + self.height - self.dialog.close_button.view.height - 40)
 
     @property
     def width(self):
