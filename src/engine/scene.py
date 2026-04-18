@@ -39,18 +39,25 @@ class Scene(ABC):
 
     @abstractmethod
     def setup(self):
-        """Override this method to implement initialization of the scene. Do not call directly to reset the scene, use `reset()` instead."""
-        pass
+        """Override to implement initialization of the scene.
+
+        Do not call directly to reset the scene, use reset() instead.
+        """
 
     def reset(self):
-        """Reset the scene to its initial state. This will perform any necessary cleanup and then call `setup()` to reinitialize the scene."""
+        """Reset the scene to its initial state.
+
+        Performs any necessary cleanup, then calls setup() to reinitialize the scene.
+        """
         self.close_modal()
         self.setup()
 
     @abstractmethod
     def update(self, current_time, events):
-        """Override this method to implement the update logic of the scene. This method will be called every frame with the current time and a list of events."""
-        pass
+        """Override to implement the update logic of the scene.
+
+        Called every frame with the current time and a list of events.
+        """
 
     def show_modal(self, modal : Modal):
         """Show a modal on top of the scene. Only one modal can be active at a time."""
