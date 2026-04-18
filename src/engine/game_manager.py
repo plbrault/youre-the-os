@@ -32,7 +32,6 @@ class GameManager():
         self._startup_scene = scene
 
     def __init__(self):
-        self._current_scene = None
         self._scenes = None
         self._screen = None
         self._scene_manager = SceneManager()
@@ -46,10 +45,6 @@ class GameManager():
         self._pause_raw_time = None
         self._total_paused_time = 0
         self._last_adjusted_time = 0
-
-    @property
-    def current_scene(self):
-        return self._current_scene
 
     def _init_pygame(self):
         pygame.init()
