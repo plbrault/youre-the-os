@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import pygame
 
+from engine.modal import Modal
 from ui.color import Color
 
 
@@ -32,24 +33,29 @@ class Scene(ABC):
         self._current_time = value
 
     @property
-    def modal(self):
+    def modal(self) -> Modal:
+        """Get the currently active modal, if any."""
         return self._modal
 
     @abstractmethod
     def setup(self):
+        """Override this method to implement initialization of the scene. Do not call directly to reset the scene, use `reset()` instead."""
         pass
 
     def reset(self):
+        """Reset the scene to its initial state. This will perform any necessary cleanup and then call `setup()` to reinitialize the scene."""
         self.close_modal()
         self.setup()
 
     @abstractmethod
     def update(self, current_time, events):
+        """Override this method to implement the update logic of the scene. This method will be called every frame with the current time and a list of events."""
         pass
 
-    def show_modal(self, modal):
+    def show_modal(self, modal : Modal):
+        """Show a modal on top of the scene. Only one modal can be active at a time."""
         if self._modal is not None:
-            raise RuntimeError('A modal is already active')
+            raise RuntimeError('A modal is already active.')
         modal.scene = self
         modal.view.set_xy(
             (self.screen.get_width() - modal.view.width) / 2,
@@ -60,6 +66,7 @@ class Scene(ABC):
         modal.on_open()
 
     def close_modal(self):
+        """Close the currently active modal, if any."""
         if self._modal is None:
             return
         self._scene_objects.remove(self._modal)
