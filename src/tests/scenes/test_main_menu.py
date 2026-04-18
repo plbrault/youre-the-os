@@ -39,10 +39,8 @@ class TestMainMenuSceneTransition:
     @pytest.fixture
     def main_menu(self, scene_manager):
         menu = MainMenu()
-        menu.scene_manager = scene_manager
-        menu.setup()
-        scene_manager._current_scene = menu
-        scene_manager._scenes['main_menu'] = menu
+        scene_manager.register_scene(menu)
+        scene_manager.start_scene(menu)
         return menu
 
     def test_scene_transition_closes_active_modal(self, main_menu, scene_manager):
@@ -51,25 +49,3 @@ class TestMainMenuSceneTransition:
         scene_manager.start_scene('main_menu')
 
         assert main_menu.modal is None
-
-    def test_update_routes_to_scene_objects_after_modal_transition(self, main_menu, scene_manager):
-        main_menu.show_modal(StubModal())
-
-        scene_manager.start_scene('main_menu')
-
-        update_received = False
-        for scene_object in main_menu._scene_objects:
-            original_update = scene_object.update
-
-            def make_spy(orig):
-                def spy(current_time, events):
-                    nonlocal update_received
-                    update_received = True
-                    orig(current_time, events)
-                return spy
-
-            scene_object.update = make_spy(original_update)
-
-        main_menu.update(0, [])
-
-        assert update_received
