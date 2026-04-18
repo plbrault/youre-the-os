@@ -3,9 +3,9 @@ from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XXLARGE, FONT_SECONDARY_SMALL
 
 
-class HokeyDialogView(ModalView):
-    def __init__(self, about_dialog):
-        self.about_dialog = about_dialog
+class HotkeyDialogView(ModalView):
+    def __init__(self, dialog):
+        self.about_dialog = dialog
         super().__init__()
 
         self._title_text = FONT_PRIMARY_XXLARGE.render(
