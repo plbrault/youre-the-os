@@ -38,5 +38,5 @@ class SceneManager():
             scene = self._scenes[scene_id]
 
         scene.scene_manager = self
-        scene.setup()
+        scene.reset()
         self._current_scene = scene

@@ -5,6 +5,7 @@ import game_monitor
 from constants import DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
+from scenes.stage import Stage
 
 
 class TestSchedulerDataClasses:
@@ -878,7 +879,7 @@ class TestStageAutomationIntegration:
     """Integration tests for Stage scene automation via public interface."""
 
     @pytest.fixture
-    def stage_with_script(self, Stage, stage_config, scene_manager):
+    def stage_with_script(self, stage_config, scene_manager):
         """Create a stage with a simple automation script."""
         script_source = '''
 def scheduler(events):
@@ -895,7 +896,7 @@ def scheduler(events):
         return stage
 
     @pytest.fixture
-    def stage_without_script(self, Stage, stage_config, scene_manager):
+    def stage_without_script(self, stage_config, scene_manager):
         """Create a stage without an automation script."""
         stage = Stage('Test Stage', stage_config, script=None, standalone=True)
         stage.scene_manager = scene_manager
@@ -934,7 +935,7 @@ def scheduler(events):
         assert pid == 1
         assert to_e_core is False  # Default value when not specified
 
-    def test_script_uses_to_e_core_parameter(self, Stage, stage_config, scene_manager, monkeypatch):
+    def test_script_uses_to_e_core_parameter(self, stage_config, scene_manager, monkeypatch):
         """Test that script can use to_e_core parameter in move_process."""
         script_source = '''
 def scheduler(events):
@@ -991,7 +992,7 @@ def scheduler(events):
         # Should not raise
         stage_without_script.update(0, [])
 
-    def test_script_with_page_action(self, Stage, stage_config, scene_manager, monkeypatch):
+    def test_script_with_page_action(self, stage_config, scene_manager, monkeypatch):
         """Test that script page actions trigger page swaps."""
         script_source = '''
 def scheduler(events):
@@ -1028,7 +1029,7 @@ def scheduler(events):
         
         assert (1, 0) in swapped_pages
 
-    def test_script_with_io_action(self, Stage, stage_config, scene_manager, monkeypatch):
+    def test_script_with_io_action(self, stage_config, scene_manager, monkeypatch):
         """Test that script io_queue actions trigger IO processing."""
         script_source = '''
 def scheduler(events):
@@ -1080,7 +1081,7 @@ def scheduler(events):
         captured = capsys.readouterr()
         assert 'ValueError' in captured.err
 
-    def test_script_without_scheduler_function(self, Stage, stage_config, scene_manager):
+    def test_script_without_scheduler_function(self, stage_config, scene_manager):
         """Test that script without scheduler function is handled gracefully."""
         script_source = '''
 # No scheduler defined
@@ -1097,7 +1098,7 @@ x = 1
         # Should not raise
         stage.update(0, [])
 
-    def test_script_has_access_to_cpu_core_types(self, Stage, stage_config, scene_manager):
+    def test_script_has_access_to_cpu_core_types(self, stage_config, scene_manager):
         """Test that script has access to cpu_core_types global variable."""
         script_source = '''
 def scheduler(events):
@@ -1129,7 +1130,7 @@ def scheduler(events):
         valid_types = {'STANDARD', 'PERFORMANCE', 'EFFICIENT'}
         assert all(core_type in valid_types for core_type in cpu_core_types)
 
-    def test_script_has_correct_cpu_core_types_values(self, Stage, scene_manager):
+    def test_script_has_correct_cpu_core_types_values(self, scene_manager):
         """Test that cpu_core_types contains correct values for a known configuration."""
         import sys
         import os

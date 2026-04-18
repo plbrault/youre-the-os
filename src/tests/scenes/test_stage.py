@@ -2,11 +2,34 @@ import pytest
 
 from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
 from engine.game_manager import GameManager
+from engine.modal import Modal
+from engine.modal_view import ModalView
 from engine.random import Random
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 from scene_objects.process import Process
 from scenes.stage import Stage
+
+
+class StubModalView(ModalView):
+    def __init__(self):
+        super().__init__()
+
+    @property
+    def width(self):
+        return 200
+
+    @property
+    def height(self):
+        return 100
+
+    def draw_content(self, surface):
+        pass
+
+
+class StubModal(Modal):
+    def __init__(self):
+        super().__init__(StubModalView())
 
 
 class TestStage:
@@ -99,17 +122,6 @@ class TestStage:
         assert stage.standalone
         stage.standalone = False
         assert not stage.standalone
-
-    def test_is_paused_initially_false(self, stage_custom_config):
-        stage = stage_custom_config(StageConfig(
-            cpu_config=CpuConfig(num_cores=4),
-            num_processes_at_startup=4,
-            new_process_probability=0,
-            io_probability=0,
-            graceful_termination_probability=0,
-        ))
-
-        assert not stage.is_paused
 
     def test_game_over(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
@@ -208,3 +220,43 @@ class TestStage:
         if any_in_motion:
             stage.update(time, [])
             assert not stage.game_over
+
+    def test_reset_closes_active_modal(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=4,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+        ))
+
+        stage.show_modal(StubModal())
+
+        stage.reset()
+
+        assert stage.modal is None
+
+    def test_reset_routes_events_to_scene_objects(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=4,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+        ))
+
+        stage.show_modal(StubModal())
+        stage.reset()
+
+        update_received = False
+        original_update = stage.process_manager.update
+
+        def spy_update(current_time, events):
+            nonlocal update_received
+            update_received = True
+            original_update(current_time, events)
+
+        stage.process_manager.update = spy_update
+        stage.update(0, [])
+
+        assert update_received

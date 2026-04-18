@@ -32,7 +32,6 @@ class GameManager():
         self._startup_scene = scene
 
     def __init__(self):
-        self._current_scene = None
         self._scenes = None
         self._screen = None
         self._scene_manager = SceneManager()
@@ -42,9 +41,10 @@ class GameManager():
         self._mouse_right_down = False
         self._shift_down = False
 
-    @property
-    def current_scene(self):
-        return self._current_scene
+        self._frozen_time = None
+        self._pause_raw_time = None
+        self._total_paused_time = 0
+        self._last_adjusted_time = 0
 
     def _init_pygame(self):
         pygame.init()
@@ -61,6 +61,9 @@ class GameManager():
 
     def register_scene(self, scene: Scene):
         self._scene_manager.register_scene(scene)
+
+    def start_scene(self, scene: Union[Scene, str]):
+        self._scene_manager.start_scene(scene)
 
     def _get_events(self):
         # pylint: disable=too-many-branches
@@ -125,6 +128,39 @@ class GameManager():
                 mouse_motion_event = game_event
         return events
 
+    def _get_adjusted_time(self, scene):
+        raw_time = pygame.time.get_ticks()
+        if scene.modal is not None:
+            if self._frozen_time is None:
+                self._frozen_time = self._last_adjusted_time
+                self._pause_raw_time = raw_time
+            return self._frozen_time
+
+        if self._frozen_time is not None:
+            self._total_paused_time += raw_time - self._pause_raw_time
+            self._frozen_time = None
+            self._pause_raw_time = None
+
+        return raw_time - self._total_paused_time
+
+    def step(self, scene, events):
+        adjusted_time = self._get_adjusted_time(scene)
+        self._last_adjusted_time = adjusted_time
+
+        if scene.modal is not None:
+            scene.modal.update(adjusted_time, events)
+        else:
+            scene.update(adjusted_time, events)
+
+        if scene != self._scene_manager.current_scene:
+            scene = self._scene_manager.current_scene
+            adjusted_time = self._get_adjusted_time(scene)
+            self._last_adjusted_time = adjusted_time
+            if scene.modal is not None:
+                scene.modal.update(adjusted_time, [])
+            else:
+                scene.update(adjusted_time, [])
+
     async def _main_loop(self, ignore_events=False):
         clock = pygame.time.Clock()
 
@@ -139,12 +175,7 @@ class GameManager():
 
             scene = self._scene_manager.current_scene
 
-            scene.update(self._scene_manager.current_scene.current_time, events)
-            if scene != self._scene_manager.current_scene:
-                scene = self._scene_manager.current_scene
-                self._scene_manager.current_scene.update(
-                    self._scene_manager.current_scene.current_time, []
-                )
+            self.step(scene, events)
 
             scene.render()
 

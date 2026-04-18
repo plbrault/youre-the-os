@@ -37,6 +37,19 @@ class OptionSelectorView(Drawable):
     def min_width(self, value):
         self._min_width = value
 
+    @Drawable.x.setter
+    def x(self, value):
+        self._x = value
+        self._option_selector.previous_button.view.x = self.x
+        self._option_selector.next_button.view.x = (
+            self.x + self.width - self._option_selector.next_button.view.width)
+
+    @Drawable.y.setter
+    def y(self, value):
+        self._y = value
+        self._option_selector.previous_button.view.y = self.y
+        self._option_selector.next_button.view.y = self.y
+
     @property
     def width(self):
         return max(

@@ -1,15 +1,16 @@
 from os import path
 import pygame
 
-from engine.drawable import Drawable
+from engine.modal_view import ModalView
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_LARGE, FONT_PRIMARY_XXLARGE
 
 _shutdown_image = pygame.image.load(path.join('assets', 'shutdown.jpg'))
 
 
-class GameOverDialogView(Drawable):
+class GameOverDialogView(ModalView):
     def __init__(self, game_over_dialog):
+        self._game_over_dialog = game_over_dialog
         super().__init__()
 
         self._image = _shutdown_image
@@ -23,6 +24,31 @@ class GameOverDialogView(Drawable):
         self._score_text_surface = FONT_PRIMARY_LARGE.render(
             'SCORE: ' + str(game_over_dialog.score), False, Color.WHITE)
 
+    @ModalView.x.setter
+    def x(self, value):
+        self._x = value
+        dialog = self._game_over_dialog
+        if dialog.standalone:
+            dialog.play_again_button.view.x = (
+                self.x + (self.width / 2) - (dialog.play_again_button.view.width / 2))
+        else:
+            dialog.play_again_button.view.x = (
+                self.x + (self.width / 2) - dialog.play_again_button.view.width - 10)
+            dialog.main_menu_button.view.x = self.x + (self.width / 2) + 10
+
+    @ModalView.y.setter
+    def y(self, value):
+        self._y = value
+        dialog = self._game_over_dialog
+        if dialog.standalone:
+            dialog.play_again_button.view.y = (
+                self.y + self.height - dialog.play_again_button.view.height - 20)
+        else:
+            dialog.play_again_button.view.y = (
+                self.y + self.height - dialog.play_again_button.view.height - 20)
+            dialog.main_menu_button.view.y = (
+                self.y + self.height - dialog.play_again_button.view.height - 20)
+
     @property
     def width(self):
         return self._image.get_width() + 4
@@ -31,21 +57,7 @@ class GameOverDialogView(Drawable):
     def height(self):
         return 680
 
-    def draw(self, surface):
-        pygame.draw.rect(surface, Color.WHITE, pygame.Rect(
-            self.x, self.y, self.width, self.height), border_radius=3)
-        pygame.draw.rect(
-            surface,
-            (70,
-             70,
-             70),
-            pygame.Rect(
-                self.x + 2,
-                self.y + 2,
-                self.width - 4,
-                self.height - 4),
-            border_radius=3)
-
+    def draw_content(self, surface):
         surface.blit(self._main_text_surface, (self.x + (self.width -
                      self._main_text_surface.get_width()) / 2, self.y + 20))
 
