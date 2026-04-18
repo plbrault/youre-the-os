@@ -208,6 +208,6 @@ class Stage(Scene):
                 return
 
         self._process_script_events()
-        for scene_object in self._scene_objects:
+        for scene_object in list(self._scene_objects):
             scene_object.update(current_time, events)
         self._check_game_over()

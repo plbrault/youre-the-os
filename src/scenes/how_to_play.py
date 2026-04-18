@@ -236,5 +236,5 @@ class HowToPlay(Scene):
 
     def update(self, current_time, events):
         self._current_time = current_time
-        for scene_object in self._scene_objects:
+        for scene_object in list(self._scene_objects):
             scene_object.update(current_time, events)
