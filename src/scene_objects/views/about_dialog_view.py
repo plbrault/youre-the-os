@@ -9,6 +9,18 @@ class AboutDialogView(ModalView):
         self.about_dialog = about_dialog
         super().__init__()
 
+    @ModalView.x.setter
+    def x(self, value):
+        self._x = value
+        self.about_dialog.close_button.view.x = self.x + (
+            self.width - self.about_dialog.close_button.view.width) / 2
+
+    @ModalView.y.setter
+    def y(self, value):
+        self._y = value
+        self.about_dialog.close_button.view.y = (
+            self.y + self.height - self.about_dialog.close_button.view.height - 40)
+
         self._title_text = FONT_PRIMARY_XXLARGE.render(
             TITLE, True, Color.WHITE)
         self._version_text = FONT_SECONDARY_SMALL.render(

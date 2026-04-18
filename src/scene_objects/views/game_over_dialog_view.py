@@ -10,6 +10,7 @@ _shutdown_image = pygame.image.load(path.join('assets', 'shutdown.jpg'))
 
 class GameOverDialogView(ModalView):
     def __init__(self, game_over_dialog):
+        self._game_over_dialog = game_over_dialog
         super().__init__()
 
         self._image = _shutdown_image
@@ -22,6 +23,31 @@ class GameOverDialogView(ModalView):
             game_over_dialog.stage_name.upper(), False, Color.WHITE)
         self._score_text_surface = FONT_PRIMARY_LARGE.render(
             'SCORE: ' + str(game_over_dialog.score), False, Color.WHITE)
+
+    @ModalView.x.setter
+    def x(self, value):
+        self._x = value
+        dialog = self._game_over_dialog
+        if dialog.standalone:
+            dialog._play_again_button.view.x = (
+                self.x + (self.width / 2) - (dialog._play_again_button.view.width / 2))
+        else:
+            dialog._play_again_button.view.x = (
+                self.x + (self.width / 2) - dialog._play_again_button.view.width - 10)
+            dialog._main_menu_button.view.x = self.x + (self.width / 2) + 10
+
+    @ModalView.y.setter
+    def y(self, value):
+        self._y = value
+        dialog = self._game_over_dialog
+        if dialog.standalone:
+            dialog._play_again_button.view.y = (
+                self.y + self.height - dialog._play_again_button.view.height - 20)
+        else:
+            dialog._play_again_button.view.y = (
+                self.y + self.height - dialog._play_again_button.view.height - 20)
+            dialog._main_menu_button.view.y = (
+                self.y + self.height - dialog._play_again_button.view.height - 20)
 
     @property
     def width(self):
