@@ -8,12 +8,14 @@ from ui.color import Color
 
 class ModalView(Drawable):
     @property
+    @abstractmethod
     def width(self):
-        return 0
+        pass
 
     @property
+    @abstractmethod
     def height(self):
-        return 0
+        pass
 
     def draw(self, surface):
         pygame.draw.rect(
