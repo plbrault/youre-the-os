@@ -25,11 +25,12 @@
 * Use `pipenv run pytest` to run tests.
 * Always write your tests in a way that is consistent with existing tests.
 * Comments are allowed in unit tests.
-* Tests should never use private members of objects.
+* Tests should never use private members of objects. THIS IS VERY IMPORTANT.
 * When writing tests, expected results should be hardcoded rather than generated.
 * If you believe an existing implementation contains a bug, always discuss it with the user before attempting to fix it.
 * New tests should be proven to fail when the tested implementation is wrong or not implemented yet. It is therefore encouraged to write the tests before the implementation, in TDD-fashion.
 * Bug fixes should generally be accompanied by regression tests.
+* Review your tests after writing them to ensure you followed all the above rules.
 
 ## Coding Restrictions
 
