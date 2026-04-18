@@ -61,16 +61,13 @@ class Scene(ABC):
         )
         self._scene_objects.append(modal)
         self._modal = modal
-        modal.on_open()
 
     def close_modal(self):
         """Close the currently active modal, if any."""
         if self._modal is None:
             return
         self._scene_objects.remove(self._modal)
-        modal = self._modal
         self._modal = None
-        modal.on_close()
 
     def render(self):
         self.screen.fill(self.background_color)

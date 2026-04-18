@@ -24,15 +24,7 @@ class StubModalView(ModalView):
 
 class StubModal(Modal):
     def __init__(self):
-        self.on_open_called = False
-        self.on_close_called = False
         super().__init__(StubModalView())
-
-    def on_open(self):
-        self.on_open_called = True
-
-    def on_close(self):
-        self.on_close_called = True
 
 
 class StubScene(Scene):
@@ -88,11 +80,6 @@ class TestSceneModalLifecycle:
     def test_modal_property_none_when_no_modal(self, scene):
         assert scene.modal is None
 
-    def test_show_modal_calls_modal_on_open(self, scene, modal):
-        scene.show_modal(modal)
-
-        assert modal.on_open_called
-
     def test_show_modal_centers_modal_on_screen(self, scene, modal):
         scene.show_modal(modal)
         screen_width = WINDOW_SIZE[0]
@@ -117,12 +104,6 @@ class TestSceneModalLifecycle:
         scene.close_modal()
 
         assert scene.modal is None
-
-    def test_close_modal_calls_modal_on_close(self, scene, modal):
-        scene.show_modal(modal)
-        scene.close_modal()
-
-        assert modal.on_close_called
 
     def test_modal_close_triggers_close_modal(self, scene, modal):
         scene.show_modal(modal)

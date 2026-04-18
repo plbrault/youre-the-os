@@ -23,15 +23,7 @@ class StubModalView(ModalView):
 
 class StubModal(Modal):
     def __init__(self):
-        self.on_open_called = False
-        self.on_close_called = False
         super().__init__(StubModalView())
-
-    def on_open(self):
-        self.on_open_called = True
-
-    def on_close(self):
-        self.on_close_called = True
 
 
 class TestModal:
@@ -49,22 +41,6 @@ class TestModal:
         modal.close()
 
         assert modal.scene.close_modal_called
-
-    def test_on_open_is_called(self, modal):
-        modal.on_open()
-        assert modal.on_open_called
-
-    def test_on_close_is_called(self, modal):
-        modal.on_close()
-        assert modal.on_close_called
-
-    def test_on_open_default_does_not_crash(self):
-        modal = Modal(StubModalView())
-        modal.on_open()
-
-    def test_on_close_default_does_not_crash(self):
-        modal = Modal(StubModalView())
-        modal.on_close()
 
     def test_close_without_scene_does_not_crash(self, modal):
         modal.scene = None

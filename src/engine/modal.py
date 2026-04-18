@@ -7,12 +7,6 @@ class Modal(SceneObject):
         super().__init__(view)
         self.scene = None
 
-    def on_open(self):
-        pass
-
-    def on_close(self):
-        pass
-
     def close(self):
         if self.scene is not None:
             self.scene.close_modal()
