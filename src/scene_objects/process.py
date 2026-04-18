@@ -79,7 +79,7 @@ class Process(SceneObject):
     }
 
     def __init__(self, pid: int, stage: 'Stage', config: ProcessConfig,
-                 *, view_class: Type[Drawable] = ProcessView):
+                 *, view_class: Type[Drawable] = ProcessView, current_time: int = 0):
         self._state = ProcessState.IDLE
 
         self._pid = pid
@@ -92,7 +92,7 @@ class Process(SceneObject):
         self._is_on_io_cooldown = False
         self._starvation_level = 1
 
-        self._last_update_time = stage.current_time
+        self._last_update_time = current_time
         self._last_periodic_update_time = self._last_update_time
         self._last_state_change_time = self._last_update_time
         self._last_starvation_level_change_time = self._last_update_time

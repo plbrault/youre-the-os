@@ -177,6 +177,7 @@ class HowToPlay(Scene):
         self._current_part_id = 0
         self._previous_button = None
         self._next_button = None
+        self._current_time = 0
 
     def setup(self):
         self._scene_objects = []
@@ -209,7 +210,7 @@ class HowToPlay(Scene):
             self._scene_objects.remove(self._parts[self._current_part_id])
 
             self._current_part_id -= 1
-            self._parts[self._current_part_id].initial_time = self.current_time
+            self._parts[self._current_part_id].initial_time = self._current_time
 
             self._scene_objects.append(self._parts[self._current_part_id])
             self._scene_objects.append(self._previous_button)
@@ -224,7 +225,7 @@ class HowToPlay(Scene):
             self._scene_objects.remove(self._parts[self._current_part_id])
 
             self._current_part_id += 1
-            self._parts[self._current_part_id].initial_time = self.current_time
+            self._parts[self._current_part_id].initial_time = self._current_time
 
             self._scene_objects.append(self._parts[self._current_part_id])
             self._scene_objects.append(self._previous_button)
@@ -234,5 +235,6 @@ class HowToPlay(Scene):
         self.scene_manager.start_scene('main_menu')
 
     def update(self, current_time, events):
+        self._current_time = current_time
         for scene_object in self._scene_objects:
             scene_object.update(current_time, events)

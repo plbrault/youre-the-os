@@ -7,10 +7,8 @@ from scene_objects.views.uptime_manager_view import UptimeManagerView
 
 class UptimeManager(SceneObject):
 
-    def __init__(self, stage):
-        self._stage = stage
-
-        self._last_update_time = stage.current_time
+    def __init__(self):
+        self._last_update_time = 0
         self._uptime = 0
         self._uptime_text = '0:00:00'
 

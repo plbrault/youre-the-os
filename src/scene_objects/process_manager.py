@@ -56,6 +56,7 @@ class ProcessManager(SceneObject):
         self._user_terminated_process_count = 0
         self._sort_in_progress = False
         self._last_sort_time = 0
+        self._current_time = 0
 
         self._new_process_probability_numerator = int(
             self._stage_config.new_process_probability * 100)
@@ -181,7 +182,9 @@ class ProcessManager(SceneObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process = self._process_factory.create_random_process(pid)
+            process = self._process_factory.create_random_process(
+                pid, current_time=self._current_time
+            )
 
             process_slot = self.process_slots[process_slot_id]
             process_slot.process = process
@@ -228,7 +231,7 @@ class ProcessManager(SceneObject):
 
     def sort_idle_processes(self):
         self._sort_in_progress = True
-        self._last_sort_time = self._stage.current_time
+        self._last_sort_time = self._current_time
         self._continue_sorting()
 
     @property
@@ -359,6 +362,8 @@ class ProcessManager(SceneObject):
     def update(self, current_time, events):
         if self._stage.game_over:
             return
+
+        self._current_time = current_time
 
         self._handle_events(events)
         self._handle_process_creation(current_time)

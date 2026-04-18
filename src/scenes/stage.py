@@ -57,7 +57,7 @@ class Stage(Scene):
         self._score_manager.view.set_xy(840, 10)
         self._scene_objects.append(self._score_manager)
 
-        self._uptime_manager = UptimeManager(self)
+        self._uptime_manager = UptimeManager()
         self._uptime_manager.view.set_xy(
             512 - self._uptime_manager.view.width // 2,
             10
