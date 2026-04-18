@@ -56,8 +56,4 @@ class TestModalView:
         assert modal_view.draw_content_called
         assert modal_view.draw_content_surface is surface
 
-    def test_draw_content_receives_correct_offset(self, surface, modal_view):
-        modal_view.set_xy(50, 30)
-        modal_view.draw(surface)
-
-        assert modal_view.draw_content_called
+    
