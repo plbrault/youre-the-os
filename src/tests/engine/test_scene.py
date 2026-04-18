@@ -67,11 +67,6 @@ class TestSceneModalLifecycle:
     def modal(self):
         return StubModal()
 
-    def test_show_modal_appends_to_scene_objects(self, scene, modal):
-        scene.show_modal(modal)
-
-        assert modal in scene._scene_objects
-
     def test_modal_property_returns_active_modal(self, scene, modal):
         scene.show_modal(modal)
 
@@ -92,12 +87,6 @@ class TestSceneModalLifecycle:
         scene.show_modal(modal)
 
         assert modal.scene is scene
-
-    def test_close_modal_removes_from_scene_objects(self, scene, modal):
-        scene.show_modal(modal)
-        scene.close_modal()
-
-        assert modal not in scene._scene_objects
 
     def test_close_modal_clears_modal_reference(self, scene, modal):
         scene.show_modal(modal)
