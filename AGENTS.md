@@ -15,19 +15,21 @@
 
 * Write clean, readable, and maintainable code.
 * Code in a way that is consistent with existing code.
-* Follow the rules defined by `.pylintrc`. Run the linter to make sure that all rules are followed.
+* Follow the rules defined by `.pylintrc`. Run the linter using the command `pipenv run pylint` to make sure that all rules are followed.
 * Your code should be self-explanatory, so do not add comments, unless a solution appears to be "hackish" or otherwise "weird". In such cases, discuss your solution with the user first.
 * Docstrings are allowed if similar functions or classes in the same file also have docstrings.
 
 ## Testing
 
 * You must always prove that your changes work. The primary way to achieve that is by the use of extensive unit tests.
-* The readme contains instructions on how to run the tests.
+* Use `pipenv run pytest` to run tests.
 * Always write your tests in a way that is consistent with existing tests.
 * Comments are allowed in unit tests.
 * Tests should never use private members of objects.
 * When writing tests, expected results should be hardcoded rather than generated.
 * If you believe an existing implementation contains a bug, always discuss it with the user before attempting to fix it.
+* New tests should be proven to fail when the tested implementation is wrong or not implemented yet. It is therefore encouraged to write the tests before the implementation, in TDD-fashion.
+* Bug fixes should generally be accompanied by regression tests.
 
 ## Coding Restrictions
 
