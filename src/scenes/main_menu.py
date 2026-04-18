@@ -4,7 +4,7 @@ from engine.scene import Scene
 from scene_objects.about_dialog import AboutDialog
 from scene_objects.button import Button
 from scene_objects.custom_settings_dialog import CustomSettingsDialog
-from scene_objects.hotkey_dialog import HokeyDialog
+from scene_objects.hotkey_dialog import HotkeyDialog
 from scene_objects.main_menu_title import MainMenuTitle
 from scene_objects.difficulty_selection_label import DifficultySelectionLabel
 from scene_objects.option_selector import OptionSelector
@@ -95,7 +95,7 @@ class MainMenu(Scene):
         self.show_modal(AboutDialog())
 
     def _open_hotkey_dialog(self):
-        self.show_modal(HokeyDialog())
+        self.show_modal(HotkeyDialog())
 
     def _start_game(self, difficulty_level):
         if isinstance(self.modal, CustomSettingsDialog):
