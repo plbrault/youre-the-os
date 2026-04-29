@@ -1727,7 +1727,10 @@ class TestStateEvents(TestProcess):
     def test_ended_state_no_events(self, stage, process_config):
         """Test that ENDED state ignores all events."""
         process = Process(1, stage, process_config)
-        process._state = ProcessState.ENDED
+        # Bring process to ENDED state by starving it to death
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(i * process.time_between_starvation_levels, [])
+        assert process.state == ProcessState.ENDED
 
         all_events = [
             StateEvent.ASSIGN_TO_CPU,

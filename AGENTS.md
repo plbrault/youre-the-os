@@ -25,7 +25,8 @@
 * Use `pipenv run pytest` to run tests.
 * Always write your tests in a way that is consistent with existing tests.
 * Comments are allowed in unit tests.
-* Tests should never use private members of objects. THIS IS VERY IMPORTANT.
+* A class' tests should validate its observable external behavior rather than its internal implementation.
+* Tests should never use private members of objects. THIS IS VERY IMPORTANT. "Private member" in Python context refers to any member prefixed by "_".
 * When writing tests, expected results should be hardcoded rather than generated.
 * If you believe an existing implementation contains a bug, always discuss it with the user before attempting to fix it.
 * New tests should be proven to fail when the tested implementation is wrong or not implemented yet. It is therefore encouraged to write the tests before the implementation, in TDD-fashion.
