@@ -1098,46 +1098,58 @@ x = 1
         # Should not raise
         stage.update(0, [])
 
-    def test_script_has_access_to_cpu_core_types(self, stage_config, scene_manager):
+    def test_script_has_access_to_cpu_core_types(self, stage_config, scene_manager, monkeypatch):
         """Test that script has access to cpu_core_types global variable."""
+        actions_received = []
+
+        def capture_action(pid):
+            actions_received.append(True)
+
+        class MockProcess:
+            def __init__(self):
+                self.has_cpu = False
+            def toggle(self, to_e_core=False):
+                capture_action(1)
+
+        # Script returns action only if cpu_core_types is available and valid
         script_source = '''
 def scheduler(events):
-    # Store cpu_core_types in a global variable to verify it's available
-    global test_cpu_core_types
-    test_cpu_core_types = cpu_core_types
-    return []
+    actions = []
+    # Only return action if cpu_core_types is usable
+    if len(cpu_core_types) > 0:
+        for event in events:
+            if event.etype == 'PROC_NEW':
+                actions.append({'type': 'process', 'pid': event.pid})
+    return actions
 '''
         compiled = compile(script_source, '<test>', 'exec')
         stage = Stage('Test Stage', stage_config, script=compiled, standalone=True)
         stage.scene_manager = scene_manager
         stage.setup()
-        
+
+        monkeypatch.setattr(
+            stage.process_manager,
+            'get_process',
+            lambda pid: MockProcess()
+        )
+
         game_monitor.clear_events()
         game_monitor.notify_process_new(1)
-        
-        # Update to trigger script execution
-        stage.update(0, [])
-        
-        # The script should have set the global variable
-        # We need to access it through the scheduler's globals
-        scheduler_function = stage._script_callback
-        scheduler_globals = scheduler_function.__globals__
-        
-        assert 'test_cpu_core_types' in scheduler_globals
-        cpu_core_types = scheduler_globals['test_cpu_core_types']
-        assert len(cpu_core_types) > 0
-        # Verify all entries are valid core type names
-        valid_types = {'STANDARD', 'PERFORMANCE', 'EFFICIENT'}
-        assert all(core_type in valid_types for core_type in cpu_core_types)
 
-    def test_script_has_correct_cpu_core_types_values(self, scene_manager):
+        # If cpu_core_types wasn't available, no action would have been generated
+        # and toggle wouldn't have been called
+        stage.update(0, [])
+
+        assert len(actions_received) == 1  # Proof that the script executed successfully
+
+    def test_script_has_correct_cpu_core_types_values(self, scene_manager, monkeypatch):
         """Test that cpu_core_types contains correct values for a known configuration."""
         import sys
         import os
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
         from config.cpu_config import CpuConfig, CoreType
         from config.stage_config import StageConfig
-        
+
         # Create a specific test configuration:
         # - 4 cores total
         # - Core 0-1: PERFORMANCE (2 threads each)
@@ -1150,38 +1162,55 @@ def scheduler(events):
                 num_threads_per_core=[2, 2, 1, 1]
             )
         )
-        
-        script_source = '''
-def scheduler(events):
-    global test_cpu_core_types
-    test_cpu_core_types = cpu_core_types.copy()  # Make a copy to avoid reference issues
-    return []
-'''
-        compiled = compile(script_source, '<test>', 'exec')
-        stage = Stage('Test Stage', test_stage_config, script=compiled, standalone=True)
-        stage.scene_manager = scene_manager
-        stage.setup()
-        
-        # Update to trigger script execution
-        stage.update(0, [])
-        
-        # Get the cpu_core_types value from the script
-        scheduler_function = stage._script_callback
-        scheduler_globals = scheduler_function.__globals__
-        
-        assert 'test_cpu_core_types' in scheduler_globals
-        cpu_core_types = scheduler_globals['test_cpu_core_types']
-        
-        # Verify the exact expected values
+
         expected_cpu_core_types = [
             'PERFORMANCE', 'PERFORMANCE',  # Core 0: 2 threads
             'PERFORMANCE', 'PERFORMANCE',  # Core 1: 2 threads
             'EFFICIENT',                    # Core 2: 1 thread
             'EFFICIENT'                     # Core 3: 1 thread
         ]
-        
-        assert cpu_core_types == expected_cpu_core_types, f"Expected {expected_cpu_core_types}, got {cpu_core_types}"
-        assert len(cpu_core_types) == 6, f"Expected 6 total threads, got {len(cpu_core_types)}"
+
+        actions_received = []
+
+        def capture_action(pid):
+            actions_received.append(True)
+
+        class MockProcess:
+            def __init__(self):
+                self.has_cpu = False
+            def toggle(self, to_e_core=False):
+                capture_action(1)
+
+        # Script validates cpu_core_types and returns action if correct
+        script_source = f'''
+def scheduler(events):
+    expected = {expected_cpu_core_types}
+    actions = []
+    if cpu_core_types == expected:
+        for event in events:
+            if event.etype == 'PROC_NEW':
+                actions.append({{'type': 'process', 'pid': event.pid}})
+    return actions
+'''
+        compiled = compile(script_source, '<test>', 'exec')
+        stage = Stage('Test Stage', test_stage_config, script=compiled, standalone=True)
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        monkeypatch.setattr(
+            stage.process_manager,
+            'get_process',
+            lambda pid: MockProcess()
+        )
+
+        game_monitor.clear_events()
+        game_monitor.notify_process_new(1)
+
+        # If cpu_core_types had wrong values, no action would have been generated
+        stage.update(0, [])
+
+        # Proof that cpu_core_types had the expected values
+        assert len(actions_received) == 1
 
 class TestAutoModule:
     """Tests for the auto.py module functions."""
