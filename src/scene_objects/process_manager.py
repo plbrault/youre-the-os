@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from math import inf
 import re
 
@@ -31,6 +32,10 @@ def _is_sorted(process_list: [Process]):
         if process_list[i].sort_key > process_list[i + 1].sort_key:
             return False
     return True
+
+class ProcessType(Enum):
+    STANDARD = auto()
+    PRIORITY = auto()
 
 class ProcessManager(SceneObject):
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
@@ -85,6 +90,12 @@ class ProcessManager(SceneObject):
         self._last_new_process_check = 0
         self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
+
+        self._forced_process_creation = sorted([
+            (time_ms, ProcessType.STANDARD) for time_ms in self._stage_config.force_new_standard_process_at_times_ms
+        ] + [
+            (time_ms, ProcessType.PRIORITY) for time_ms in self._stage_config.force_new_priority_process_at_times_ms
+        ], key=lambda x: x[0])
 
         io_queue = self._io_queue
         io_queue.view.set_xy(50, 10)
@@ -171,7 +182,7 @@ class ProcessManager(SceneObject):
     def del_process(self, process):
         del self._processes[process.pid]
 
-    def _create_process(self, process_slot_id=None):
+    def _create_process(self, process_slot_id=None, process_type: ProcessType = None):
         if len(self._alive_process_list) < self._stage_config.max_processes:
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
@@ -182,9 +193,18 @@ class ProcessManager(SceneObject):
             pid = self._next_pid
             self._next_pid += 1
 
-            process = self._process_factory.create_random_process(
-                pid, current_time=self._current_time
-            )
+            if process_type is None:
+                process = self._process_factory.create_random_process(
+                    pid, current_time=self._current_time
+                )
+            elif process_type == ProcessType.STANDARD:
+                process = self._process_factory.create_standard_process(
+                    pid, self._current_time
+                )
+            elif process_type == ProcessType.PRIORITY:
+                process = self._process_factory.create_priority_process(
+                    pid, self._current_time
+                )
 
             process_slot = self.process_slots[process_slot_id]
             process_slot.process = process
@@ -323,6 +343,10 @@ class ProcessManager(SceneObject):
             if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
                     self._last_process_creation_time >= self._max_wait_between_new_processes:
                 self._create_process()
+                self._last_process_creation_time = current_time
+            elif len(self._forced_process_creation) > 0 and current_time >= self._forced_process_creation[0][0]:
+                _, process_type = self._forced_process_creation.pop(0)
+                self._create_process(process_type=process_type)
                 self._last_process_creation_time = current_time
 
     def _handle_timed_powerups(self, current_time):
