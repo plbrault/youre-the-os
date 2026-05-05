@@ -891,3 +891,47 @@ class TestProcessManager:
 
         process.update(11000, [])
         assert not process.is_waiting_for_io
+
+    def test_priority_process_uses_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            priority_process_graceful_termination_probability=1,
+            io_probability=0,
+            force_new_priority_process_at_times_ms=[10000],
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process_manager.update(10000, [])
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+        process.update(10000, [])
+
+        process.update(11000, [])
+        assert process.has_ended_gracefully
+
+    def test_standard_process_uses_graceful_termination_probability_not_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            priority_process_graceful_termination_probability=1,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process_manager.update(10000, [])
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+        process.update(10000, [])
+
+        process.update(11000, [])
+        assert not process.has_ended_gracefully
