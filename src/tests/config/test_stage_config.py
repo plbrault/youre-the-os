@@ -1,7 +1,4 @@
-import pytest
-
 from config.stage_config import StageConfig
-from config.cpu_config import CpuConfig
 
 class TestStageConfig:
     def test_priority_process_io_probability_defaults_to_io_probability(self):
