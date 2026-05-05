@@ -340,14 +340,18 @@ class ProcessManager(SceneObject):
             self._create_process()
         elif current_time - self._last_new_process_check >= ONE_SECOND:
             self._last_new_process_check = current_time
-            if len(self._forced_process_creation) > 0 and current_time >= self._forced_process_creation[0][0]:
-                _, process_type = self._forced_process_creation.pop(0)
-                self._create_process(process_type=process_type)
-                self._last_process_creation_time = current_time
-            elif randint(1, 100) <= self._new_process_probability_numerator or current_time - \
-                    self._last_process_creation_time >= self._max_wait_between_new_processes:
-                self._create_process()
-                self._last_process_creation_time = current_time
+            if len(self._alive_process_list) < self._stage_config.max_processes:
+                if (
+                    len(self._forced_process_creation) > 0
+                    and current_time >= self._forced_process_creation[0][0]
+                ):
+                    _, process_type = self._forced_process_creation.pop(0)
+                    self._create_process(process_type=process_type)
+                    self._last_process_creation_time = current_time
+                elif randint(1, 100) <= self._new_process_probability_numerator or current_time - \
+                        self._last_process_creation_time >= self._max_wait_between_new_processes:
+                    self._create_process()
+                    self._last_process_creation_time = current_time
 
     def _handle_timed_powerups(self, current_time):
         if (
