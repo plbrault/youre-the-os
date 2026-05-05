@@ -17,8 +17,13 @@ class StageConfig:
     force_new_standard_process_at_times_ms: list[int] = field(default_factory=list)
     force_new_priority_process_at_times_ms: list[int] = field(default_factory=list)
     io_probability: float = 0.01
+    priority_process_io_probability: float | None = None
     io_min_waiting_time_ms: int = 1000
     io_max_waiting_time_ms: int = 5000
     graceful_termination_probability: float = 0.01
     time_ms_to_show_sort_button: int = 6 * ONE_MINUTE
     time_ms_to_show_auto_sort_checkbox: int = 12 * ONE_MINUTE
+
+    def __post_init__(self):
+        if self.priority_process_io_probability is None:
+            object.__setattr__(self, 'priority_process_io_probability', self.io_probability)
