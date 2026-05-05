@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from constants import MAX_PROCESSES, ONE_MINUTE
 from config.cpu_config import CpuConfig
@@ -14,6 +14,8 @@ class StageConfig:
     parallel_swaps: int = 1
     new_process_probability: float = 0.05
     priority_process_probability: float = 0.01
+    force_new_standard_process_at_times_ms: list[int] = field(default_factory=list)
+    force_new_priority_process_at_times_ms: list[int] = field(default_factory=list)
     io_probability: float = 0.01
     io_min_waiting_time_ms: int = 1000
     io_max_waiting_time_ms: int = 5000

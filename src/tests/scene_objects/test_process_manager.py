@@ -694,3 +694,155 @@ class TestProcessManager:
 
             assert cpu.process is None
             assert process.cpu is None
+
+    def test_forced_standard_process_created_at_scheduled_time(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+        assert process_manager.get_process(1).time_between_starvation_levels == 10000
+
+    def test_forced_priority_process_created_at_scheduled_time(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_priority_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+        assert process_manager.get_process(1).time_between_starvation_levels == 6000
+
+    def test_forced_process_not_created_before_scheduled_time(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[20000],
+        ))
+
+        process_manager.update(15000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 0
+
+    def test_forced_process_created_only_once(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+        process_manager.update(20000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+    def test_multiple_forced_processes_at_different_times(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000, 20000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+        process_manager.update(20000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 2
+
+    def test_mixed_forced_process_types_created_in_time_order(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[20000],
+            force_new_priority_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+        assert process_manager.get_process(1).time_between_starvation_levels == 6000
+
+        process_manager.update(20000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 2
+        assert process_manager.get_process(2).time_between_starvation_levels == 10000
+
+    def test_forced_process_not_created_when_max_processes_reached(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=1,
+            max_processes=1,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+    def test_forced_processes_with_same_scheduled_time_created_in_separate_ticks(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+            force_new_priority_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+        assert process_manager.get_process(1).time_between_starvation_levels == 10000
+
+        process_manager.update(11000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 2
+        assert process_manager.get_process(2).time_between_starvation_levels == 6000
