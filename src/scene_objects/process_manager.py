@@ -49,6 +49,7 @@ class ProcessManager(SceneObject):
         self._process_slots = None
         self._user_terminated_process_slots = None
         self._io_queue = None
+        self._forced_process_creation = None
         self._processes = None
         self._sort_processes_button = None
         self._auto_sort_checkbox = None
@@ -91,11 +92,12 @@ class ProcessManager(SceneObject):
         self._last_process_creation_time = 0
         self._user_terminated_process_count = 0
 
-        self._forced_process_creation = sorted([
-            (time_ms, ProcessType.STANDARD) for time_ms in self._stage_config.force_new_standard_process_at_times_ms
-        ] + [
-            (time_ms, ProcessType.PRIORITY) for time_ms in self._stage_config.force_new_priority_process_at_times_ms
-        ], key=lambda x: x[0])
+        self._forced_process_creation = sorted(
+            [(time_ms, ProcessType.STANDARD)
+             for time_ms in self._stage_config.force_new_standard_process_at_times_ms]
+            + [(time_ms, ProcessType.PRIORITY)
+               for time_ms in self._stage_config.force_new_priority_process_at_times_ms],
+            key=lambda x: x[0])
 
         io_queue = self._io_queue
         io_queue.view.set_xy(50, 10)
@@ -197,12 +199,12 @@ class ProcessManager(SceneObject):
                 process = self._process_factory.create_random_process(
                     pid, current_time=self._current_time
                 )
-            elif process_type == ProcessType.STANDARD:
-                process = self._process_factory.create_standard_process(
-                    pid, self._current_time
-                )
             elif process_type == ProcessType.PRIORITY:
                 process = self._process_factory.create_priority_process(
+                    pid, self._current_time
+                )
+            else:
+                process = self._process_factory.create_standard_process(
                     pid, self._current_time
                 )
 
