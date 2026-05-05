@@ -15,8 +15,8 @@ class ProcessFactory:
         )
         self._priority_process_config = ProcessConfig(
             io_probability=self._stage_config.priority_process_io_probability,
-            graceful_termination_probability
-            =self._stage_config.priority_process_graceful_termination_probability,
+            graceful_termination_probability=
+                self._stage_config.priority_process_graceful_termination_probability,
             time_between_starvation_levels_ms=6000
         )
 
