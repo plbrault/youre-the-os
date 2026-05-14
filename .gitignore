@@ -6,3 +6,4 @@ src/sandbox
 !src/sandbox/__init__.py
 !src/sandbox/sample.py
 .coverage
+youre-the-os.wiki
