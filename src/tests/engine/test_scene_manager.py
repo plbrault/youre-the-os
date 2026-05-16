@@ -191,25 +191,8 @@ class TestSceneManagerUpdateBehavior:
         # Restore original update
         scene.update = original_update
 
-        # Scene should have been updated twice (once by us, once by SceneManager)
-        # Actually the scene_update_with_push appends, then SceneManager checks for scene change
-        # Since scene didn't change, no second update
-        # Modal should have been pushed but NOT updated in this frame
-        # Wait, let me reconsider...
-
-        # When scene.update is called, it pushes the modal
-        # After scene.update returns, SceneManager checks if _current_scene changed
-        # It hasn't (only modal was pushed), so no second update
-        # Modal was pushed but won't be updated until next frame
-
-        # Actually I need to verify the actual behavior
-        # Let me check what happens:
-        # 1. update(1000, ['event1']) is called
-        # 2. local_time = 1000 - 0 - 0 = 1000
-        # 3. active_context = scene
-        # 4. scene.update(1000, ['event1']) is called
-        # 5. Inside scene.update, we push modal to context stack
-        # 6. After scene.update returns, check if _current_scene changed - it hasn't
+        # Pushing a modal during the scene's update should activate it for later
+        # frames without causing an extra update in the current frame.
         # 7. No second update triggered
         # 8. Next call to update will update modal
 
