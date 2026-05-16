@@ -164,59 +164,49 @@ class TestSceneManagerUpdateBehavior:
         return SceneManager()
 
     def test_modal_push_during_update_does_not_cause_duplicate_update(self, scene_manager):
-        """When a modal is pushed during scene update, the modal should only be updated once."""
+        """When a modal is pushed during scene update, no duplicate update should occur in the same frame."""
         scene = StubGameObject()
         modal = StubGameObject()
 
         scene_manager.start_scene(scene, 0)
 
-        # First update at t=0 to establish baseline
         scene_manager.update(0, [])
         assert scene.update_times == [0]
         assert modal.update_times == []
 
-        # Second update where scene pushes modal
         def scene_update_with_push(current_time, events):
             scene.update_times.append(current_time)
             scene.update_events_list.append(events)
-            if not modal.update_times:  # Only push once
+            # Only push once
+            if not modal.update_times:
                 scene_manager.push_context(modal)
 
-        # Replace scene's update method
         original_update = scene.update
         scene.update = scene_update_with_push
 
         scene_manager.update(1000, ['event1'])
 
-        # Restore original update
         scene.update = original_update
 
-        # Pushing a modal during the scene's update should activate it for later
-        # frames without causing an extra update in the current frame.
-        # 7. No second update triggered
-        # 8. Next call to update will update modal
-
-        # So modal.update_times should be empty after first update
+        # Pushing a modal during update should not cause an extra update in the same frame
         assert modal.update_times == []
 
-        # Next frame should update modal
+        # The modal should be updated starting from the next frame
         scene_manager.update(2000, [])
-        assert modal.update_times == [1000]  # 2000 - 1000 (start_time) - 0 = 1000
+        assert modal.update_times == [1000]
 
     def test_modal_pop_during_update_does_not_cause_duplicate_update(self, scene_manager):
-        """When a modal is popped during modal update, the scene should only be updated once."""
+        """When a modal is popped during modal update, no duplicate update should occur in the same frame."""
         scene = StubGameObject()
         modal = StubGameObject()
 
         scene_manager.start_scene(scene, 0)
         scene_manager.push_context(modal)
 
-        # Update to establish baseline
         scene_manager.update(1000, [])
         assert scene.update_times == []
         assert modal.update_times == [1000]
 
-        # Update where modal pops itself
         def modal_update_with_pop(current_time, events):
             modal.update_times.append(current_time)
             modal.update_events_list.append(events)
@@ -229,16 +219,12 @@ class TestSceneManagerUpdateBehavior:
 
         modal.update = original_modal_update
 
-        # Modal was updated once, popped the context
-        # Scene was not updated in this frame because modal was active context
-        # After modal.update, check if _current_scene changed - it hasn't
+        # Popping a modal during update should not cause the scene to be updated in the same frame
         assert modal.update_times == [1000, 2000]
-        assert scene.update_times == []  # Scene still paused
+        assert scene.update_times == []
 
-        # Next frame should update scene
+        # The scene should be updated starting from the next frame
         scene_manager.update(3000, [])
-        # Scene start_time is 0, paused_time is 2000 (duration modal was active)
-        # local_time = 3000 - 0 - 2000 = 1000
         assert scene.update_times == [1000]
 
     def test_scene_switch_during_update_triggers_second_update(self, scene_manager):
@@ -248,16 +234,14 @@ class TestSceneManagerUpdateBehavior:
 
         scene_manager.start_scene(scene1, 0)
 
-        # First update at t=0
         scene_manager.update(0, [])
         assert scene1.update_times == [0]
         assert scene2.update_times == []
 
-        # Second update where scene1 switches to scene2
         def scene1_update_with_switch(current_time, events):
             scene1.update_times.append(current_time)
             scene1.update_events_list.append(events)
-            scene_manager.start_scene(scene2, None)  # Use stored global_time
+            scene_manager.start_scene(scene2, None)
 
         original_update = scene1.update
         scene1.update = scene1_update_with_switch
@@ -266,12 +250,10 @@ class TestSceneManagerUpdateBehavior:
 
         scene1.update = original_update
 
-        # scene1 was updated with events
+        # scene1 was updated with the original events
         assert scene1.update_times == [0, 1000]
         assert scene1.update_events_list == [[], ['event1', 'event2']]
 
-        # scene2 was created and got a second update with empty events
-        # scene2's context was created with start_time = 1000 (current global_time)
-        # local_time = 1000 - 1000 - 0 = 0
+        # scene2 was updated with empty events after the scene switch
         assert scene2.update_times == [0]
-        assert scene2.update_events_list == [[]]  # Empty events
+        assert scene2.update_events_list == [[]]
