@@ -1,10 +1,10 @@
-from abc import ABC
-
 from engine.drawable import Drawable
+from engine.game_object import GameObject
 
 
-class SceneObject(ABC):
+class SceneObject(GameObject):
     def __init__(self, view: Drawable):
+        super().__init__()
         self._view = view
         self._visible = True
         self._children = []

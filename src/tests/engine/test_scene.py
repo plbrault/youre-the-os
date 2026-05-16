@@ -3,6 +3,7 @@ import pytest
 from engine.modal import Modal
 from engine.modal_view import ModalView
 from engine.scene import Scene
+from engine.scene_manager import SceneManager
 from window_size import WINDOW_SIZE
 
 
@@ -55,12 +56,17 @@ class SetupTrackingScene(Scene):
 
 class TestSceneModalLifecycle:
     @pytest.fixture
-    def scene(self):
+    def scene_manager(self):
+        import pygame
+        manager = SceneManager()
+        manager.screen = pygame.Surface(WINDOW_SIZE)
+        return manager
+
+    @pytest.fixture
+    def scene(self, scene_manager):
         scene = StubScene()
-        scene.scene_manager = type('FakeSceneManager', (), {
-            'screen': __import__('pygame').Surface(WINDOW_SIZE)
-        })()
-        scene.setup()
+        scene_manager.register_scene(scene)
+        scene_manager.start_scene(scene, 0)
         return scene
 
     @pytest.fixture
@@ -113,12 +119,17 @@ class TestSceneModalLifecycle:
 
 class TestSceneReset:
     @pytest.fixture
-    def scene(self):
+    def scene_manager(self):
+        import pygame
+        manager = SceneManager()
+        manager.screen = pygame.Surface(WINDOW_SIZE)
+        return manager
+
+    @pytest.fixture
+    def scene(self, scene_manager):
         scene = SetupTrackingScene()
-        scene.scene_manager = type('FakeSceneManager', (), {
-            'screen': __import__('pygame').Surface(WINDOW_SIZE)
-        })()
-        scene.setup()
+        scene_manager.register_scene(scene)
+        scene_manager.start_scene(scene, 0)
         return scene
 
     def test_reset_calls_setup(self, scene):
