@@ -66,7 +66,7 @@ class SceneManager():
         self._context_stack.append(_ContextEntry(context, self._global_time))
 
     def pop_context(self):
-        if not self._context_stack:
+        if len(self._context_stack) <= 1:
             return None
 
         popped_entry = self._context_stack.pop()
@@ -81,6 +81,12 @@ class SceneManager():
         if self._context_stack:
             self._context_stack[-1].start_time = self._global_time
             self._context_stack[-1].paused_time = 0
+
+    def get_top_context(self) -> Optional[GameObject]:
+        """Return the top context from the stack, or None if stack is empty."""
+        if not self._context_stack:
+            return None
+        return self._context_stack[-1].context
 
     def start_scene(self, scene: Union[Scene, str], global_time: Optional[int] = None):
         if isinstance(scene, str):

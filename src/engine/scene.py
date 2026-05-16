@@ -82,7 +82,9 @@ class Scene(GameObject):
         if self._modal is None:
             return
         if self.scene_manager is not None:
-            self.scene_manager.pop_context()
+            top_context = self.scene_manager.get_top_context()
+            if top_context == self._modal:
+                self.scene_manager.pop_context()
         modal = self._modal
         self._scene_objects.remove(modal)
         modal.scene = None

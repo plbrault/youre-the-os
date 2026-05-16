@@ -58,12 +58,20 @@ class FakeSceneManager:
 
     def __init__(self):
         self.screen = __import__('pygame').Surface(WINDOW_SIZE)
+        self._context_stack = []
 
     def push_context(self, context):
-        pass
+        self._context_stack.append(context)
 
     def pop_context(self):
-        pass
+        if len(self._context_stack) > 1:
+            return self._context_stack.pop()
+        return None
+
+    def get_top_context(self):
+        if self._context_stack:
+            return self._context_stack[-1]
+        return None
 
     def reset_current_context_time(self):
         pass
