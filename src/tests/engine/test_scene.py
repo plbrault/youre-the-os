@@ -53,13 +53,27 @@ class SetupTrackingScene(Scene):
             scene_object.update(current_time, events)
 
 
+class FakeSceneManager:
+    """Fake scene manager for testing that implements the required interface."""
+
+    def __init__(self):
+        self.screen = __import__('pygame').Surface(WINDOW_SIZE)
+
+    def push_context(self, context):
+        pass
+
+    def pop_context(self):
+        pass
+
+    def reset_current_context_time(self):
+        pass
+
+
 class TestSceneModalLifecycle:
     @pytest.fixture
     def scene(self):
         scene = StubScene()
-        scene.scene_manager = type('FakeSceneManager', (), {
-            'screen': __import__('pygame').Surface(WINDOW_SIZE)
-        })()
+        scene.scene_manager = FakeSceneManager()
         scene.setup()
         return scene
 
@@ -115,9 +129,7 @@ class TestSceneReset:
     @pytest.fixture
     def scene(self):
         scene = SetupTrackingScene()
-        scene.scene_manager = type('FakeSceneManager', (), {
-            'screen': __import__('pygame').Surface(WINDOW_SIZE)
-        })()
+        scene.scene_manager = FakeSceneManager()
         scene.setup()
         return scene
 

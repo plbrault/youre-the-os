@@ -1,20 +1,30 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional
 import pygame
 
+from engine.game_object import GameObject
 from engine.modal import Modal
 from ui.color import Color
 
 
-class Scene(ABC):
-    scene_manager = None
+class Scene(GameObject):
     background_color = Color.BLACK
 
     def __init__(self, scene_id: str):
+        super().__init__()
         self._scene_id = scene_id
         self._is_started = False
         self._scene_objects = []
         self._modal = None
+        self._scene_manager = None
+
+    @property
+    def scene_manager(self):
+        return self._scene_manager
+
+    @scene_manager.setter
+    def scene_manager(self, value):
+        self._scene_manager = value
 
     @property
     def screen(self) -> pygame.Surface:
@@ -43,6 +53,8 @@ class Scene(ABC):
         """
         self.close_modal()
         self.setup()
+        if self.scene_manager is not None:
+            self.scene_manager.reset_current_context_time()
 
     @abstractmethod
     def update(self, current_time, events):
@@ -62,11 +74,15 @@ class Scene(ABC):
         )
         self._scene_objects.append(modal)
         self._modal = modal
+        if self.scene_manager is not None:
+            self.scene_manager.push_context(modal)
 
     def close_modal(self):
         """Close the currently active modal, if any."""
         if self._modal is None:
             return
+        if self.scene_manager is not None:
+            self.scene_manager.pop_context()
         modal = self._modal
         self._scene_objects.remove(modal)
         modal.scene = None

@@ -40,12 +40,12 @@ class TestMainMenuSceneTransition:
     def main_menu(self, scene_manager):
         menu = MainMenu()
         scene_manager.register_scene(menu)
-        scene_manager.start_scene(menu)
+        scene_manager.start_scene(menu, 0)
         return menu
 
     def test_scene_transition_closes_active_modal(self, main_menu, scene_manager):
         main_menu.show_modal(StubModal())
 
-        scene_manager.start_scene('main_menu')
+        scene_manager.start_scene('main_menu', 0)
 
         assert main_menu.modal is None
