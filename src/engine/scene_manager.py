@@ -50,10 +50,12 @@ class SceneManager():
 
         local_time = self._get_local_time()
         active_context = self._context_stack[-1].context
+        scene_before_update = self._current_scene
 
         active_context.update(local_time, events)
 
-        if active_context != self._context_stack[-1].context:
+        # Only re-update if the scene itself changed (not just modal push/pop)
+        if self._current_scene != scene_before_update:
             local_time = self._get_local_time()
             active_context = self._context_stack[-1].context
             active_context.update(local_time, [])
