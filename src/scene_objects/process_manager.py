@@ -335,22 +335,23 @@ class ProcessManager(SceneObject):
                         cpu.process.yield_cpu()
 
     def _handle_process_creation(self, current_time):
-        if self._next_pid <= self._stage_config.num_processes_at_startup and current_time - \
-                self._last_new_process_check >= 50:
-            self._last_new_process_check = current_time
-            self._last_process_creation_time = current_time
-            self._create_process()
-        elif current_time - self._last_new_process_check >= ONE_SECOND:
-            self._last_new_process_check = current_time
-            if len(self._alive_process_list) < self._stage_config.max_processes:
-                if (
-                    len(self._forced_process_creation) > 0
-                    and current_time >= self._forced_process_creation[0][0]
-                ):
-                    _, process_type = self._forced_process_creation.pop(0)
-                    self._create_process(process_type=process_type)
-                    self._last_process_creation_time = current_time
-                elif randint(1, 100) <= self._new_process_probability_numerator or current_time - \
+        if len(self._alive_process_list) < self._stage_config.max_processes:
+            if (
+                len(self._forced_process_creation) > 0
+                and current_time >= self._forced_process_creation[0][0]
+            ):
+                _, process_type = self._forced_process_creation.pop(0)
+                self._create_process(process_type=process_type)
+                self._last_new_process_check = current_time
+                self._last_process_creation_time = current_time
+            elif self._next_pid <= self._stage_config.num_processes_at_startup and current_time - \
+                    self._last_new_process_check >= 50:
+                self._last_new_process_check = current_time
+                self._last_process_creation_time = current_time
+                self._create_process()
+            elif current_time - self._last_new_process_check >= ONE_SECOND:
+                self._last_new_process_check = current_time
+                if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
                         self._last_process_creation_time >= self._max_wait_between_new_processes:
                     self._create_process()
                     self._last_process_creation_time = current_time
