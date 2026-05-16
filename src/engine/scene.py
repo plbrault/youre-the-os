@@ -74,7 +74,10 @@ class Scene(GameObject):
         )
         self._scene_objects.append(modal)
         self._modal = modal
-        if self.scene_manager is not None:
+        if (
+            self.scene_manager is not None
+            and self.scene_manager.get_top_context() == self
+        ):
             self.scene_manager.push_context(modal)
 
     def close_modal(self):
