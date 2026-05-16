@@ -65,6 +65,9 @@ class SceneManager():
         return self._global_time - entry.start_time - entry.paused_time
 
     def push_context(self, context):
+        if not self._context_stack:
+            raise RuntimeError('Cannot push context without an active root scene. Call start_scene() first.')
+
         self._context_stack.append(_ContextEntry(context, self._global_time))
 
     def pop_context(self):
