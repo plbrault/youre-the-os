@@ -3,6 +3,7 @@ import pytest
 from engine.modal import Modal
 from engine.modal_view import ModalView
 from engine.scene import Scene
+from engine.scene_manager import SceneManager
 from window_size import WINDOW_SIZE
 
 
@@ -53,35 +54,19 @@ class SetupTrackingScene(Scene):
             scene_object.update(current_time, events)
 
 
-class FakeSceneManager:
-    """Fake scene manager for testing that implements the required interface."""
-
-    def __init__(self):
-        self.screen = __import__('pygame').Surface(WINDOW_SIZE)
-        self._context_stack = []
-
-    def push_context(self, context):
-        self._context_stack.append(context)
-
-    def pop_context(self):
-        if len(self._context_stack) > 1:
-            return self._context_stack.pop()
-        return None
-
-    def get_top_context(self):
-        if self._context_stack:
-            return self._context_stack[-1]
-        return None
-
-    def reset_current_context_time(self):
-        pass
-
-
 class TestSceneModalLifecycle:
     @pytest.fixture
-    def scene(self):
+    def scene_manager(self):
+        import pygame
+        manager = SceneManager()
+        manager.screen = pygame.Surface(WINDOW_SIZE)
+        return manager
+
+    @pytest.fixture
+    def scene(self, scene_manager):
         scene = StubScene()
-        scene.scene_manager = FakeSceneManager()
+        scene_manager.register_scene(scene)
+        scene_manager.start_scene(scene, 0)
         scene.setup()
         return scene
 
@@ -135,10 +120,17 @@ class TestSceneModalLifecycle:
 
 class TestSceneReset:
     @pytest.fixture
-    def scene(self):
+    def scene_manager(self):
+        import pygame
+        manager = SceneManager()
+        manager.screen = pygame.Surface(WINDOW_SIZE)
+        return manager
+
+    @pytest.fixture
+    def scene(self, scene_manager):
         scene = SetupTrackingScene()
-        scene.scene_manager = FakeSceneManager()
-        scene.setup()
+        scene_manager.register_scene(scene)
+        scene_manager.start_scene(scene, 0)
         return scene
 
     def test_reset_calls_setup(self, scene):
