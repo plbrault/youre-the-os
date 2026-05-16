@@ -67,7 +67,6 @@ class TestSceneModalLifecycle:
         scene = StubScene()
         scene_manager.register_scene(scene)
         scene_manager.start_scene(scene, 0)
-        scene.setup()
         return scene
 
     @pytest.fixture
