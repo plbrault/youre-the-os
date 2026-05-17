@@ -862,9 +862,7 @@ class TestProcessManager:
         assert process_manager.get_process(1).time_between_starvation_levels == 6000
         assert process_manager.get_process(2).time_between_starvation_levels != 6000
 
-    def test_random_process_not_created_immediately_after_forced_creation(self, ready_process_manager_custom_config, monkeypatch):
-        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-
+    def test_random_process_not_created_immediately_after_forced_creation(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=1,
