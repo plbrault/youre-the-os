@@ -87,7 +87,7 @@ class TestStage:
         assert stage.page_manager is not None
         assert stage.uptime_manager is not None
 
-    def test_game_over_initially_false(self, stage_custom_config):
+    def test_stage_completed_initially_false(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=4,
@@ -96,9 +96,9 @@ class TestStage:
             graceful_termination_probability=0,
         ))
 
-        assert not stage.game_over
+        assert not stage.stage_completed
 
-    def test_game_over_setter(self, stage_custom_config):
+    def test_stage_completed_setter(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=4,
@@ -107,9 +107,9 @@ class TestStage:
             graceful_termination_probability=0,
         ))
 
-        assert not stage.game_over
-        stage.game_over = True
-        assert stage.game_over
+        assert not stage.stage_completed
+        stage.stage_completed = True
+        assert stage.stage_completed
 
     def test_name_property(self):
         stage = Stage('My Stage', StageConfig())
@@ -123,7 +123,7 @@ class TestStage:
         stage.standalone = False
         assert not stage.standalone
 
-    def test_game_over(self, stage_custom_config):
+    def test_stage_completed(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=10,
@@ -142,7 +142,7 @@ class TestStage:
                 process.update(time, [])
                 time += ONE_SECOND
 
-        assert not stage.game_over
+        assert not stage.stage_completed
 
         process_in_motion = True
         time = 1000
@@ -157,9 +157,9 @@ class TestStage:
 
         stage.update(time, [])
 
-        assert stage.game_over
+        assert stage.stage_completed
 
-    def test_game_over_does_not_trigger_before_max_terminated(self, stage_custom_config):
+    def test_stage_completed_does_not_trigger_before_max_terminated(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=10,
@@ -191,9 +191,9 @@ class TestStage:
 
         stage.update(time, [])
 
-        assert not stage.game_over
+        assert not stage.stage_completed
 
-    def test_game_over_does_not_trigger_while_processes_in_motion(self, stage_custom_config):
+    def test_stage_completed_does_not_trigger_while_processes_in_motion(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=10,
@@ -219,7 +219,7 @@ class TestStage:
         )
         if any_in_motion:
             stage.update(time, [])
-            assert not stage.game_over
+            assert not stage.stage_completed
 
     def test_reset_closes_active_modal(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
