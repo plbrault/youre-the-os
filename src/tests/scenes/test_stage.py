@@ -7,6 +7,7 @@ from engine.modal_view import ModalView
 from engine.random import Random
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
+from scene_objects.game_over_dialog import GameOverDialog
 from scene_objects.process import Process
 from scenes.stage import Stage
 
@@ -37,6 +38,8 @@ class MockStage(Stage):
         super().__init__(**kwargs)
         self._victory_time = victory_time
         self._defeat_time = defeat_time
+        self.on_victory_called = False
+        self.on_defeat_called = False
 
     def check_victory(self, current_time):
         if self._victory_time is not None:
@@ -47,6 +50,12 @@ class MockStage(Stage):
         if self._defeat_time is not None:
             return current_time > self._defeat_time
         return False
+
+    def on_victory(self):
+        self.on_victory_called = True
+
+    def on_defeat(self):
+        self.on_defeat_called = True
 
 
 class TestStage:
@@ -276,9 +285,17 @@ class TestStage:
 
         stage.update(400, [])
         assert not stage.stage_completed
+        assert not stage.on_victory_called
 
         stage.update(600, [])
         assert stage.stage_completed
+        assert not stage.on_victory_called
+
+        stage.update(600 + ONE_SECOND, [])
+        assert not stage.on_victory_called
+
+        stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_victory_called
 
     def test_stage_completed_via_defeat(self, scene_manager):
         stage = MockStage(
@@ -291,9 +308,17 @@ class TestStage:
 
         stage.update(400, [])
         assert not stage.stage_completed
+        assert not stage.on_defeat_called
 
         stage.update(600, [])
         assert stage.stage_completed
+        assert not stage.on_defeat_called
+
+        stage.update(600 + ONE_SECOND, [])
+        assert not stage.on_defeat_called
+
+        stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_defeat_called
 
     def test_stage_not_completed_when_neither_condition_met(self, scene_manager):
         stage = MockStage(
@@ -305,12 +330,18 @@ class TestStage:
 
         stage.update(100, [])
         assert not stage.stage_completed
+        assert not stage.on_victory_called
+        assert not stage.on_defeat_called
 
         stage.update(1000, [])
         assert not stage.stage_completed
+        assert not stage.on_victory_called
+        assert not stage.on_defeat_called
 
         stage.update(10000, [])
         assert not stage.stage_completed
+        assert not stage.on_victory_called
+        assert not stage.on_defeat_called
 
     def test_stage_completion_waits_for_processes_to_stop(self, scene_manager):
         stage = MockStage(
@@ -335,3 +366,33 @@ class TestStage:
             time += ONE_SECOND / FRAMERATE
 
         assert stage.stage_completed
+        assert not stage.on_victory_called
+
+        stage.update(time + ONE_SECOND + 1, [])
+        assert stage.on_victory_called
+
+    def test_on_defeat_shows_game_over_dialog(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=4,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+        ))
+
+        assert stage.modal is None
+        stage.on_defeat()
+        assert isinstance(stage.modal, GameOverDialog)
+
+    def test_on_victory_does_not_show_modal(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=4,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+        ))
+
+        assert stage.modal is None
+        stage.on_victory()
+        assert stage.modal is None

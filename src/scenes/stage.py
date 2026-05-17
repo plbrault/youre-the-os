@@ -43,6 +43,8 @@ class Stage(Scene):
     def setup(self):
         self._scene_objects = []
 
+        self._stage_victory = False
+        self._stage_defeat = False
         self._stage_completed = False
         self._stage_completed_time = None
 
@@ -119,7 +121,7 @@ class Stage(Scene):
     def uptime_manager(self):
         return self._uptime_manager
 
-    def check_victory(self, current_time: int) -> bool:
+    def check_victory(self, current_time: int) -> bool: # pylint: disable=unused-argument
         """
         This method is called each frame to check if the victory conditions have been met.
         By default, it always returns False, as the default stage cannot be won.
@@ -129,10 +131,11 @@ class Stage(Scene):
         """
         return False
 
-    def check_defeat(self, current_time: int) -> bool:
+    def check_defeat(self, current_time: int) -> bool: # pylint: disable=unused-argument
         """
         This method is called each frame to check if the defeat conditions have been met.
-        By default, it returns True if the stage config's max_processes_terminated_by_user has been reached.
+        By default, it returns True if the stage config's max_processes_terminated_by_user
+        has been reached.
         Override in a subclass to change defeat conditions for a specific stage.
         :param current_time: The current time in milliseconds since the stage started.
                              Can be used to implement time-based defeat conditions.
@@ -148,7 +151,6 @@ class Stage(Scene):
         Default implementation is empty.
         Override in a subclass to implement behavior for a specific stage.
         """
-        pass
 
     def on_defeat(self):
         """
