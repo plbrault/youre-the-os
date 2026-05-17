@@ -31,6 +31,7 @@ class Stage(Scene):
         self._stage_defeat = False
         self._stage_completed = False
         self._stage_completed_time = None
+        self._stage_completion_action_executed = False
 
         self._score_manager = None
         self._uptime_manager = None
@@ -47,6 +48,7 @@ class Stage(Scene):
         self._stage_defeat = False
         self._stage_completed = False
         self._stage_completed_time = None
+        self._stage_completion_action_executed = False
 
         self._process_manager = ProcessManager(self, self._config)
         self._page_manager = PageManager(self, self._config)
@@ -231,20 +233,22 @@ class Stage(Scene):
             pass
 
     def _check_stage_completion(self, current_time):
-        self._stage_victory = self.check_victory(current_time)
-        self._stage_defeat = self.check_defeat(current_time)
-        if not self._stage_completed and (self._stage_victory or self._stage_defeat):
-            if not self._process_manager.any_process_in_motion:
-                self._stage_completed = True
-                self._stage_completed_time = current_time
+        if not self._stage_completed:
+            self._stage_victory = self.check_victory(current_time)
+            self._stage_defeat = self.check_defeat(current_time)
+            if (self._stage_victory or self._stage_defeat):
+                if not self._process_manager.any_process_in_motion:
+                    self._stage_completed = True
+                    self._stage_completed_time = current_time
 
     def update(self, current_time, events):
-        if self._stage_completed:
+        if self._stage_completed and not self._stage_completion_action_executed:
             if current_time - self._stage_completed_time > ONE_SECOND:
                 if self._stage_victory:
                     self.on_victory()
                 elif self._stage_defeat:
                     self.on_defeat()
+                self._stage_completion_action_executed = True
                 return
 
         self._process_script_events()
