@@ -27,8 +27,10 @@ class Stage(Scene):
         self._process_manager = None
         self._page_manager = None
 
-        self._game_over = False
-        self._game_over_time = None
+        self._stage_victory = False
+        self._stage_defeat = False
+        self._stage_completed = False
+        self._stage_completed_time = None
 
         self._score_manager = None
         self._uptime_manager = None
@@ -41,8 +43,8 @@ class Stage(Scene):
     def setup(self):
         self._scene_objects = []
 
-        self._game_over = False
-        self._game_over_time = None
+        self._stage_completed = False
+        self._stage_completed_time = None
 
         self._process_manager = ProcessManager(self, self._config)
         self._page_manager = PageManager(self, self._config)
@@ -103,11 +105,11 @@ class Stage(Scene):
 
     @property
     def game_over(self):
-        return self._game_over
+        return self._stage_completed
 
     @game_over.setter
     def game_over(self, value):
-        self._game_over = value
+        self._stage_completed = value
 
     @property
     def process_manager(self):
@@ -120,6 +122,29 @@ class Stage(Scene):
     @property
     def uptime_manager(self):
         return self._uptime_manager
+
+    def check_victory(self, current_time: int) -> bool:
+        """
+        This method is called each frame to check if the victory conditions have been met.
+        By default, it always returns False, as the default stage cannot be won.
+        Override in a subclass to implement victory conditions for a specific stage.
+        :param current_time: The current time in milliseconds since the stage started.
+                             Can be used to implement time-based victory conditions.
+        """
+        return False
+
+    def check_defeat(self, current_time: int) -> bool:
+        """
+        This method is called each frame to check if the defeat conditions have been met.
+        By default, it returns True if the stage config's max_processes_terminated_by_user has been reached.
+        Override in a subclass to change defeat conditions for a specific stage.
+        :param current_time: The current time in milliseconds since the stage started.
+                             Can be used to implement time-based defeat conditions.
+        """
+        return (
+            self._process_manager.user_terminated_process_count
+            >= self._config.max_processes_terminated_by_user
+        )
 
     def _open_in_game_menu(self):
         self.show_modal(InGameMenuDialog(
@@ -185,19 +210,17 @@ class Stage(Scene):
         except KeyError:
             pass
 
-    def _check_game_over(self):
-        if (
-            self._process_manager.user_terminated_process_count
-            == self._config.max_processes_terminated_by_user
-        ):
+    def _check_stage_completion(self, current_time):
+        self._stage_victory = self.check_victory()
+        self._stage_defeat = self.check_defeat()
+        if not self._stage_completed and (self._stage_victory or self._stage_defeat):
             if not self._process_manager.any_process_in_motion:
-                self._game_over = True
+                self._stage_completed = True
+                self._stage_completed_time = current_time
 
     def update(self, current_time, events):
-        if self._game_over:
-            if self._game_over_time is None:
-                self._game_over_time = current_time
-            elif current_time - self._game_over_time > ONE_SECOND:
+        if self._stage_completed:
+            if current_time - self._stage_completed_time > ONE_SECOND:
                 self.show_modal(GameOverDialog(
                     uptime=self._uptime_manager.uptime_text,
                     stage_name=self.name,
@@ -210,4 +233,4 @@ class Stage(Scene):
         self._process_script_events()
         for scene_object in list(self._scene_objects):
             scene_object.update(current_time, events)
-        self._check_game_over()
+        self._check_stage_completion(current_time)
