@@ -36,26 +36,26 @@ class StubModal(Modal):
 class MockStage(Stage):
     def __init__(self, victory_time=None, defeat_time=None, **kwargs):
         super().__init__(**kwargs)
-        self._victory_time = victory_time
-        self._defeat_time = defeat_time
-        self.on_victory_called = False
-        self.on_defeat_called = False
+        self.victory_time = victory_time
+        self.defeat_time = defeat_time
+        self.on_victory_call_count = 0
+        self.on_defeat_call_count = 0
 
     def check_victory(self, current_time):
-        if self._victory_time is not None:
-            return current_time > self._victory_time
+        if self.victory_time is not None:
+            return current_time > self.victory_time
         return False
 
     def check_defeat(self, current_time):
-        if self._defeat_time is not None:
-            return current_time > self._defeat_time
+        if self.defeat_time is not None:
+            return current_time > self.defeat_time
         return False
 
     def on_victory(self):
-        self.on_victory_called = True
+        self.on_victory_call_count += 1
 
     def on_defeat(self):
-        self.on_defeat_called = True
+        self.on_defeat_call_count += 1
 
 
 class TestStage:
@@ -285,17 +285,17 @@ class TestStage:
 
         stage.update(400, [])
         assert not stage.stage_completed
-        assert not stage.on_victory_called
+        assert stage.on_victory_call_count == 0
 
         stage.update(600, [])
         assert stage.stage_completed
-        assert not stage.on_victory_called
+        assert stage.on_victory_call_count == 0
 
         stage.update(600 + ONE_SECOND, [])
-        assert not stage.on_victory_called
+        assert stage.on_victory_call_count == 0
 
         stage.update(600 + ONE_SECOND + 1, [])
-        assert stage.on_victory_called
+        assert stage.on_victory_call_count == 1
 
     def test_stage_completed_via_defeat(self, scene_manager):
         stage = MockStage(
@@ -308,17 +308,17 @@ class TestStage:
 
         stage.update(400, [])
         assert not stage.stage_completed
-        assert not stage.on_defeat_called
+        assert stage.on_defeat_call_count == 0
 
         stage.update(600, [])
         assert stage.stage_completed
-        assert not stage.on_defeat_called
+        assert stage.on_defeat_call_count == 0
 
         stage.update(600 + ONE_SECOND, [])
-        assert not stage.on_defeat_called
+        assert stage.on_defeat_call_count == 0
 
         stage.update(600 + ONE_SECOND + 1, [])
-        assert stage.on_defeat_called
+        assert stage.on_defeat_call_count == 1
 
     def test_stage_not_completed_when_neither_condition_met(self, scene_manager):
         stage = MockStage(
@@ -330,18 +330,18 @@ class TestStage:
 
         stage.update(100, [])
         assert not stage.stage_completed
-        assert not stage.on_victory_called
-        assert not stage.on_defeat_called
+        assert stage.on_victory_call_count == 0
+        assert stage.on_defeat_call_count == 0
 
         stage.update(1000, [])
         assert not stage.stage_completed
-        assert not stage.on_victory_called
-        assert not stage.on_defeat_called
+        assert stage.on_victory_call_count == 0
+        assert stage.on_defeat_call_count == 0
 
         stage.update(10000, [])
         assert not stage.stage_completed
-        assert not stage.on_victory_called
-        assert not stage.on_defeat_called
+        assert stage.on_victory_call_count == 0
+        assert stage.on_defeat_call_count == 0
 
     def test_stage_completion_waits_for_processes_to_stop(self, scene_manager):
         stage = MockStage(
@@ -366,10 +366,10 @@ class TestStage:
             time += ONE_SECOND / FRAMERATE
 
         assert stage.stage_completed
-        assert not stage.on_victory_called
+        assert stage.on_victory_call_count == 0
 
         stage.update(time + ONE_SECOND + 1, [])
-        assert stage.on_victory_called
+        assert stage.on_victory_call_count == 1
 
     def test_on_defeat_shows_game_over_dialog(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
@@ -396,3 +396,56 @@ class TestStage:
         assert stage.modal is None
         stage.on_victory()
         assert stage.modal is None
+
+    def test_on_victory_called_only_once_after_multiple_updates(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            victory_time=500
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(600, [])
+        stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_victory_call_count == 1
+
+        stage.update(600 + ONE_SECOND + 2, [])
+        stage.update(600 + ONE_SECOND + 3, [])
+        assert stage.on_victory_call_count == 1
+
+    def test_on_defeat_called_only_once_after_multiple_updates(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            defeat_time=500
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(600, [])
+        stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_defeat_call_count == 1
+
+        stage.update(600 + ONE_SECOND + 2, [])
+        stage.update(600 + ONE_SECOND + 3, [])
+        assert stage.on_defeat_call_count == 1
+
+    def test_reset_allows_hooks_to_fire_again(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            victory_time=500
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(600, [])
+        stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_victory_call_count == 1
+
+        stage.reset()
+
+        stage.update(600, [])
+        stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_victory_call_count == 2
