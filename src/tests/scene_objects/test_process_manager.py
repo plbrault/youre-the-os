@@ -847,6 +847,47 @@ class TestProcessManager:
         assert len(alive_processes) == 2
         assert process_manager.get_process(2).time_between_starvation_levels == 6000
 
+    def test_forced_process_created_before_startup_burst(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=2,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_priority_process_at_times_ms=[0],
+        ))
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 2
+        assert process_manager.get_process(1).time_between_starvation_levels == 6000
+        assert process_manager.get_process(2).time_between_starvation_levels != 6000
+
+    def test_random_process_not_created_immediately_after_forced_creation(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=1,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[2000],
+            max_processes=42,
+        ))
+
+        process_manager.update(2000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+        process_manager.update(2500, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+        process_manager.update(3500, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 2
+
     def test_priority_process_uses_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
