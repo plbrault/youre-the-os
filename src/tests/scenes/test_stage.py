@@ -32,6 +32,23 @@ class StubModal(Modal):
         super().__init__(StubModalView())
 
 
+class MockStage(Stage):
+    def __init__(self, victory_time=None, defeat_time=None, **kwargs):
+        super().__init__(**kwargs)
+        self._victory_time = victory_time
+        self._defeat_time = defeat_time
+
+    def check_victory(self, current_time):
+        if self._victory_time is not None:
+            return current_time > self._victory_time
+        return False
+
+    def check_defeat(self, current_time):
+        if self._defeat_time is not None:
+            return current_time > self._defeat_time
+        return False
+
+
 class TestStage:
     @pytest.fixture
     def stage_custom_config(self, scene_manager, monkeypatch):
@@ -97,19 +114,6 @@ class TestStage:
         ))
 
         assert not stage.stage_completed
-
-    def test_stage_completed_setter(self, stage_custom_config):
-        stage = stage_custom_config(StageConfig(
-            cpu_config=CpuConfig(num_cores=4),
-            num_processes_at_startup=4,
-            new_process_probability=0,
-            io_probability=0,
-            graceful_termination_probability=0,
-        ))
-
-        assert not stage.stage_completed
-        stage.stage_completed = True
-        assert stage.stage_completed
 
     def test_name_property(self):
         stage = Stage('My Stage', StageConfig())
@@ -260,3 +264,74 @@ class TestStage:
         stage.update(0, [])
 
         assert update_received
+
+    def test_stage_completed_via_victory(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            victory_time=500
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(400, [])
+        assert not stage.stage_completed
+
+        stage.update(600, [])
+        assert stage.stage_completed
+
+    def test_stage_completed_via_defeat(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            defeat_time=500
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(400, [])
+        assert not stage.stage_completed
+
+        stage.update(600, [])
+        assert stage.stage_completed
+
+    def test_stage_not_completed_when_neither_condition_met(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0)
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(100, [])
+        assert not stage.stage_completed
+
+        stage.update(1000, [])
+        assert not stage.stage_completed
+
+        stage.update(10000, [])
+        assert not stage.stage_completed
+
+    def test_stage_completion_waits_for_processes_to_stop(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=1),
+            victory_time=500
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        process_manager = stage.process_manager
+
+        any_in_motion = True
+        time = 600
+        while any_in_motion:
+            stage.update(time, [])
+            any_in_motion = False
+            for child in process_manager.children:
+                if isinstance(child, Process) and child.is_in_motion:
+                    any_in_motion = True
+                    break
+            time += ONE_SECOND / FRAMERATE
+
+        assert stage.stage_completed

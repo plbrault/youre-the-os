@@ -107,10 +107,6 @@ class Stage(Scene):
     def stage_completed(self):
         return self._stage_completed
 
-    @stage_completed.setter
-    def stage_completed(self, value):
-        self._stage_completed = value
-
     @property
     def process_manager(self):
         return self._process_manager
