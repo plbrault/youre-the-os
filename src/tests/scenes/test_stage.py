@@ -297,6 +297,9 @@ class TestStage:
         stage.update(600 + ONE_SECOND + 1, [])
         assert stage.on_victory_call_count == 1
 
+        stage.update(600 + ONE_SECOND + 2, [])
+        assert stage.on_victory_call_count == 1
+
     def test_stage_completed_via_defeat(self, scene_manager):
         stage = MockStage(
             name='Test',
@@ -318,6 +321,9 @@ class TestStage:
         assert stage.on_defeat_call_count == 0
 
         stage.update(600 + ONE_SECOND + 1, [])
+        assert stage.on_defeat_call_count == 1
+
+        stage.update(600 + ONE_SECOND + 2, [])
         assert stage.on_defeat_call_count == 1
 
     def test_stage_not_completed_when_neither_condition_met(self, scene_manager):
