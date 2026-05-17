@@ -34,8 +34,8 @@ class StubModal(Modal):
 
 
 class MockStage(Stage):
-    def __init__(self, victory_time=None, defeat_time=None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, name, config, *, victory_time=None, defeat_time=None):
+        super().__init__(name, config)
         self._victory_time = victory_time
         self._defeat_time = defeat_time
         self.on_victory_called = False
