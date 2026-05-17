@@ -142,6 +142,28 @@ class Stage(Scene):
             >= self._config.max_processes_terminated_by_user
         )
 
+    def on_victory(self):
+        """
+        This method is called once the stage is completed with a victory.
+        Default implementation is empty.
+        Override in a subclass to implement behavior for a specific stage.
+        """
+        pass
+
+    def on_defeat(self):
+        """
+        This method is called once the stage is completed with a defeat.
+        Default implementation opens the Game Over modal.
+        Override in a subclass to implement a different behavior for a specific stage.
+        """
+        self.show_modal(GameOverDialog(
+            uptime=self._uptime_manager.uptime_text,
+            stage_name=self.name,
+            score=self._score_manager.score,
+            restart_game_fn=self.reset,
+            main_menu_fn=self._return_to_main_menu,
+            standalone=self._standalone))
+
     def _open_in_game_menu(self):
         self.show_modal(InGameMenuDialog(
             self.reset, self._return_to_main_menu))
@@ -217,13 +239,10 @@ class Stage(Scene):
     def update(self, current_time, events):
         if self._stage_completed:
             if current_time - self._stage_completed_time > ONE_SECOND:
-                self.show_modal(GameOverDialog(
-                    uptime=self._uptime_manager.uptime_text,
-                    stage_name=self.name,
-                    score=self._score_manager.score,
-                    restart_game_fn=self.reset,
-                    main_menu_fn=self._return_to_main_menu,
-                    standalone=self._standalone))
+                if self._stage_victory:
+                    self.on_victory()
+                elif self._stage_defeat:
+                    self.on_defeat()
                 return
 
         self._process_script_events()
