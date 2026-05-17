@@ -391,7 +391,7 @@ class ProcessManager(SceneObject):
                 self.children.remove(scene_object)
 
     def update(self, current_time, events):
-        if self._stage.game_over:
+        if self._stage.stage_completed:
             return
 
         self._current_time = current_time
