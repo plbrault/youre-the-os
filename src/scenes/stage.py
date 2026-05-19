@@ -1,4 +1,5 @@
 import sys
+from enum import Enum, auto
 from os.path import dirname, abspath
 
 from constants import ONE_SECOND
@@ -14,7 +15,50 @@ from scene_objects.score_manager import ScoreManager
 from scene_objects.uptime_manager import UptimeManager
 from config.stage_config import StageConfig
 
+
+class StageState(Enum):
+    STARTING = auto()
+    PLAYING = auto()
+    AWAITING_VICTORY = auto()
+    AWAITING_DEFEAT = auto()
+    VICTORY = auto()
+    DEFEAT = auto()
+    ENDED = auto()
+
+
+class StateEvent(Enum):
+    START = auto()
+    VICTORY_DETECTED = auto()
+    DEFEAT_DETECTED = auto()
+    PROCESSES_SETTLED = auto()
+    DELAY_ELAPSED = auto()
+
+
 class Stage(Scene):
+    StageState = StageState
+
+    _state_transitions = {
+        StageState.STARTING: {
+            StateEvent.START: StageState.PLAYING,
+        },
+        StageState.PLAYING: {
+            StateEvent.VICTORY_DETECTED: StageState.AWAITING_VICTORY,
+            StateEvent.DEFEAT_DETECTED: StageState.AWAITING_DEFEAT,
+        },
+        StageState.AWAITING_VICTORY: {
+            StateEvent.PROCESSES_SETTLED: StageState.VICTORY,
+        },
+        StageState.AWAITING_DEFEAT: {
+            StateEvent.PROCESSES_SETTLED: StageState.DEFEAT,
+        },
+        StageState.VICTORY: {
+            StateEvent.DELAY_ELAPSED: StageState.ENDED,
+        },
+        StageState.DEFEAT: {
+            StateEvent.DELAY_ELAPSED: StageState.ENDED,
+        },
+    }
+
     def __init__(self, name: str, config : StageConfig,
                  *, script=None, standalone=False):
         self._name = name
@@ -27,11 +71,9 @@ class Stage(Scene):
         self._process_manager = None
         self._page_manager = None
 
-        self._stage_victory = False
-        self._stage_defeat = False
-        self._stage_completed = False
-        self._stage_completed_time = None
-        self._stage_completion_action_executed = False
+        self._state = StageState.STARTING
+        self._last_update_time = 0
+        self._last_state_change_time = None
 
         self._score_manager = None
         self._uptime_manager = None
@@ -44,11 +86,9 @@ class Stage(Scene):
     def setup(self):
         self._scene_objects = []
 
-        self._stage_victory = False
-        self._stage_defeat = False
-        self._stage_completed = False
-        self._stage_completed_time = None
-        self._stage_completion_action_executed = False
+        self._state = StageState.STARTING
+        self._last_update_time = 0
+        self._last_state_change_time = None
 
         self._process_manager = ProcessManager(self, self._config)
         self._page_manager = PageManager(self, self._config)
@@ -108,8 +148,16 @@ class Stage(Scene):
         self._standalone = value
 
     @property
+    def state(self):
+        return self._state
+
+    @property
     def stage_completed(self):
-        return self._stage_completed
+        return self._state in (
+            StageState.VICTORY,
+            StageState.DEFEAT,
+            StageState.ENDED,
+        )
 
     @property
     def process_manager(self):
@@ -146,6 +194,13 @@ class Stage(Scene):
             self._process_manager.user_terminated_process_count
             >= self._config.max_processes_terminated_by_user
         )
+
+    def on_start(self):
+        """
+        This method is called once when the stage is in the STARTING state
+        (on the first call to update()). Empty by default.
+        Override in a subclass to implement start-of-stage behavior.
+        """
 
     def on_victory(self):
         """
@@ -232,28 +287,45 @@ class Stage(Scene):
         except KeyError:
             pass
 
-    def _check_stage_completion(self, current_time):
-        if self._stage_completed:
-            return
+    def apply_state_transition(self, event: StateEvent):
+        if (self._state in self._state_transitions
+                and event in Stage._state_transitions[self._state]):
+            new_state = self._state_transitions[self._state][event]
+            if new_state != self._state:
+                self._state = new_state
+                self._last_state_change_time = self._last_update_time
 
-        self._stage_victory = self.check_victory(current_time)
-        self._stage_defeat = self.check_defeat(current_time)
-        if self._stage_victory or self._stage_defeat:
-            if not self._process_manager.any_process_in_motion:
-                self._stage_completed = True
-                self._stage_completed_time = current_time
+    def _check_stage_completion(self, current_time):
+        pass
 
     def update(self, current_time, events):
-        if self._stage_completed and not self._stage_completion_action_executed:
-            if current_time - self._stage_completed_time > ONE_SECOND:
-                if self._stage_victory:
-                    self.on_victory()
-                elif self._stage_defeat:
-                    self.on_defeat()
-                self._stage_completion_action_executed = True
-                return
+        self._last_update_time = current_time
 
-        self._process_script_events()
-        for scene_object in list(self._scene_objects):
-            scene_object.update(current_time, events)
-        self._check_stage_completion(current_time)
+        if self._state == StageState.STARTING:
+            self.on_start()
+            self.apply_state_transition(StateEvent.START)
+
+        if self._state == StageState.PLAYING:
+            self._process_script_events()
+            for scene_object in list(self._scene_objects):
+                scene_object.update(current_time, events)
+            if self.check_victory(current_time):
+                self.apply_state_transition(StateEvent.VICTORY_DETECTED)
+            elif self.check_defeat(current_time):
+                self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
+
+        elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
+            for scene_object in list(self._scene_objects):
+                scene_object.update(current_time, events)
+            if not self._process_manager.any_process_in_motion:
+                self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
+
+        elif self._state == StageState.VICTORY:
+            if current_time - self._last_state_change_time > ONE_SECOND:
+                self.on_victory()
+                self.apply_state_transition(StateEvent.DELAY_ELAPSED)
+
+        elif self._state == StageState.DEFEAT:
+            if current_time - self._last_state_change_time > ONE_SECOND:
+                self.on_defeat()
+                self.apply_state_transition(StateEvent.DELAY_ELAPSED)
