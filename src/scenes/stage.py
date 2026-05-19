@@ -197,9 +197,9 @@ class Stage(Scene):
 
     def on_start(self):
         """
-        This method is called once when the stage is in the STARTING state
-        (on the first call to update()). Empty by default.
-        Override in a subclass to implement start-of-stage behavior.
+        This method is called on the first frame after the start of the stage.
+        It is empty by default.
+        Override in a subclass to implement desired behavior in a specific stage.
         """
 
     def on_victory(self):
@@ -295,9 +295,6 @@ class Stage(Scene):
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
 
-    def _check_stage_completion(self, current_time):
-        pass
-
     def update(self, current_time, events):
         self._last_update_time = current_time
 
@@ -305,7 +302,7 @@ class Stage(Scene):
             self.on_start()
             self.apply_state_transition(StateEvent.START)
 
-        if self._state == StageState.PLAYING:
+        elif self._state == StageState.PLAYING:
             self._process_script_events()
             for scene_object in list(self._scene_objects):
                 scene_object.update(current_time, events)
