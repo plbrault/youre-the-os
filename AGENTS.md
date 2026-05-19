@@ -37,3 +37,8 @@
 
 * Use the "Open-closed principle" as a loose guideline. As such, try to avoid solutions that alter existing implementations or interfaces. If such changes appear to be unavoidable, discuss them with the user first.
 * Do not make breaking changes to the [automation API](automation/api.py) unless explicitly instructed to.
+
+## Design / Specifications
+
+* Design/specification documents are stored in the project's wiki, which is a separate Git repository.
+* If you are asked to read or edit wiki documents, check if the `youre-the-os.wiki` folder is available locally. If not, clone it from `https://github.com/plbrault/youre-the-os.wiki.git`.
