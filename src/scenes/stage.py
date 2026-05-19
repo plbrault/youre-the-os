@@ -298,11 +298,11 @@ class Stage(Scene):
     def update(self, current_time, events):
         self._last_update_time = current_time
 
-        if self._state == StageState.STARTING:
+        if self.state == StageState.STARTING:
             self.on_start()
             self.apply_state_transition(StateEvent.START)
 
-        elif self._state == StageState.PLAYING:
+        if self.state == StageState.PLAYING:
             self._process_script_events()
             for scene_object in list(self._scene_objects):
                 scene_object.update(current_time, events)
@@ -311,18 +311,18 @@ class Stage(Scene):
             elif self.check_defeat(current_time):
                 self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
 
-        elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
+        if self.state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
             for scene_object in list(self._scene_objects):
                 scene_object.update(current_time, events)
             if not self._process_manager.any_process_in_motion:
                 self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
 
-        elif self._state == StageState.VICTORY:
+        if self.state == StageState.VICTORY:
             if current_time - self._last_state_change_time > ONE_SECOND:
                 self.on_victory()
                 self.apply_state_transition(StateEvent.DELAY_ELAPSED)
 
-        elif self._state == StageState.DEFEAT:
+        if self.state == StageState.DEFEAT:
             if current_time - self._last_state_change_time > ONE_SECOND:
                 self.on_defeat()
                 self.apply_state_transition(StateEvent.DELAY_ELAPSED)
