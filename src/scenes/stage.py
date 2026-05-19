@@ -288,9 +288,9 @@ class Stage(Scene):
             pass
 
     def apply_state_transition(self, event: StateEvent):
-        if (self._state in self._state_transitions
-                and event in Stage._state_transitions[self._state]):
-            new_state = self._state_transitions[self._state][event]
+        transitions = self._state_transitions.get(self._state, {})
+        if event in transitions:
+            new_state = transitions[event]
             if new_state != self._state:
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
