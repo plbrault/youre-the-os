@@ -731,6 +731,7 @@ class TestStage:
             time += ONE_SECOND / FRAMERATE
 
         stage.update(time, [])
+        stage.update(time + ONE_SECOND // FRAMERATE, [])
 
         assert stage.stage_completed
 
