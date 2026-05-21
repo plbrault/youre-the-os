@@ -2,8 +2,7 @@ from scenes.stage import Stage
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import SWAP_DELAY_NAMES_TO_MS
-from scene_objects.stage_intro_dialog import StageIntroDialog
-from scene_objects.views.stage_intro_dialog_view import Section
+from scene_objects.stage_intro_dialog import Section, StageIntroDialog
 
 _stage_config = StageConfig(
     cpu_config=CpuConfig(num_cores=1),

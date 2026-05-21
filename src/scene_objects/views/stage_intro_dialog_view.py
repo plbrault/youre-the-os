@@ -1,14 +1,6 @@
-from dataclasses import dataclass
-
 from engine.modal_view import ModalView
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XLARGE, FONT_PRIMARY_LARGE, FONT_PRIMARY_MEDIUM
-
-
-@dataclass(frozen=True)
-class Section:
-    heading: str
-    items: tuple[str, ...]
 
 
 class StageIntroDialogView(ModalView):
