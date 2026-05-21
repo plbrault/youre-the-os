@@ -1,6 +1,19 @@
+from os import path
+
+import pygame
+
 from engine.modal_view import ModalView
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XLARGE, FONT_PRIMARY_LARGE, FONT_PRIMARY_MEDIUM
+
+_BADGE_SIZE = 48
+_BADGE_SPACING = 12
+
+_skull = pygame.image.load(path.join('assets', 'skull_emoji.png'))
+_crown = pygame.image.load(path.join('assets', 'crown_emoji.png'))
+
+_skull_badge = pygame.transform.scale(_skull, (_BADGE_SIZE - 12, _BADGE_SIZE - 12))
+_crown_badge = pygame.transform.scale(_crown, (_BADGE_SIZE // 3, _BADGE_SIZE // 3))
 
 
 class StageIntroDialogView(ModalView):
@@ -28,6 +41,22 @@ class StageIntroDialogView(ModalView):
                     '\u2022 ' + item, True, Color.WHITE)
                 items.append(item_surface)
             self._section_items.append(items)
+        self._badge_surfaces = []
+        for badge in self._dialog.badges:
+            self._badge_surfaces.append(self._render_badge(badge))
+
+    def _render_badge(self, badge):
+        surface = pygame.Surface((_BADGE_SIZE, _BADGE_SIZE))
+        surface.fill(Color.DARK_GREY)
+        surface.blit(_skull_badge, (6, 2))
+        if badge.is_priority:
+            surface.blit(_crown_badge, (_BADGE_SIZE - _BADGE_SIZE // 3 - 2, 2))
+        number_surface = FONT_PRIMARY_MEDIUM.render(str(badge.number), True, Color.WHITE)
+        surface.blit(number_surface, (
+            (_BADGE_SIZE - number_surface.get_width()) // 2,
+            _BADGE_SIZE - number_surface.get_height() - 2,
+        ))
+        return surface
 
     @ModalView.x.setter
     def x(self, value):
@@ -55,6 +84,8 @@ class StageIntroDialogView(ModalView):
             for item_surface in self._section_items[i]:
                 y += item_surface.get_height() + self.ITEM_SPACING
             y += self.SECTION_SPACING
+        if self._badge_surfaces:
+            y += _BADGE_SIZE + self.ITEM_SPACING
         y += self.BUTTON_BOTTOM_MARGIN
         y += self._dialog.start_button.view.height
         y += self.BUTTON_BOTTOM_MARGIN
@@ -75,3 +106,13 @@ class StageIntroDialogView(ModalView):
                 surface.blit(item_surface, (x + self.ITEM_SPACING * 4, y))
                 y += item_surface.get_height() + self.ITEM_SPACING
             y += self.SECTION_SPACING
+
+        if self._badge_surfaces:
+            total_badge_width = (
+                len(self._badge_surfaces) * _BADGE_SIZE
+                + (len(self._badge_surfaces) - 1) * _BADGE_SPACING
+            )
+            badge_x = self.x + (self.width - total_badge_width) // 2
+            for badge_surface in self._badge_surfaces:
+                surface.blit(badge_surface, (badge_x, y))
+                badge_x += _BADGE_SIZE + _BADGE_SPACING

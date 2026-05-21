@@ -2,7 +2,7 @@ from scenes.stage import Stage
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import SWAP_DELAY_NAMES_TO_MS
-from scene_objects.stage_intro_dialog import Section, StageIntroDialog
+from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog
 
 _stage_config = StageConfig(
     cpu_config=CpuConfig(num_cores=1),
@@ -44,4 +44,8 @@ class StoryStage1(Stage):
         super().__init__('Stage 1: 1998', _stage_config)
 
     def on_start(self):
-        self.show_modal(StageIntroDialog('Stage 1: 1998', _INTRO_SECTIONS))
+        self.show_modal(StageIntroDialog(
+            'Stage 1: 1998',
+            _INTRO_SECTIONS,
+            badges=(Badge(5), Badge(0, is_priority=True)),
+        ))
