@@ -48,10 +48,10 @@ class StageIntroDialogView(ModalView):
         surface.blit(_skull, (0, 2))
         if badge.is_priority:
             surface.blit(_crown, (2, 34))
-        number_surface = FONT_PRIMARY_MEDIUM.render(str(badge.number), True, Color.WHITE)
+        number_surface = FONT_PRIMARY_XLARGE.render(str(badge.number), True, Color.LIME_GREEN)
         surface.blit(number_surface, (
-            (_BADGE_SIZE - number_surface.get_width()) // 2,
-            _BADGE_SIZE - number_surface.get_height() - 4,
+            _BADGE_SIZE - number_surface.get_width() - 4,
+            (_BADGE_SIZE - number_surface.get_height()) // 2,
         ))
         return surface
 
