@@ -12,8 +12,9 @@ Also available on [itch.io](https://plbrault.itch.io/youre-the-os).
 
 ## Prerequisites
 
-* Python 3.13
-  * Later versions are currently unsupported due to an issue with the version of pygame used by the project. If needed, use [pyenv](https://github.com/pyenv/pyenv) to install Python 3.13 without impacting your system globally.
+* Python 3.14
+  * The project is not guaranteed to work with other versions.
+  * If needed, use [pyenv](https://github.com/pyenv/pyenv) to install the required version without impacting your system globally.
 * [pipenv](https://pypi.org/project/pipenv/)
 * An empty `.venv` directory at the root of the project
 
