@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pygame = "*"
+pygame-ce = "*"
 
 [dev-packages]
 pygbag = "*"
@@ -13,7 +13,7 @@ autopep8 = "*"
 pytest = "*"
 
 [requires]
-python_version = "3.13"
+python_version = "3.14"
 
 [scripts]
 desktop = "python ./run-desktop.py"
