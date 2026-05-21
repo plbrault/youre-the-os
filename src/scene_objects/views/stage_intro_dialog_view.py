@@ -6,14 +6,11 @@ from engine.modal_view import ModalView
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_XLARGE, FONT_PRIMARY_LARGE, FONT_PRIMARY_MEDIUM
 
-_BADGE_SIZE = 48
-_BADGE_SPACING = 12
+_BADGE_SIZE = 64
+_BADGE_SPACING = 16
 
 _skull = pygame.image.load(path.join('assets', 'skull_emoji.png'))
 _crown = pygame.image.load(path.join('assets', 'crown_emoji.png'))
-
-_skull_badge = pygame.transform.scale(_skull, (_BADGE_SIZE - 12, _BADGE_SIZE - 12))
-_crown_badge = pygame.transform.scale(_crown, (_BADGE_SIZE // 3, _BADGE_SIZE // 3))
 
 
 class StageIntroDialogView(ModalView):
@@ -48,13 +45,13 @@ class StageIntroDialogView(ModalView):
     def _render_badge(self, badge):
         surface = pygame.Surface((_BADGE_SIZE, _BADGE_SIZE))
         surface.fill(Color.DARK_GREY)
-        surface.blit(_skull_badge, (6, 2))
+        surface.blit(_skull, (0, 2))
         if badge.is_priority:
-            surface.blit(_crown_badge, (_BADGE_SIZE - _BADGE_SIZE // 3 - 2, 2))
+            surface.blit(_crown, (2, 34))
         number_surface = FONT_PRIMARY_MEDIUM.render(str(badge.number), True, Color.WHITE)
         surface.blit(number_surface, (
             (_BADGE_SIZE - number_surface.get_width()) // 2,
-            _BADGE_SIZE - number_surface.get_height() - 2,
+            _BADGE_SIZE - number_surface.get_height() - 4,
         ))
         return surface
 
