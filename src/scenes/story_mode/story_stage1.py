@@ -29,7 +29,7 @@ _INTRO_SECTIONS = [
     Section('Desktop PC', (
         'Single-Core CPU',
         '32 MB SDRAM',
-        '4200 RPM IDE HDD',
+        '5400 RPM IDE HDD',
         'Dial-Up Modem',
     )),
     Section('Victory Conditions', (
