@@ -7,7 +7,7 @@ name = "pypi"
 pygame-ce = "*"
 
 [dev-packages]
-pygbag = "*"
+pygbag = "==0.9.2"
 pylint = "*"
 autopep8 = "*"
 pytest = "*"
