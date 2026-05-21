@@ -82,7 +82,7 @@ class StageIntroDialogView(ModalView):
                 y += item_surface.get_height() + self.ITEM_SPACING
             y += self.SECTION_SPACING
         if self._badge_surfaces:
-            y += _BADGE_SIZE + self.ITEM_SPACING
+            y += _BADGE_SIZE + 40
         y += self.BUTTON_BOTTOM_MARGIN
         y += self._dialog.start_button.view.height
         y += self.BUTTON_BOTTOM_MARGIN
@@ -105,11 +105,17 @@ class StageIntroDialogView(ModalView):
             y += self.SECTION_SPACING
 
         if self._badge_surfaces:
+            button_top = (
+                self.y + self.height
+                - self.BUTTON_BOTTOM_MARGIN
+                - self._dialog.start_button.view.height
+            )
+            badge_y = y + (button_top - y - _BADGE_SIZE) // 2
             total_badge_width = (
                 len(self._badge_surfaces) * _BADGE_SIZE
                 + (len(self._badge_surfaces) - 1) * _BADGE_SPACING
             )
             badge_x = self.x + (self.width - total_badge_width) // 2
             for badge_surface in self._badge_surfaces:
-                surface.blit(badge_surface, (badge_x, y))
+                surface.blit(badge_surface, (badge_x, badge_y))
                 badge_x += _BADGE_SIZE + _BADGE_SPACING
