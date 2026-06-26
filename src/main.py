@@ -10,6 +10,7 @@ from window_size import WINDOW_SIZE
 
 async def main():
     game_manager = GameManager()
+    game_manager._init_screen()
     game_manager.window_config = WindowConfig(WINDOW_SIZE, TITLE, path.join('assets', 'icon.png'))
 
     main_menu_scene = MainMenu()

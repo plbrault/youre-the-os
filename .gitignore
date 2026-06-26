@@ -2,6 +2,7 @@
 __pycache__
 src/build
 .vscode
+.vs/*
 src/sandbox
 !src/sandbox/__init__.py
 !src/sandbox/sample.py
