@@ -309,7 +309,7 @@ class TestStageUpdateBehavior:
         stage.update(600, [])
         assert stage.state == StageState.AWAITING_DEFEAT
 
-    def test_playing_victory_takes_precedence_over_defeat(self, scene_manager):
+    def test_playing_defeat_takes_precedence_over_victory(self, scene_manager):
         stage = MockStage(
             name='Test',
             config=StageConfig(num_processes_at_startup=0),
@@ -321,7 +321,7 @@ class TestStageUpdateBehavior:
         stage.update(0, [])
 
         stage.update(600, [])
-        assert stage.state == StageState.AWAITING_VICTORY
+        assert stage.state == StageState.AWAITING_DEFEAT
 
     def test_awaiting_victory_transitions_to_victory_when_processes_settle(self, scene_manager):
         stage = MockStage(

@@ -1,7 +1,7 @@
 from scenes.stage import Stage
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
-from constants import SWAP_DELAY_NAMES_TO_MS
+from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
 from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog
 
 _stage_config = StageConfig(
@@ -49,3 +49,6 @@ class StoryStage1(Stage):
             _INTRO_SECTIONS,
             badges=(Badge(5), Badge(0, is_priority=True)),
         ))
+
+    def check_victory(self, current_time: int) -> bool:
+        return current_time >= 5 * ONE_MINUTE

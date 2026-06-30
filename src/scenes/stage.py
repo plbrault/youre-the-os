@@ -178,7 +178,8 @@ class Stage(Scene):
         This method is called each frame to check if the victory conditions have been met.
         By default, it always returns False, as the default stage cannot be won.
         Override in a subclass to implement victory conditions for a specific stage.
-        `check_victory` is always called BEFORE `check_defeat`.
+        `check_victory` is always called AFTER `check_defeat`, and only if `check_defeat`
+        did not detect a defeat.
         :param current_time: The current time in milliseconds since the stage started.
                              Can be used to implement time-based victory conditions.
         """
@@ -190,7 +191,7 @@ class Stage(Scene):
         By default, it returns True if the stage config's max_processes_terminated_by_user
         has been reached.
         Override in a subclass to change defeat conditions for a specific stage.
-        `check_defeat` is always called AFTER `check_victory`.
+        `check_defeat` is always called BEFORE `check_victory`.
         :param current_time: The current time in milliseconds since the stage started.
                              Can be used to implement time-based defeat conditions.
         :returns: A boolean indicating whether the defeat condition has been met,
@@ -315,16 +316,15 @@ class Stage(Scene):
             self._process_script_events()
             for scene_object in list(self._scene_objects):
                 scene_object.update(current_time, events)
-            if self.check_victory(current_time):
-                self.apply_state_transition(StateEvent.VICTORY_DETECTED)
+            check_result = self.check_defeat(current_time)
+            if isinstance(check_result, tuple):
+                defeated, self._defeat_reason = check_result
             else:
-                check_result = self.check_defeat(current_time)
-                if isinstance(check_result, tuple):
-                    defeated, self._defeat_reason = check_result
-                else:
-                    defeated = check_result
-                if defeated:
-                    self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
+                defeated = check_result
+            if defeated:
+                self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
+            elif self.check_victory(current_time):
+                self.apply_state_transition(StateEvent.VICTORY_DETECTED)
 
         elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
             for scene_object in list(self._scene_objects):
