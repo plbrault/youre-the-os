@@ -178,6 +178,7 @@ class Stage(Scene):
         This method is called each frame to check if the victory conditions have been met.
         By default, it always returns False, as the default stage cannot be won.
         Override in a subclass to implement victory conditions for a specific stage.
+        `check_victory` is always called BEFORE `check_defeat`.
         :param current_time: The current time in milliseconds since the stage started.
                              Can be used to implement time-based victory conditions.
         """
@@ -189,6 +190,7 @@ class Stage(Scene):
         By default, it returns True if the stage config's max_processes_terminated_by_user
         has been reached.
         Override in a subclass to change defeat conditions for a specific stage.
+        `check_defeat` is always called AFTER `check_victory`.
         :param current_time: The current time in milliseconds since the stage started.
                              Can be used to implement time-based defeat conditions.
         :returns: A boolean indicating whether the defeat condition has been met,
