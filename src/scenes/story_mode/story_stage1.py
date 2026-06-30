@@ -2,6 +2,7 @@ from scenes.stage import Stage
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
+from scene_objects.process import ProcessType
 from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog
 
 _stage_config = StageConfig(
@@ -52,3 +53,11 @@ class StoryStage1(Stage):
 
     def check_victory(self, current_time: int) -> bool:
         return current_time >= 5 * ONE_MINUTE
+
+    def check_defeat(self, current_time: int) -> bool | tuple[bool, str]:
+        if any(p.type == ProcessType.PRIORITY
+               for p in self.process_manager.user_terminated_processes):
+            return (True, 'The user killed a priority process.')
+        if super().check_defeat(current_time):
+            return (True, 'Too many user ragequits.')
+        return False

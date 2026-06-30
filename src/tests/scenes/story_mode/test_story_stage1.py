@@ -1,6 +1,9 @@
 import pytest
 
-from constants import ONE_MINUTE
+from constants import ONE_MINUTE, ONE_SECOND
+from engine.game_manager import GameManager
+from engine.random import Random
+from scene_objects.process import ProcessType
 from scenes.story_mode.story_stage1 import StoryStage1
 
 
@@ -12,6 +15,38 @@ class TestStoryStage1:
         stage.setup()
         return stage
 
+    @pytest.fixture
+    def ready_stage(self, scene_manager, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+        stage = StoryStage1()
+        stage.scene_manager = scene_manager
+        stage.setup()
+        process_manager = stage.process_manager
+
+        time = 0.0
+        process_count = 0
+        process_in_motion = 0
+        iteration_count = 0
+
+        while (
+            (process_count < 3 or process_in_motion > 0)
+            and iteration_count < 100000
+        ):
+            iteration_count += 1
+            process_manager.update(int(time), [])
+            time += ONE_SECOND / GameManager.fps
+
+            used_process_slots = [
+                slot for slot in process_manager.process_slots
+                if slot.process is not None
+            ]
+            process_count = len(used_process_slots)
+            process_in_motion = len([
+                slot for slot in used_process_slots if slot.process.is_in_motion
+            ])
+
+        return stage
+
     def test_check_victory_returns_false_before_five_minutes(self, stage):
         assert not stage.check_victory(5 * ONE_MINUTE - 1)
 
@@ -20,3 +55,24 @@ class TestStoryStage1:
 
     def test_check_victory_returns_true_after_five_minutes(self, stage):
         assert stage.check_victory(5 * ONE_MINUTE + 1)
+
+    def test_check_defeat_returns_false_when_no_process_terminated(self, ready_stage):
+        assert not ready_stage.check_defeat(0)
+
+    def test_check_defeat_returns_false_when_only_standard_process_terminated(self, ready_stage):
+        process_manager = ready_stage.process_manager
+        standard_process = next(
+            slot.process for slot in process_manager.process_slots
+            if slot.process is not None and slot.process.type == ProcessType.STANDARD
+        )
+        process_manager.terminate_process(standard_process, True)
+        assert not ready_stage.check_defeat(0)
+
+    def test_check_defeat_returns_true_when_priority_process_terminated(self, ready_stage):
+        process_manager = ready_stage.process_manager
+        priority_process = next(
+            slot.process for slot in process_manager.process_slots
+            if slot.process is not None and slot.process.type == ProcessType.PRIORITY
+        )
+        process_manager.terminate_process(priority_process, True)
+        assert ready_stage.check_defeat(0) == (True, 'The user killed a priority process.')
