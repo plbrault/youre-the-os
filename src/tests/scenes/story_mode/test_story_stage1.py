@@ -4,6 +4,7 @@ from constants import ONE_MINUTE, ONE_SECOND
 from engine.game_manager import GameManager
 from engine.random import Random
 from scene_objects.process import ProcessType
+from scene_objects.story_stage_result_dialog import StoryStageResultDialog
 from scenes.story_mode.story_stage1 import StoryStage1
 
 
@@ -76,3 +77,27 @@ class TestStoryStage1:
         )
         process_manager.terminate_process(priority_process, True)
         assert ready_stage.check_defeat(0) == (True, 'The user killed a priority process.')
+
+    def test_on_victory_shows_victory_dialog(self, stage):
+        assert stage.modal is None
+
+        stage.on_victory()
+
+        assert isinstance(stage.modal, StoryStageResultDialog)
+        assert stage.modal.is_victory is True
+        assert stage.modal.reason is None
+        assert stage.modal.stage_name == 'Stage 1: 1998'
+        assert stage.modal.score == 0
+        assert stage.modal.uptime == '0:00:00'
+
+    def test_on_defeat_shows_defeat_dialog_with_reason(self, stage):
+        assert stage.modal is None
+
+        stage.on_defeat('The user killed a priority process.')
+
+        assert isinstance(stage.modal, StoryStageResultDialog)
+        assert stage.modal.is_victory is False
+        assert stage.modal.reason == 'The user killed a priority process.'
+        assert stage.modal.stage_name == 'Stage 1: 1998'
+        assert stage.modal.score == 0
+        assert stage.modal.uptime == '0:00:00'

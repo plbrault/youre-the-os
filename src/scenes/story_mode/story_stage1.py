@@ -4,6 +4,7 @@ from config.cpu_config import CpuConfig
 from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
 from scene_objects.process import ProcessType
 from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog
+from scene_objects.story_stage_result_dialog import StoryStageResultDialog
 
 _stage_config = StageConfig(
     cpu_config=CpuConfig(num_cores=1),
@@ -61,3 +62,26 @@ class StoryStage1(Stage):
         if super().check_defeat(current_time):
             return (True, 'Too many user ragequits.')
         return False
+
+    def on_victory(self):
+        self.show_modal(StoryStageResultDialog(
+            is_victory=True,
+            uptime=self._uptime_manager.uptime_text,
+            stage_name=self.name,
+            score=self._score_manager.score,
+            restart_game_fn=self.reset,
+            main_menu_fn=self._return_to_main_menu,
+            standalone=self._standalone,
+        ))
+
+    def on_defeat(self, reason: str | None = None):
+        self.show_modal(StoryStageResultDialog(
+            is_victory=False,
+            uptime=self._uptime_manager.uptime_text,
+            stage_name=self.name,
+            score=self._score_manager.score,
+            reason=reason,
+            restart_game_fn=self.reset,
+            main_menu_fn=self._return_to_main_menu,
+            standalone=self._standalone,
+        ))
