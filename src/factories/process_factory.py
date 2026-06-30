@@ -1,5 +1,5 @@
 from config.process_config import ProcessConfig
-from scene_objects.process import Process
+from scene_objects.process import Process, ProcessType
 from scene_objects.views.priority_process_view import PriorityProcessView
 from engine.random import randint
 
@@ -25,6 +25,7 @@ class ProcessFactory:
             pid,
             self._stage,
             self._standard_process_config,
+            process_type=ProcessType.STANDARD,
             current_time=current_time
         )
 
@@ -33,6 +34,7 @@ class ProcessFactory:
             pid,
             self._stage,
             self._priority_process_config,
+            process_type=ProcessType.PRIORITY,
             view_class=PriorityProcessView,
             current_time=current_time
         )

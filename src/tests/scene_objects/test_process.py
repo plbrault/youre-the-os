@@ -6,7 +6,7 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
-from scene_objects.process import Process, ProcessState, StateEvent
+from scene_objects.process import Process, ProcessState, StateEvent, ProcessType
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
@@ -66,6 +66,7 @@ class TestProcess:
         process = Process(1, stage, process_config)
 
         assert process.pid == 1
+        assert process.type == ProcessType.STANDARD
         assert process.time_between_starvation_levels == 10000
         assert process.current_starvation_level_duration == 0
         assert process.cpu == None
@@ -81,6 +82,22 @@ class TestProcess:
         assert process.current_state_duration == 0
         assert process.is_progressing_to_happiness == False
         assert process.is_in_motion == False
+
+    def test_process_type_enum_members(self):
+        member_names = [m.name for m in ProcessType]
+        assert member_names == ['STANDARD', 'PRIORITY']
+
+    def test_type_defaults_to_standard(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        assert process.type == ProcessType.STANDARD
+
+    def test_type_is_standard_when_specified(self, stage, process_config):
+        process = Process(1, stage, process_config, process_type=ProcessType.STANDARD)
+        assert process.type == ProcessType.STANDARD
+
+    def test_type_is_priority_when_specified(self, stage, process_config):
+        process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
+        assert process.type == ProcessType.PRIORITY
 
     def test_state_events(self, stage, stage_config, process_config, spy_apply_event):
         process = Process(1, stage, process_config)

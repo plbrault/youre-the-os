@@ -1,4 +1,3 @@
-from enum import Enum, auto
 from math import inf
 import re
 
@@ -11,7 +10,7 @@ from factories.process_factory import ProcessFactory
 from scene_objects.checkbox import Checkbox
 from scene_objects.cpu_manager import CpuManager
 from scene_objects.io_queue import IoQueue
-from scene_objects.process import Process, ProcessState
+from scene_objects.process import Process, ProcessState, ProcessType
 from scene_objects.views.process_manager_view import ProcessManagerView
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
@@ -32,10 +31,6 @@ def _is_sorted(process_list: [Process]):
         if process_list[i].sort_key > process_list[i + 1].sort_key:
             return False
     return True
-
-class ProcessType(Enum):
-    STANDARD = auto()
-    PRIORITY = auto()
 
 class ProcessManager(SceneObject):
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):

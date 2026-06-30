@@ -37,6 +37,10 @@ class StateEvent(Enum):
     IO_DELIVERED = auto()
     PAGE_AVAILABLE = auto()
 
+class ProcessType(Enum):
+    STANDARD = auto()
+    PRIORITY = auto()
+
 class Process(SceneObject):
     ProcessState = ProcessState
 
@@ -79,10 +83,12 @@ class Process(SceneObject):
     }
 
     def __init__(self, pid: int, stage: 'Stage', config: ProcessConfig,
-                 *, view_class: Type[Drawable] = ProcessView, current_time: int = 0):
+                 *, process_type: ProcessType = ProcessType.STANDARD,
+                 view_class: Type[Drawable] = ProcessView, current_time: int = 0):
         self._state = ProcessState.IDLE
 
         self._pid = pid
+        self._type = process_type
         self._process_manager = stage.process_manager
         self._cpu_manager = stage.process_manager.cpu_manager
         self._page_manager = stage.page_manager
@@ -116,6 +122,10 @@ class Process(SceneObject):
     @property
     def pid(self):
         return self._pid
+
+    @property
+    def type(self):
+        return self._type
 
     @property
     def time_between_starvation_levels(self):

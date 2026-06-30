@@ -8,7 +8,7 @@ from engine.random import Random
 from scene_objects.checkbox import Checkbox
 from scene_objects.cpu import Cpu
 from scene_objects.io_queue import IoQueue
-from scene_objects.process import Process, ProcessState
+from scene_objects.process import Process, ProcessState, ProcessType
 from scene_objects.process_manager import ProcessManager
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
@@ -726,6 +726,34 @@ class TestProcessManager:
         alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
         assert len(alive_processes) == 1
         assert process_manager.get_process(1).time_between_starvation_levels == 6000
+
+    def test_forced_priority_process_has_priority_type(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_priority_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        assert process_manager.get_process(1).type == ProcessType.PRIORITY
+
+    def test_forced_standard_process_has_standard_type(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        assert process_manager.get_process(1).type == ProcessType.STANDARD
 
     def test_forced_process_not_created_before_scheduled_time(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
