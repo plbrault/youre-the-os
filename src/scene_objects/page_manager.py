@@ -91,8 +91,8 @@ class PageManager(SceneObject):
                     self._disk_slots.append(disk_slot)
             self.children.extend(self._disk_slots)
 
-    def create_page(self, pid, idx):
-        page = self._page_factory.create_page(pid, idx)
+    def create_page(self, pid, idx, is_priority: bool = False):
+        page = self._page_factory.create_page(pid, idx, is_priority)
         page_created = False
         for ram_slot in self._ram_slots:
             if not ram_slot.has_page:

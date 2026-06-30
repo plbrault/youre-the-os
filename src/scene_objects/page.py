@@ -1,6 +1,7 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Type
 
+from engine.drawable import Drawable
 from engine.game_event_type import GameEventType
 from engine.scene_object import SceneObject
 import game_monitor
@@ -16,7 +17,8 @@ PageMouseDragAction = Enum('PageMouseDragAction', [
 
 class Page(SceneObject):
 
-    def __init__(self, pid: int, idx: int, page_manager: 'PageManager', config: 'PageConfig'):
+    def __init__(self, pid: int, idx: int, page_manager: 'PageManager', config: 'PageConfig',
+                 *, view_class: Type[Drawable] = PageView):
         self._pid = pid
         self._idx = idx
         self._page_manager = page_manager
@@ -35,7 +37,7 @@ class Page(SceneObject):
 
         self._mouse_dragged_on = False
 
-        super().__init__(PageView(self))
+        super().__init__(view_class(self))
 
     @property
     def pid(self):

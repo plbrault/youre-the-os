@@ -261,7 +261,8 @@ class Process(SceneObject):
                 if len(self._pages) == 0:
                     num_pages = round(sqrt(randint(1, 20)))
                     for i in range(num_pages):
-                        page = self._page_manager.create_page(self._pid, i)
+                        page = self._page_manager.create_page(
+                            self._pid, i, self.type == ProcessType.PRIORITY)
                         self._pages.append(page)
                         game_monitor.notify_page_new(page.pid, page.idx, page.on_disk, page.in_use)
                 for page in self._pages:
@@ -416,7 +417,8 @@ class Process(SceneObject):
                 len(self._pages) < MAX_PAGES_PER_PROCESS
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
             ):
-                new_page = self._page_manager.create_page(self._pid, len(self._pages))
+                new_page = self._page_manager.create_page(
+                    self._pid, len(self._pages), self.type == ProcessType.PRIORITY)
                 self._pages.append(new_page)
                 new_page.in_use = True
                 game_monitor.notify_page_new(

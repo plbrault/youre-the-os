@@ -7,6 +7,8 @@ from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
 from scene_objects.process import Process, ProcessState, StateEvent, ProcessType
+from scene_objects.views.page_view import PageView
+from scene_objects.views.priority_page_view import PriorityPageView
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
@@ -423,6 +425,25 @@ class TestProcess:
         for i in range(1, MAX_PAGES_PER_PROCESS):
             with pytest.raises(KeyError):
                 stage.page_manager.get_page(1, i)
+
+    def test_use_cpu_creates_crowned_pages_for_priority_process(self, stage, monkeypatch, process_config):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
+        process.use_cpu()
+
+        page = stage.page_manager.get_page(1, 0)
+        assert isinstance(page.view, PriorityPageView)
+
+    def test_use_cpu_creates_uncrowned_pages_for_standard_process(self, stage, monkeypatch, process_config):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, process_config, process_type=ProcessType.STANDARD)
+        process.use_cpu()
+
+        page = stage.page_manager.get_page(1, 0)
+        assert isinstance(page.view, PageView)
+        assert not isinstance(page.view, PriorityPageView)
 
     def test_use_cpu_sets_pages_to_in_use(self, stage, monkeypatch, process_config):
         # Should cause the creation of the maximum number of pages when the process is run
