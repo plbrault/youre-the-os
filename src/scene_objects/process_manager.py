@@ -160,6 +160,15 @@ class ProcessManager(SceneObject):
         return self._user_terminated_process_count
 
     @property
+    def user_terminated_processes(self):
+        # user refers to in-game user, not to the player.
+        return [
+            slot.process
+            for slot in self._user_terminated_process_slots
+            if slot.process is not None
+        ]
+
+    @property
     def any_process_in_motion(self):
         processes_in_motion = False
         for child in self.children:

@@ -218,6 +218,29 @@ class TestProcessManager:
         assert process_manager.user_terminated_process_count == 0
         assert cpu.process == process
 
+    def test_user_terminated_processes_is_empty_initially(self, ready_process_manager):
+        process_manager = ready_process_manager
+
+        assert process_manager.user_terminated_processes == []
+
+    def test_user_terminated_processes_returns_terminated_process(self, ready_process_manager):
+        process_manager = ready_process_manager
+
+        process = process_manager.get_process(1)
+        process_manager.terminate_process(process, True)
+
+        assert process_manager.user_terminated_processes == [process]
+
+    def test_user_terminated_processes_returns_in_termination_order(self, ready_process_manager):
+        process_manager = ready_process_manager
+
+        process_1 = process_manager.get_process(1)
+        process_2 = process_manager.get_process(2)
+        process_manager.terminate_process(process_1, True)
+        process_manager.terminate_process(process_2, True)
+
+        assert process_manager.user_terminated_processes == [process_1, process_2]
+
     def test_terminate_process_by_user_when_cannot_terminate(self, ready_process_manager_custom_config):
         process_manager, stage = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup = 11,
