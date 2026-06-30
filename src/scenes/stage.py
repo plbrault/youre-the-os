@@ -74,6 +74,7 @@ class Stage(Scene):
         self._state = StageState.STARTING
         self._last_update_time = 0
         self._last_state_change_time = None
+        self._defeat_reason = None
 
         self._score_manager = None
         self._uptime_manager = None
@@ -89,6 +90,7 @@ class Stage(Scene):
         self._state = StageState.STARTING
         self._last_update_time = 0
         self._last_state_change_time = None
+        self._defeat_reason = None
 
         self._process_manager = ProcessManager(self, self._config)
         self._page_manager = PageManager(self, self._config)
@@ -181,7 +183,7 @@ class Stage(Scene):
         """
         return False
 
-    def check_defeat(self, current_time: int) -> bool: # pylint: disable=unused-argument
+    def check_defeat(self, current_time: int) -> bool | tuple[bool, str]: # pylint: disable=unused-argument
         """
         This method is called each frame to check if the defeat conditions have been met.
         By default, it returns True if the stage config's max_processes_terminated_by_user
@@ -189,6 +191,9 @@ class Stage(Scene):
         Override in a subclass to change defeat conditions for a specific stage.
         :param current_time: The current time in milliseconds since the stage started.
                              Can be used to implement time-based defeat conditions.
+        :returns: A boolean indicating whether the defeat condition has been met,
+                  or a tuple (bool, str) where the first element is the defeat flag
+                  and the second element is a string describing the reason.
         """
         return (
             self._process_manager.user_terminated_process_count
@@ -209,11 +214,13 @@ class Stage(Scene):
         Override in a subclass to implement behavior for a specific stage.
         """
 
-    def on_defeat(self):
+    def on_defeat(self, reason: str | None = None): # pylint: disable=unused-argument
         """
         This method is called once the stage is completed with a defeat.
         Default implementation opens the Game Over modal.
         Override in a subclass to implement a different behavior for a specific stage.
+        :param reason: Optional string describing the reason for the defeat, as provided
+                       by check_defeat. May be None. Not used by the default implementation.
         """
         self.show_modal(GameOverDialog(
             uptime=self._uptime_manager.uptime_text,
@@ -308,8 +315,14 @@ class Stage(Scene):
                 scene_object.update(current_time, events)
             if self.check_victory(current_time):
                 self.apply_state_transition(StateEvent.VICTORY_DETECTED)
-            elif self.check_defeat(current_time):
-                self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
+            else:
+                check_result = self.check_defeat(current_time)
+                if isinstance(check_result, tuple):
+                    defeated, self._defeat_reason = check_result
+                else:
+                    defeated = check_result
+                if defeated:
+                    self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
 
         elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
             for scene_object in list(self._scene_objects):
@@ -324,5 +337,5 @@ class Stage(Scene):
 
         elif self._state == StageState.DEFEAT:
             if current_time - self._last_state_change_time > ONE_SECOND:
-                self.on_defeat()
+                self.on_defeat(self._defeat_reason)
                 self.apply_state_transition(StateEvent.DELAY_ELAPSED)

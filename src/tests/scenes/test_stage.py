@@ -36,13 +36,16 @@ class StubModal(Modal):
 
 
 class MockStage(Stage):
-    def __init__(self, victory_time=None, defeat_time=None, **kwargs):
+    def __init__(self, victory_time=None, defeat_time=None,
+                 defeat_reason='Defeat time reached', **kwargs):
         super().__init__(**kwargs)
         self.victory_time = victory_time
         self.defeat_time = defeat_time
+        self.defeat_reason = defeat_reason
         self.on_start_call_count = 0
         self.on_victory_call_count = 0
         self.on_defeat_call_count = 0
+        self.on_defeat_reasons = []
 
     def check_victory(self, current_time):
         if self.victory_time is not None:
@@ -50,8 +53,10 @@ class MockStage(Stage):
         return False
 
     def check_defeat(self, current_time):
-        if self.defeat_time is not None:
-            return current_time > self.defeat_time
+        if self.defeat_time is not None and current_time > self.defeat_time:
+            if self.defeat_reason is None:
+                return True
+            return (True, self.defeat_reason)
         return False
 
     def on_start(self):
@@ -60,8 +65,9 @@ class MockStage(Stage):
     def on_victory(self):
         self.on_victory_call_count += 1
 
-    def on_defeat(self):
+    def on_defeat(self, reason=None):
         self.on_defeat_call_count += 1
+        self.on_defeat_reasons.append(reason)
 
 
 class TestStageStateMachine:
@@ -473,6 +479,44 @@ class TestStageUpdateBehavior:
         assert not stage.stage_completed
         assert stage.on_victory_call_count == 0
         assert stage.on_defeat_call_count == 0
+
+    def test_defeat_reason_from_tuple_check_defeat_passed_to_on_defeat(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            defeat_time=500,
+            defeat_reason='Defeat time reached',
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(0, [])
+        stage.update(600, [])
+        stage.update(601, [])
+        assert stage.state == StageState.DEFEAT
+
+        stage.update(601 + ONE_SECOND + 1, [])
+        assert stage.on_defeat_call_count == 1
+        assert stage.on_defeat_reasons == ['Defeat time reached']
+
+    def test_defeat_reason_is_none_when_check_defeat_returns_bool(self, scene_manager):
+        stage = MockStage(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0),
+            defeat_time=500,
+            defeat_reason=None,
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        stage.update(0, [])
+        stage.update(600, [])
+        stage.update(601, [])
+        assert stage.state == StageState.DEFEAT
+
+        stage.update(601 + ONE_SECOND + 1, [])
+        assert stage.on_defeat_call_count == 1
+        assert stage.on_defeat_reasons == [None]
 
 
 class TestStageCompletedProperty:
