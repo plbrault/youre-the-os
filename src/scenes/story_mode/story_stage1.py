@@ -13,9 +13,10 @@ _stage_config = StageConfig(
     max_processes=10,
     max_processes_terminated_by_user=5,
     num_ram_rows=1,
+    max_pages_per_process=3,
     swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Higher'],
     parallel_swaps=1,
-    new_process_probability=0.05,
+    new_process_probability=0.025,
     priority_process_probability=0,
     io_probability=0.1,
     priority_process_io_probability=0.25,
@@ -35,7 +36,8 @@ _INTRO_SECTIONS = [
         'Dial-Up Modem',
     )),
     Section('Victory Conditions', (
-        'Survive 5 minutes with less than 5 user ragequits',
+        f'Survive 5 minutes with less than '
+        f'{_stage_config.max_processes_terminated_by_user} user ragequits',
         'Do not let the user kill any priority process',
     )),
 ]
@@ -49,17 +51,20 @@ class StoryStage1(Stage):
         self.show_modal(StageIntroDialog(
             'Stage 1: 1998',
             _INTRO_SECTIONS,
-            badges=(Badge(5), Badge(0, is_priority=True)),
+            badges=(
+                Badge(_stage_config.max_processes_terminated_by_user),
+                Badge(0, is_priority=True),
+            ),
         ))
 
-    def check_victory(self, current_time: int) -> bool:
-        return current_time >= 5 * ONE_MINUTE
+    def check_victory(self) -> bool:
+        return self.uptime_manager.uptime_ms >= 5 * ONE_MINUTE
 
-    def check_defeat(self, current_time: int) -> bool | tuple[bool, str]:
+    def check_defeat(self) -> bool | tuple[bool, str]:
         if any(p.type == ProcessType.PRIORITY
                for p in self.process_manager.user_terminated_processes):
             return (True, 'The user killed a priority process.')
-        if super().check_defeat(current_time):
+        if super().check_defeat():
             return (True, 'Too many user ragequits.')
         return False
 

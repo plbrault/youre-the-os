@@ -8,6 +8,12 @@ from scene_objects.story_stage_result_dialog import StoryStageResultDialog
 from scenes.story_mode.story_stage1 import StoryStage1
 
 
+def _advance_uptime_to(stage, uptime_ms):
+    stage.uptime_manager.update(0, [])
+    for time in range(ONE_SECOND, uptime_ms + 1, ONE_SECOND):
+        stage.uptime_manager.update(time, [])
+
+
 class TestStoryStage1:
     @pytest.fixture
     def stage(self, scene_manager):
@@ -49,16 +55,19 @@ class TestStoryStage1:
         return stage
 
     def test_check_victory_returns_false_before_five_minutes(self, stage):
-        assert not stage.check_victory(5 * ONE_MINUTE - 1)
+        _advance_uptime_to(stage, 5 * ONE_MINUTE - 1)
+        assert not stage.check_victory()
 
     def test_check_victory_returns_true_at_five_minutes(self, stage):
-        assert stage.check_victory(5 * ONE_MINUTE)
+        _advance_uptime_to(stage, 5 * ONE_MINUTE)
+        assert stage.check_victory()
 
     def test_check_victory_returns_true_after_five_minutes(self, stage):
-        assert stage.check_victory(5 * ONE_MINUTE + 1)
+        _advance_uptime_to(stage, 5 * ONE_MINUTE + 1)
+        assert stage.check_victory()
 
     def test_check_defeat_returns_false_when_no_process_terminated(self, ready_stage):
-        assert not ready_stage.check_defeat(0)
+        assert not ready_stage.check_defeat()
 
     def test_check_defeat_returns_false_when_only_standard_process_terminated(self, ready_stage):
         process_manager = ready_stage.process_manager
@@ -67,7 +76,7 @@ class TestStoryStage1:
             if slot.process is not None and slot.process.type == ProcessType.STANDARD
         )
         process_manager.terminate_process(standard_process, True)
-        assert not ready_stage.check_defeat(0)
+        assert not ready_stage.check_defeat()
 
     def test_check_defeat_returns_true_when_priority_process_terminated(self, ready_stage):
         process_manager = ready_stage.process_manager
@@ -76,7 +85,7 @@ class TestStoryStage1:
             if slot.process is not None and slot.process.type == ProcessType.PRIORITY
         )
         process_manager.terminate_process(priority_process, True)
-        assert ready_stage.check_defeat(0) == (True, 'The user killed a priority process.')
+        assert ready_stage.check_defeat() == (True, 'The user killed a priority process.')
 
     def test_on_victory_shows_victory_dialog(self, stage):
         assert stage.modal is None
