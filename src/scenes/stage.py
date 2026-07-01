@@ -305,6 +305,26 @@ class Stage(Scene):
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
 
+    def _update_playing(self, current_time, events):
+        self._process_script_events()
+        for scene_object in list(self._scene_objects):
+            scene_object.update(current_time, events)
+        check_result = self.check_defeat(current_time)
+        if isinstance(check_result, tuple):
+            defeated, self._defeat_reason = check_result
+        else:
+            defeated = check_result
+        if defeated:
+            self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
+        elif self.check_victory(current_time):
+            self.apply_state_transition(StateEvent.VICTORY_DETECTED)
+
+    def _update_awaiting_result(self, current_time, events):
+        for scene_object in list(self._scene_objects):
+            scene_object.update(current_time, events)
+        if not self._process_manager.any_process_in_motion:
+            self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
+
     def update(self, current_time, events):
         self._last_update_time = current_time
 
@@ -313,30 +333,13 @@ class Stage(Scene):
             self.apply_state_transition(StateEvent.START)
 
         if self._state == StageState.PLAYING:
-            self._process_script_events()
-            for scene_object in list(self._scene_objects):
-                scene_object.update(current_time, events)
-            check_result = self.check_defeat(current_time)
-            if isinstance(check_result, tuple):
-                defeated, self._defeat_reason = check_result
-            else:
-                defeated = check_result
-            if defeated:
-                self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
-            elif self.check_victory(current_time):
-                self.apply_state_transition(StateEvent.VICTORY_DETECTED)
-
+            self._update_playing(current_time, events)
         elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
-            for scene_object in list(self._scene_objects):
-                scene_object.update(current_time, events)
-            if not self._process_manager.any_process_in_motion:
-                self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
-
+            self._update_awaiting_result(current_time, events)
         elif self._state == StageState.VICTORY:
             if current_time - self._last_state_change_time > ONE_SECOND:
                 self.on_victory()
                 self.apply_state_transition(StateEvent.DELAY_ELAPSED)
-
         elif self._state == StageState.DEFEAT:
             if current_time - self._last_state_change_time > ONE_SECOND:
                 self.on_defeat(self._defeat_reason)

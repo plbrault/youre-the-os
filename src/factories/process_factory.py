@@ -11,13 +11,15 @@ class ProcessFactory:
         self._standard_process_config = ProcessConfig(
             io_probability=self._stage_config.io_probability,
             graceful_termination_probability=self._stage_config.graceful_termination_probability,
-            time_between_starvation_levels_ms=10000
+            time_between_starvation_levels_ms=10000,
+            max_pages=self._stage_config.max_pages_per_process
         )
         self._priority_process_config = ProcessConfig(
             io_probability=self._stage_config.priority_process_io_probability,
             graceful_termination_probability=
                 self._stage_config.priority_process_graceful_termination_probability,
-            time_between_starvation_levels_ms=6000
+            time_between_starvation_levels_ms=6000,
+            max_pages=self._stage_config.max_pages_per_process
         )
 
     def create_standard_process(self, pid: int, current_time: int = 0):

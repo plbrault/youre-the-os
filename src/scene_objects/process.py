@@ -4,7 +4,7 @@ from math import sqrt
 
 from config.process_config import ProcessConfig
 from constants import (
-    ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+    ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL
 )
 import game_monitor
 from engine.drawable import Drawable
@@ -259,7 +259,9 @@ class Process(SceneObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    num_pages = round(sqrt(randint(1, 20)))
+                    num_pages = min(
+                        round(sqrt(randint(1, 20))),
+                        self._config.max_pages)
                     for i in range(num_pages):
                         page = self._page_manager.create_page(
                             self._pid, i, self.type == ProcessType.PRIORITY)
@@ -414,7 +416,7 @@ class Process(SceneObject):
     def _handle_new_page_probability(self):
         if self.state == ProcessState.RUNNING:
             if (
-                len(self._pages) < MAX_PAGES_PER_PROCESS
+                len(self._pages) < self._config.max_pages
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
             ):
                 new_page = self._page_manager.create_page(

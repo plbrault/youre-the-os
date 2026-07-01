@@ -2,7 +2,7 @@ import pytest
 from types import SimpleNamespace
 
 import game_monitor
-from constants import DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from constants import DEAD_STARVATION_LEVEL
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from scenes.stage import Stage
@@ -744,7 +744,7 @@ class TestGameObjectsEmitEvents:
         assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap cancelled"
         assert swap_queue_events[0].waiting is False
 
-    def test_process_emits_page_free_when_killed(self, stage):
+    def test_process_emits_page_free_when_killed(self, stage, stage_config):
         """Test that Process emits PAGE_FREE events when killed."""
         # Run updates to create processes at startup
         current_time = 0
@@ -758,7 +758,7 @@ class TestGameObjectsEmitEvents:
 
         # Count how many pages were actually created by checking page manager
         pages_for_process = []
-        for idx in range(MAX_PAGES_PER_PROCESS):
+        for idx in range(stage_config.max_pages_per_process):
             try:
                 page = stage.page_manager.get_page(process.pid, idx)
                 if page is not None:
