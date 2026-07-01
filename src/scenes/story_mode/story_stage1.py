@@ -13,7 +13,7 @@ _stage_config = StageConfig(
     max_processes=10,
     max_processes_terminated_by_user=5,
     num_ram_rows=1,
-    max_pages_per_process=3,
+    max_pages_per_process=2,
     swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Higher'],
     parallel_swaps=1,
     new_process_probability=0.025,
@@ -36,7 +36,7 @@ _INTRO_SECTIONS = [
         'Dial-Up Modem',
     )),
     Section('Victory Conditions', (
-        f'Survive 5 minutes with less than '
+        f'Survive 6 minutes with less than '
         f'{_stage_config.max_processes_terminated_by_user} user ragequits',
         'Do not let the user kill any priority process',
     )),
@@ -58,7 +58,7 @@ class StoryStage1(Stage):
         ))
 
     def check_victory(self) -> bool:
-        return self.uptime_manager.uptime_ms >= 5 * ONE_MINUTE
+        return self.uptime_manager.uptime_ms >= 6 * ONE_MINUTE
 
     def check_defeat(self) -> bool | tuple[bool, str]:
         if any(p.type == ProcessType.PRIORITY
