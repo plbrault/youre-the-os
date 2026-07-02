@@ -343,13 +343,13 @@ class ProcessManager(SceneObject):
                         cpu.process.yield_cpu()
 
     def _current_min_processes(self, current_time):
-        min_processes = 0
-        for threshold in self._min_processes_at_times_ms:
-            if current_time >= threshold.time_ms:
-                min_processes = threshold.min_processes
-            else:
-                break
-        return min_processes
+        while len(self._min_processes_at_times_ms) > 1 and \
+                current_time >= self._min_processes_at_times_ms[1].time_ms:
+            self._min_processes_at_times_ms.pop(0)
+        if self._min_processes_at_times_ms and \
+                current_time >= self._min_processes_at_times_ms[0].time_ms:
+            return self._min_processes_at_times_ms[0].min_processes
+        return 0
 
     def _handle_process_creation(self, current_time):
         if len(self._alive_process_list) < self._stage_config.max_processes:
