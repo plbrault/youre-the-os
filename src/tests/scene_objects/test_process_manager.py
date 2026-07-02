@@ -1131,7 +1131,7 @@ class TestProcessManager:
         alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
         assert len(alive_processes) == 3
 
-    def test_min_processes_created_one_per_tick(self, ready_process_manager_custom_config):
+    def test_min_processes_created_one_per_settle(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
@@ -1145,7 +1145,18 @@ class TestProcessManager:
         alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
         assert len(alive_processes) == 1
 
-        process_manager.update(10001, [])
+        time = 10000
+        iterations = 0
+        while process_manager.any_process_in_motion and iterations < 100000:
+            iterations += 1
+            time += ONE_SECOND / FRAMERATE
+            process_manager.update(int(time), [])
+            alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+            assert len(alive_processes) == 1
+
+        assert iterations < 100000
+
+        process_manager.update(int(time + ONE_SECOND / FRAMERATE), [])
         alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
         assert len(alive_processes) == 2
 

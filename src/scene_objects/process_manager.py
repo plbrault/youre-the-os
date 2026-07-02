@@ -376,8 +376,8 @@ class ProcessManager(SceneObject):
                     self._create_process()
                     self._last_process_creation_time = current_time
                     process_created = True
-            if not process_created and len(self._alive_process_list) < \
-                    self._current_min_processes(current_time):
+            if not process_created and not self.any_process_in_motion and \
+                    len(self._alive_process_list) < self._current_min_processes(current_time):
                 self._create_process()
                 self._last_new_process_check = current_time
                 self._last_process_creation_time = current_time
