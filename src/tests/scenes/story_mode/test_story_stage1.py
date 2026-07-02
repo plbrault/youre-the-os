@@ -54,16 +54,16 @@ class TestStoryStage1:
 
         return stage
 
-    def test_check_victory_returns_false_before_five_minutes(self, stage):
-        _advance_uptime_to(stage, 5 * ONE_MINUTE - 1)
+    def test_check_victory_returns_false_before_six_minutes(self, stage):
+        _advance_uptime_to(stage, 6 * ONE_MINUTE - 1)
         assert not stage.check_victory()
 
-    def test_check_victory_returns_true_at_five_minutes(self, stage):
-        _advance_uptime_to(stage, 5 * ONE_MINUTE)
+    def test_check_victory_returns_true_at_six_minutes(self, stage):
+        _advance_uptime_to(stage, 6 * ONE_MINUTE)
         assert stage.check_victory()
 
-    def test_check_victory_returns_true_after_five_minutes(self, stage):
-        _advance_uptime_to(stage, 5 * ONE_MINUTE + 1)
+    def test_check_victory_returns_true_after_six_minutes(self, stage):
+        _advance_uptime_to(stage, 6 * ONE_MINUTE + 1)
         assert stage.check_victory()
 
     def test_check_defeat_returns_false_when_no_process_terminated(self, ready_stage):
@@ -98,6 +98,8 @@ class TestStoryStage1:
         assert stage.modal.stage_name == 'Stage 1: 1998'
         assert stage.modal.score == 0
         assert stage.modal.uptime == '0:00:00'
+        assert stage.modal.primary_button.text == 'Next Stage'
+        assert stage.modal.main_menu_button.text == 'Main Menu'
 
     def test_on_defeat_shows_defeat_dialog_with_reason(self, stage):
         assert stage.modal is None
@@ -110,3 +112,12 @@ class TestStoryStage1:
         assert stage.modal.stage_name == 'Stage 1: 1998'
         assert stage.modal.score == 0
         assert stage.modal.uptime == '0:00:00'
+        assert stage.modal.primary_button.text == 'Try Again'
+        assert stage.modal.main_menu_button.text == 'Main Menu'
+
+    def test_on_victory_in_standalone_mode_shows_actual_stage_name(self, stage):
+        stage.standalone = True
+
+        stage.on_victory()
+
+        assert stage.modal.stage_name == 'Stage 1: 1998'

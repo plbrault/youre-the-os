@@ -29,7 +29,6 @@ async def main():
     print("Config module:", args.config_module)
 
     stage = config_module.stage
-    stage.name = 'SANDBOX'
     stage.standalone = True
 
     game_manager = GameManager()
