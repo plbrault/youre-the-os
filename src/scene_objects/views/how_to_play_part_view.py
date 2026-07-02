@@ -29,12 +29,13 @@ class HowToPlayPartView(Drawable):
         return WINDOW_HEIGHT
 
     def draw(self, surface):
-        surface.blit(self._images[self._how_to_play_part.current_image_id], (
+        _image = pygame.image.load(self._images[self._how_to_play_part.current_image_id])
+        surface.blit(_image, (
             self.x +
             (self.width -
-             self._images[self._how_to_play_part.current_image_id].get_width()) / 2,
+             _image.get_width()) / 2,
             (self.height - 65 -
-             self._images[self._how_to_play_part.current_image_id].get_height()) / 2
+             _image.get_height()) / 2
         ))
 
         pygame.draw.rect(
