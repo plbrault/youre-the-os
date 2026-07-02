@@ -1,7 +1,14 @@
 from dataclasses import dataclass, field
+from typing import NamedTuple
 
 from constants import MAX_PROCESSES, ONE_MINUTE
 from config.cpu_config import CpuConfig
+
+
+class MinProcessThreshold(NamedTuple):
+    time_ms: int
+    min_processes: int
+
 
 @dataclass(frozen=True)
 class StageConfig:
@@ -17,6 +24,7 @@ class StageConfig:
     priority_process_probability: float = 0.01
     force_new_standard_process_at_times_ms: list[int] = field(default_factory=list)
     force_new_priority_process_at_times_ms: list[int] = field(default_factory=list)
+    min_processes_at_times_ms: list[MinProcessThreshold] = field(default_factory=list)
     io_probability: float = 0.01
     priority_process_io_probability: float | None = None
     io_min_waiting_time_ms: int = 1000
@@ -27,6 +35,9 @@ class StageConfig:
     time_ms_to_show_auto_sort_checkbox: int = 12 * ONE_MINUTE
 
     def __post_init__(self):
+        object.__setattr__(
+            self, 'min_processes_at_times_ms',
+            [MinProcessThreshold(t, c) for t, c in self.min_processes_at_times_ms])
         if self.priority_process_io_probability is None:
             object.__setattr__(self, 'priority_process_io_probability', self.io_probability)
         if self.priority_process_graceful_termination_probability is None:

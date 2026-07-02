@@ -1027,3 +1027,160 @@ class TestProcessManager:
 
         process.update(11000, [])
         assert not process.has_ended_gracefully
+
+    def test_min_processes_created_when_below_minimum(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(0, 5)],
+        ))
+
+        time = 0
+        for _ in range(1000):
+            process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 5
+
+    def test_min_processes_not_enforced_before_scheduled_time(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(10000, 5)],
+        ))
+
+        process_manager.update(9999, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 0
+
+    def test_min_processes_steps_up_at_new_timestamp(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(0, 0), (10000, 5)],
+        ))
+
+        time = 0
+        for _ in range(100):
+            process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 0
+
+        while time <= 10000:
+            process_manager.update(int(time), [])
+            time += ONE_SECOND / FRAMERATE
+
+        iterations = 0
+        while iterations < 100000:
+            iterations += 1
+            process_manager.update(int(time), [])
+            time += ONE_SECOND / FRAMERATE
+            alive_processes = [
+                slot.process for slot in process_manager.process_slots
+                if slot.process is not None
+            ]
+            still_moving = any(p.is_in_motion for p in alive_processes)
+            if len(alive_processes) == 5 and not still_moving:
+                break
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 5
+
+    def test_min_processes_does_nothing_when_above_minimum(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=10,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(0, 5)],
+        ))
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 10
+
+    def test_min_processes_respects_max_processes(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            max_processes=3,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(0, 10)],
+        ))
+
+        time = 0
+        for _ in range(1000):
+            process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 3
+
+    def test_min_processes_created_one_per_tick(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(10000, 5)],
+        ))
+
+        process_manager.update(10000, [])
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+
+        process_manager.update(10001, [])
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 2
+
+    def test_min_processes_uses_random_process_type(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(0, 5)],
+        ))
+
+        time = 0
+        for _ in range(1000):
+            process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
+
+        for i in range(1, 6):
+            assert process_manager.get_process(i).type == ProcessType.STANDARD
+
+    def test_min_processes_handles_unsorted_input(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            min_processes_at_times_ms=[(10000, 5), (0, 0)],
+        ))
+
+        time = 0
+        for _ in range(100):
+            process_manager.update(time, [])
+            time += ONE_SECOND / FRAMERATE
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 0
