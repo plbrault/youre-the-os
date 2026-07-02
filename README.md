@@ -4,13 +4,15 @@ This is a game where you are the operating system of a computer.
 As such, you have to manage processes, memory and I/O events.
 Make sure not to leave processes idling for too long, or the user will get really impatient and reboot you!
 
-You can play the game here: [https://plbrault.github.io/youre-the-os](https://plbrault.github.io/youre-the-os)
+You can play the game directly in your browser either [here](https://plbrault.github.io/youre-the-os) or on [itch.io](https://plbrault.itch.io/youre-the-os).
 
-Also available on [itch.io](https://plbrault.itch.io/youre-the-os).
+To play the desktop version, clone this repository and follow the instructions under [Running Locally](#running-locally). The desktop version also exposes an API for implementing automated scripts.
 
 ![In-game screenshot](readme-assets/in_game_screenshot.png)
 
-## Prerequisites
+## Running Locally
+
+### Prerequisites
 
 * Python 3.14
   * The project is not guaranteed to work with other versions.
@@ -18,7 +20,7 @@ Also available on [itch.io](https://plbrault.itch.io/youre-the-os).
 * [pipenv](https://pypi.org/project/pipenv/)
 * An empty `.venv` directory at the root of the project
 
-## Usage
+### Usage
 
 ***The main branch can be unstable. For a stable version, checkout a release tag.***
 
@@ -40,7 +42,7 @@ pipenv run desktop
 pipenv run web
 ```
 
-**Run sandbox mode**
+**Run sandbox mode:**
 
 The sandbox mode allows you to skip the menu and immediately run a custom stage. It is provided for development purposes.
 
@@ -92,7 +94,7 @@ pipenv run pytest
 
 ## Contributing
 
-Pull requests that address open issues labeled `bug` or `help wanted` are welcome.
+Pull requests that address open issues labeled `bug` or `help wanted` are welcome. **Any other pull request is likely to be closed.** Before submitting a pull request, make sure the linter and unit tests are passing.
 
 If you use AI, please ensure your agent follows all instructions in `AGENTS.md`.
 
