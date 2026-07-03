@@ -154,6 +154,7 @@ class PageManager(SceneObject):
             page.cancel_swap()
 
     def delete_page(self, page):
+        page.cancel_swap()
         for ram_slot in self._ram_slots:
             if ram_slot.page == page:
                 ram_slot.page = None
