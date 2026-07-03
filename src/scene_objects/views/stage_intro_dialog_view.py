@@ -10,7 +10,6 @@ from ui.fonts import (
 
 _BADGE_SIZE = 64
 _BADGE_SPACING = 16
-_TIMER_ICON_SIZE = 40
 _TIMER_LABEL_SPACING = 4
 
 _skull = pygame.image.load(path.join('assets', 'skull_emoji.png'))
@@ -64,16 +63,15 @@ class StageIntroDialogView(ModalView):
         return surface
 
     def _render_timer_badge(self, badge):
-        icon = pygame.transform.scale(_timer, (_TIMER_ICON_SIZE, _TIMER_ICON_SIZE))
         label_surface = FONT_PRIMARY_MEDIUM.render(
             f'{badge.minutes} min.', True, Color.WHITE)
-        width = max(icon.get_width(), label_surface.get_width())
-        height = icon.get_height() + _TIMER_LABEL_SPACING + label_surface.get_height()
+        width = max(_timer.get_width(), label_surface.get_width())
+        height = _timer.get_height() + _TIMER_LABEL_SPACING + label_surface.get_height()
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
-        surface.blit(icon, ((width - icon.get_width()) // 2, 0))
+        surface.blit(_timer, ((width - _timer.get_width()) // 2, 0))
         surface.blit(label_surface, (
             (width - label_surface.get_width()) // 2,
-            icon.get_height() + _TIMER_LABEL_SPACING,
+            _timer.get_height() + _TIMER_LABEL_SPACING,
         ))
         return surface
 
