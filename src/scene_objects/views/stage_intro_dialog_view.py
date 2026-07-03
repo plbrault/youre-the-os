@@ -4,13 +4,18 @@ import pygame
 
 from engine.modal_view import ModalView
 from ui.color import Color
-from ui.fonts import FONT_PRIMARY_XLARGE, FONT_PRIMARY_LARGE, FONT_PRIMARY_MEDIUM
+from ui.fonts import (
+    FONT_PRIMARY_XLARGE, FONT_PRIMARY_LARGE, FONT_PRIMARY_MEDIUM,
+)
 
 _BADGE_SIZE = 64
 _BADGE_SPACING = 16
+_TIMER_ICON_SIZE = 40
+_TIMER_LABEL_SPACING = 4
 
 _skull = pygame.image.load(path.join('assets', 'skull_emoji.png'))
 _crown = pygame.image.load(path.join('assets', 'crown_emoji.png'))
+_timer = pygame.image.load(path.join('assets', 'timer.png'))
 
 
 class StageIntroDialogView(ModalView):
@@ -40,7 +45,10 @@ class StageIntroDialogView(ModalView):
             self._section_items.append(items)
         self._badge_surfaces = []
         for badge in self._dialog.badges:
-            self._badge_surfaces.append(self._render_badge(badge))
+            if hasattr(badge, 'minutes'):
+                self._badge_surfaces.append(self._render_timer_badge(badge))
+            else:
+                self._badge_surfaces.append(self._render_badge(badge))
 
     def _render_badge(self, badge):
         surface = pygame.Surface((_BADGE_SIZE, _BADGE_SIZE))
@@ -52,6 +60,20 @@ class StageIntroDialogView(ModalView):
         surface.blit(number_surface, (
             _BADGE_SIZE - number_surface.get_width() - 4,
             (_BADGE_SIZE - number_surface.get_height()) // 2,
+        ))
+        return surface
+
+    def _render_timer_badge(self, badge):
+        icon = pygame.transform.scale(_timer, (_TIMER_ICON_SIZE, _TIMER_ICON_SIZE))
+        label_surface = FONT_PRIMARY_MEDIUM.render(
+            f'{badge.minutes} min.', True, Color.WHITE)
+        width = max(icon.get_width(), label_surface.get_width())
+        height = icon.get_height() + _TIMER_LABEL_SPACING + label_surface.get_height()
+        surface = pygame.Surface((width, height), pygame.SRCALPHA)
+        surface.blit(icon, ((width - icon.get_width()) // 2, 0))
+        surface.blit(label_surface, (
+            (width - label_surface.get_width()) // 2,
+            icon.get_height() + _TIMER_LABEL_SPACING,
         ))
         return surface
 
@@ -82,7 +104,7 @@ class StageIntroDialogView(ModalView):
                 y += item_surface.get_height() + self.ITEM_SPACING
             y += self.SECTION_SPACING
         if self._badge_surfaces:
-            y += _BADGE_SIZE + 40
+            y += max(s.get_height() for s in self._badge_surfaces) + 40
         y += self.BUTTON_BOTTOM_MARGIN
         y += self._dialog.start_button.view.height
         y += self.BUTTON_BOTTOM_MARGIN
@@ -110,12 +132,14 @@ class StageIntroDialogView(ModalView):
                 - self.BUTTON_BOTTOM_MARGIN
                 - self._dialog.start_button.view.height
             )
-            badge_y = y + (button_top - y - _BADGE_SIZE) // 2
+            badge_band_top = y
             total_badge_width = (
-                len(self._badge_surfaces) * _BADGE_SIZE
+                sum(s.get_width() for s in self._badge_surfaces)
                 + (len(self._badge_surfaces) - 1) * _BADGE_SPACING
             )
             badge_x = self.x + (self.width - total_badge_width) // 2
             for badge_surface in self._badge_surfaces:
+                badge_y = badge_band_top + (
+                    button_top - badge_band_top - badge_surface.get_height()) // 2
                 surface.blit(badge_surface, (badge_x, badge_y))
-                badge_x += _BADGE_SIZE + _BADGE_SPACING
+                badge_x += badge_surface.get_width() + _BADGE_SPACING

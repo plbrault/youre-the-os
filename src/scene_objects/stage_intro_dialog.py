@@ -17,6 +17,11 @@ class Badge:
     is_priority: bool = False
 
 
+@dataclass(frozen=True)
+class TimerBadge:
+    minutes: int
+
+
 class StageIntroDialog(Modal):
     def __init__(self, title: str, sections: tuple[Section, ...],
                  badges: tuple[Badge, ...] = ()) -> None:

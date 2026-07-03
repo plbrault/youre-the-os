@@ -4,6 +4,7 @@ from constants import ONE_MINUTE, ONE_SECOND
 from engine.game_manager import GameManager
 from engine.random import Random
 from scene_objects.process import ProcessType
+from scene_objects.stage_intro_dialog import StageIntroDialog, TimerBadge
 from scene_objects.story_stage_result_dialog import StoryStageResultDialog
 from scenes.story_mode.story_stage1 import StoryStage1
 
@@ -121,3 +122,10 @@ class TestStoryStage1:
         stage.on_victory()
 
         assert stage.modal.stage_name == 'Stage 1: 1998'
+
+    def test_on_start_shows_intro_dialog_with_six_minute_timer_badge(self, stage):
+        stage.on_start()
+
+        assert isinstance(stage.modal, StageIntroDialog)
+        timer_badges = [b for b in stage.modal.badges if isinstance(b, TimerBadge)]
+        assert timer_badges == [TimerBadge(6)]

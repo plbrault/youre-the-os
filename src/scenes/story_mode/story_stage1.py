@@ -3,7 +3,7 @@ from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
 from scene_objects.process import ProcessType
-from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog
+from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog, TimerBadge
 from scene_objects.story_stage_result_dialog import StoryStageResultDialog
 
 _stage_config = StageConfig(
@@ -62,6 +62,7 @@ class StoryStage1(Stage):
             'Stage 1: 1998',
             _INTRO_SECTIONS,
             badges=(
+                TimerBadge(6),
                 Badge(_stage_config.max_processes_terminated_by_user),
                 Badge(0, is_priority=True),
             ),
