@@ -392,4 +392,63 @@ class TestPageManager:
             child for child in page_manager.children if isinstance(child, PageSlot) and child.page == page_to_delete
         ), None)
         assert containing_slot is None
+
+    def test_delete_page_does_not_ghost_ram_slot_from_pending_swap_in(self, page_manager):
+        # A page queued for swap-in (waiting, not yet started) is deleted while
+        # its process is terminated. The pending swap must not later reserve a
+        # RAM slot for a page that no longer exists (a ghost slot that never
+        # completes and visually appears free).
+        ram_pages = []
+        for i in range(PageManager.get_num_cols()):
+            ram_pages.append(page_manager.create_page(1, i))
+
+        disk_page = page_manager.create_page(2, 0)
+        assert disk_page.on_disk
+
+        page_manager.swap_page(disk_page)
+        assert disk_page.swap_requested
+        assert not disk_page.swap_in_progress
+
+        page_manager.delete_page(disk_page)
+        page_manager.delete_page(ram_pages[0])
+
+        page_manager.update(2000, [])
+
+        ghost_slot = next((
+            child for child in page_manager.children
+            if isinstance(child, PageSlot) and child.page is disk_page
+        ), None)
+        assert ghost_slot is None
+
+    def test_pending_swap_in_does_not_block_new_swap_after_page_deletion(self, page_manager):
+        # Regression for the reported bug: after a process holding a queued
+        # swap-in page is terminated (freeing a RAM slot but orphaning the queued
+        # entry), clicking another disk page must still swap it into RAM instead
+        # of turning TEAL forever ("nothing happens").
+        ram_pages = []
+        for i in range(PageManager.get_num_cols()):
+            ram_pages.append(page_manager.create_page(1, i))
+
+        queued_disk_page = page_manager.create_page(1, PageManager.get_num_cols())
+        assert queued_disk_page.on_disk
+        other_disk_page = page_manager.create_page(1, PageManager.get_num_cols() + 1)
+        assert other_disk_page.on_disk
+
+        page_manager.swap_page(queued_disk_page)
+        page_manager.delete_page(queued_disk_page)
+        page_manager.delete_page(ram_pages[0])
+
+        page_manager.update(2000, [])
+
+        page_manager.swap_page(other_disk_page)
+        assert other_disk_page.swap_requested
+        assert not other_disk_page.swap_in_progress
+
+        page_manager.update(2001, [])
+        assert other_disk_page.swap_in_progress
+
+        page_manager.update(3000, [])
+        assert not other_disk_page.on_disk
+        assert not other_disk_page.swap_requested
+        assert not other_disk_page.swap_in_progress
          
