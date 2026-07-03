@@ -46,7 +46,7 @@ _INTRO_SECTIONS = [
     Section('Victory Conditions', (
         f'Survive 6 minutes with less than '
         f'{_stage_config.max_processes_terminated_by_user} user ragequits',
-        'Do not let the user kill any priority process',
+        'Do not let the user kill the priority process',
     )),
 ]
 
