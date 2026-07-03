@@ -73,7 +73,7 @@ class StoryStage1(Stage):
     def check_defeat(self) -> bool | tuple[bool, str]:
         if any(p.type == ProcessType.PRIORITY
                for p in self.process_manager.user_terminated_processes):
-            return (True, 'The user killed a priority process.')
+            return (True, 'The user killed the priority process.')
         if super().check_defeat():
             return (True, 'Too many user ragequits.')
         return False
