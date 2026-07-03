@@ -52,7 +52,7 @@ _INTRO_SECTIONS = [
 
 
 class StoryStage1(Stage):
-    background_color = (13, 112, 114)
+    background_color = (0, 128, 128)
 
     def __init__(self):
         super().__init__('Stage 1: 1998', _stage_config)
