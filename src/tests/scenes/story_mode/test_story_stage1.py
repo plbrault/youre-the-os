@@ -5,7 +5,8 @@ from engine.game_manager import GameManager
 from engine.random import Random
 from scene_objects.process import ProcessType
 from scene_objects.stage_intro_dialog import StageIntroDialog, TimerBadge
-from scene_objects.story_stage_result_dialog import StoryStageResultDialog
+from scene_objects.story_stage_defeat_dialog import StoryStageDefeatDialog
+from scene_objects.story_stage_victory_dialog import StoryStageVictoryDialog
 from scenes.story_mode.story_stage1 import StoryStage1
 
 
@@ -93,9 +94,7 @@ class TestStoryStage1:
 
         stage.on_victory()
 
-        assert isinstance(stage.modal, StoryStageResultDialog)
-        assert stage.modal.is_victory is True
-        assert stage.modal.reason is None
+        assert isinstance(stage.modal, StoryStageVictoryDialog)
         assert stage.modal.stage_name == 'Stage 1: 1998'
         assert stage.modal.score == 0
         assert stage.modal.uptime == '0:00:00'
@@ -107,8 +106,7 @@ class TestStoryStage1:
 
         stage.on_defeat('The user killed the priority process.')
 
-        assert isinstance(stage.modal, StoryStageResultDialog)
-        assert stage.modal.is_victory is False
+        assert isinstance(stage.modal, StoryStageDefeatDialog)
         assert stage.modal.reason == 'The user killed the priority process.'
         assert stage.modal.stage_name == 'Stage 1: 1998'
         assert stage.modal.score == 0
