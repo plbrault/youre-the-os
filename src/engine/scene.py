@@ -8,7 +8,7 @@ from ui.color import Color
 
 
 class Scene(GameObject):
-    background_color = (Color.BLACK)
+    background_color = Color.BLACK
 
     def __init__(self, scene_id: str):
         super().__init__()
