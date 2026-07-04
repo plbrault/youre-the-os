@@ -71,6 +71,50 @@ class MockStage(Stage):
         self.on_defeat_reasons.append(reason)
 
 
+class MockStageWithStaleReason(Stage):
+    """Stage whose check_defeat first returns (False, stale) then plain True.
+
+    Used to verify that a non-defeating tuple from check_defeat does not leak
+    its reason into a later defeating frame that returns a plain bool.
+    """
+
+    def __init__(self, stale_uptime, defeat_uptime, **kwargs):
+        super().__init__(**kwargs)
+        self._stale_uptime = stale_uptime
+        self._defeat_uptime = defeat_uptime
+        self._on_defeat_call_count = 0
+        self._on_defeat_reasons = []
+
+    @property
+    def on_defeat_call_count(self):
+        return self._on_defeat_call_count
+
+    @property
+    def on_defeat_reasons(self):
+        return self._on_defeat_reasons
+
+    def check_victory(self):
+        return False
+
+    def check_defeat(self):
+        uptime = self.uptime_manager.uptime_ms
+        if uptime >= self._defeat_uptime:
+            return True
+        if uptime >= self._stale_uptime:
+            return (False, 'Stale reason')
+        return False
+
+    def on_start(self):
+        pass
+
+    def on_victory(self):
+        pass
+
+    def on_defeat(self, reason=None):
+        self._on_defeat_call_count += 1
+        self._on_defeat_reasons.append(reason)
+
+
 class TestStageStateMachine:
     """Tests for the Stage state machine transitions and behavior per the design spec."""
 
@@ -516,6 +560,33 @@ class TestStageUpdateBehavior:
         assert stage.state == StageState.DEFEAT
 
         stage.update(1001 + ONE_SECOND + 1, [])
+        assert stage.on_defeat_call_count == 1
+        assert stage.on_defeat_reasons == [None]
+
+    def test_false_tuple_check_defeat_does_not_leak_reason_into_later_bool_defeat(
+        self, scene_manager,
+    ):
+        stage = MockStageWithStaleReason(
+            name='Test',
+            config=StageConfig(num_processes_at_startup=0, new_process_probability=0),
+            stale_uptime=1000,
+            defeat_uptime=2000,
+        )
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        # Frame 0: no defeat, check_defeat returns False (default bool).
+        stage.update(0, [])
+        assert stage.state == StageState.PLAYING
+        # Frame 1: check_defeat returns (False, 'Stale reason') -> not defeated.
+        stage.update(1000, [])
+        assert stage.state == StageState.PLAYING
+        # Frame 2: check_defeat returns plain True -> defeated, reason should be None.
+        stage.update(2000, [])
+        stage.update(2001, [])
+        assert stage.state == StageState.DEFEAT
+
+        stage.update(2001 + ONE_SECOND + 1, [])
         assert stage.on_defeat_call_count == 1
         assert stage.on_defeat_reasons == [None]
 

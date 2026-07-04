@@ -309,10 +309,12 @@ class Stage(Scene):
             scene_object.update(current_time, events)
         check_result = self.check_defeat()
         if isinstance(check_result, tuple):
-            defeated, self._defeat_reason = check_result
+            defeated = check_result[0]
         else:
             defeated = check_result
         if defeated:
+            if isinstance(check_result, tuple):
+                self._defeat_reason = check_result[1]
             self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
         elif self.check_victory():
             self.apply_state_transition(StateEvent.VICTORY_DETECTED)
