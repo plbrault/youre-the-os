@@ -10,6 +10,7 @@ from ui.fonts import (
 
 _BADGE_SIZE = 64
 _BADGE_SPACING = 16
+_BADGE_LT_SPACING = 5
 _TIMER_LABEL_SPACING = 4
 
 _skull = pygame.image.load(path.join('assets', 'skull_emoji.png'))
@@ -55,11 +56,33 @@ class StageIntroDialogView(ModalView):
         surface.blit(_skull, (0, 2))
         if badge.is_priority:
             surface.blit(_crown, (2, 34))
-        number_surface = FONT_PRIMARY_XLARGE.render(str(badge.number), True, Color.LIME_GREEN)
-        surface.blit(number_surface, (
-            _BADGE_SIZE - number_surface.get_width() - 4,
-            (_BADGE_SIZE - number_surface.get_height()) // 2,
-        ))
+        if badge.number == 0:
+            number_surface = FONT_PRIMARY_XLARGE.render('0', True, Color.LIME_GREEN)
+            surface.blit(number_surface, (
+                _BADGE_SIZE - number_surface.get_width() - 4,
+                (_BADGE_SIZE - number_surface.get_height()) // 2,
+            ))
+        else:
+            num_surface = FONT_PRIMARY_XLARGE.render(str(badge.number), True, Color.LIME_GREEN)
+            num_y = (_BADGE_SIZE - num_surface.get_height()) // 2
+            lt_w = 8
+            lt_h = 12
+            lt_x = (
+                _BADGE_SIZE - lt_w - _BADGE_LT_SPACING
+                - num_surface.get_width() - 4
+            )
+            lt_top_y = num_y + (num_surface.get_height() - lt_h) // 2
+            lt_mid_y = lt_top_y + lt_h // 2
+            lt_bot_y = lt_top_y + lt_h
+            lt_right_x = lt_x + lt_w
+            lt_left_x = lt_x
+            pygame.draw.line(
+                surface, Color.LIME_GREEN,
+                (lt_right_x, lt_top_y), (lt_left_x, lt_mid_y), 2)
+            pygame.draw.line(
+                surface, Color.LIME_GREEN,
+                (lt_left_x, lt_mid_y), (lt_right_x, lt_bot_y), 2)
+            surface.blit(num_surface, (lt_right_x + _BADGE_LT_SPACING, num_y))
         return surface
 
     def _render_timer_badge(self, badge):
