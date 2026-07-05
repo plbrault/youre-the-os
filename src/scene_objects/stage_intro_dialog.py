@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import TypeAlias
 
 from engine.modal import Modal
 from scene_objects.button import Button
@@ -12,14 +13,17 @@ class Section:
 
 
 @dataclass(frozen=True)
-class Badge:
-    number: int
+class KilledProcessBadge:
+    text: str
     is_priority: bool = False
 
 
 @dataclass(frozen=True)
 class TimerBadge:
     minutes: int
+
+
+Badge: TypeAlias = KilledProcessBadge | TimerBadge
 
 
 class StageIntroDialog(Modal):

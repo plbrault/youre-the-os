@@ -3,7 +3,9 @@ from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
 from scene_objects.process import ProcessType
-from scene_objects.stage_intro_dialog import Badge, Section, StageIntroDialog, TimerBadge
+from scene_objects.stage_intro_dialog import (
+    KilledProcessBadge, Section, StageIntroDialog, TimerBadge,
+)
 from scene_objects.story_stage_defeat_dialog import StoryStageDefeatDialog
 from scene_objects.story_stage_victory_dialog import StoryStageVictoryDialog
 
@@ -64,8 +66,9 @@ class StoryStage1(Stage):
             _INTRO_SECTIONS,
             badges=(
                 TimerBadge(6),
-                Badge(_stage_config.max_processes_terminated_by_user),
-                Badge(0, is_priority=True),
+                KilledProcessBadge(
+                    f'<{_stage_config.max_processes_terminated_by_user}'),
+                KilledProcessBadge('0', is_priority=True),
             ),
         ))
 

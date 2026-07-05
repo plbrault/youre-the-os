@@ -2,7 +2,7 @@ import pygame
 import pytest
 
 from scene_objects.stage_intro_dialog import (
-    Badge, StageIntroDialog, TimerBadge, Section,
+    KilledProcessBadge, StageIntroDialog, TimerBadge, Section,
 )
 from ui.color import Color
 from window_size import WINDOW_SIZE
@@ -65,24 +65,24 @@ class TestStageIntroDialogBadge:
         return pygame.Surface(WINDOW_SIZE)
 
     def test_nonzero_number_renders_less_than_label(self, surface):
-        dialog = _make_dialog(badges=(Badge(5),))
+        dialog = _make_dialog(badges=(KilledProcessBadge('<5'),))
         dialog.view.draw(surface)
         green = _count_pixels_in_dialog(dialog, surface, Color.LIME_GREEN)
 
         surface.fill(Color.BLACK)
-        dialog_zero = _make_dialog(badges=(Badge(0),))
+        dialog_zero = _make_dialog(badges=(KilledProcessBadge('0'),))
         dialog_zero.view.draw(surface)
         green_zero = _count_pixels_in_dialog(dialog_zero, surface, Color.LIME_GREEN)
 
         assert green > green_zero
 
     def test_zero_number_does_not_render_less_than(self, surface):
-        dialog = _make_dialog(badges=(Badge(5),))
+        dialog = _make_dialog(badges=(KilledProcessBadge('<5'),))
         dialog.view.draw(surface)
         green = _count_pixels_in_dialog(dialog, surface, Color.LIME_GREEN)
 
         surface.fill(Color.BLACK)
-        dialog_zero = _make_dialog(badges=(Badge(0),))
+        dialog_zero = _make_dialog(badges=(KilledProcessBadge('0'),))
         dialog_zero.view.draw(surface)
         green_zero = _count_pixels_in_dialog(dialog_zero, surface, Color.LIME_GREEN)
 

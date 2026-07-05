@@ -48,22 +48,19 @@ class StageIntroDialogView(ModalView):
             if hasattr(badge, 'minutes'):
                 self._badge_surfaces.append(self._render_timer_badge(badge))
             else:
-                self._badge_surfaces.append(self._render_badge(badge))
+                self._badge_surfaces.append(
+                    self._render_killed_process_badge(badge))
 
-    def _render_badge(self, badge):
+    def _render_killed_process_badge(self, badge):
         surface = pygame.Surface((_BADGE_SIZE, _BADGE_SIZE))
         surface.fill(Color.DARK_GREY)
         surface.blit(_skull, (0, 2))
         if badge.is_priority:
             surface.blit(_crown, (2, 34))
-        if badge.number == 0:
-            number_surface = FONT_PRIMARY_XLARGE.render('0', True, Color.LIME_GREEN)
-            surface.blit(number_surface, (
-                _BADGE_SIZE - number_surface.get_width() - 4,
-                (_BADGE_SIZE - number_surface.get_height()) // 2,
-            ))
-        else:
-            num_surface = FONT_PRIMARY_XLARGE.render(str(badge.number), True, Color.LIME_GREEN)
+        if badge.text.startswith('<'):
+            digits = badge.text[1:]
+            num_surface = FONT_PRIMARY_XLARGE.render(
+                digits, True, Color.LIME_GREEN)
             num_y = (_BADGE_SIZE - num_surface.get_height()) // 2
             lt_w = 8
             lt_h = 12
@@ -82,7 +79,16 @@ class StageIntroDialogView(ModalView):
             pygame.draw.line(
                 surface, Color.LIME_GREEN,
                 (lt_left_x, lt_mid_y), (lt_right_x, lt_bot_y), 2)
-            surface.blit(num_surface, (lt_right_x + _BADGE_LT_SPACING, num_y))
+            surface.blit(
+                num_surface,
+                (lt_right_x + _BADGE_LT_SPACING, num_y))
+        else:
+            number_surface = FONT_PRIMARY_XLARGE.render(
+                badge.text, True, Color.LIME_GREEN)
+            surface.blit(number_surface, (
+                _BADGE_SIZE - number_surface.get_width() - 4,
+                (_BADGE_SIZE - number_surface.get_height()) // 2,
+            ))
         return surface
 
     def _render_timer_badge(self, badge):
