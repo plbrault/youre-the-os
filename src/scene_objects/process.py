@@ -4,7 +4,7 @@ from math import sqrt
 
 from config.process_config import ProcessConfig
 from constants import (
-    ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+    ONE_SECOND, LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL
 )
 import game_monitor
 from engine.drawable import Drawable
@@ -36,6 +36,10 @@ class StateEvent(Enum):
     IO_AVAILABLE = auto()
     IO_DELIVERED = auto()
     PAGE_AVAILABLE = auto()
+
+class ProcessType(Enum):
+    STANDARD = auto()
+    PRIORITY = auto()
 
 class Process(SceneObject):
     ProcessState = ProcessState
@@ -79,10 +83,12 @@ class Process(SceneObject):
     }
 
     def __init__(self, pid: int, stage: 'Stage', config: ProcessConfig,
-                 *, view_class: Type[Drawable] = ProcessView, current_time: int = 0):
+                 *, process_type: ProcessType = ProcessType.STANDARD,
+                 view_class: Type[Drawable] = ProcessView, current_time: int = 0):
         self._state = ProcessState.IDLE
 
         self._pid = pid
+        self._type = process_type
         self._process_manager = stage.process_manager
         self._cpu_manager = stage.process_manager.cpu_manager
         self._page_manager = stage.page_manager
@@ -116,6 +122,10 @@ class Process(SceneObject):
     @property
     def pid(self):
         return self._pid
+
+    @property
+    def type(self):
+        return self._type
 
     @property
     def time_between_starvation_levels(self):
@@ -249,9 +259,17 @@ class Process(SceneObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    num_pages = round(sqrt(randint(1, 20)))
+                    num_pages = round(
+                        sqrt(
+                            randint(
+                                1,
+                                int((self._config.max_pages + 0.5) ** 2)
+                            )
+                        )
+                    )
                     for i in range(num_pages):
-                        page = self._page_manager.create_page(self._pid, i)
+                        page = self._page_manager.create_page(
+                            self._pid, i, self.type == ProcessType.PRIORITY)
                         self._pages.append(page)
                         game_monitor.notify_page_new(page.pid, page.idx, page.on_disk, page.in_use)
                 for page in self._pages:
@@ -403,10 +421,11 @@ class Process(SceneObject):
     def _handle_new_page_probability(self):
         if self.state == ProcessState.RUNNING:
             if (
-                len(self._pages) < MAX_PAGES_PER_PROCESS
+                len(self._pages) < self._config.max_pages
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
             ):
-                new_page = self._page_manager.create_page(self._pid, len(self._pages))
+                new_page = self._page_manager.create_page(
+                    self._pid, len(self._pages), self.type == ProcessType.PRIORITY)
                 self._pages.append(new_page)
                 new_page.in_use = True
                 game_monitor.notify_page_new(

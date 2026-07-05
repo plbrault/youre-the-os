@@ -74,6 +74,7 @@ class Stage(Scene):
         self._state = StageState.STARTING
         self._last_update_time = 0
         self._last_state_change_time = None
+        self._defeat_reason = None
 
         self._score_manager = None
         self._uptime_manager = None
@@ -89,6 +90,7 @@ class Stage(Scene):
         self._state = StageState.STARTING
         self._last_update_time = 0
         self._last_state_change_time = None
+        self._defeat_reason = None
 
         self._process_manager = ProcessManager(self, self._config)
         self._page_manager = PageManager(self, self._config)
@@ -171,24 +173,28 @@ class Stage(Scene):
     def uptime_manager(self):
         return self._uptime_manager
 
-    def check_victory(self, current_time: int) -> bool: # pylint: disable=unused-argument
+    def check_victory(self) -> bool:
         """
         This method is called each frame to check if the victory conditions have been met.
         By default, it always returns False, as the default stage cannot be won.
         Override in a subclass to implement victory conditions for a specific stage.
-        :param current_time: The current time in milliseconds since the stage started.
-                             Can be used to implement time-based victory conditions.
+        `check_victory` is always called AFTER `check_defeat`, and only if `check_defeat`
+        did not detect a defeat.
+        Time-based conditions should use `self.uptime_manager.uptime_ms`.
         """
         return False
 
-    def check_defeat(self, current_time: int) -> bool: # pylint: disable=unused-argument
+    def check_defeat(self) -> bool | tuple[bool, str]:
         """
         This method is called each frame to check if the defeat conditions have been met.
         By default, it returns True if the stage config's max_processes_terminated_by_user
         has been reached.
         Override in a subclass to change defeat conditions for a specific stage.
-        :param current_time: The current time in milliseconds since the stage started.
-                             Can be used to implement time-based defeat conditions.
+        `check_defeat` is always called BEFORE `check_victory`.
+        Time-based conditions should use `self.uptime_manager.uptime_ms`.
+        :returns: A boolean indicating whether the defeat condition has been met,
+                  or a tuple (bool, str) where the first element is the defeat flag
+                  and the second element is a string describing the reason.
         """
         return (
             self._process_manager.user_terminated_process_count
@@ -209,17 +215,19 @@ class Stage(Scene):
         Override in a subclass to implement behavior for a specific stage.
         """
 
-    def on_defeat(self):
+    def on_defeat(self, reason: str | None = None): # pylint: disable=unused-argument
         """
         This method is called once the stage is completed with a defeat.
         Default implementation opens the Game Over modal.
         Override in a subclass to implement a different behavior for a specific stage.
+        :param reason: Optional string describing the reason for the defeat, as provided
+                       by check_defeat. May be None. Not used by the default implementation.
         """
         self.show_modal(GameOverDialog(
             uptime=self._uptime_manager.uptime_text,
             stage_name=self.name,
             score=self._score_manager.score,
-            restart_game_fn=self.reset,
+            restart_stage_fn=self.reset,
             main_menu_fn=self._return_to_main_menu,
             standalone=self._standalone))
 
@@ -295,6 +303,28 @@ class Stage(Scene):
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
 
+    def _update_playing(self, current_time, events):
+        self._process_script_events()
+        for scene_object in list(self._scene_objects):
+            scene_object.update(current_time, events)
+        check_result = self.check_defeat()
+        if isinstance(check_result, tuple):
+            defeated = check_result[0]
+        else:
+            defeated = check_result
+        if defeated:
+            if isinstance(check_result, tuple):
+                self._defeat_reason = check_result[1]
+            self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
+        elif self.check_victory():
+            self.apply_state_transition(StateEvent.VICTORY_DETECTED)
+
+    def _update_awaiting_result(self, current_time, events):
+        for scene_object in list(self._scene_objects):
+            scene_object.update(current_time, events)
+        if not self._process_manager.any_process_in_motion:
+            self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
+
     def update(self, current_time, events):
         self._last_update_time = current_time
 
@@ -303,26 +333,14 @@ class Stage(Scene):
             self.apply_state_transition(StateEvent.START)
 
         if self._state == StageState.PLAYING:
-            self._process_script_events()
-            for scene_object in list(self._scene_objects):
-                scene_object.update(current_time, events)
-            if self.check_victory(current_time):
-                self.apply_state_transition(StateEvent.VICTORY_DETECTED)
-            elif self.check_defeat(current_time):
-                self.apply_state_transition(StateEvent.DEFEAT_DETECTED)
-
+            self._update_playing(current_time, events)
         elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
-            for scene_object in list(self._scene_objects):
-                scene_object.update(current_time, events)
-            if not self._process_manager.any_process_in_motion:
-                self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
-
+            self._update_awaiting_result(current_time, events)
         elif self._state == StageState.VICTORY:
             if current_time - self._last_state_change_time > ONE_SECOND:
                 self.on_victory()
                 self.apply_state_transition(StateEvent.DELAY_ELAPSED)
-
         elif self._state == StageState.DEFEAT:
             if current_time - self._last_state_change_time > ONE_SECOND:
-                self.on_defeat()
+                self.on_defeat(self._defeat_reason)
                 self.apply_state_transition(StateEvent.DELAY_ELAPSED)

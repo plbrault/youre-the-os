@@ -2,7 +2,7 @@
 Example configuration file for the sandbox mode.
 Only the `stage` variable is used while setting up the sandbox stage.
 It must be an instance of either `Stage` or a subclass of `Stage`.
-The `name` and `standalone` properties of `stage` will be overridden.
+The `standalone` property of `stage` will be overridden.
 """
 
 from config.cpu_config import CpuConfig
@@ -20,4 +20,4 @@ config = StageConfig(
     io_probability=0.01,
 )
 
-stage = Stage('', config)
+stage = Stage('Sandbox', config)

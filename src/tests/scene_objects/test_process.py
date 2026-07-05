@@ -1,14 +1,17 @@
 import pytest
 
-from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS, ONE_SECOND
+from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, ONE_SECOND
 from config.process_config import ProcessConfig
 from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
-from scene_objects.process import Process, ProcessState, StateEvent
+from scene_objects.process import Process, ProcessState, StateEvent, ProcessType
+from scene_objects.views.page_view import PageView
+from scene_objects.views.priority_page_view import PriorityPageView
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
+from factories.process_factory import ProcessFactory
 
 class TestProcess:
     @pytest.fixture
@@ -66,6 +69,7 @@ class TestProcess:
         process = Process(1, stage, process_config)
 
         assert process.pid == 1
+        assert process.type == ProcessType.STANDARD
         assert process.time_between_starvation_levels == 10000
         assert process.current_starvation_level_duration == 0
         assert process.cpu == None
@@ -81,6 +85,18 @@ class TestProcess:
         assert process.current_state_duration == 0
         assert process.is_progressing_to_happiness == False
         assert process.is_in_motion == False
+
+    def test_type_defaults_to_standard(self, stage, process_config):
+        process = Process(1, stage, process_config)
+        assert process.type == ProcessType.STANDARD
+
+    def test_type_is_standard_when_specified(self, stage, process_config):
+        process = Process(1, stage, process_config, process_type=ProcessType.STANDARD)
+        assert process.type == ProcessType.STANDARD
+
+    def test_type_is_priority_when_specified(self, stage, process_config):
+        process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
+        assert process.type == ProcessType.PRIORITY
 
     def test_state_events(self, stage, stage_config, process_config, spy_apply_event):
         process = Process(1, stage, process_config)
@@ -341,7 +357,7 @@ class TestProcess:
         process.use_cpu()
 
         assert stage.page_manager.get_page(1, 0).pid == 1
-        for i in range(1, MAX_PAGES_PER_PROCESS):
+        for i in range(1, process_config.max_pages):
             with pytest.raises(KeyError):
                 stage.page_manager.get_page(1, i)
 
@@ -356,10 +372,10 @@ class TestProcess:
 
         process.use_cpu()
 
-        for i in range(1, MAX_PAGES_PER_PROCESS):
+        for i in range(1, process_config.max_pages):
             assert stage.page_manager.get_page(1, i).pid == 1
         with pytest.raises(KeyError):
-            stage.page_manager.get_page(1, 4)
+            stage.page_manager.get_page(1, process_config.max_pages)
 
     def test_new_page_creation_while_running(self, stage, monkeypatch, process_config):
         process = Process(1, stage, process_config)
@@ -403,9 +419,57 @@ class TestProcess:
         process.use_cpu()
 
         assert stage.page_manager.get_page(1, 0).pid == 1
-        for i in range(1, MAX_PAGES_PER_PROCESS):
+        for i in range(1, process_config.max_pages):
             with pytest.raises(KeyError):
                 stage.page_manager.get_page(1, i)
+
+    def test_use_cpu_creates_crowned_pages_for_priority_process(self, stage, monkeypatch, process_config):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
+        process.use_cpu()
+
+        page = stage.page_manager.get_page(1, 0)
+        assert isinstance(page.view, PriorityPageView)
+
+    def test_use_cpu_creates_uncrowned_pages_for_standard_process(self, stage, monkeypatch, process_config):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, process_config, process_type=ProcessType.STANDARD)
+        process.use_cpu()
+
+        page = stage.page_manager.get_page(1, 0)
+        assert isinstance(page.view, PageView)
+        assert not isinstance(page.view, PriorityPageView)
+
+    def test_max_pages_per_process_honored(self, stage_custom_config, monkeypatch):
+        stage_config = StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+            max_pages_per_process=2,
+        )
+        stage = stage_custom_config(stage_config)
+        factory = ProcessFactory(stage, stage_config)
+        process = factory.create_standard_process(1)
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process.use_cpu()
+
+        assert stage.page_manager.get_page(1, 0).pid == 1
+        with pytest.raises(KeyError):
+            stage.page_manager.get_page(1, 1)
+
+        process.update(1000, [])
+        assert stage.page_manager.get_page(1, 1).pid == 1
+        with pytest.raises(KeyError):
+            stage.page_manager.get_page(1, 2)
+
+        process.update(2000, [])
+        with pytest.raises(KeyError):
+            stage.page_manager.get_page(1, 2)
 
     def test_use_cpu_sets_pages_to_in_use(self, stage, monkeypatch, process_config):
         # Should cause the creation of the maximum number of pages when the process is run
@@ -414,12 +478,12 @@ class TestProcess:
         process = Process(1, stage, process_config)
 
         process.use_cpu()
-        for i in range(0, MAX_PAGES_PER_PROCESS):
+        for i in range(0, process_config.max_pages):
             assert stage.page_manager.get_page(1, i).in_use == True
 
         process.yield_cpu()
         process.use_cpu()
-        for i in range(0, MAX_PAGES_PER_PROCESS):
+        for i in range(0, process_config.max_pages):
             assert stage.page_manager.get_page(1, i).in_use == True
 
     def test_yield_cpu_sets_pages_to_not_in_use(self, stage, monkeypatch, process_config):
@@ -431,7 +495,7 @@ class TestProcess:
         process.use_cpu()
         process.yield_cpu()
 
-        for i in range(0, MAX_PAGES_PER_PROCESS):
+        for i in range(0, process_config.max_pages):
             assert stage.page_manager.get_page(1, i).in_use == False
 
     def test_set_page_to_swap_while_running(self, stage, monkeypatch, process_config, spy_apply_event):
