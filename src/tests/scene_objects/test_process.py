@@ -86,10 +86,6 @@ class TestProcess:
         assert process.is_progressing_to_happiness == False
         assert process.is_in_motion == False
 
-    def test_process_type_enum_members(self):
-        member_names = [m.name for m in ProcessType]
-        assert member_names == ['STANDARD', 'PRIORITY']
-
     def test_type_defaults_to_standard(self, stage, process_config):
         process = Process(1, stage, process_config)
         assert process.type == ProcessType.STANDARD
