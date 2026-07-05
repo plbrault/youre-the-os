@@ -259,9 +259,14 @@ class Process(SceneObject):
                         slot.process = None
                         break
                 if len(self._pages) == 0:
-                    num_pages = min(
-                        round(sqrt(randint(1, 20))),
-                        self._config.max_pages)
+                    num_pages = round(
+                        sqrt(
+                            randint(
+                                1,
+                                int((self._config.max_pages + 0.5) ** 2)
+                            )
+                        )
+                    )
                     for i in range(num_pages):
                         page = self._page_manager.create_page(
                             self._pid, i, self.type == ProcessType.PRIORITY)
