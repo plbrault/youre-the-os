@@ -215,13 +215,6 @@ class Stage(Scene):
         Override in a subclass to implement behavior for a specific stage.
         """
 
-    def _go_to_next_stage(self):
-        """
-        This method is called when the player chooses to move on to the next stage.
-        It is empty by default.
-        Override in a subclass to implement stage progression for a specific stage.
-        """
-
     def on_defeat(self, reason: str | None = None): # pylint: disable=unused-argument
         """
         This method is called once the stage is completed with a defeat.

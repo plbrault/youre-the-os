@@ -90,6 +90,9 @@ class StoryStage1(Stage):
             standalone=self._standalone,
         ))
 
+    def _go_to_next_stage(self):
+        pass
+
     def on_defeat(self, reason: str | None = None):
         self.show_modal(StoryStageDefeatDialog(
             uptime=self._uptime_manager.uptime_text,

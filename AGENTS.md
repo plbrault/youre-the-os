@@ -42,3 +42,4 @@
 
 * Design/specification documents are stored in the project's wiki, which is a separate Git repository.
 * If you are asked to read or edit wiki documents, check if the `youre-the-os.wiki` folder is available locally. If not, clone it from `https://github.com/plbrault/youre-the-os.wiki.git`.
+* Do not edit the wiki unless you are explicitly instructed to.
