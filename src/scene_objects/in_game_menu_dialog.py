@@ -5,10 +5,10 @@ from scene_objects.views.in_game_menu_dialog_view import InGameMenuDialogView
 
 class InGameMenuDialog(Modal):
 
-    def __init__(self, restart_game_fn, main_menu_fn):
+    def __init__(self, restart_stage_fn, main_menu_fn):
         super().__init__(InGameMenuDialogView(self))
 
-        self._restart_button = Button('Restart Game', restart_game_fn)
+        self._restart_button = Button('Restart Game', restart_stage_fn)
         self._main_menu_button = Button('Return to Main Menu', main_menu_fn)
         self._close_menu_button = Button('Close', self.close, key_bind='escape')
 

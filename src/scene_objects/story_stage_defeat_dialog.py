@@ -5,7 +5,7 @@ from scene_objects.views.story_stage_defeat_dialog_view import StoryStageDefeatD
 
 class StoryStageDefeatDialog(Modal):
     def __init__(
-        self, *, uptime, stage_name, score, reason=None, restart_game_fn,
+        self, *, uptime, stage_name, score, reason=None, restart_stage_fn,
         main_menu_fn, standalone=False,
     ):
         self.uptime = uptime
@@ -15,7 +15,7 @@ class StoryStageDefeatDialog(Modal):
         self.standalone = standalone
         super().__init__(StoryStageDefeatDialogView(self))
 
-        self.primary_button = Button('Try Again', restart_game_fn)
+        self.primary_button = Button('Try Again', restart_stage_fn)
         self.children.append(self.primary_button)
         self.main_menu_button = Button('Main Menu', main_menu_fn)
         if not self.standalone:

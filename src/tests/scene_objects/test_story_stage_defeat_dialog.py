@@ -7,7 +7,7 @@ def _make_dialog(*, reason='Defeated', standalone=False):
     restart_calls = []
     main_menu_calls = []
 
-    def restart_game_fn():
+    def restart_stage_fn():
         restart_calls.append(True)
 
     def main_menu_fn():
@@ -18,7 +18,7 @@ def _make_dialog(*, reason='Defeated', standalone=False):
         stage_name='Stage 1: 1998',
         score=0,
         reason=reason,
-        restart_game_fn=restart_game_fn,
+        restart_stage_fn=restart_stage_fn,
         main_menu_fn=main_menu_fn,
         standalone=standalone,
     )

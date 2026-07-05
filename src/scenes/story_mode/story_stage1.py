@@ -99,7 +99,7 @@ class StoryStage1(Stage):
             stage_name=self.name,
             score=self._score_manager.score,
             reason=reason,
-            restart_game_fn=self.reset,
+            restart_stage_fn=self.reset,
             main_menu_fn=self._return_to_main_menu,
             standalone=self._standalone,
         ))
