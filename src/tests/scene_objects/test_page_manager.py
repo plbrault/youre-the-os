@@ -7,6 +7,120 @@ from scene_objects.page_manager import PageManager
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 
+
+class TestPageManagerSwapCancellation:
+    @pytest.fixture(params=['swap-in', 'swap-out'])
+    def swapping_pages(self, stage_custom_config, request):
+        stage = stage_custom_config(StageConfig(
+            num_ram_rows=1, parallel_swaps=2, swap_delay_ms=100))
+        page_manager = stage.page_manager
+        ram_pages = [page_manager.create_page(1, idx) for idx in range(PAGES_PER_ROW)]
+        if request.param == 'swap-in':
+            pages = [page_manager.create_page(2, idx) for idx in range(5)]
+            for page in ram_pages:
+                page_manager.delete_page(page)
+        else:
+            pages = ram_pages[:5]
+        return page_manager, pages
+
+    @pytest.mark.parametrize('retries', [1, 3])
+    def test_requeued_swap_has_one_destination(self, swapping_pages, retries):
+        page_manager, pages = swapping_pages
+        for blocker in pages[:2]:
+            blocker.request_swap()
+        page_manager.update(0, [])
+        page = pages[2]
+        page.request_swap()
+        page_manager.update(10, [])
+        assert page.swap_requested
+        assert not page.swap_in_progress
+
+        for retry in range(retries):
+            page.request_swap_cancellation()
+            page_manager.update(20 + retry * 20, [])
+            page.request_swap()
+            page_manager.update(30 + retry * 20, [])
+
+        page_manager.update(100, [])
+        page_manager.update(101, [])
+        assert page.swap_in_progress
+        page_manager.update(201, [])
+        assert not page.swap_requested
+        assert len([slot for slot in page_manager.children
+                    if isinstance(slot, PageSlot) and slot.page is page]) == 1
+
+        page_manager.delete_page(page)
+        page_manager.update(202, [])
+        assert not any(isinstance(slot, PageSlot) and slot.page is page
+                       for slot in page_manager.children)
+
+    def test_requeued_swap_goes_to_back_of_queue(self, swapping_pages):
+        page_manager, pages = swapping_pages
+        for blocker in pages[:2]:
+            blocker.request_swap()
+        page_manager.update(0, [])
+        requeued = pages[2]
+        requeued.request_swap()
+        page_manager.update(10, [])
+        requeued.request_swap_cancellation()
+        page_manager.update(20, [])
+        for other_page in pages[3:5]:
+            other_page.request_swap()
+        requeued.request_swap()
+        page_manager.update(30, [])
+
+        page_manager.update(100, [])
+        page_manager.update(101, [])
+        assert pages[3].swap_in_progress
+        assert pages[4].swap_in_progress
+        assert requeued.swap_requested
+        assert not requeued.swap_in_progress
+
+        page_manager.update(201, [])
+        page_manager.update(202, [])
+        assert requeued.swap_in_progress
+        page_manager.update(302, [])
+        assert not requeued.swap_requested
+        assert len([slot for slot in page_manager.children
+                    if isinstance(slot, PageSlot) and slot.page is requeued]) == 1
+
+    def test_deleting_requeued_swap_in_progress_releases_all_slots(self, swapping_pages):
+        page_manager, pages = swapping_pages
+        page = pages[0]
+        page.request_swap()
+        page.request_swap_cancellation()
+        page.request_swap()
+        page_manager.update(0, [])
+        assert page.swap_in_progress
+
+        page_manager.delete_page(page)
+        page_manager.update(100, [])
+        assert not any(isinstance(slot, PageSlot) and slot.page is page
+                       for slot in page_manager.children)
+
+    def test_requeue_after_in_progress_cancellation_keeps_fifo_order(self, swapping_pages):
+        page_manager, pages = swapping_pages
+        for page in pages[:3]:
+            page.request_swap()
+        page_manager.update(0, [])
+        assert pages[0].swap_in_progress
+        assert pages[1].swap_in_progress
+        assert not pages[2].swap_in_progress
+
+        pages[0].request_swap_cancellation()
+        pages[0].request_swap()
+        page_manager.update(10, [])
+        assert pages[2].swap_in_progress
+        assert not pages[0].swap_in_progress
+
+        page_manager.update(110, [])
+        page_manager.update(111, [])
+        assert pages[0].swap_in_progress
+        page_manager.update(211, [])
+        assert not pages[0].swap_requested
+        assert len([slot for slot in page_manager.children
+                    if isinstance(slot, PageSlot) and slot.page is pages[0]]) == 1
+
 class TestPageManager:
     @pytest.fixture
     def stage_config(self):
@@ -451,4 +565,3 @@ class TestPageManager:
         assert not other_disk_page.on_disk
         assert not other_disk_page.swap_requested
         assert not other_disk_page.swap_in_progress
-         

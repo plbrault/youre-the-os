@@ -1,4 +1,4 @@
-from queue import Queue
+from collections import OrderedDict
 from typing import Optional
 
 from constants import MAX_RAM_ROWS, PAGES_PER_ROW
@@ -20,8 +20,8 @@ class PageManager(SceneObject):
         self._ram_slots = []
         self._disk_slots = []
         self._pages = {}
-        self._swap_in_queue = Queue()
-        self._swap_out_queue = Queue()
+        self._swap_in_queue = OrderedDict()
+        self._swap_out_queue = OrderedDict()
 
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
@@ -122,7 +122,8 @@ class PageManager(SceneObject):
         swapping_from = next(
             source_slot for source_slot in source_slots if source_slot.page == page)
         page.init_swap(swapping_from)
-        swap_queue.put(page)
+        swap_queue.pop(page, None)
+        swap_queue[page] = None
 
         if swap_whole_row:
             slots_on_same_row = [
@@ -151,10 +152,12 @@ class PageManager(SceneObject):
                 if slot.has_page:
                     self.cancel_page_swap(slot.page)
         else:
+            self._swap_in_queue.pop(page, None)
+            self._swap_out_queue.pop(page, None)
             page.cancel_swap()
 
     def delete_page(self, page):
-        page.cancel_swap()
+        self.cancel_page_swap(page)
         for ram_slot in self._ram_slots:
             if ram_slot.page == page:
                 ram_slot.page = None
@@ -182,8 +185,8 @@ class PageManager(SceneObject):
             newly_in_progress = 0
             while newly_in_progress < self._stage_config.parallel_swaps - num_swap_ins_in_progress:
                 empty_ram_slot = next((slot for slot in self._ram_slots if not slot.has_page), None)
-                if empty_ram_slot and not self._swap_in_queue.empty():
-                    page = self._swap_in_queue.get()
+                if empty_ram_slot and self._swap_in_queue:
+                    page, _ = self._swap_in_queue.popitem(last=False)
                     if not page.swap_requested: # check if swap was cancelled
                         continue
                     page.start_swap(current_time, empty_ram_slot)
@@ -198,8 +201,8 @@ class PageManager(SceneObject):
                 empty_disk_slot = next(
                     (slot for slot in self._disk_slots if not slot.has_page),
                     None)
-                if empty_disk_slot and not self._swap_out_queue.empty():
-                    page = self._swap_out_queue.get()
+                if empty_disk_slot and self._swap_out_queue:
+                    page, _ = self._swap_out_queue.popitem(last=False)
                     if not page.swap_requested: # check if swap was cancelled
                         continue
                     page.start_swap(current_time, empty_disk_slot)
