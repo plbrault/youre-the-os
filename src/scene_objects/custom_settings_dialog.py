@@ -129,7 +129,11 @@ class CustomSettingsDialog(Modal):
         )
 
         if self.graceful_termination_selector.selected_option == 'No':
-            config = replace(config, graceful_termination_probability = 0)
+            config = replace(
+                config,
+                graceful_termination_probability = 0,
+                priority_process_graceful_termination_probability = 0
+            )
 
         return config
 
