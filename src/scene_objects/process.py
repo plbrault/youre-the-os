@@ -278,6 +278,7 @@ class Process(SceneObject):
 
     def yield_cpu(self):
         if self.has_cpu:
+            was_waiting_for_page = self._state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
             self._cpu.process = None
             self._cpu = None
             self.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
@@ -286,6 +287,8 @@ class Process(SceneObject):
                 self._is_on_io_cooldown = False
             if self._state != ProcessState.ENDED:
                 game_monitor.notify_process_cpu(self._pid, self.has_cpu)
+            if was_waiting_for_page:
+                game_monitor.notify_process_wait_page(self._pid, False)
             for page in self._pages:
                 page.in_use = False
                 game_monitor.notify_page_use(page.pid, page.idx, page.in_use)
