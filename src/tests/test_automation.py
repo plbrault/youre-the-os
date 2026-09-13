@@ -661,6 +661,45 @@ class TestGameObjectsEmitEvents:
 
         assert len(wait_page_events) >= 1, "Process should emit PROC_WAIT_PAGE when waiting for page"
 
+    def test_process_emits_wait_page_false_event_when_yielding_cpu_during_page_fault(self, stage):
+        """Test that Process emits PROC_WAIT_PAGE with waiting_for_page=False when it yields
+        the CPU while blocked on a page fault."""
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
+        process = stage.process_manager.get_process(1)
+        process.use_cpu()
+
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
+
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
+
+        process.update(swap_time, [])
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+
+        game_monitor.clear_events()
+
+        process.yield_cpu()
+
+        events = game_monitor.get_events()
+        wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE' and e.pid == process.pid]
+
+        assert len(wait_page_events) == 1, "Process should emit PROC_WAIT_PAGE when it stops waiting for page"
+        assert wait_page_events[0].waiting_for_page is False
+
     def test_scheduler_releases_cpu_when_process_on_cpu_dies_from_starvation(self, stage):
         """Test that the Scheduler's used_cpus goes back to zero after a process that was
         blocked on a page fault while on a CPU is killed by starvation."""
@@ -708,6 +747,62 @@ class TestGameObjectsEmitEvents:
         assert stage.process_manager.cpu_manager.get_current_stats()['active_process_count'] == 0
         assert process.pid not in scheduler.processes
         assert scheduler.used_cpus == 0
+
+    def test_scheduler_clears_waiting_for_page_when_page_recovered_off_cpu(self, stage):
+        """Test that the Scheduler no longer reports waiting_for_page after a process yields the
+        CPU during a page fault, its page is swapped back to RAM, and it is rescheduled."""
+        from automation.api import Scheduler
+        scheduler = Scheduler()
+        game_monitor.clear_events()
+
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
+        process = stage.process_manager.get_process(1)
+        process.use_cpu()
+
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
+
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
+
+        process.update(swap_time, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        assert scheduler.processes[process.pid].waiting_for_page is True
+
+        # Yield the CPU during the page fault, then bring the page back to RAM
+        process.yield_cpu()
+        page.request_swap()
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if not page.on_disk:
+                break
+
+        # Reschedule the process now that its page is in RAM
+        process.use_cpu()
+        process.update(swap_time, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.RUNNING
+        assert scheduler.processes[process.pid].waiting_for_page is False
 
     def test_page_emits_swap_event_when_swap_completes(self, stage):
         """Test that Page emits PAGE_SWAP event when swap completes."""
