@@ -192,6 +192,44 @@ class TestSchedulerStateUpdates:
         
         assert 1 not in scheduler.processes
 
+    def test_proc_kill_event_releases_cpu_when_process_had_cpu(self, scheduler):
+        """Test PROC_KILL event decrements used_cpus when the killed process was on a CPU."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
+            SimpleNamespace(etype='PROC_KILL', pid=1),
+        ]
+        scheduler(events)
+
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 0
+
+    def test_proc_kill_event_keeps_used_cpus_when_process_had_no_cpu(self, scheduler):
+        """Test PROC_KILL event does not decrement used_cpus when the killed process was off CPU."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PROC_NEW', pid=2),
+            SimpleNamespace(etype='PROC_CPU', pid=2, cpu=True),
+            SimpleNamespace(etype='PROC_KILL', pid=1),
+        ]
+        scheduler(events)
+
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 1
+
+    def test_proc_kill_event_does_not_release_cpu_twice(self, scheduler):
+        """Test PROC_KILL event does not decrement used_cpus again after a PROC_CPU release."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
+            SimpleNamespace(etype='PROC_CPU', pid=1, cpu=False),
+            SimpleNamespace(etype='PROC_KILL', pid=1),
+        ]
+        scheduler(events)
+
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 0
+
     def test_proc_end_event_removes_process(self, scheduler):
         """Test PROC_END event removes process and decrements used_cpus."""
         events = [
@@ -661,6 +699,54 @@ class TestGameObjectsEmitEvents:
 
         assert len(wait_page_events) == 1, "Process should emit PROC_WAIT_PAGE when it stops waiting for page"
         assert wait_page_events[0].waiting_for_page is False
+
+    def test_scheduler_releases_cpu_when_process_on_cpu_dies_from_starvation(self, stage):
+        """Test that the Scheduler's used_cpus goes back to zero after a process that was
+        blocked on a page fault while on a CPU is killed by starvation."""
+        from automation.api import Scheduler
+        scheduler = Scheduler()
+        game_monitor.clear_events()
+
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
+        process = stage.process_manager.get_process(1)
+        process.use_cpu()
+
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
+
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
+
+        process.update(swap_time, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        assert scheduler.used_cpus == 1
+
+        # Leave the page fault unresolved until the process dies from starvation
+        for i in range(1, DEAD_STARVATION_LEVEL):
+            process.update(swap_time + i * process.time_between_starvation_levels, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.ENDED
+        assert stage.process_manager.cpu_manager.get_current_stats()['active_process_count'] == 0
+        assert process.pid not in scheduler.processes
+        assert scheduler.used_cpus == 0
 
     def test_scheduler_clears_waiting_for_page_when_page_recovered_off_cpu(self, stage):
         """Test that the Scheduler no longer reports waiting_for_page after a process yields the
