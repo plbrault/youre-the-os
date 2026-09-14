@@ -1,5 +1,6 @@
 import pytest
 
+import game_monitor
 from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
 from engine.game_manager import GameManager
 from engine.modal import Modal
@@ -1046,3 +1047,91 @@ class TestStage:
 
         stage.update(int(time) + ONE_SECOND + 1, [])
         assert stage.on_victory_call_count == 1
+
+
+class TestStageGameMonitorEvents:
+    @pytest.fixture
+    def stage_config(self):
+        return StageConfig(
+            num_processes_at_startup=1,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+            max_pages_per_process=1,
+        )
+
+    @pytest.fixture
+    def script(self):
+        # Automation script that moves every newly created process to a CPU
+        return compile(
+            "def scheduler(events):\n"
+            "    return [\n"
+            "        {'type': 'process', 'pid': event.pid}\n"
+            "        for event in events if event.etype == 'PROC_NEW'\n"
+            "    ]\n",
+            'test_script.py',
+            'exec'
+        )
+
+    def test_update_without_script_drains_events_emitted_before_the_frame(
+            self, stage_custom_config, stage_config):
+        stage = stage_custom_config(stage_config)
+        game_monitor.clear_events()
+        game_monitor.notify_process_new(99)
+
+        # The first process at startup is created 50 ms after setup
+        stage.update(50, [])
+
+        assert [event.pid for event in game_monitor.get_events() if event.etype == 'PROC_NEW'] == [1]
+
+    def test_update_without_script_retains_only_current_frame_events(
+            self, stage_custom_config, stage_config):
+        stage = stage_custom_config(stage_config)
+        game_monitor.clear_events()
+
+        stage.update(50, [])
+        stage.process_manager.get_process(1).use_cpu()
+        for time in range(ONE_SECOND, 30 * ONE_SECOND + 1, ONE_SECOND):
+            stage.update(time, [])
+        events_after_30_seconds = len(game_monitor.get_events())
+        for time in range(31 * ONE_SECOND, 60 * ONE_SECOND + 1, ONE_SECOND):
+            stage.update(time, [])
+        events_after_60_seconds = len(game_monitor.get_events())
+
+        # A happy running process emits one starvation event per second,
+        # and only the event of the current frame should be retained
+        assert events_after_30_seconds == 1
+        assert events_after_60_seconds == 1
+
+    def test_reset_clears_events_of_previous_session(self, stage_custom_config, stage_config):
+        stage = stage_custom_config(stage_config)
+        game_monitor.clear_events()
+
+        stage.update(50, [])
+        stage.process_manager.get_process(1).use_cpu()
+        for time in range(ONE_SECOND, 10 * ONE_SECOND + 1, ONE_SECOND):
+            stage.update(time, [])
+
+        stage.reset()
+
+        assert len(game_monitor.get_events()) == 0
+
+    def test_update_with_script_delivers_each_event_once(self, scene_manager, stage_config, script):
+        stage = Stage('Test Stage', stage_config, script=script)
+        stage.scene_manager = scene_manager
+        game_monitor.clear_events()
+        stage.setup()
+
+        # Process 1 is created on the first update, and the script receives
+        # its PROC_NEW event on the next update
+        stage.update(50, [])
+        stage.update(100, [])
+
+        assert stage.process_manager.get_process(1).has_cpu == True
+
+        # The PROC_NEW event must not be delivered again, otherwise the script
+        # would toggle the process off its CPU
+        stage.update(150, [])
+        stage.update(200, [])
+
+        assert stage.process_manager.get_process(1).has_cpu == True
