@@ -85,6 +85,8 @@ class Stage(Scene):
         super().__init__('stage')
 
     def setup(self):
+        game_monitor.clear_events()
+
         self._scene_objects = []
 
         self._state = StageState.STARTING
@@ -239,9 +241,9 @@ class Stage(Scene):
         self.scene_manager.start_scene('main_menu')
 
     def _get_script_events(self):
-        if self._script_callback is None:
-            return []
-        events = self._script_callback(game_monitor.get_events())
+        events = []
+        if self._script_callback is not None:
+            events = self._script_callback(game_monitor.get_events())
         game_monitor.clear_events()
         return events
 
