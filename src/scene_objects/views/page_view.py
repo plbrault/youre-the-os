@@ -1,6 +1,7 @@
 import pygame
 
 from engine.drawable import Drawable
+from scene_objects.views.view_utils import contrasted_color
 from ui.color import Color
 from ui.fonts import FONT_SECONDARY_XXXSMALL
 
@@ -8,8 +9,6 @@ from ui.fonts import FONT_SECONDARY_XXXSMALL
 class PageView(Drawable):
     def __init__(self, page):
         self._page = page
-        self._pid_text_surface = FONT_SECONDARY_XXXSMALL.render(
-            'PID ' + str(self._page.pid), False, Color.BLACK)
         super().__init__()
 
     @property
@@ -28,9 +27,11 @@ class PageView(Drawable):
             color = Color.BLUE
         elif self._page.in_use:
             color = Color.WHITE
+        pid_text_surface = FONT_SECONDARY_XXXSMALL.render(
+            'PID ' + str(self._page.pid), False, contrasted_color(color))
         pygame.draw.rect(surface, color, pygame.Rect(
             self._x, self._y, self.width, self.height))
-        surface.blit(self._pid_text_surface, (self._x + 1, self._y + 5))
+        surface.blit(pid_text_surface, (self._x + 1, self._y + 5))
 
         if self._page.swap_in_progress:
             progress_bar_width = (self.width - 4) * self._page.swap_percentage_completed

@@ -4,7 +4,7 @@ import pygame
 
 from constants import LAST_ALIVE_STARVATION_LEVEL
 from engine.drawable import Drawable
-from scene_objects.views.view_utils import ViewUtils
+from scene_objects.views.view_utils import contrasted_color
 from ui.color import Color
 from ui.fonts import FONT_SECONDARY_XXSMALL
 
@@ -51,7 +51,6 @@ class ProcessView(Drawable):
         super().__init__()
 
     def draw(self, surface):
-        view_utils = ViewUtils()
         if self._process.has_ended_gracefully:
             color = Color.LIGHT_BLUE
             starvation_emoji_surface = _gracefully_terminated_emoji
@@ -63,7 +62,7 @@ class ProcessView(Drawable):
             color = Color.BLUE
 
         pid_text_surface = FONT_SECONDARY_XXSMALL.render(
-            "PID " + str(self._process.pid), False, view_utils.contrasted_color(color)
+            "PID " + str(self._process.pid), False, contrasted_color(color)
         )
 
         pygame.draw.rect(
