@@ -367,11 +367,16 @@ class Scheduler:
     def _update_PROC_KILL(self, event):
         """Handle process killed (starvation too high).
         
+        The game releases the CPU of a killed process without a
+        PROC_CPU event, so the CPU is released here if the process had one.
+        
         Args:
             event.pid: Process ID
         """
         proc = self.processes.pop(event.pid, None)
         if proc:
+            if proc.has_cpu:
+                self.used_cpus -= 1
             for page in proc.pages:
                 self.pages.pop(page.key, None)
 

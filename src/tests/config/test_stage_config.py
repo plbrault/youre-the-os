@@ -54,3 +54,13 @@ class TestStageConfig:
         )
 
         assert config.priority_process_graceful_termination_probability == 0.05
+
+    def test_max_pages_per_process_default_value(self):
+        config = StageConfig()
+
+        assert config.max_pages_per_process == 4
+
+    def test_max_pages_per_process_explicit_value(self):
+        config = StageConfig(max_pages_per_process=2)
+
+        assert config.max_pages_per_process == 2

@@ -1,4 +1,3 @@
-from enum import Enum, auto
 from math import inf
 import re
 
@@ -11,7 +10,7 @@ from factories.process_factory import ProcessFactory
 from scene_objects.checkbox import Checkbox
 from scene_objects.cpu_manager import CpuManager
 from scene_objects.io_queue import IoQueue
-from scene_objects.process import Process, ProcessState
+from scene_objects.process import Process, ProcessState, ProcessType
 from scene_objects.views.process_manager_view import ProcessManagerView
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
@@ -33,10 +32,6 @@ def _is_sorted(process_list: [Process]):
             return False
     return True
 
-class ProcessType(Enum):
-    STANDARD = auto()
-    PRIORITY = auto()
-
 class ProcessManager(SceneObject):
     def __init__(self, stage: 'Stage', stage_config: 'StageConfig'):
         self._stage = stage
@@ -50,6 +45,7 @@ class ProcessManager(SceneObject):
         self._user_terminated_process_slots = None
         self._io_queue = None
         self._forced_process_creation = None
+        self._min_processes_at_times_ms = None
         self._processes = None
         self._sort_processes_button = None
         self._auto_sort_checkbox = None
@@ -98,6 +94,9 @@ class ProcessManager(SceneObject):
             + [(time_ms, ProcessType.PRIORITY)
                for time_ms in self._stage_config.force_new_priority_process_at_times_ms],
             key=lambda x: x[0])
+
+        self._min_processes_at_times_ms = sorted(
+            self._stage_config.min_processes_at_times_ms, key=lambda x: x[0])
 
         io_queue = self._io_queue
         io_queue.view.set_xy(50, 10)
@@ -163,6 +162,15 @@ class ProcessManager(SceneObject):
     def user_terminated_process_count(self):
         # user refers to in-game user, not to the player.
         return self._user_terminated_process_count
+
+    @property
+    def user_terminated_processes(self):
+        # user refers to in-game user, not to the player.
+        return [
+            slot.process
+            for slot in self._user_terminated_process_slots
+            if slot.process is not None
+        ]
 
     @property
     def any_process_in_motion(self):
@@ -334,8 +342,18 @@ class ProcessManager(SceneObject):
                     if cpu is not None and cpu.has_process:
                         cpu.process.yield_cpu()
 
+    def _current_min_processes(self, current_time):
+        while len(self._min_processes_at_times_ms) > 1 and \
+                current_time >= self._min_processes_at_times_ms[1].time_ms:
+            self._min_processes_at_times_ms.pop(0)
+        if self._min_processes_at_times_ms and \
+                current_time >= self._min_processes_at_times_ms[0].time_ms:
+            return self._min_processes_at_times_ms[0].min_processes
+        return 0
+
     def _handle_process_creation(self, current_time):
         if len(self._alive_process_list) < self._stage_config.max_processes:
+            process_created = False
             if (
                 len(self._forced_process_creation) > 0
                 and current_time >= self._forced_process_creation[0][0]
@@ -344,17 +362,25 @@ class ProcessManager(SceneObject):
                 self._create_process(process_type=process_type)
                 self._last_new_process_check = current_time
                 self._last_process_creation_time = current_time
+                process_created = True
             elif self._next_pid <= self._stage_config.num_processes_at_startup and current_time - \
                     self._last_new_process_check >= 50:
                 self._last_new_process_check = current_time
                 self._last_process_creation_time = current_time
                 self._create_process()
+                process_created = True
             elif current_time - self._last_new_process_check >= ONE_SECOND:
                 self._last_new_process_check = current_time
                 if randint(1, 100) <= self._new_process_probability_numerator or current_time - \
                         self._last_process_creation_time >= self._max_wait_between_new_processes:
                     self._create_process()
                     self._last_process_creation_time = current_time
+                    process_created = True
+            if not process_created and not self.any_process_in_motion and \
+                    len(self._alive_process_list) < self._current_min_processes(current_time):
+                self._create_process()
+                self._last_new_process_check = current_time
+                self._last_process_creation_time = current_time
 
     def _handle_timed_powerups(self, current_time):
         if (

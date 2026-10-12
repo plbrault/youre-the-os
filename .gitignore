@@ -7,3 +7,4 @@ src/sandbox
 !src/sandbox/sample.py
 .coverage
 youre-the-os.wiki
+src/assets/*-pygbag.png

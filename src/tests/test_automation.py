@@ -2,10 +2,11 @@ import pytest
 from types import SimpleNamespace
 
 import game_monitor
-from constants import DEAD_STARVATION_LEVEL, MAX_PAGES_PER_PROCESS
+from constants import DEAD_STARVATION_LEVEL
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from scenes.stage import Stage
+from scene_objects.process import ProcessState
 
 
 class TestSchedulerDataClasses:
@@ -190,6 +191,44 @@ class TestSchedulerStateUpdates:
         scheduler(events)
         
         assert 1 not in scheduler.processes
+
+    def test_proc_kill_event_releases_cpu_when_process_had_cpu(self, scheduler):
+        """Test PROC_KILL event decrements used_cpus when the killed process was on a CPU."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
+            SimpleNamespace(etype='PROC_KILL', pid=1),
+        ]
+        scheduler(events)
+
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 0
+
+    def test_proc_kill_event_keeps_used_cpus_when_process_had_no_cpu(self, scheduler):
+        """Test PROC_KILL event does not decrement used_cpus when the killed process was off CPU."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PROC_NEW', pid=2),
+            SimpleNamespace(etype='PROC_CPU', pid=2, cpu=True),
+            SimpleNamespace(etype='PROC_KILL', pid=1),
+        ]
+        scheduler(events)
+
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 1
+
+    def test_proc_kill_event_does_not_release_cpu_twice(self, scheduler):
+        """Test PROC_KILL event does not decrement used_cpus again after a PROC_CPU release."""
+        events = [
+            SimpleNamespace(etype='PROC_NEW', pid=1),
+            SimpleNamespace(etype='PROC_CPU', pid=1, cpu=True),
+            SimpleNamespace(etype='PROC_CPU', pid=1, cpu=False),
+            SimpleNamespace(etype='PROC_KILL', pid=1),
+        ]
+        scheduler(events)
+
+        assert 1 not in scheduler.processes
+        assert scheduler.used_cpus == 0
 
     def test_proc_end_event_removes_process(self, scheduler):
         """Test PROC_END event removes process and decrements used_cpus."""
@@ -622,6 +661,159 @@ class TestGameObjectsEmitEvents:
 
         assert len(wait_page_events) >= 1, "Process should emit PROC_WAIT_PAGE when waiting for page"
 
+    def test_process_emits_wait_page_false_event_when_yielding_cpu_during_page_fault(self, stage):
+        """Test that Process emits PROC_WAIT_PAGE with waiting_for_page=False when it yields
+        the CPU while blocked on a page fault."""
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
+        process = stage.process_manager.get_process(1)
+        process.use_cpu()
+
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
+
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
+
+        process.update(swap_time, [])
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+
+        game_monitor.clear_events()
+
+        process.yield_cpu()
+
+        events = game_monitor.get_events()
+        wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE' and e.pid == process.pid]
+
+        assert len(wait_page_events) == 1, "Process should emit PROC_WAIT_PAGE when it stops waiting for page"
+        assert wait_page_events[0].waiting_for_page is False
+
+    def test_scheduler_releases_cpu_when_process_on_cpu_dies_from_starvation(self, stage):
+        """Test that the Scheduler's used_cpus goes back to zero after a process that was
+        blocked on a page fault while on a CPU is killed by starvation, and that the freed
+        CPU slot can be claimed again by another process without inflating used_cpus."""
+        from automation.api import Scheduler
+        scheduler = Scheduler()
+        game_monitor.clear_events()
+
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
+        process = stage.process_manager.get_process(1)
+        process.use_cpu()
+
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
+
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
+
+        process.update(swap_time, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        assert scheduler.used_cpus == 1
+        held_cpu = process.cpu
+
+        # Leave the page fault unresolved until the process dies from starvation
+        for i in range(1, DEAD_STARVATION_LEVEL):
+            process.update(swap_time + i * process.time_between_starvation_levels, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.ENDED
+        assert process.pid not in scheduler.processes
+        assert scheduler.used_cpus == 0
+
+        # The freed CPU slot can be claimed again by another process
+        other_process = stage.process_manager.get_process(2)
+        other_process.use_cpu()
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert other_process.cpu is held_cpu
+        assert scheduler.used_cpus == 1
+
+    def test_scheduler_clears_waiting_for_page_when_page_recovered_off_cpu(self, stage):
+        """Test that the Scheduler no longer reports waiting_for_page after a process yields the
+        CPU during a page fault, its page is swapped back to RAM, and it is rescheduled."""
+        from automation.api import Scheduler
+        scheduler = Scheduler()
+        game_monitor.clear_events()
+
+        # Run updates to create processes at startup
+        current_time = 0
+        for _ in range(20):
+            stage.process_manager.update(current_time, [])
+            current_time += 1000
+
+        # Use existing process from stage setup
+        process = stage.process_manager.get_process(1)
+        process.use_cpu()
+
+        # Get page through PageManager and request swap
+        page = stage.page_manager.get_page(process.pid, 0)
+        page.request_swap()
+
+        # Run updates until swap completes and page is on disk
+        swap_time = current_time
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if page.on_disk:
+                break
+
+        process.update(swap_time, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
+        assert scheduler.processes[process.pid].waiting_for_page is True
+
+        # Yield the CPU during the page fault, then bring the page back to RAM
+        process.yield_cpu()
+        page.request_swap()
+        for _ in range(100):
+            stage.page_manager.update(swap_time, [])
+            page.update(swap_time, [])
+            swap_time += 100
+            if not page.on_disk:
+                break
+
+        # Reschedule the process now that its page is in RAM
+        process.use_cpu()
+        process.update(swap_time, [])
+        scheduler(game_monitor.get_events())
+        game_monitor.clear_events()
+
+        assert process.state == ProcessState.RUNNING
+        assert scheduler.processes[process.pid].waiting_for_page is False
+
     def test_page_emits_swap_event_when_swap_completes(self, stage):
         """Test that Page emits PAGE_SWAP event when swap completes."""
         # Run updates to create processes at startup
@@ -744,7 +936,7 @@ class TestGameObjectsEmitEvents:
         assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap cancelled"
         assert swap_queue_events[0].waiting is False
 
-    def test_process_emits_page_free_when_killed(self, stage):
+    def test_process_emits_page_free_when_killed(self, stage, stage_config):
         """Test that Process emits PAGE_FREE events when killed."""
         # Run updates to create processes at startup
         current_time = 0
@@ -758,7 +950,7 @@ class TestGameObjectsEmitEvents:
 
         # Count how many pages were actually created by checking page manager
         pages_for_process = []
-        for idx in range(MAX_PAGES_PER_PROCESS):
+        for idx in range(stage_config.max_pages_per_process):
             try:
                 page = stage.page_manager.get_page(process.pid, idx)
                 if page is not None:

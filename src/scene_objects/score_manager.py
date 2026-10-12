@@ -44,13 +44,20 @@ class ScoreManager(SceneObject):
                 self._score = max(0, self._score - 50 * wasted_actions)
 
             if stats['user_terminated_process_count'] != self._user_terminated_process_count:
+                user_terminated_processes = (
+                    stats['user_terminated_process_count'] - self._user_terminated_process_count
+                )
                 self._user_terminated_process_count = stats['user_terminated_process_count']
-                self._score = max(0, self._score - 1000)
+                self._score = max(0, self._score - 1000 * user_terminated_processes)
             if (
                 stats['gracefully_terminated_process_count'] !=
                 self._gracefully_terminated_process_count
             ):
+                gracefully_terminated_processes = (
+                    stats['gracefully_terminated_process_count']
+                    - self._gracefully_terminated_process_count
+                )
                 self._gracefully_terminated_process_count = stats[
                     'gracefully_terminated_process_count'
                 ]
-                self._score += 1000
+                self._score += 1000 * gracefully_terminated_processes
