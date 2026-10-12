@@ -1,6 +1,7 @@
 import pygame
 
 from engine.drawable import Drawable
+from scene_objects.views.view_utils import contrasted_color
 from ui.color import Color
 from ui.fonts import FONT_SECONDARY_XXSMALL
 
@@ -23,5 +24,5 @@ class IoQueueView(Drawable):
         pygame.draw.rect(surface, color, pygame.Rect(
             self._x, self._y, self.width, self.height))
         text_surface = FONT_SECONDARY_XXSMALL.render(
-            'I/O EVENTS (' + str(self._io_queue.event_count) + ')', False, Color.BLACK)
+            'I/O EVENTS (' + str(self._io_queue.event_count) + ')', False, contrasted_color(color))
         surface.blit(text_surface, (self._x + 20, self._y + 10))
