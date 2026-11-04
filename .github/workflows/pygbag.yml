@@ -9,15 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.14"
     - name: Install dependencies
-      uses: VaultVulp/action-pipenv@v2.0.1
-      with:
-        command: sync --dev
+      run: |
+        pip install pipenv
+        pipenv sync --dev
     - name: Build
-      uses: VaultVulp/action-pipenv@v2.0.1
-      with:
-        command:  run web build
+      run: pipenv run web build
     - name : "Upload to GitHub pages branch gh-pages"
       uses: JamesIves/github-pages-deploy-action@4.1.7
       with:
