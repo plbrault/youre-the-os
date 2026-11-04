@@ -8,16 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
-        path: ./.venv
-        key: ${{ runner.os }}-venv-${{ hashFiles('./Pipfile.lock') }}
+        python-version: "3.14"
     - name: Install dependencies
-      uses: VaultVulp/action-pipenv@v2.0.1
-      with:
-        command: sync --dev
+      run: |
+        pip install pipenv==2026.10.5
+        pipenv sync --dev
     - name: Run pytest
-      uses: VaultVulp/action-pipenv@v2.0.1
-      with:
-        command:  run pytest
+      run: pipenv run pytest
