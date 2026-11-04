@@ -15,7 +15,7 @@ jobs:
         python-version: "3.14"
     - name: Install dependencies
       run: |
-        pip install pipenv
+        pip install pipenv==2026.10.5
         pipenv sync --dev
     - name: Build
       run: pipenv run web build
