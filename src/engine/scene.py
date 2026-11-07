@@ -14,7 +14,7 @@ class Scene(GameObject):
         super().__init__()
         self._scene_id = scene_id
         self._is_started = False
-        self._modal = None
+        self._modals = []
         self._scene_manager = None
 
     @property
@@ -34,9 +34,9 @@ class Scene(GameObject):
         return self._scene_id
 
     @property
-    def modal(self) -> Optional[Modal]:
-        """Get the currently active modal, if any."""
-        return self._modal
+    def active_modal(self) -> Optional[Modal]:
+        """Get the active modal, if any."""
+        return self._modals[-1] if self._modals else None
 
     @abstractmethod
     def setup(self):
@@ -50,7 +50,8 @@ class Scene(GameObject):
 
         Performs any necessary cleanup, then calls setup() to reinitialize the scene.
         """
-        self.close_modal()
+        while self._modals:
+            self.close_modal()
         self.setup()
         if self.scene_manager is not None:
             self.scene_manager.reset_current_context_time()
@@ -62,35 +63,36 @@ class Scene(GameObject):
         Called every frame with the current time and a list of player inputs.
         """
 
-    def show_modal(self, modal : Modal):
-        """Show a modal on top of the scene. Only one modal can be active at a time."""
-        if self._modal is not None:
-            raise RuntimeError('A modal is already active.')
+    def open_modal(self, modal : Modal):
+        """Open a modal on the scene. It becomes the active modal; a previously
+        active modal, if any, stays underneath."""
+        top_modal = self.active_modal
         modal.scene = self
         modal.view.set_xy(
             (self.screen.get_width() - modal.view.width) / 2,
             (self.screen.get_height() - modal.view.height) / 2
         )
         self._children.append(modal)
-        self._modal = modal
-        if (
-            self.scene_manager is not None
-            and self.scene_manager.get_top_context() == self
-        ):
-            self.scene_manager.push_context(modal)
-
-    def close_modal(self):
-        """Close the currently active modal, if any."""
-        if self._modal is None:
-            return
+        self._modals.append(modal)
         if self.scene_manager is not None:
             top_context = self.scene_manager.get_top_context()
-            if top_context == self._modal:
+            if top_context is self or (
+                top_modal is not None and top_context is top_modal
+            ):
+                self.scene_manager.push_context(modal)
+
+    def close_modal(self):
+        """Close the active modal, if any."""
+        if not self._modals:
+            return
+        modal = self._modals[-1]
+        if self.scene_manager is not None:
+            top_context = self.scene_manager.get_top_context()
+            if top_context == modal:
                 self.scene_manager.pop_context()
-        modal = self._modal
         self._children.remove(modal)
         modal.scene = None
-        self._modal = None
+        self._modals.pop()
 
     def render(self):
         self.screen.fill(self.background_color)

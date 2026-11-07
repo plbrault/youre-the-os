@@ -84,22 +84,22 @@ class MainMenu(Scene):
             lambda: self._start_game(
                 DifficultyLevel(
                     'Custom',
-                    self.modal.config
+                    self.active_modal.config
                 )
             ),
             self._custom_config
         )
-        self.show_modal(dialog)
+        self.open_modal(dialog)
 
     def _open_about_dialog(self):
-        self.show_modal(AboutDialog())
+        self.open_modal(AboutDialog())
 
     def _open_hotkey_dialog(self):
-        self.show_modal(HotkeyDialog())
+        self.open_modal(HotkeyDialog())
 
     def _start_game(self, difficulty_level):
-        if isinstance(self.modal, CustomSettingsDialog):
-            self._custom_config = self.modal.config
+        if isinstance(self.active_modal, CustomSettingsDialog):
+            self._custom_config = self.active_modal.config
         stage_name = 'Difficulty: ' + difficulty_level.name.upper()
         stage_config = difficulty_level.config
         stage = Stage(stage_name, stage_config)

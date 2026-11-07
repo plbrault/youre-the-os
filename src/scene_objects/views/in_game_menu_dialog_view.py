@@ -14,6 +14,9 @@ class InGameMenuDialogView(ModalView):
         self._in_game_menu_dialog.main_menu_button.view.x = self.x + (
             self.width - self._in_game_menu_dialog.main_menu_button.view.width
         ) / 2
+        self._in_game_menu_dialog.hotkeys_button.view.x = self.x + (
+            self.width - self._in_game_menu_dialog.hotkeys_button.view.width
+        ) / 2
         self._in_game_menu_dialog.close_menu_button.view.x = self.x + (
             self.width - self._in_game_menu_dialog.close_menu_button.view.width
         ) / 2
@@ -26,6 +29,8 @@ class InGameMenuDialogView(ModalView):
         y += self._in_game_menu_dialog.restart_button.view.height + 2
         self._in_game_menu_dialog.main_menu_button.view.y = y
         y += self._in_game_menu_dialog.main_menu_button.view.height + 2
+        self._in_game_menu_dialog.hotkeys_button.view.y = y
+        y += self._in_game_menu_dialog.hotkeys_button.view.height + 2
         self._in_game_menu_dialog.close_menu_button.view.y = y
 
     @property
@@ -34,7 +39,7 @@ class InGameMenuDialogView(ModalView):
 
     @property
     def height(self):
-        return 3 * self._in_game_menu_dialog.button_height + 12
+        return 4 * self._in_game_menu_dialog.button_height + 14
 
     def draw_content(self, surface):
         pass
