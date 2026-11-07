@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional, Type
 
 from engine.drawable import Drawable
-from engine.game_event_type import GameEventType
+from engine.player_input_type import PlayerInputType
 from engine.scene_object import SceneObject
 import game_monitor
 from scene_objects.page_slot import PageSlot
@@ -159,34 +159,34 @@ class Page(SceneObject):
             else:
                 self.request_swap(shift_down)
 
-    def _handle_events(self, events):
-        for event in events:
-            if event.type == GameEventType.MOUSE_MOTION:
+    def _handle_player_inputs(self, player_inputs):
+        for player_input in player_inputs:
+            if player_input.type == PlayerInputType.MOUSE_MOTION:
                 self._mouse_dragged_on = (
-                    self.view.collides(*event.get_property('position'))
-                    and event.get_property('left_button_down')
+                    self.view.collides(*player_input.get_property('position'))
+                    and player_input.get_property('left_button_down')
                 )
-            if event.type == GameEventType.MOUSE_LEFT_CLICK:
+            if player_input.type == PlayerInputType.MOUSE_LEFT_CLICK:
                 if (
-                    self.view.collides(*event.get_property('position'))
+                    self.view.collides(*player_input.get_property('position'))
                     and (
                         not self._mouse_dragged_on
-                        or event.get_property('shift')
+                        or player_input.get_property('shift')
                     )
                 ):
-                    self._on_click(False, event.get_property('shift'))
+                    self._on_click(False, player_input.get_property('shift'))
                 self._mouse_dragged_on = False
                 self._page_manager.current_mouse_drag_action = None
             elif (
-                event.type == GameEventType.MOUSE_MOTION
-                and event.get_property('left_button_down')
-                and not event.get_property('shift')
+                player_input.type == PlayerInputType.MOUSE_MOTION
+                and player_input.get_property('left_button_down')
+                and not player_input.get_property('shift')
             ):
-                if self.view.collides(*event.get_property('position')):
-                    self._on_click(True, event.get_property('shift'))
+                if self.view.collides(*player_input.get_property('position')):
+                    self._on_click(True, player_input.get_property('shift'))
 
-    def update(self, current_time, events):
-        self._handle_events(events)
+    def update(self, current_time, player_inputs):
+        self._handle_player_inputs(player_inputs)
         self._update_swap(current_time)
         if self.in_use and self.on_disk:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1

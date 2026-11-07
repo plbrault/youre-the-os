@@ -2,8 +2,14 @@ from abc import ABC, abstractmethod
 
 
 class GameObject(ABC):
-    # pylint: disable=too-few-public-methods
+
+    def __init__(self):
+        self._children = []
+
+    @property
+    def children(self):
+        return self._children
 
     @abstractmethod
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         pass

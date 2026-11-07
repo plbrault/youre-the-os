@@ -42,7 +42,7 @@ class SceneManager():
             return None
         return self._scenes[scene_id]
 
-    def update(self, global_time: int, events):
+    def update(self, global_time: int, player_inputs):
         self._global_time = global_time
 
         if not self._context_stack:
@@ -52,7 +52,7 @@ class SceneManager():
         active_context = self._context_stack[-1].context
         scene_before_update = self._current_scene
 
-        active_context.update(local_time, events)
+        active_context.update(local_time, player_inputs)
 
         # Only re-update if the scene itself changed (not just modal push/pop)
         if self._current_scene != scene_before_update:

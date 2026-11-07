@@ -19,17 +19,17 @@ class MainMenu(Scene):
         self._difficulty_selector = None
 
     def setup(self):
-        self._scene_objects = []
+        self.children.clear()
 
         title = MainMenuTitle()
         title.view.set_xy(0, 50)
-        self._scene_objects.append(title)
+        self._children.append(title)
 
         difficulty_selection_label = DifficultySelectionLabel()
         difficulty_selection_label.view.set_xy(
             (self.screen.get_width() - difficulty_selection_label.view.width) / 2,
             title.view.y + title.view.height + 50)
-        self._scene_objects.append(difficulty_selection_label)
+        self._children.append(difficulty_selection_label)
 
         difficulty_level_names = list(
             map(lambda difficulty_level: difficulty_level.name, difficulty_levels))
@@ -38,20 +38,20 @@ class MainMenu(Scene):
         self._difficulty_selector.view.set_xy(
             (self.screen.get_width() - self._difficulty_selector.view.width) / 2,
             difficulty_selection_label.view.y + difficulty_selection_label.view.height + 20)
-        self._scene_objects.append(self._difficulty_selector)
+        self._children.append(self._difficulty_selector)
 
         play_button = Button('Play', self._on_start_button_click)
         play_button.view.set_xy(
             (self.screen.get_width() - play_button.view.width) / 2,
             self._difficulty_selector.view.y + self._difficulty_selector.view.height + 20)
-        self._scene_objects.append(play_button)
+        self._children.append(play_button)
 
         how_to_play_button = Button('How to Play', self._start_how_to_play)
         how_to_play_button.view.set_xy(
             150,
             self.screen.get_height() - how_to_play_button.view.height - 100
         )
-        self._scene_objects.append(how_to_play_button)
+        self._children.append(how_to_play_button)
 
         hotkey_button = Button(
             'Hotkeys', self._open_hotkey_dialog)
@@ -59,14 +59,14 @@ class MainMenu(Scene):
             how_to_play_button.view.x + how_to_play_button.view.width + 20,
             self.screen.get_height() - hotkey_button.view.height - 100
         )
-        self._scene_objects.append(hotkey_button)
+        self._children.append(hotkey_button)
 
         about_button = Button('About', self._open_about_dialog)
         about_button.view.set_xy(
             self.screen.get_width() - about_button.view.width - 150,
             self.screen.get_height() - about_button.view.height - 100
         )
-        self._scene_objects.append(about_button)
+        self._children.append(about_button)
 
         if self._selected_difficulty_id is not None:
             self._difficulty_selector.selected_option_id = self._selected_difficulty_id
@@ -108,6 +108,6 @@ class MainMenu(Scene):
     def _start_how_to_play(self):
         self.scene_manager.start_scene('how_to_play')
 
-    def update(self, current_time, events):
-        for scene_object in list(self._scene_objects):
-            scene_object.update(current_time, events)
+    def update(self, current_time, player_inputs):
+        for scene_object in list(self._children):
+            scene_object.update(current_time, player_inputs)

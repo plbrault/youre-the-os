@@ -1,9 +1,11 @@
 import pytest
 
+import pygame
+
 import game_monitor
 from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from engine.game_manager import GameManager
 from engine.modal import Modal
 from engine.modal_view import ModalView
@@ -193,97 +195,97 @@ class TestStageStateMachine:
         mock_stage.apply_state_transition(StateEvent.DELAY_ELAPSED)
         assert mock_stage.state == StageState.ENDED
 
-    def test_starting_ignores_invalid_events(self, mock_stage):
-        invalid_events = [
+    def test_starting_ignores_invalid_state_events(self, mock_stage):
+        invalid_state_events = [
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.STARTING
 
-    def test_playing_ignores_invalid_events(self, mock_stage):
+    def test_playing_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.PROCESSES_SETTLED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.PLAYING
 
-    def test_awaiting_victory_ignores_invalid_events(self, mock_stage):
+    def test_awaiting_victory_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.VICTORY_DETECTED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.AWAITING_VICTORY
 
-    def test_awaiting_defeat_ignores_invalid_events(self, mock_stage):
+    def test_awaiting_defeat_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.DEFEAT_DETECTED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.AWAITING_DEFEAT
 
-    def test_victory_ignores_invalid_events(self, mock_stage):
+    def test_victory_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.VICTORY_DETECTED)
         mock_stage.apply_state_transition(StateEvent.PROCESSES_SETTLED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.VICTORY
 
-    def test_defeat_ignores_invalid_events(self, mock_stage):
+    def test_defeat_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.DEFEAT_DETECTED)
         mock_stage.apply_state_transition(StateEvent.PROCESSES_SETTLED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.DEFEAT
 
-    def test_ended_ignores_all_events(self, mock_stage):
+    def test_ended_ignores_all_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.VICTORY_DETECTED)
         mock_stage.apply_state_transition(StateEvent.PROCESSES_SETTLED)
         mock_stage.apply_state_transition(StateEvent.DELAY_ELAPSED)
         assert mock_stage.state == StageState.ENDED
-        all_events = [
+        all_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in all_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in all_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.ENDED
 
 
@@ -933,7 +935,7 @@ class TestStage:
 
         assert stage.active_modal is None
 
-    def test_reset_routes_events_to_scene_objects(self, stage_custom_config):
+    def test_reset_routes_player_inputs_to_scene_objects(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=4,
@@ -948,15 +950,22 @@ class TestStage:
         update_received = False
         original_update = stage.process_manager.update
 
-        def spy_update(current_time, events):
+        def spy_update(current_time, player_inputs):
             nonlocal update_received
             update_received = True
-            original_update(current_time, events)
+            original_update(current_time, player_inputs)
 
         stage.process_manager.update = spy_update
         stage.update(0, [])
 
         assert update_received
+
+    def test_stage_renders_scene_objects(self, stage, monkeypatch):
+        # pygame.display.flip requires an initialized video system,
+        # which is not needed for exercising the views' draw calls.
+        monkeypatch.setattr(pygame.display, 'flip', lambda: None)
+        stage.update(0, [])
+        stage.render()
 
     def test_stage_completed_via_victory(self, scene_manager):
         stage = MockStage(
@@ -1077,39 +1086,39 @@ class TestStageGameMonitorEvents:
             'exec'
         )
 
-    def test_update_without_script_drains_events_emitted_before_the_frame(
+    def test_update_without_script_drains_notifications_emitted_before_the_frame(
             self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(99)
 
         # The first process at startup is created 50 ms after setup
         stage.update(50, [])
 
-        assert [event.pid for event in game_monitor.get_events() if event.etype == 'PROC_NEW'] == [1]
+        assert [n.pid for n in game_monitor.get_notifications() if n.etype == 'PROC_NEW'] == [1]
 
-    def test_update_without_script_retains_only_current_frame_events(
+    def test_update_without_script_retains_only_current_frame_notifications(
             self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         stage.update(50, [])
         stage.process_manager.get_process(1).use_cpu()
         for time in range(ONE_SECOND, 30 * ONE_SECOND + 1, ONE_SECOND):
             stage.update(time, [])
-        events_after_30_seconds = len(game_monitor.get_events())
+        notifications_after_30_seconds = len(game_monitor.get_notifications())
         for time in range(31 * ONE_SECOND, 60 * ONE_SECOND + 1, ONE_SECOND):
             stage.update(time, [])
-        events_after_60_seconds = len(game_monitor.get_events())
+        notifications_after_60_seconds = len(game_monitor.get_notifications())
 
-        # A happy running process emits one starvation event per second,
-        # and only the event of the current frame should be retained
-        assert events_after_30_seconds == 1
-        assert events_after_60_seconds == 1
+        # A happy running process emits one starvation notification per second,
+        # and only the notification of the current frame should be retained
+        assert notifications_after_30_seconds == 1
+        assert notifications_after_60_seconds == 1
 
-    def test_reset_clears_events_of_previous_session(self, stage_custom_config, stage_config):
+    def test_reset_clears_notifications_of_previous_session(self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         stage.update(50, [])
         stage.process_manager.get_process(1).use_cpu()
@@ -1118,22 +1127,22 @@ class TestStageGameMonitorEvents:
 
         stage.reset()
 
-        assert len(game_monitor.get_events()) == 0
+        assert len(game_monitor.get_notifications()) == 0
 
-    def test_update_with_script_delivers_each_event_once(self, scene_manager, stage_config, script):
+    def test_update_with_script_delivers_each_notification_once(self, scene_manager, stage_config, script):
         stage = Stage('Test Stage', stage_config, script=script)
         stage.scene_manager = scene_manager
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         stage.setup()
 
         # Process 1 is created on the first update, and the script receives
-        # its PROC_NEW event on the next update
+        # its PROC_NEW notification on the next update
         stage.update(50, [])
         stage.update(100, [])
 
         assert stage.process_manager.get_process(1).has_cpu == True
 
-        # The PROC_NEW event must not be delivered again, otherwise the script
+        # The PROC_NEW notification must not be delivered again, otherwise the script
         # would toggle the process off its CPU
         stage.update(150, [])
         stage.update(200, [])
@@ -1157,40 +1166,40 @@ class TestInGameMenu:
         return stage
 
     @staticmethod
-    def _key_up_event(key):
-        return GameEvent(GameEventType.KEY_UP, {'key': key})
+    def _key_up_player_input(key):
+        return PlayerInput(PlayerInputType.KEY_UP, {'key': key})
 
     @staticmethod
-    def _click_on_event(scene_object):
+    def _click_on_player_input(scene_object):
         center = (
             scene_object.view.x + scene_object.view.width / 2,
             scene_object.view.y + scene_object.view.height / 2,
         )
-        return GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': center})
+        return PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, {'position': center})
 
     def test_opening_in_game_menu_opens_menu_dialog_and_pushes_its_context(
             self, stage, scene_manager):
-        scene_manager.update(0, [self._key_up_event('escape')])
+        scene_manager.update(0, [self._key_up_player_input('escape')])
 
         assert isinstance(stage.active_modal, InGameMenuDialog)
         assert scene_manager.get_top_context() is stage.active_modal
 
     def test_hotkeys_button_opens_hotkey_dialog_on_top_of_menu(
             self, stage, scene_manager):
-        scene_manager.update(0, [self._key_up_event('escape')])
+        scene_manager.update(0, [self._key_up_player_input('escape')])
         in_game_menu = stage.active_modal
-        scene_manager.update(33, [self._click_on_event(in_game_menu.hotkeys_button)])
+        scene_manager.update(33, [self._click_on_player_input(in_game_menu.hotkeys_button)])
 
         assert isinstance(stage.active_modal, HotkeyDialog)
         assert scene_manager.get_top_context() is stage.active_modal
 
     def test_closing_hotkey_dialog_returns_to_menu(
             self, stage, scene_manager):
-        scene_manager.update(0, [self._key_up_event('escape')])
+        scene_manager.update(0, [self._key_up_player_input('escape')])
         in_game_menu = stage.active_modal
-        scene_manager.update(33, [self._click_on_event(in_game_menu.hotkeys_button)])
+        scene_manager.update(33, [self._click_on_player_input(in_game_menu.hotkeys_button)])
         hotkey_dialog = stage.active_modal
-        scene_manager.update(66, [self._click_on_event(hotkey_dialog.close_button)])
+        scene_manager.update(66, [self._click_on_player_input(hotkey_dialog.close_button)])
 
         assert stage.active_modal is in_game_menu
         assert scene_manager.get_top_context() is in_game_menu

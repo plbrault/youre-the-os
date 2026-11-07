@@ -1,7 +1,7 @@
 import pytest
 
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from scene_objects.page import Page, PageMouseDragAction
 from config.page_config import PageConfig
 from scene_objects.page_manager import PageManager
@@ -220,7 +220,7 @@ class TestPage:
         page = Page(1, 1, page_manager, page_config)
         page.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                       { 'position': (page.view.x, page.view.y), 'shift': False })
         page.update(1000, [mouse_click_event])
 
@@ -242,7 +242,7 @@ class TestPage:
         page.on_disk = True
         page.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                       {'position': (page.view.x, page.view.y), 'shift': False })
         page.update(1000, [mouse_click_event])
 
@@ -263,7 +263,7 @@ class TestPage:
         page = Page(1, 1, page_manager, page_config)
         page.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                       { 'position': (page.view.x, page.view.y), 'shift': True })
         page.update(1000, [mouse_click_event])
 
@@ -285,7 +285,7 @@ class TestPage:
         page.on_disk = True
         page.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                       {'position': (page.view.x, page.view.y), 'shift': True })
         page.update(1000, [mouse_click_event])
 
@@ -311,7 +311,7 @@ class TestPage:
         page.init_swap(swapping_from)
         assert page.swap_requested
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                       {'position': (page.view.x, page.view.y), 'shift': False })
         page.update(1000, [mouse_click_event])
 
@@ -337,7 +337,7 @@ class TestPage:
         page.init_swap(swapping_from)
         assert page.swap_requested
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                         {'position': (page.view.x, page.view.y), 'shift': True })
         page.update(1000, [mouse_click_event])
 
@@ -370,7 +370,7 @@ class TestPage:
         page3 = Page(1, 3, page_manager, page_config)
         page3.view.set_xy(1000, 700)
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                      {'position': (page1.view.x, page1.view.y), 'shift': False, 'left_button_down': True })
         page1.update(1000, [mouse_drag_event])
 
@@ -380,7 +380,7 @@ class TestPage:
 
         swap_args = None
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                      {'position': (page2.view.x, page2.view.y), 'shift': False, 'left_button_down': True })
         page2.update(1000, [mouse_drag_event])
 
@@ -393,7 +393,7 @@ class TestPage:
         page3.init_swap(PageSlot())
         assert page3.swap_requested
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                         {'position': (page3.view.x, page3.view.y), 'shift': False, 'left_button_down': True })
         page3.update(1000, [mouse_drag_event])
 
@@ -407,7 +407,7 @@ class TestPage:
 
         assert page3.swap_requested
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                      {'position': (page3.view.x, page3.view.y), 'shift': False, 'left_button_down': True })
         page3.update(2000, [mouse_drag_event])
 
@@ -417,7 +417,7 @@ class TestPage:
 
         cancel_args = None
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                         {'position': (page2.view.x, page2.view.y), 'shift': False, 'left_button_down': True })
         page2.update(2000, [mouse_drag_event])
 
@@ -444,7 +444,7 @@ class TestPage:
 
         page = Page(1, 1, page_manager, page_config)
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                         {'position': (page.view.x, page.view.y), 'shift': True, 'left_button_down': True })
         page.update(2000, [mouse_drag_event])
 
@@ -470,7 +470,7 @@ class TestPage:
         page = Page(1, 1, page_manager, page_config)
         assert not page.swap_requested
 
-        mouse_drag_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_drag_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                         {'position': (page.view.x, page.view.y), 'shift': False, 'left_button_down': True })
         page.update(2000, [mouse_drag_event])
         page.init_swap(PageSlot())
@@ -480,17 +480,17 @@ class TestPage:
         assert page.swap_requested
         swap_args = None
 
-        click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                 {'position': (page.view.x, page.view.y), 'shift': False })
         page.update(2000, [click_event])
 
         assert not swap_args
         assert not cancel_args
 
-        mouse_motion_event = GameEvent(GameEventType.MOUSE_MOTION,
+        mouse_motion_event = PlayerInput(PlayerInputType.MOUSE_MOTION,
                                         {'position': (0, 0), 'shift': False, 'left_button_down': False })
         page.update(2000, [mouse_motion_event])
-        click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK,
+        click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK,
                                 {'position': (page.view.x, page.view.y), 'shift': False })
         page.update(2000, [click_event])
 

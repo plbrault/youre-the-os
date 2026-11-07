@@ -1,5 +1,5 @@
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from scene_objects.story_stage_victory_dialog import StoryStageVictoryDialog
 
 
@@ -30,7 +30,7 @@ def _click(button):
         button.view.x + button.view.width / 2,
         button.view.y + button.view.height / 2,
     )
-    button.update(0, [GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': center})])
+    button.update(0, [PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, {'position': center})])
 
 
 class TestStoryStageVictoryDialog:

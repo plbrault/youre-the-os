@@ -86,9 +86,9 @@ class Stage(Scene):
         super().__init__('stage')
 
     def setup(self):
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
-        self._scene_objects = []
+        self.children.clear()
 
         self._state = StageState.STARTING
         self._last_update_time = 0
@@ -99,21 +99,21 @@ class Stage(Scene):
         self._page_manager = PageManager(self, self._config)
 
         self._process_manager.setup()
-        self._scene_objects.append(self._process_manager)
+        self._children.append(self._process_manager)
 
         self._page_manager.setup()
-        self._scene_objects.append(self._page_manager)
+        self._children.append(self._page_manager)
 
         self._score_manager = ScoreManager(self)
         self._score_manager.view.set_xy(840, 10)
-        self._scene_objects.append(self._score_manager)
+        self._children.append(self._score_manager)
 
         self._uptime_manager = UptimeManager()
         self._uptime_manager.view.set_xy(
             512 - self._uptime_manager.view.width // 2,
             10
         )
-        self._scene_objects.append(self._uptime_manager)
+        self._children.append(self._uptime_manager)
 
         self._name_label = Label(self.name)
         self._name_label.view.set_xy(
@@ -125,14 +125,14 @@ class Stage(Scene):
             ) // 2,
             self._score_manager.view.y
         )
-        self._scene_objects.append(self._name_label)
+        self._children.append(self._name_label)
 
         if not self._standalone:
             self._open_in_game_menu_button = Button(
                 'Menu', self._open_in_game_menu, key_bind='escape')
             self._open_in_game_menu_button.view.set_xy(
                 self.screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
-            self._scene_objects.append(self._open_in_game_menu_button)
+            self._children.append(self._open_in_game_menu_button)
 
         self._prepare_automation_script()
 
@@ -244,30 +244,30 @@ class Stage(Scene):
     def _return_to_main_menu(self):
         self.scene_manager.start_scene('main_menu')
 
-    def _get_script_events(self):
-        events = []
+    def _call_script_scheduler(self):
+        commands = []
         if self._script_callback is not None:
-            events = self._script_callback(game_monitor.get_events())
-        game_monitor.clear_events()
-        return events
+            commands = self._script_callback(game_monitor.get_notifications())
+        game_monitor.clear_notifications()
+        return commands
 
-    def _process_script_events(self):
-        for event in self._get_script_events():
+    def _process_script_commands(self):
+        for command in self._call_script_scheduler():
             try:
-                if event['type'] == 'io_queue':
+                if command['type'] == 'io_queue':
                     self._process_manager.io_queue.handle_player_action()
-                elif event['type'] == 'process':
-                    process = self._process_manager.get_process(event['pid'])
+                elif command['type'] == 'process':
+                    process = self._process_manager.get_process(command['pid'])
                     if process is not None:
                         if process.has_cpu:
                             process.toggle()
                         else:
-                            process.toggle(to_e_core=event.get('to_e_core', False))
-                elif event['type'] == 'page':
+                            process.toggle(to_e_core=command.get('to_e_core', False))
+                elif command['type'] == 'page':
                     self._page_manager.get_page(
-                        event['pid'], event['idx']).request_swap()
+                        command['pid'], command['idx']).request_swap()
             except Exception as exc: # pylint: disable=broad-exception-caught
-                print(exc.__class__.__name__, *exc.args, event, file=sys.stderr)
+                print(exc.__class__.__name__, *exc.args, command, file=sys.stderr)
 
     def _prepare_automation_script(self):
         # pylint: disable=exec-used
@@ -301,18 +301,18 @@ class Stage(Scene):
         except KeyError:
             pass
 
-    def apply_state_transition(self, event: StateEvent):
+    def apply_state_transition(self, state_event: StateEvent):
         transitions = self._state_transitions.get(self._state, {})
-        if event in transitions:
-            new_state = transitions[event]
+        if state_event in transitions:
+            new_state = transitions[state_event]
             if new_state != self._state:
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
 
-    def _update_playing(self, current_time, events):
-        self._process_script_events()
-        for scene_object in list(self._scene_objects):
-            scene_object.update(current_time, events)
+    def _update_playing(self, current_time, player_inputs):
+        self._process_script_commands()
+        for scene_object in list(self._children):
+            scene_object.update(current_time, player_inputs)
         check_result = self.check_defeat()
         if isinstance(check_result, tuple):
             defeated = check_result[0]
@@ -325,13 +325,13 @@ class Stage(Scene):
         elif self.check_victory():
             self.apply_state_transition(StateEvent.VICTORY_DETECTED)
 
-    def _update_awaiting_result(self, current_time, events):
-        for scene_object in list(self._scene_objects):
-            scene_object.update(current_time, events)
+    def _update_awaiting_result(self, current_time, player_inputs):
+        for scene_object in list(self._children):
+            scene_object.update(current_time, player_inputs)
         if not self._process_manager.any_process_in_motion:
             self.apply_state_transition(StateEvent.PROCESSES_SETTLED)
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         self._last_update_time = current_time
 
         if self._state == StageState.STARTING:
@@ -339,9 +339,9 @@ class Stage(Scene):
             self.apply_state_transition(StateEvent.START)
 
         if self._state == StageState.PLAYING:
-            self._update_playing(current_time, events)
+            self._update_playing(current_time, player_inputs)
         elif self._state in (StageState.AWAITING_VICTORY, StageState.AWAITING_DEFEAT):
-            self._update_awaiting_result(current_time, events)
+            self._update_awaiting_result(current_time, player_inputs)
         elif self._state == StageState.VICTORY:
             if current_time - self._last_state_change_time > ONE_SECOND:
                 self.on_victory()

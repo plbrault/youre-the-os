@@ -22,7 +22,7 @@ class ScoreManager(SceneObject):
     def score(self):
         return int(self._score)
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         if current_time - self._last_update_time >= _UPDATE_INTERVAL:
             self._last_update_time = current_time
             stats = self._process_manager.get_current_stats()

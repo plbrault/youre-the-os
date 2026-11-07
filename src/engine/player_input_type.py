@@ -1,6 +1,6 @@
 from enum import Enum
 
-GameEventType = Enum('GameEventType', [
+PlayerInputType = Enum('PlayerInputType', [
     'KEY_UP',
     'MOUSE_LEFT_CLICK',
     'MOUSE_RIGHT_CLICK',
