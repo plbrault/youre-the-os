@@ -17,8 +17,7 @@ _stage_config = StageConfig(
         (100, 3),
         (ONE_MINUTE, 4),
         (2 * ONE_MINUTE, 5),
-        (3 * ONE_MINUTE, 6),
-        (4 * ONE_MINUTE, 7),
+        (4 * ONE_MINUTE, 6),
         (5 * ONE_MINUTE, 8)
     ],
     max_processes=8,
