@@ -8,7 +8,7 @@ from scene_objects.stage_intro_dialog import (
 )
 
 _STAGE_CONFIG = StageConfig(
-    cpu_config=CpuConfig(num_cores=1, num_threads_per_core=2),
+    cpu_config=CpuConfig(num_cores=1, num_threads_per_core=2, penalty_ms=1000),
     num_processes_at_startup=5,
     force_new_priority_process_at_times_ms=[300],
     min_processes_at_times_ms=[
