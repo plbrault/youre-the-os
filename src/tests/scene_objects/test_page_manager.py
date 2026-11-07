@@ -203,6 +203,33 @@ class TestPageManager:
         assert page1.view.y == page2.view.y
         assert page2.view.x > page1.view.x
 
+    def test_create_page_returns_none_when_no_page_slot_is_free(self, page_manager):
+        total_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
+        for i in range(total_slots):
+            page_manager.create_page(1, i)
+
+        page = page_manager.create_page(2, 0)
+
+        assert page is None
+        with pytest.raises(KeyError):
+            page_manager.get_page(2, 0)
+        num_pages = len([child for child in page_manager.children if isinstance(child, Page)])
+        assert num_pages == total_slots
+        num_used_slots = len([slot for slot in page_manager.children
+                              if isinstance(slot, PageSlot) and slot.has_page])
+        assert num_used_slots == total_slots
+
+    def test_create_page_places_page_when_a_page_slot_is_freed(self, page_manager):
+        total_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
+        for i in range(total_slots):
+            page_manager.create_page(1, i)
+
+        page_manager.delete_page(page_manager.get_page(1, 0))
+        page = page_manager.create_page(2, 0)
+
+        assert page is not None
+        assert page_manager.get_page(2, 0) is page
+
     def test_swap_page(self, page_manager):
         pages = []
 

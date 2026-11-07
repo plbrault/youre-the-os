@@ -13,7 +13,7 @@ from config.stage_config import StageConfig
 from scene_objects.game_over_dialog import GameOverDialog
 from scene_objects.hotkey_dialog import HotkeyDialog
 from scene_objects.in_game_menu_dialog import InGameMenuDialog
-from scene_objects.process import Process
+from scene_objects.process import Process, ProcessState
 from scenes.stage import Stage
 from scenes.stage import StageState
 from scenes.stage import StateEvent
@@ -1288,3 +1288,82 @@ class TestStageConfigValidation:
         assert str(exc_info.value) == (
             'Stage config allows 60 processes at the same time, '
             'but there are only 42 process slots.')
+
+
+class TestProcessCreationHardLimit:
+    """Tests for the hard process creation limit counting lingering processes."""
+
+    @pytest.fixture
+    def auto_cpu_script(self):
+        # Automation script that moves every newly created process to a CPU
+        return compile(
+            "def scheduler(events):\n"
+            "    return [\n"
+            "        {'type': 'process', 'pid': event.pid}\n"
+            "        for event in events if event.etype == 'PROC_NEW'\n"
+            "    ]\n",
+            'test_script.py',
+            'exec'
+        )
+
+    @pytest.fixture
+    def saturated_stage(self, scene_manager, monkeypatch, auto_cpu_script):
+        # Random is forced to its minimum, so each running process terminates
+        # gracefully after one second (graceful termination roll of 1 over 100)
+        monkeypatch.setattr(Random, 'get_number', lambda self_random, min, max: min)
+
+        stage_config = StageConfig(
+            num_processes_at_startup=42,
+            new_process_probability=1.0,
+            io_probability=0,
+            graceful_termination_probability=0.01)
+        stage = Stage('Test Stage', stage_config, script=auto_cpu_script)
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        # Spawn all 42 startup processes
+        for time in range(50, 2101, 50):
+            stage.update(time, [])
+
+        # Processes 1 to 4 terminate gracefully and linger on their CPUs,
+        # holding both a thread and their pages
+        for time in range(2150, 3501, 50):
+            stage.update(time, [])
+
+        processes = [child for child in stage.process_manager.children
+                     if isinstance(child, Process)]
+        assert len(processes) == 42
+        assert len([
+            child for child in stage.process_manager.children
+            if isinstance(child, Process) and child.state == ProcessState.ENDED
+        ]) == 4
+        stats = stage.process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 38
+        return stage
+
+    def test_process_creation_refused_when_lingering_processes_fill_the_grid(
+            self, saturated_stage):
+        stage = saturated_stage
+
+        # Keep stepping: no new process may spawn while alive + lingering = 42
+        for time in range(3551, 4251, 50):
+            stage.update(time, [])
+
+        stats = stage.process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 38
+
+    def test_process_creation_resumes_when_a_lingering_process_is_cleared(
+            self, saturated_stage):
+        stage = saturated_stage
+
+        corpse = next(child for child in stage.process_manager.children
+                      if isinstance(child, Process) and child.state == ProcessState.ENDED)
+        position = (corpse.view.x + corpse.view.width / 2,
+                    corpse.view.y + corpse.view.height / 2)
+        stage.update(3525, [GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': position})])
+
+        for time in range(3551, 4251, 50):
+            stage.update(time, [])
+
+        stats = stage.process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 39

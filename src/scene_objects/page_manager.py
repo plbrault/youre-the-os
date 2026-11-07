@@ -108,6 +108,8 @@ class PageManager(SceneObject):
                     page.view.set_xy(disk_slot.view.x, disk_slot.view.y)
                     page_created = True
                     break
+        if not page_created:
+            return None
         self.children.append(page)
         self._pages[(pid, idx)] = page
         return page

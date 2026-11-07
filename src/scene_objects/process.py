@@ -270,6 +270,8 @@ class Process(SceneObject):
                     for i in range(num_pages):
                         page = self._page_manager.create_page(
                             self._pid, i, self.type == ProcessType.PRIORITY)
+                        if page is None:
+                            break
                         self._pages.append(page)
                         game_monitor.notify_page_new(page.pid, page.idx, page.on_disk, page.in_use)
                 for page in self._pages:
@@ -429,10 +431,11 @@ class Process(SceneObject):
             ):
                 new_page = self._page_manager.create_page(
                     self._pid, len(self._pages), self.type == ProcessType.PRIORITY)
-                self._pages.append(new_page)
-                new_page.in_use = True
-                game_monitor.notify_page_new(
-                    new_page.pid, new_page.idx, new_page.on_disk, new_page.in_use)
+                if new_page is not None:
+                    self._pages.append(new_page)
+                    new_page.in_use = True
+                    game_monitor.notify_page_new(
+                        new_page.pid, new_page.idx, new_page.on_disk, new_page.in_use)
 
     def _handle_graceful_termination_probability(self, current_time):
         if self.state == ProcessState.RUNNING:

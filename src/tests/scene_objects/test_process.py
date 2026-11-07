@@ -6,6 +6,7 @@ from engine.game_event import GameEvent
 from engine.game_event_type import GameEventType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
+from scene_objects.page_manager import PageManager
 from scene_objects.process import Process, ProcessState, StateEvent, ProcessType
 from scene_objects.views.page_view import PageView
 from scene_objects.views.priority_page_view import PriorityPageView
@@ -1576,6 +1577,95 @@ class TestProcess:
         assert process.is_blocked == False
         # After termination, state should be ENDED
         assert process.state == ProcessState.ENDED
+
+
+class TestProcessPageCreationOverLimit:
+    """Tests for page creation being skipped when no page slot is free."""
+
+    @pytest.fixture
+    def process_custom_config(self):
+        def create_config(io_probability=0.01, graceful_termination_probability=0.01,
+                         time_between_starvation_levels_ms=10000):
+            return ProcessConfig(
+                io_probability=io_probability,
+                graceful_termination_probability=graceful_termination_probability,
+                time_between_starvation_levels_ms=time_between_starvation_levels_ms
+            )
+        return create_config
+
+    @pytest.fixture
+    def full_board_stage(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0))
+        total_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
+        for i in range(total_slots):
+            stage.page_manager.create_page(100, i)
+        return stage, stage.page_manager
+
+    def test_use_cpu_page_creation_skipped_when_no_page_slot_is_free(
+            self, full_board_stage, process_custom_config):
+        stage, page_manager = full_board_stage
+        process_config = process_custom_config(io_probability=0, graceful_termination_probability=0)
+        process = Process(1, stage, process_config)
+
+        process.use_cpu()
+
+        assert process.has_cpu
+        with pytest.raises(KeyError):
+            page_manager.get_page(1, 0)
+
+    def test_use_cpu_page_creation_limited_to_free_page_slots(
+            self, stage_custom_config, process_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0))
+        process_config = process_custom_config(io_probability=0, graceful_termination_probability=0)
+        process = Process(1, stage, process_config)
+
+        total_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
+        for i in range(total_slots - 2):
+            stage.page_manager.create_page(100, i)
+
+        process.use_cpu()
+
+        assert stage.page_manager.get_page(1, 0).idx == 0
+        assert stage.page_manager.get_page(1, 1).idx == 1
+        with pytest.raises(KeyError):
+            stage.page_manager.get_page(1, 2)
+
+    def test_new_page_creation_skipped_when_no_page_slot_is_free(
+            self, full_board_stage, process_custom_config, monkeypatch):
+        stage, page_manager = full_board_stage
+        process_config = process_custom_config(io_probability=0, graceful_termination_probability=0)
+        process = Process(1, stage, process_config)
+        monkeypatch.setattr(Random, 'get_number', lambda self_random, min, max: min)
+
+        process.use_cpu()
+        process.update(1000, [])
+
+        with pytest.raises(KeyError):
+            page_manager.get_page(1, 0)
+
+    def test_new_page_creation_resumes_when_a_page_slot_is_freed(
+            self, full_board_stage, process_custom_config, monkeypatch):
+        stage, page_manager = full_board_stage
+        process_config = process_custom_config(io_probability=0, graceful_termination_probability=0)
+        process = Process(1, stage, process_config)
+        monkeypatch.setattr(Random, 'get_number', lambda self_random, min, max: min)
+
+        process.use_cpu()
+        process.update(1000, [])
+        page_manager.delete_page(page_manager.get_page(100, 0))
+        process.update(2000, [])
+
+        assert page_manager.get_page(1, 0).idx == 0
 
 
 class TestStateEvents(TestProcess):

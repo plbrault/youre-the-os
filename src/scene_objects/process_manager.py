@@ -1,7 +1,7 @@
 from math import inf
 import re
 
-from constants import ONE_SECOND
+from constants import MAX_PROCESSES, ONE_SECOND
 import game_monitor
 from engine.game_event_type import GameEventType
 from engine.scene_object import SceneObject
@@ -192,8 +192,15 @@ class ProcessManager(SceneObject):
     def del_process(self, process):
         del self._processes[process.pid]
 
+    def _can_create_process(self):
+        return (
+            len(self._alive_process_list) < self._stage_config.max_processes
+            and len(self._alive_process_list) + self._cpu_manager.lingering_process_count
+                < MAX_PROCESSES
+        )
+
     def _create_process(self, process_slot_id=None, process_type: ProcessType = None):
-        if len(self._alive_process_list) < self._stage_config.max_processes:
+        if self._can_create_process():
             if process_slot_id is None:
                 for i, process_slot in enumerate(self.process_slots):
                     if process_slot.process is None:
@@ -352,7 +359,7 @@ class ProcessManager(SceneObject):
         return 0
 
     def _handle_process_creation(self, current_time):
-        if len(self._alive_process_list) < self._stage_config.max_processes:
+        if self._can_create_process():
             process_created = False
             if (
                 len(self._forced_process_creation) > 0
