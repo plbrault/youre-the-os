@@ -304,6 +304,8 @@ class Stage(Scene):
         than the total number of page slots (RAM and swap combined) during the game.
         Processes are capped by both the config and the process slot grid, and pages
         are freed when their process ends.
+        Swaps require an empty slot on the destination side, so the worst case must
+        leave at least one page slot free, otherwise swapping would become impossible.
         :raises ValueError: If the config can overflow the page slots.
         """
         max_concurrent_processes = min(
@@ -316,10 +318,11 @@ class Stage(Scene):
         )
         max_concurrent_pages = max_concurrent_processes * self._config.max_pages_per_process
         total_page_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
-        if max_concurrent_pages > total_page_slots:
+        if max_concurrent_pages >= total_page_slots:
             raise ValueError(
                 f'Stage config can generate up to {max_concurrent_pages} pages '
-                f'at the same time, but there are only {total_page_slots} page slots.')
+                f'at the same time, but there are only {total_page_slots} page slots; '
+                f'at least one slot must remain free for page swaps.')
 
     def apply_state_transition(self, event: StateEvent):
         transitions = self._state_transitions.get(self._state, {})

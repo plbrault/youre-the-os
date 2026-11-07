@@ -1138,7 +1138,7 @@ class TestStageGameMonitorEvents:
 
 
 class TestStageConfigValidation:
-    """Tests for the validation that the stage config can never overflow the page slots."""
+    """Tests for the validation that the stage config can never occupy every page slot."""
 
     @pytest.fixture
     def stage_factory(self, scene_manager):
@@ -1150,18 +1150,37 @@ class TestStageConfigValidation:
 
     def test_setup_accepts_default_config(self, stage_factory):
         # The default config allows up to 42 * 4 = 168 pages at the same
-        # time, and there are 16 * 11 = 176 page slots
+        # time, and there are 16 * 11 = 176 page slots, so at least one slot
+        # always remains free for page swaps
         stage = stage_factory(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0))
 
         stage.setup()
 
-    def test_setup_accepts_config_generating_exactly_the_number_of_page_slots(self, stage_factory):
-        # 22 * 8 = 176 pages at the same time, and exactly 176 page slots
+    def test_setup_rejects_config_that_could_occupy_every_page_slot(self, stage_factory):
+        # 22 * 8 = 176 pages at the same time, which is exactly the number
+        # of page slots, so swapping would become impossible when full
         stage = stage_factory(StageConfig(
             max_processes=22,
             max_pages_per_process=8,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 176 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_accepts_config_leaving_exactly_one_page_slot_free(self, stage_factory):
+        # 25 * 7 = 175 pages at the same time, and 176 page slots, so
+        # exactly one slot always remains free for page swaps
+        stage = stage_factory(StageConfig(
+            max_processes=25,
+            max_pages_per_process=7,
             num_processes_at_startup=0,
             new_process_probability=0))
 
@@ -1179,7 +1198,8 @@ class TestStageConfigValidation:
 
         assert str(exc_info.value) == (
             'Stage config can generate up to 210 pages at the same time, '
-            'but there are only 176 page slots.')
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
 
     def test_setup_rejects_config_when_min_processes_thresholds_can_overflow_page_slots(
             self, stage_factory):
@@ -1198,7 +1218,8 @@ class TestStageConfigValidation:
 
         assert str(exc_info.value) == (
             'Stage config can generate up to 210 pages at the same time, '
-            'but there are only 176 page slots.')
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
 
     def test_setup_accepts_min_processes_thresholds_within_page_capacity(self, stage_factory):
         # The min processes threshold of 20 allows 20 * 5 = 100 pages at the
@@ -1214,7 +1235,8 @@ class TestStageConfigValidation:
 
     def test_setup_ignores_processes_beyond_the_process_slot_grid(self, stage_factory):
         # Only 42 processes can exist at the same time despite max_processes
-        # being 60, so 42 * 4 = 168 pages at the same time, and 176 page slots
+        # being 60, so 42 * 4 = 168 pages at the same time, and 176 page
+        # slots, so at least one slot always remains free for page swaps
         stage = stage_factory(StageConfig(
             max_processes=60,
             max_pages_per_process=4,
