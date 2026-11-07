@@ -137,7 +137,7 @@ class CustomSettingsDialog(Modal):
 
         return config
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         self.num_processes_at_startup_selector.in_error = (
             self.num_processes_at_startup_selector.selected_option_id
             > self.max_processes_selector.selected_option_id
@@ -146,4 +146,4 @@ class CustomSettingsDialog(Modal):
         self.start_button.disabled = self.max_processes_selector.in_error
 
         for child in self.children:
-            child.update(current_time, events)
+            child.update(current_time, player_inputs)

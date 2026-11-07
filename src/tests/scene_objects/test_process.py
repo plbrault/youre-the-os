@@ -2,8 +2,8 @@ import pytest
 
 from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, ONE_SECOND
 from config.process_config import ProcessConfig
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from engine.random import Random
 from scene_objects.page_slot import PageSlot
 from scene_objects.process import Process, ProcessState, StateEvent, ProcessType
@@ -27,9 +27,9 @@ class TestProcess:
         """Fixture to spy on apply_state_transition calls."""
         calls = []
         original = Process.apply_state_transition
-        def spy(self, event):
-            calls.append(event)
-            return original(self, event)
+        def spy(self, state_event):
+            calls.append(state_event)
+            return original(self, state_event)
         monkeypatch.setattr(Process, 'apply_state_transition', spy)
         return calls
 
@@ -755,7 +755,7 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
-        # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
+        # At 4000ms, with max random, probabilistic io event won't fire yet (max is 5000ms)
         stage.process_manager.io_queue.update(4000, [])
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
@@ -794,7 +794,7 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
-        # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
+        # At 4000ms, with max random, probabilistic io event won't fire yet (max is 5000ms)
         stage.process_manager.io_queue.update(4000, [])
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
@@ -840,7 +840,7 @@ class TestProcess:
         assert process.is_waiting_for_io == True
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
-        # At 4000ms, with max random, probabilistic event won't fire yet (max is 5000ms)
+        # At 4000ms, with max random, probabilistic io event won't fire yet (max is 5000ms)
         stage.process_manager.io_queue.update(4000, [])
         assert process.state not in (ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE, ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE)
 
@@ -1003,7 +1003,7 @@ class TestProcess:
         process = Process(1, stage, process_config)
         process.view.set_xy(1000, 500)
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
 
         assert process.has_cpu == True
@@ -1019,7 +1019,7 @@ class TestProcess:
         assert process.has_cpu == True
         assert process.view.y != process.view.target_y
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
         assert process.has_cpu == True
 
@@ -1036,7 +1036,7 @@ class TestProcess:
         process.view.target_x = None
         process.view.target_y = None
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(1000, [mouse_click_event])
 
         assert process.has_cpu == False
@@ -1068,7 +1068,7 @@ class TestProcess:
 
         assert process.state == ProcessState.ENDED
 
-        mouse_click_event = GameEvent(GameEventType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
+        mouse_click_event = PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, { 'position': (process.view.x, process.view.y) })
         process.update(2000, [mouse_click_event])
 
         assert process.view.target_y <= -process.view.height
@@ -1551,7 +1551,7 @@ class TestProcess:
         # Starvation level stays the same but timer resets to 0
         stage.process_manager.io_queue.update(7000, [])
         assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-        assert process.starvation_level == 1  # Starvation level stays the same when event arrives
+        assert process.starvation_level == 1  # Starvation level stays the same when io event arrives
 
         # Process the I/O event - process should stay on CPU and resume running
         stage.process_manager.io_queue.handle_player_action()
@@ -1597,7 +1597,7 @@ class TestStateEvents(TestProcess):
         """Test that invalid events from IDLE are silently ignored."""
         process = Process(1, stage, process_config)
         assert process.state == ProcessState.IDLE
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.REMOVE_FROM_CPU,
             StateEvent.REQUEST_IO,
             StateEvent.PAGE_FAULT,
@@ -1606,8 +1606,8 @@ class TestStateEvents(TestProcess):
             StateEvent.IO_DELIVERED,
             StateEvent.PAGE_AVAILABLE,
         ]
-        for event in invalid_events:
-            process.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            process.apply_state_transition(state_event)
             assert process.state == ProcessState.IDLE
 
     def test_running_remove_from_cpu(self, stage, process_config):
@@ -1643,15 +1643,15 @@ class TestStateEvents(TestProcess):
         process = Process(1, stage, process_config)
         process.use_cpu()
         assert process.state == ProcessState.RUNNING
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.ASSIGN_TO_CPU,
             StateEvent.TERMINATE_FROM_STARVATION,
             StateEvent.IO_AVAILABLE,
             StateEvent.IO_DELIVERED,
             StateEvent.PAGE_AVAILABLE,
         ]
-        for event in invalid_events:
-            process.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            process.apply_state_transition(state_event)
             assert process.state == ProcessState.RUNNING
 
     def test_blocked_on_cpu_io_requested_io_available(self, stage, process_config):
@@ -1676,7 +1676,7 @@ class TestStateEvents(TestProcess):
         process.use_cpu()
         process.apply_state_transition(StateEvent.REQUEST_IO)
         assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.ASSIGN_TO_CPU,
             StateEvent.TERMINATE_FROM_STARVATION,
             StateEvent.REQUEST_IO,
@@ -1685,8 +1685,8 @@ class TestStateEvents(TestProcess):
             StateEvent.IO_DELIVERED,
             StateEvent.PAGE_AVAILABLE,
         ]
-        for event in invalid_events:
-            process.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            process.apply_state_transition(state_event)
             assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
 
     def test_blocked_on_cpu_io_available_io_delivered(self, stage, process_config):
@@ -1796,7 +1796,7 @@ class TestStateEvents(TestProcess):
             process.update(i * process.time_between_starvation_levels, [])
         assert process.state == ProcessState.ENDED
 
-        all_events = [
+        all_state_events = [
             StateEvent.ASSIGN_TO_CPU,
             StateEvent.TERMINATE_FROM_STARVATION,
             StateEvent.REMOVE_FROM_CPU,
@@ -1808,6 +1808,6 @@ class TestStateEvents(TestProcess):
             StateEvent.PAGE_AVAILABLE,
         ]
 
-        for event in all_events:
-            process.apply_state_transition(event)
+        for state_event in all_state_events:
+            process.apply_state_transition(state_event)
             assert process.state == ProcessState.ENDED

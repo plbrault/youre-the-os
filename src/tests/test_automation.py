@@ -515,30 +515,30 @@ class TestSchedulerIntegration:
         assert (1, 1) not in scheduler.pages
 
 
-class TestGameObjectsEmitEvents:
-    """Tests that real game objects emit events to game_monitor.
+class TestGameObjectsEmitNotifications:
+    """Tests that real game objects emit notifications to game_monitor.
     
     These tests verify that the actual game objects (ProcessManager, PageManager, etc.)
     call the appropriate game_monitor.notify_* functions when state changes occur.
     """
 
     def test_process_manager_emits_process_new_event(self, stage):
-        """Test that ProcessManager emits PROC_NEW event when creating processes at startup."""
+        """Test that ProcessManager emits PROC_NEW notification when creating processes at startup."""
         # Run updates to trigger process creation at startup
         current_time = 0
         for _ in range(20):
             stage.process_manager.update(current_time, [])
             current_time += 1000
 
-        events = game_monitor.get_events()
-        proc_new_events = [e for e in events if e.etype == 'PROC_NEW']
+        notifications = game_monitor.get_notifications()
+        proc_new_notifications = [e for e in notifications if e.etype == 'PROC_NEW']
 
         # Stage config has num_processes_at_startup = 14
-        assert len(proc_new_events) >= 14, "ProcessManager should emit PROC_NEW for each process at startup"
-        assert proc_new_events[0].pid == 1, "First process should have pid=1"
+        assert len(proc_new_notifications) >= 14, "ProcessManager should emit PROC_NEW for each process at startup"
+        assert proc_new_notifications[0].pid == 1, "First process should have pid=1"
 
-    def test_process_emits_page_new_event_when_using_cpu(self, stage, monkeypatch):
-        """Test that Process emits PAGE_NEW event when it starts using CPU and creates pages."""
+    def test_process_emits_page_new_notification_when_using_cpu(self, stage, monkeypatch):
+        """Test that Process emits PAGE_NEW notification when it starts using CPU and creates pages."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -552,37 +552,37 @@ class TestGameObjectsEmitEvents:
         cpu = stage.process_manager.cpu_manager.select_free_cpu()
         assert cpu is not None, "Need a free CPU for this test"
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # When process uses CPU for the first time, it creates pages
         process.use_cpu()
 
-        events = game_monitor.get_events()
-        page_new_events = [e for e in events if e.etype == 'PAGE_NEW']
+        notifications = game_monitor.get_notifications()
+        page_new_notifications = [e for e in notifications if e.etype == 'PAGE_NEW']
 
-        assert len(page_new_events) >= 1, "Process.use_cpu should emit PAGE_NEW events when creating pages"
+        assert len(page_new_notifications) >= 1, "Process.use_cpu should emit PAGE_NEW notifications when creating pages"
 
-    def test_io_queue_emits_io_queue_event_on_process(self, stage):
-        """Test that IoQueue emits IO_QUEUE event when processing events."""
+    def test_io_queue_emits_io_queue_notification_on_process(self, stage):
+        """Test that IoQueue emits IO_QUEUE notification when processing notifications."""
         io_queue = stage.process_manager.io_queue
         
         callback_called = []
-        io_queue.wait_for_event(0, lambda: None, lambda: callback_called.append(True))
+        io_queue.wait_for_io_event(0, lambda: None, lambda: callback_called.append(True))
         
         io_queue.update(6000, [])
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         
         io_queue.handle_player_action()
         
-        events = game_monitor.get_events()
-        io_queue_events = [e for e in events if e.etype == 'IO_QUEUE']
+        notifications = game_monitor.get_notifications()
+        io_queue_notifications = [e for e in notifications if e.etype == 'IO_QUEUE']
         
-        assert len(io_queue_events) >= 1, "IoQueue.handle_player_action should emit IO_QUEUE event"
-        assert io_queue_events[0].io_count == 0, "After processing, io_count should be 0"
+        assert len(io_queue_notifications) >= 1, "IoQueue.handle_player_action should emit IO_QUEUE notification"
+        assert io_queue_notifications[0].io_count == 0, "After processing, io_count should be 0"
 
-    def test_process_emits_cpu_event_when_toggled(self, stage):
-        """Test that Process emits PROC_CPU event when toggled on/off CPU."""
+    def test_process_emits_cpu_notification_when_toggled(self, stage):
+        """Test that Process emits PROC_CPU notification when toggled on/off CPU."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -592,18 +592,18 @@ class TestGameObjectsEmitEvents:
         # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Toggle process (should assign to CPU)
         process.toggle()
         
-        events = game_monitor.get_events()
-        proc_cpu_events = [e for e in events if e.etype == 'PROC_CPU']
+        notifications = game_monitor.get_notifications()
+        proc_cpu_notifications = [e for e in notifications if e.etype == 'PROC_CPU']
         
-        assert len(proc_cpu_events) >= 1, "Process.toggle should emit PROC_CPU event"
+        assert len(proc_cpu_notifications) >= 1, "Process.toggle should emit PROC_CPU notification"
 
-    def test_process_emits_starvation_event_when_level_changes(self, stage):
-        """Test that Process emits PROC_STARV event when starvation level changes."""
+    def test_process_emits_starvation_notification_when_level_changes(self, stage):
+        """Test that Process emits PROC_STARV notification when starvation level changes."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -616,18 +616,18 @@ class TestGameObjectsEmitEvents:
         # Put process on CPU first so it becomes happy
         process.toggle()
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Run update to trigger happiness (starvation -> 0)
         process.update(current_time + process.cpu.process_happiness_ms + 1000, [])
 
-        events = game_monitor.get_events()
-        starv_events = [e for e in events if e.etype == 'PROC_STARV']
+        notifications = game_monitor.get_notifications()
+        starv_notifications = [e for e in notifications if e.etype == 'PROC_STARV']
 
-        assert len(starv_events) >= 1, "Process should emit PROC_STARV when starvation level changes"
+        assert len(starv_notifications) >= 1, "Process should emit PROC_STARV when starvation level changes"
 
     def test_process_emits_wait_page_event(self, stage):
-        """Test that Process emits PROC_WAIT_PAGE event when waiting for page."""
+        """Test that Process emits PROC_WAIT_PAGE notification when waiting for page."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -651,17 +651,17 @@ class TestGameObjectsEmitEvents:
             if page.on_disk:
                 break
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Update process to trigger page availability check
         process.update(swap_time, [])
 
-        events = game_monitor.get_events()
-        wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE']
+        notifications = game_monitor.get_notifications()
+        wait_page_notifications = [e for e in notifications if e.etype == 'PROC_WAIT_PAGE']
 
-        assert len(wait_page_events) >= 1, "Process should emit PROC_WAIT_PAGE when waiting for page"
+        assert len(wait_page_notifications) >= 1, "Process should emit PROC_WAIT_PAGE when waiting for page"
 
-    def test_process_emits_wait_page_false_event_when_yielding_cpu_during_page_fault(self, stage):
+    def test_process_emits_wait_page_false_notification_when_yielding_cpu_during_page_fault(self, stage):
         """Test that Process emits PROC_WAIT_PAGE with waiting_for_page=False when it yields
         the CPU while blocked on a page fault."""
         # Run updates to create processes at startup
@@ -690,15 +690,15 @@ class TestGameObjectsEmitEvents:
         process.update(swap_time, [])
         assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         process.yield_cpu()
 
-        events = game_monitor.get_events()
-        wait_page_events = [e for e in events if e.etype == 'PROC_WAIT_PAGE' and e.pid == process.pid]
+        notifications = game_monitor.get_notifications()
+        wait_page_notifications = [e for e in notifications if e.etype == 'PROC_WAIT_PAGE' and e.pid == process.pid]
 
-        assert len(wait_page_events) == 1, "Process should emit PROC_WAIT_PAGE when it stops waiting for page"
-        assert wait_page_events[0].waiting_for_page is False
+        assert len(wait_page_notifications) == 1, "Process should emit PROC_WAIT_PAGE when it stops waiting for page"
+        assert wait_page_notifications[0].waiting_for_page is False
 
     def test_scheduler_releases_cpu_when_process_on_cpu_dies_from_starvation(self, stage):
         """Test that the Scheduler's used_cpus goes back to zero after a process that was
@@ -706,7 +706,7 @@ class TestGameObjectsEmitEvents:
         CPU slot can be claimed again by another process without inflating used_cpus."""
         from automation.api import Scheduler
         scheduler = Scheduler()
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Run updates to create processes at startup
         current_time = 0
@@ -732,8 +732,8 @@ class TestGameObjectsEmitEvents:
                 break
 
         process.update(swap_time, [])
-        scheduler(game_monitor.get_events())
-        game_monitor.clear_events()
+        scheduler(game_monitor.get_notifications())
+        game_monitor.clear_notifications()
 
         assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert scheduler.used_cpus == 1
@@ -742,8 +742,8 @@ class TestGameObjectsEmitEvents:
         # Leave the page fault unresolved until the process dies from starvation
         for i in range(1, DEAD_STARVATION_LEVEL):
             process.update(swap_time + i * process.time_between_starvation_levels, [])
-        scheduler(game_monitor.get_events())
-        game_monitor.clear_events()
+        scheduler(game_monitor.get_notifications())
+        game_monitor.clear_notifications()
 
         assert process.state == ProcessState.ENDED
         assert process.pid not in scheduler.processes
@@ -752,8 +752,8 @@ class TestGameObjectsEmitEvents:
         # The freed CPU slot can be claimed again by another process
         other_process = stage.process_manager.get_process(2)
         other_process.use_cpu()
-        scheduler(game_monitor.get_events())
-        game_monitor.clear_events()
+        scheduler(game_monitor.get_notifications())
+        game_monitor.clear_notifications()
 
         assert other_process.cpu is held_cpu
         assert scheduler.used_cpus == 1
@@ -763,7 +763,7 @@ class TestGameObjectsEmitEvents:
         CPU during a page fault, its page is swapped back to RAM, and it is rescheduled."""
         from automation.api import Scheduler
         scheduler = Scheduler()
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Run updates to create processes at startup
         current_time = 0
@@ -789,8 +789,8 @@ class TestGameObjectsEmitEvents:
                 break
 
         process.update(swap_time, [])
-        scheduler(game_monitor.get_events())
-        game_monitor.clear_events()
+        scheduler(game_monitor.get_notifications())
+        game_monitor.clear_notifications()
 
         assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert scheduler.processes[process.pid].waiting_for_page is True
@@ -808,14 +808,14 @@ class TestGameObjectsEmitEvents:
         # Reschedule the process now that its page is in RAM
         process.use_cpu()
         process.update(swap_time, [])
-        scheduler(game_monitor.get_events())
-        game_monitor.clear_events()
+        scheduler(game_monitor.get_notifications())
+        game_monitor.clear_notifications()
 
         assert process.state == ProcessState.RUNNING
         assert scheduler.processes[process.pid].waiting_for_page is False
 
-    def test_page_emits_swap_event_when_swap_completes(self, stage):
-        """Test that Page emits PAGE_SWAP event when swap completes."""
+    def test_page_emits_swap_notification_when_swap_completes(self, stage):
+        """Test that Page emits PAGE_SWAP notification when swap completes."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -829,7 +829,7 @@ class TestGameObjectsEmitEvents:
         # Get page through PageManager
         page = stage.page_manager.get_page(process.pid, 0)
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Request swap
         page.request_swap()
@@ -844,13 +844,13 @@ class TestGameObjectsEmitEvents:
             if page.on_disk:
                 break
 
-        events = game_monitor.get_events()
-        swap_events = [e for e in events if e.etype == 'PAGE_SWAP']
+        notifications = game_monitor.get_notifications()
+        swap_notifications = [e for e in notifications if e.etype == 'PAGE_SWAP']
 
-        assert len(swap_events) >= 1, "Page should emit PAGE_SWAP when swap completes"
+        assert len(swap_notifications) >= 1, "Page should emit PAGE_SWAP when swap completes"
 
-    def test_page_emits_swap_queue_event_when_swap_requested(self, stage):
-        """Test that Page emits PAGE_SWAP_QUEUE event when swap is requested."""
+    def test_page_emits_swap_queue_notification_when_swap_requested(self, stage):
+        """Test that Page emits PAGE_SWAP_QUEUE notification when swap is requested."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -864,21 +864,21 @@ class TestGameObjectsEmitEvents:
         # Get page through PageManager
         page = stage.page_manager.get_page(process.pid, 0)
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Request swap
         page.request_swap()
 
-        events = game_monitor.get_events()
-        swap_queue_events = [e for e in events if e.etype == 'PAGE_SWAP_QUEUE']
+        notifications = game_monitor.get_notifications()
+        swap_queue_notifications = [e for e in notifications if e.etype == 'PAGE_SWAP_QUEUE']
 
-        assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap requested"
-        assert swap_queue_events[0].pid == page.pid
-        assert swap_queue_events[0].idx == page.idx
-        assert swap_queue_events[0].waiting is True
+        assert len(swap_queue_notifications) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap requested"
+        assert swap_queue_notifications[0].pid == page.pid
+        assert swap_queue_notifications[0].idx == page.idx
+        assert swap_queue_notifications[0].waiting is True
 
-    def test_page_emits_swap_start_event_when_swap_begins(self, stage):
-        """Test that Page emits PAGE_SWAP_START event when swap actually starts."""
+    def test_page_emits_swap_start_notification_when_swap_begins(self, stage):
+        """Test that Page emits PAGE_SWAP_START notification when swap actually starts."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -892,7 +892,7 @@ class TestGameObjectsEmitEvents:
         # Get page through PageManager
         page = stage.page_manager.get_page(process.pid, 0)
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Request swap
         page.request_swap()
@@ -900,12 +900,12 @@ class TestGameObjectsEmitEvents:
         # Run update to start the swap
         stage.page_manager.update(current_time, [])
 
-        events = game_monitor.get_events()
-        swap_start_events = [e for e in events if e.etype == 'PAGE_SWAP_START']
+        notifications = game_monitor.get_notifications()
+        swap_start_notifications = [e for e in notifications if e.etype == 'PAGE_SWAP_START']
 
-        assert len(swap_start_events) >= 1, "Page should emit PAGE_SWAP_START when swap starts"
-        assert swap_start_events[0].pid == page.pid
-        assert swap_start_events[0].idx == page.idx
+        assert len(swap_start_notifications) >= 1, "Page should emit PAGE_SWAP_START when swap starts"
+        assert swap_start_notifications[0].pid == page.pid
+        assert swap_start_notifications[0].idx == page.idx
 
     def test_page_emits_swap_queue_cancelled_when_swap_cancelled(self, stage):
         """Test that Page emits PAGE_SWAP_QUEUE with waiting=False when swap is cancelled."""
@@ -925,19 +925,19 @@ class TestGameObjectsEmitEvents:
         # Request swap
         page.request_swap()
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Cancel swap
         page.request_swap_cancellation()
 
-        events = game_monitor.get_events()
-        swap_queue_events = [e for e in events if e.etype == 'PAGE_SWAP_QUEUE']
+        notifications = game_monitor.get_notifications()
+        swap_queue_notifications = [e for e in notifications if e.etype == 'PAGE_SWAP_QUEUE']
         
-        assert len(swap_queue_events) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap cancelled"
-        assert swap_queue_events[0].waiting is False
+        assert len(swap_queue_notifications) >= 1, "Page should emit PAGE_SWAP_QUEUE when swap cancelled"
+        assert swap_queue_notifications[0].waiting is False
 
     def test_process_emits_page_free_when_killed(self, stage, stage_config):
-        """Test that Process emits PAGE_FREE events when killed."""
+        """Test that Process emits PAGE_FREE notifications when killed."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -960,7 +960,7 @@ class TestGameObjectsEmitEvents:
         num_pages = len(pages_for_process)
         assert num_pages > 0, "Process should have created at least one page"
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Remove process from CPU so it can starve
         process.yield_cpu()
@@ -969,14 +969,14 @@ class TestGameObjectsEmitEvents:
         for i in range(1, DEAD_STARVATION_LEVEL + 1):
             process.update(current_time + i * process.time_between_starvation_levels, [])
 
-        events = game_monitor.get_events()
-        page_free_events = [e for e in events if e.etype == 'PAGE_FREE']
+        notifications = game_monitor.get_notifications()
+        page_free_notifications = [e for e in notifications if e.etype == 'PAGE_FREE']
 
-        assert len(page_free_events) == num_pages, \
+        assert len(page_free_notifications) == num_pages, \
             f"Process should emit PAGE_FREE for all {num_pages} pages when killed"
 
     def test_process_emits_proc_kill_when_killed(self, stage):
-        """Test that Process emits PROC_KILL event when killed."""
+        """Test that Process emits PROC_KILL notification when killed."""
         # Run updates to create processes at startup
         current_time = 0
         for _ in range(20):
@@ -986,19 +986,19 @@ class TestGameObjectsEmitEvents:
         # Use existing process from stage setup
         process = stage.process_manager.get_process(1)
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Starve the process to death
         for i in range(1, DEAD_STARVATION_LEVEL + 1):
             process.update(current_time + i * process.time_between_starvation_levels, [])
 
-        events = game_monitor.get_events()
-        kill_events = [e for e in events if e.etype == 'PROC_KILL']
+        notifications = game_monitor.get_notifications()
+        kill_notifications = [e for e in notifications if e.etype == 'PROC_KILL']
 
-        assert len(kill_events) >= 1, "Process should emit PROC_KILL when killed"
+        assert len(kill_notifications) >= 1, "Process should emit PROC_KILL when killed"
 
     def test_process_emits_proc_term_when_gracefully_terminated(self, stage_custom_config):
-        """Test that Process emits PROC_TERM event when gracefully terminated."""
+        """Test that Process emits PROC_TERM notification when gracefully terminated."""
         # Create stage with 100% graceful termination probability
         config = StageConfig(
             cpu_config=CpuConfig(num_cores=4),
@@ -1020,18 +1020,18 @@ class TestGameObjectsEmitEvents:
         process = stage.process_manager.get_process(1)
         process.toggle()
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Update process to trigger graceful termination
         process.update(current_time + 1000, [])
 
-        events = game_monitor.get_events()
-        term_events = [e for e in events if e.etype == 'PROC_TERM']
+        notifications = game_monitor.get_notifications()
+        term_notifications = [e for e in notifications if e.etype == 'PROC_TERM']
 
-        assert len(term_events) >= 1, "Process should emit PROC_TERM when gracefully terminated"
+        assert len(term_notifications) >= 1, "Process should emit PROC_TERM when gracefully terminated"
 
     def test_process_emits_proc_end_when_terminated_and_yields_cpu(self, stage_custom_config):
-        """Test that Process emits PROC_END event when terminated process yields CPU."""
+        """Test that Process emits PROC_END notification when terminated process yields CPU."""
         # Create stage with 100% graceful termination probability
         config = StageConfig(
             cpu_config=CpuConfig(num_cores=4),
@@ -1056,15 +1056,15 @@ class TestGameObjectsEmitEvents:
         # Gracefully terminate via update
         process.update(current_time + 1000, [])
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         # Yield CPU (this should trigger PROC_END)
         process.yield_cpu()
 
-        events = game_monitor.get_events()
-        end_events = [e for e in events if e.etype == 'PROC_END']
+        notifications = game_monitor.get_notifications()
+        end_notifications = [e for e in notifications if e.etype == 'PROC_END']
 
-        assert len(end_events) >= 1, "Process should emit PROC_END when terminated process yields CPU"
+        assert len(end_notifications) >= 1, "Process should emit PROC_END when terminated process yields CPU"
 
 
 class TestStageAutomationIntegration:
@@ -1115,7 +1115,7 @@ def scheduler(events):
             lambda pid: MockProcess(pid)
         )
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
         
         # Call update to trigger script processing
@@ -1164,7 +1164,7 @@ def scheduler(events):
             lambda pid: mock_process
         )
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
         
         stage.update(0, [])
@@ -1178,7 +1178,7 @@ def scheduler(events):
 
     def test_stage_without_script_does_not_crash(self, stage_without_script):
         """Test that stage without script handles update without errors."""
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
         
         # Should not raise
@@ -1214,7 +1214,7 @@ def scheduler(events):
             lambda pid, idx: MockPage(pid, idx)
         )
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_page_new(1, 0, False, True)
         
         stage.update(0, [])
@@ -1244,7 +1244,7 @@ def scheduler(events):
             lambda: io_processed.append(True)
         )
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_io_event_count(5)
         
         stage.update(0, [])
@@ -1263,7 +1263,7 @@ def scheduler(events):
             raise_error
         )
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
         
         # Should not raise
@@ -1284,7 +1284,7 @@ x = 1
         stage.scene_manager = scene_manager
         stage.setup()
         
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
         
         # Should not raise
@@ -1325,7 +1325,7 @@ def scheduler(events):
             lambda pid: MockProcess()
         )
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
 
         # If cpu_core_types wasn't available, no action would have been generated
@@ -1395,7 +1395,7 @@ def scheduler(events):
             lambda pid: MockProcess()
         )
 
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(1)
 
         # If cpu_core_types had wrong values, no action would have been generated

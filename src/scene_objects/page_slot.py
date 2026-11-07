@@ -20,5 +20,5 @@ class PageSlot(SceneObject):
     def page(self, page):
         self._page = page
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         pass

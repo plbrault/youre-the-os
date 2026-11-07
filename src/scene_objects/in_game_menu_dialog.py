@@ -34,6 +34,6 @@ class InGameMenuDialog(Modal):
     def close_menu_button(self):
         return self._close_menu_button
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         for child in self.children:
-            child.update(current_time, events)
+            child.update(current_time, player_inputs)

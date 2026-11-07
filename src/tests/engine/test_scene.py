@@ -33,11 +33,11 @@ class StubScene(Scene):
         super().__init__('test')
 
     def setup(self):
-        self._scene_objects = []
+        self.children.clear()
 
-    def update(self, current_time, events):
-        for scene_object in self._scene_objects:
-            scene_object.update(current_time, events)
+    def update(self, current_time, player_inputs):
+        for scene_object in self._children:
+            scene_object.update(current_time, player_inputs)
 
 
 class SetupTrackingScene(Scene):
@@ -47,11 +47,11 @@ class SetupTrackingScene(Scene):
 
     def setup(self):
         self.setup_call_count += 1
-        self._scene_objects = []
+        self.children.clear()
 
-    def update(self, current_time, events):
-        for scene_object in self._scene_objects:
-            scene_object.update(current_time, events)
+    def update(self, current_time, player_inputs):
+        for scene_object in self._children:
+            scene_object.update(current_time, player_inputs)
 
 
 class TestSceneModalLifecycle:

@@ -1,8 +1,8 @@
 import pytest
 
 from constants import LAST_ALIVE_STARVATION_LEVEL, DEAD_STARVATION_LEVEL, FRAMERATE, ONE_SECOND, ONE_MINUTE
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from engine.game_manager import GameManager
 from engine.random import Random
 from scene_objects.checkbox import Checkbox
@@ -691,8 +691,8 @@ class TestProcessManager:
             process = cpu.process
             assert process.cpu == cpu
 
-            event = GameEvent(GameEventType.KEY_UP, { 'key': str(i), 'shift': False })
-            process_manager.update(1000, [event])
+            player_input = PlayerInput(PlayerInputType.KEY_UP, { 'key': str(i), 'shift': False })
+            process_manager.update(1000, [player_input])
 
             assert cpu.process is None
             assert process.cpu is None
@@ -701,8 +701,8 @@ class TestProcessManager:
         process = cpu.process
         assert process.cpu == cpu
 
-        event = GameEvent(GameEventType.KEY_UP, { 'key': '0', 'shift': False })
-        process_manager.update(1000, [event])
+        player_input = PlayerInput(PlayerInputType.KEY_UP, { 'key': '0', 'shift': False })
+        process_manager.update(1000, [player_input])
 
         assert cpu.process is None
         assert process.cpu is None
@@ -712,8 +712,8 @@ class TestProcessManager:
             process = cpu.process
             assert process.cpu == cpu
 
-            event = GameEvent(GameEventType.KEY_UP, { 'key': str(i - 10), 'shift': True })
-            process_manager.update(1000, [event])
+            player_input = PlayerInput(PlayerInputType.KEY_UP, { 'key': str(i - 10), 'shift': True })
+            process_manager.update(1000, [player_input])
 
             assert cpu.process is None
             assert process.cpu is None

@@ -189,97 +189,97 @@ class TestStageStateMachine:
         mock_stage.apply_state_transition(StateEvent.DELAY_ELAPSED)
         assert mock_stage.state == StageState.ENDED
 
-    def test_starting_ignores_invalid_events(self, mock_stage):
-        invalid_events = [
+    def test_starting_ignores_invalid_state_events(self, mock_stage):
+        invalid_state_events = [
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.STARTING
 
-    def test_playing_ignores_invalid_events(self, mock_stage):
+    def test_playing_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.PROCESSES_SETTLED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.PLAYING
 
-    def test_awaiting_victory_ignores_invalid_events(self, mock_stage):
+    def test_awaiting_victory_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.VICTORY_DETECTED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.AWAITING_VICTORY
 
-    def test_awaiting_defeat_ignores_invalid_events(self, mock_stage):
+    def test_awaiting_defeat_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.DEFEAT_DETECTED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.AWAITING_DEFEAT
 
-    def test_victory_ignores_invalid_events(self, mock_stage):
+    def test_victory_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.VICTORY_DETECTED)
         mock_stage.apply_state_transition(StateEvent.PROCESSES_SETTLED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.VICTORY
 
-    def test_defeat_ignores_invalid_events(self, mock_stage):
+    def test_defeat_ignores_invalid_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.DEFEAT_DETECTED)
         mock_stage.apply_state_transition(StateEvent.PROCESSES_SETTLED)
-        invalid_events = [
+        invalid_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
         ]
-        for event in invalid_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in invalid_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.DEFEAT
 
-    def test_ended_ignores_all_events(self, mock_stage):
+    def test_ended_ignores_all_state_events(self, mock_stage):
         mock_stage.apply_state_transition(StateEvent.START)
         mock_stage.apply_state_transition(StateEvent.VICTORY_DETECTED)
         mock_stage.apply_state_transition(StateEvent.PROCESSES_SETTLED)
         mock_stage.apply_state_transition(StateEvent.DELAY_ELAPSED)
         assert mock_stage.state == StageState.ENDED
-        all_events = [
+        all_state_events = [
             StateEvent.START,
             StateEvent.VICTORY_DETECTED,
             StateEvent.DEFEAT_DETECTED,
             StateEvent.PROCESSES_SETTLED,
             StateEvent.DELAY_ELAPSED,
         ]
-        for event in all_events:
-            mock_stage.apply_state_transition(event)
+        for state_event in all_state_events:
+            mock_stage.apply_state_transition(state_event)
             assert mock_stage.state == StageState.ENDED
 
 
@@ -929,7 +929,7 @@ class TestStage:
 
         assert stage.modal is None
 
-    def test_reset_routes_events_to_scene_objects(self, stage_custom_config):
+    def test_reset_routes_player_inputs_to_scene_objects(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=4,
@@ -944,10 +944,10 @@ class TestStage:
         update_received = False
         original_update = stage.process_manager.update
 
-        def spy_update(current_time, events):
+        def spy_update(current_time, player_inputs):
             nonlocal update_received
             update_received = True
-            original_update(current_time, events)
+            original_update(current_time, player_inputs)
 
         stage.process_manager.update = spy_update
         stage.update(0, [])
@@ -1076,36 +1076,36 @@ class TestStageGameMonitorEvents:
     def test_update_without_script_drains_events_emitted_before_the_frame(
             self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         game_monitor.notify_process_new(99)
 
         # The first process at startup is created 50 ms after setup
         stage.update(50, [])
 
-        assert [event.pid for event in game_monitor.get_events() if event.etype == 'PROC_NEW'] == [1]
+        assert [n.pid for n in game_monitor.get_notifications() if n.etype == 'PROC_NEW'] == [1]
 
     def test_update_without_script_retains_only_current_frame_events(
             self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         stage.update(50, [])
         stage.process_manager.get_process(1).use_cpu()
         for time in range(ONE_SECOND, 30 * ONE_SECOND + 1, ONE_SECOND):
             stage.update(time, [])
-        events_after_30_seconds = len(game_monitor.get_events())
+        notifications_after_30_seconds = len(game_monitor.get_notifications())
         for time in range(31 * ONE_SECOND, 60 * ONE_SECOND + 1, ONE_SECOND):
             stage.update(time, [])
-        events_after_60_seconds = len(game_monitor.get_events())
+        notifications_after_60_seconds = len(game_monitor.get_notifications())
 
-        # A happy running process emits one starvation event per second,
-        # and only the event of the current frame should be retained
-        assert events_after_30_seconds == 1
-        assert events_after_60_seconds == 1
+        # A happy running process emits one starvation notification per second,
+        # and only the notification of the current frame should be retained
+        assert notifications_after_30_seconds == 1
+        assert notifications_after_60_seconds == 1
 
     def test_reset_clears_events_of_previous_session(self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
 
         stage.update(50, [])
         stage.process_manager.get_process(1).use_cpu()
@@ -1114,22 +1114,22 @@ class TestStageGameMonitorEvents:
 
         stage.reset()
 
-        assert len(game_monitor.get_events()) == 0
+        assert len(game_monitor.get_notifications()) == 0
 
     def test_update_with_script_delivers_each_event_once(self, scene_manager, stage_config, script):
         stage = Stage('Test Stage', stage_config, script=script)
         stage.scene_manager = scene_manager
-        game_monitor.clear_events()
+        game_monitor.clear_notifications()
         stage.setup()
 
         # Process 1 is created on the first update, and the script receives
-        # its PROC_NEW event on the next update
+        # its PROC_NEW notification on the next update
         stage.update(50, [])
         stage.update(100, [])
 
         assert stage.process_manager.get_process(1).has_cpu == True
 
-        # The PROC_NEW event must not be delivered again, otherwise the script
+        # The PROC_NEW notification must not be delivered again, otherwise the script
         # would toggle the process off its CPU
         stage.update(150, [])
         stage.update(200, [])

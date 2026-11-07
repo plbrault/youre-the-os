@@ -34,9 +34,9 @@ class HowToPlayPart(SceneObject):
     def current_image_id(self):
         return self._current_image_id
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         self._current_image_id = int(
             (current_time - self.initial_time) / self._animation_interval) % len(self._images)
 
         for child in self.children:
-            child.update(current_time, events)
+            child.update(current_time, player_inputs)
