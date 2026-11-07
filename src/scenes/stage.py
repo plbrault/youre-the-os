@@ -197,7 +197,6 @@ class Stage(Scene):
         :returns: A boolean indicating whether the defeat condition has been met,
                   or a tuple (bool, str) where the first element is the defeat flag
                   and the second element is a string describing the reason.
-                  The reason is displayed in the defeat dialog if provided.
         """
         return (
             self._process_manager.user_terminated_process_count
