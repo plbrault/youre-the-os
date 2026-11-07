@@ -1369,7 +1369,7 @@ class TestProcessCreationHardLimit:
                       if isinstance(child, Process) and child.state == ProcessState.ENDED)
         position = (corpse.view.x + corpse.view.width / 2,
                     corpse.view.y + corpse.view.height / 2)
-        stage.update(3525, [GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': position})])
+        stage.update(3525, [PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, {'position': position})])
 
         for time in range(3551, 4251, 50):
             stage.update(time, [])
