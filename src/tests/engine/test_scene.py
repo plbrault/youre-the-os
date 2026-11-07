@@ -106,12 +106,28 @@ class TestSceneModalLifecycle:
 
         assert scene.modal is None
 
-    def test_show_modal_only_one_at_a_time(self, scene, modal):
+    def test_show_second_modal_makes_it_the_top_modal(self, scene, modal):
         scene.show_modal(modal)
 
         second_modal = StubModal()
-        with pytest.raises(RuntimeError):
-            scene.show_modal(second_modal)
+        scene.show_modal(second_modal)
+
+        assert scene.modal is second_modal
+
+    def test_closing_top_modal_reveals_underlying_modal(self, scene, modal):
+        scene.show_modal(modal)
+        scene.show_modal(StubModal())
+        scene.close_modal()
+
+        assert scene.modal is modal
+
+    def test_top_modal_close_reveals_underlying_modal(self, scene, modal):
+        scene.show_modal(modal)
+        top_modal = StubModal()
+        scene.show_modal(top_modal)
+        top_modal.close()
+
+        assert scene.modal is modal
 
     def test_close_modal_without_modal_does_not_crash(self, scene):
         scene.close_modal()
@@ -139,6 +155,13 @@ class TestSceneReset:
         assert scene.setup_call_count == initial_count + 1
 
     def test_reset_closes_active_modal(self, scene):
+        scene.show_modal(StubModal())
+        scene.reset()
+
+        assert scene.modal is None
+
+    def test_reset_closes_all_active_modals(self, scene):
+        scene.show_modal(StubModal())
         scene.show_modal(StubModal())
         scene.reset()
 
