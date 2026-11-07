@@ -162,7 +162,7 @@ class TestMaxTerminatedProcessVictoryCondition:
             StubProcess(ProcessType.PRIORITY),
             StubProcess(ProcessType.PRIORITY),
         ])
-        assert condition.check_defeat(stub) == 'Too many priority processes.'
+        assert condition.check_defeat(stub) == 'The user killed too many priority processes.'
 
     def test_check_defeat_allows_priority_process_by_default(self):
         condition = MaxTerminatedProcessVictoryCondition(100)

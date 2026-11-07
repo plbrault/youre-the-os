@@ -144,30 +144,19 @@ class StoryStage(Stage):
             def __init__(self):
                 super().__init__(_STAGE_CONFIG)
 
-    The intro attributes are tuples of `scene_objects.stage_intro_dialog.Section`
-    and `scene_objects.stage_intro_dialog.Badge` objects. The config passed to
-    the parent constructor is a `config.stage_config.StageConfig`. All are
-    typically declared as module-level constants named `_INTRO_SECTIONS`,
-    `_VICTORY_CONDITIONS` and `_STAGE_CONFIG`.
+    The `victory_conditions` attribute is a tuple of `VictoryCondition`.
+    The `intro_sections` attribute is a tuple of `scene_objects.stage_intro_dialog.Section`.
+    They are typically declared as module-level constants named `_VICTORY_CONDITIONS`
+    and `_INTRO_SECTIONS`, along with `_STAGE_CONFIG` which is an instance
+    of `config.stage_config.StageConfig`.
 
     The base class provides:
-    * `check_victory` and `check_defeat`: checks derived from the declared
-      `victory_conditions`
+    * `check_victory` and `check_defeat`: checks derived from `victory_conditions`
     * `on_start`: a `scene_objects.stage_intro_dialog.StageIntroDialog`
       built from `intro_sections`, and a 'Victory Conditions' section and
       badges generated from `victory_conditions`, with a new instance
       created at each start or reset
     * `on_victory` / `on_defeat`: the story mode victory / defeat dialogs
-
-    Victory conditions are declared as a tuple of `VictoryCondition`
-    subclasses defined in this module. `intro_badges` may optionally be
-    used to add static badges under the text generated from the conditions.
-
-    `check_defeat` is fully derived from the declared `victory_conditions`;
-    a stage declaring no defeat-capable condition is never defeated.
-    A subclass may still override it for stage-specific defeat conditions
-    beyond the declared ones, returning a tuple `(True, reason)` so that
-    the reason is displayed in the defeat dialog.
     """
     stage_name: str = ''
     victory_conditions: tuple = ()
