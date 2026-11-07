@@ -299,15 +299,6 @@ class Stage(Scene):
             pass
 
     def _validate_config(self):
-        """
-        Validates that the stage config can never generate more pages at the same time
-        than the total number of page slots (RAM and swap combined) during the game.
-        Processes are capped by both the config and the process slot grid, and pages
-        are freed when their process ends.
-        Swaps require an empty slot on the destination side, so the worst case must
-        leave at least one page slot free, otherwise swapping would become impossible.
-        :raises ValueError: If the config can overflow the page slots.
-        """
         max_concurrent_processes = min(
             MAX_PROCESSES,
             max(
