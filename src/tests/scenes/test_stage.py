@@ -1,5 +1,7 @@
 import pytest
 
+import pygame
+
 import game_monitor
 from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
 from engine.player_input import PlayerInput
@@ -957,6 +959,13 @@ class TestStage:
         stage.update(0, [])
 
         assert update_received
+
+    def test_stage_renders_scene_objects(self, stage, monkeypatch):
+        # pygame.display.flip requires an initialized video system,
+        # which is not needed for exercising the views' draw calls.
+        monkeypatch.setattr(pygame.display, 'flip', lambda: None)
+        stage.update(0, [])
+        stage.render()
 
     def test_stage_completed_via_victory(self, scene_manager):
         stage = MockStage(
