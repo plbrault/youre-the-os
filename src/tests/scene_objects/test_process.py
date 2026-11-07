@@ -1629,6 +1629,9 @@ class TestProcessPageCreationOverLimit:
         process_config = process_custom_config(io_probability=0, graceful_termination_probability=0)
         process = Process(1, stage, process_config)
 
+        # Force the maximum burst size to exceed the two remaining slots
+        monkeypatch.setattr(Random, 'get_number', lambda self_random, min, max: max)
+
         total_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
         for i in range(total_slots - 2):
             stage.page_manager.create_page(100, i)

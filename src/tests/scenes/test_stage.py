@@ -1218,8 +1218,9 @@ class TestStageConfigValidation:
 
     def test_setup_accepts_default_config(self, stage_factory):
         # The default config allows up to 42 * 4 = 168 pages at the same
-        # time, and there are 16 * 11 = 176 page slots, so at least one slot
-        # always remains free for page swaps
+        # time (42 page holders counting lingering processes), and there
+        # are 16 * 11 = 176 page slots, so at least one slot always
+        # remains free for page swaps
         stage = stage_factory(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0))
@@ -1227,8 +1228,9 @@ class TestStageConfigValidation:
         stage.setup()
 
     def test_setup_rejects_config_that_could_occupy_every_page_slot(self, stage_factory):
-        # 22 * 8 = 176 pages at the same time, which is exactly the number
-        # of page slots, so swapping would become impossible when full
+        # The default CPU has 4 threads, so the bound accounts for
+        # min(22 + 4, 42) = 26 page holders, each with up to 8 pages:
+        # 26 * 8 = 208 pages, which is more than the 176 page slots
         stage = stage_factory(StageConfig(
             max_processes=22,
             max_pages_per_process=8,
@@ -1239,15 +1241,36 @@ class TestStageConfigValidation:
             stage.setup()
 
         assert str(exc_info.value) == (
-            'Stage config can generate up to 176 pages at the same time, '
+            'Stage config can generate up to 208 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_rejects_config_with_a_lingering_process_overflowing_the_page_slots(
+            self, stage_factory):
+        # 25 * 7 = 175 pages fits, but just one lingering process holding
+        # its pages (min(25 + 4, 42) = 29 page holders in total) can fill
+        # every page slot: 29 * 7 = 203 pages
+        stage = stage_factory(StageConfig(
+            max_processes=25,
+            max_pages_per_process=7,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 203 pages at the same time, '
             'but there are only 176 page slots; at least one slot '
             'must remain free for page swaps.')
 
     def test_setup_accepts_config_leaving_exactly_one_page_slot_free(self, stage_factory):
-        # 25 * 7 = 175 pages at the same time, and 176 page slots, so
-        # exactly one slot always remains free for page swaps
+        # The default CPU has 4 threads, so min(21 + 4, 42) = 25 page
+        # holders, each of which can hold up to 7 pages: 25 * 7 = 175
+        # pages at the same time, and 176 page slots, so exactly one
+        # slot always remains free for page swaps
         stage = stage_factory(StageConfig(
-            max_processes=25,
+            max_processes=21,
             max_pages_per_process=7,
             num_processes_at_startup=0,
             new_process_probability=0))
@@ -1266,6 +1289,27 @@ class TestStageConfigValidation:
 
         assert str(exc_info.value) == (
             'Stage config can generate up to 210 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_rejects_config_when_more_threads_overflow_the_page_slots(
+            self, stage_factory):
+        # The same config as the exact one-slot-free boundary test except
+        # for the CPU: 8 threads instead of 4 makes the bound
+        # min(21 + 8, 42) = 29 page holders, and 29 * 7 = 203 pages,
+        # which is more than the 176 page slots
+        stage = stage_factory(StageConfig(
+            cpu_config=CpuConfig(num_cores=8),
+            max_processes=21,
+            max_pages_per_process=7,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 203 pages at the same time, '
             'but there are only 176 page slots; at least one slot '
             'must remain free for page swaps.')
 

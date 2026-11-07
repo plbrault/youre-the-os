@@ -307,8 +307,10 @@ class Stage(Scene):
             raise ValueError(
                 f'Stage config allows {self._config.max_processes} processes '
                 f'at the same time, but there are only {MAX_PROCESSES} process slots.')
-        max_concurrent_pages = (
-            self._config.max_processes * self._config.max_pages_per_process)
+        max_page_holders = min(
+            self._config.max_processes + self._config.cpu_config.total_threads,
+            MAX_PROCESSES)
+        max_concurrent_pages = max_page_holders * self._config.max_pages_per_process
         total_page_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
         if max_concurrent_pages >= total_page_slots:
             raise ValueError(
