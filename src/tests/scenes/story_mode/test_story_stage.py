@@ -328,17 +328,17 @@ class TestStoryStage:
     def test_on_start_shows_intro_dialog_with_victory_conditions(self, stage):
         stage.on_start()
 
-        assert isinstance(stage.modal, StageIntroDialog)
-        assert stage.modal.title == 'Test Story Stage'
-        assert stage.modal.sections == (*_INTRO_SECTIONS, Section(
+        assert isinstance(stage.active_modal, StageIntroDialog)
+        assert stage.active_modal.title == 'Test Story Stage'
+        assert stage.active_modal.sections == (*_INTRO_SECTIONS, Section(
             'Victory Conditions', _INTRO_ITEMS))
-        assert stage.modal.badges == _INTRO_BADGES
+        assert stage.active_modal.badges == _INTRO_BADGES
 
     def test_on_start_builds_a_new_intro_dialog_each_time(self, stage):
         stage.on_start()
-        first_modal = stage.modal
+        first_modal = stage.active_modal
 
         stage.close_modal()
         stage.on_start()
 
-        assert stage.modal is not first_modal
+        assert stage.active_modal is not first_modal

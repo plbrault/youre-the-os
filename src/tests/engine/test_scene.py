@@ -73,45 +73,83 @@ class TestSceneModalLifecycle:
     def modal(self):
         return StubModal()
 
-    def test_modal_property_returns_active_modal(self, scene, modal):
-        scene.show_modal(modal)
+    def test_active_modal_returns_opened_modal(self, scene, modal):
+        scene.open_modal(modal)
 
-        assert scene.modal is modal
+        assert scene.active_modal is modal
 
-    def test_modal_property_none_when_no_modal(self, scene):
-        assert scene.modal is None
+    def test_open_modal_pushes_modal_as_top_context(self, scene, modal):
+        scene.open_modal(modal)
 
-    def test_show_modal_centers_modal_on_screen(self, scene, modal):
-        scene.show_modal(modal)
+        assert scene.scene_manager.get_top_context() is modal
+
+    def test_close_modal_restores_scene_as_top_context(self, scene, modal):
+        scene.open_modal(modal)
+        scene.close_modal()
+
+        assert scene.scene_manager.get_top_context() is scene
+
+    def test_active_modal_none_when_no_modal(self, scene):
+        assert scene.active_modal is None
+
+    def test_open_modal_centers_modal_on_screen(self, scene, modal):
+        scene.open_modal(modal)
         screen_width = WINDOW_SIZE[0]
         screen_height = WINDOW_SIZE[1]
 
         assert modal.view.x == (screen_width - modal.view.width) / 2
         assert modal.view.y == (screen_height - modal.view.height) / 2
 
-    def test_show_modal_sets_scene_reference(self, scene, modal):
-        scene.show_modal(modal)
+    def test_open_modal_sets_scene_reference(self, scene, modal):
+        scene.open_modal(modal)
 
         assert modal.scene is scene
 
-    def test_close_modal_clears_modal_reference(self, scene, modal):
-        scene.show_modal(modal)
+    def test_close_modal_clears_active_modal(self, scene, modal):
+        scene.open_modal(modal)
         scene.close_modal()
 
-        assert scene.modal is None
+        assert scene.active_modal is None
 
-    def test_modal_close_triggers_close_modal(self, scene, modal):
-        scene.show_modal(modal)
+    def test_active_modal_close_triggers_close_modal(self, scene, modal):
+        scene.open_modal(modal)
         modal.close()
 
-        assert scene.modal is None
+        assert scene.active_modal is None
 
-    def test_show_modal_only_one_at_a_time(self, scene, modal):
-        scene.show_modal(modal)
+    def test_opening_second_modal_makes_it_active_modal(self, scene, modal):
+        scene.open_modal(modal)
 
         second_modal = StubModal()
-        with pytest.raises(RuntimeError):
-            scene.show_modal(second_modal)
+        scene.open_modal(second_modal)
+
+        assert scene.active_modal is second_modal
+
+    def test_opening_second_modal_makes_it_top_context(self, scene, modal):
+        scene.open_modal(modal)
+
+        second_modal = StubModal()
+        scene.open_modal(second_modal)
+
+        top_context = scene.scene_manager.get_top_context()
+        assert top_context is second_modal
+
+    def test_closing_active_modal_reveals_underlying_modal(self, scene, modal):
+        scene.open_modal(modal)
+        scene.open_modal(StubModal())
+        scene.close_modal()
+
+        assert scene.active_modal is modal
+        assert scene.scene_manager.get_top_context() is modal
+
+    def test_active_modal_close_reveals_underlying_modal(self, scene, modal):
+        scene.open_modal(modal)
+        top_modal = StubModal()
+        scene.open_modal(top_modal)
+        top_modal.close()
+
+        assert scene.active_modal is modal
+        assert scene.scene_manager.get_top_context() is modal
 
     def test_close_modal_without_modal_does_not_crash(self, scene):
         scene.close_modal()
@@ -139,13 +177,20 @@ class TestSceneReset:
         assert scene.setup_call_count == initial_count + 1
 
     def test_reset_closes_active_modal(self, scene):
-        scene.show_modal(StubModal())
+        scene.open_modal(StubModal())
         scene.reset()
 
-        assert scene.modal is None
+        assert scene.active_modal is None
+
+    def test_reset_closes_all_active_modals(self, scene):
+        scene.open_modal(StubModal())
+        scene.open_modal(StubModal())
+        scene.reset()
+
+        assert scene.active_modal is None
 
     def test_reset_works_with_no_modal(self, scene):
         scene.reset()
 
-        assert scene.modal is None
+        assert scene.active_modal is None
         assert scene.setup_call_count == 2

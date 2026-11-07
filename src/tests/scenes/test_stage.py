@@ -2,6 +2,8 @@ import pytest
 
 import game_monitor
 from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
+from engine.game_event import GameEvent
+from engine.game_event_type import GameEventType
 from engine.game_manager import GameManager
 from engine.modal import Modal
 from engine.modal_view import ModalView
@@ -9,6 +11,8 @@ from engine.random import Random
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 from scene_objects.game_over_dialog import GameOverDialog
+from scene_objects.hotkey_dialog import HotkeyDialog
+from scene_objects.in_game_menu_dialog import InGameMenuDialog
 from scene_objects.process import Process
 from scenes.stage import Stage
 from scenes.stage import StageState
@@ -663,9 +667,9 @@ class TestStageHooks:
         stage.scene_manager = scene_manager
         stage.setup()
 
-        assert stage.modal is None
+        assert stage.active_modal is None
         stage.on_victory()
-        assert stage.modal is None
+        assert stage.active_modal is None
 
     def test_on_defeat_default_shows_game_over_dialog(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
@@ -676,9 +680,9 @@ class TestStageHooks:
             graceful_termination_probability=0,
         ))
 
-        assert stage.modal is None
+        assert stage.active_modal is None
         stage.on_defeat()
-        assert isinstance(stage.modal, GameOverDialog)
+        assert isinstance(stage.active_modal, GameOverDialog)
 
     def test_reset_resets_state_to_starting(self, scene_manager):
         stage = MockStage(
@@ -923,11 +927,11 @@ class TestStage:
             graceful_termination_probability=0,
         ))
 
-        stage.show_modal(StubModal())
+        stage.open_modal(StubModal())
 
         stage.reset()
 
-        assert stage.modal is None
+        assert stage.active_modal is None
 
     def test_reset_routes_events_to_scene_objects(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
@@ -938,7 +942,7 @@ class TestStage:
             graceful_termination_probability=0,
         ))
 
-        stage.show_modal(StubModal())
+        stage.open_modal(StubModal())
         stage.reset()
 
         update_received = False
@@ -1135,3 +1139,58 @@ class TestStageGameMonitorEvents:
         stage.update(200, [])
 
         assert stage.process_manager.get_process(1).has_cpu == True
+
+
+class TestInGameMenu:
+    """Tests for the in-game menu modal and its Hotkeys button."""
+
+    @pytest.fixture
+    def stage(self, stage_custom_config, scene_manager):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=4,
+            new_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+        ))
+        scene_manager.start_scene(stage, 0)
+        return stage
+
+    @staticmethod
+    def _key_up_event(key):
+        return GameEvent(GameEventType.KEY_UP, {'key': key})
+
+    @staticmethod
+    def _click_on_event(scene_object):
+        center = (
+            scene_object.view.x + scene_object.view.width / 2,
+            scene_object.view.y + scene_object.view.height / 2,
+        )
+        return GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': center})
+
+    def test_opening_in_game_menu_opens_menu_dialog_and_pushes_its_context(
+            self, stage, scene_manager):
+        scene_manager.update(0, [self._key_up_event('escape')])
+
+        assert isinstance(stage.active_modal, InGameMenuDialog)
+        assert scene_manager.get_top_context() is stage.active_modal
+
+    def test_hotkeys_button_opens_hotkey_dialog_on_top_of_menu(
+            self, stage, scene_manager):
+        scene_manager.update(0, [self._key_up_event('escape')])
+        in_game_menu = stage.active_modal
+        scene_manager.update(33, [self._click_on_event(in_game_menu.hotkeys_button)])
+
+        assert isinstance(stage.active_modal, HotkeyDialog)
+        assert scene_manager.get_top_context() is stage.active_modal
+
+    def test_closing_hotkey_dialog_returns_to_menu(
+            self, stage, scene_manager):
+        scene_manager.update(0, [self._key_up_event('escape')])
+        in_game_menu = stage.active_modal
+        scene_manager.update(33, [self._click_on_event(in_game_menu.hotkeys_button)])
+        hotkey_dialog = stage.active_modal
+        scene_manager.update(66, [self._click_on_event(hotkey_dialog.close_button)])
+
+        assert stage.active_modal is in_game_menu
+        assert scene_manager.get_top_context() is in_game_menu

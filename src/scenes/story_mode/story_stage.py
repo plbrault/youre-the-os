@@ -187,11 +187,11 @@ class StoryStage(Stage):
                 items.extend(condition.intro_items)
                 badges.extend(condition.badges)
             sections.append(Section('Victory Conditions', tuple(items)))
-        self.show_modal(StageIntroDialog(
+        self.open_modal(StageIntroDialog(
             self.name, tuple(sections), badges=tuple(badges)))
 
     def on_victory(self):
-        self.show_modal(StoryStageVictoryDialog(
+        self.open_modal(StoryStageVictoryDialog(
             uptime=self._uptime_manager.uptime_text,
             stage_name=self.name,
             score=self._score_manager.score,
@@ -204,7 +204,7 @@ class StoryStage(Stage):
         pass
 
     def on_defeat(self, reason: str | None = None):
-        self.show_modal(StoryStageDefeatDialog(
+        self.open_modal(StoryStageDefeatDialog(
             uptime=self._uptime_manager.uptime_text,
             stage_name=self.name,
             score=self._score_manager.score,
