@@ -243,6 +243,15 @@ class TestSurvivalVictoryCondition:
             'Do not let the user kill a priority process',
         )
 
+    def test_intro_items_omit_priority_line_when_kills_allowed(self):
+        condition = SurvivalVictoryCondition(
+            minutes=3,
+            max_terminated_process=100,
+            max_terminated_priority_process=1)
+        assert condition.intro_items == (
+            'Survive 3 minutes with less than 100 user ragequits',
+        )
+
     def test_badges(self):
         condition = SurvivalVictoryCondition(
             minutes=6, max_terminated_process=5, max_terminated_priority_process=0)

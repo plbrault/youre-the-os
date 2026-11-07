@@ -99,7 +99,9 @@ class SurvivalVictoryCondition(VictoryCondition):
     """
     Combines a TimeVictoryCondition and a MaxTerminatedProcessVictoryCondition
     into a single condition, rendering the combined intro item that the
-    'Victory Conditions' section displays for both together.
+    'Victory Conditions' section displays for both together. Items beyond
+    this combined item are mirrored from the latter condition, so the
+    displayed priority rule always matches its limits and badges.
     """
 
     def __init__(self, minutes: int, max_terminated_process: int,
@@ -116,12 +118,10 @@ class SurvivalVictoryCondition(VictoryCondition):
 
     @property
     def intro_items(self) -> tuple[str, ...]:
-        return (
-            f'Survive {self._time_condition.minutes} minutes with '
-            f'less than {self._max_condition.max_terminated_process} '
-            'user ragequits',
-            self._max_condition.priority_intro_item,
-        )
+        time_item = self._time_condition.intro_items[0]
+        ragequit_item = self._max_condition.intro_items[0]
+        priority_items = self._max_condition.intro_items[1:]
+        return (f'{time_item} with {ragequit_item}', *priority_items)
 
     @property
     def badges(self) -> tuple[Badge, ...]:
