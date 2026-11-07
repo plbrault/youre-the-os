@@ -37,6 +37,8 @@ _STAGE_CONFIG = StageConfig(
     time_ms_to_show_auto_sort_checkbox=float('inf'),
 )
 
+_VICTORY_TIME_MINUTES = 7
+
 _INTRO_SECTIONS = [
     Section('Desktop PC', (
         'Single-Core CPU with 2 Threads',
@@ -45,14 +47,14 @@ _INTRO_SECTIONS = [
         'Ethernet 10/100 Mbps',
     )),
     Section('Victory Conditions', (
-        f'Survive 6 minutes with less than '
+        f'Survive {_VICTORY_TIME_MINUTES} minutes with less than '
         f'{_STAGE_CONFIG.max_processes_terminated_by_user} user ragequits',
         'Do not let the user kill the priority process',
     )),
 ]
 
 _INTRO_BADGES = (
-    TimerBadge(6),
+    TimerBadge(_VICTORY_TIME_MINUTES),
     KilledProcessBadge(f'<{_STAGE_CONFIG.max_processes_terminated_by_user}'),
     KilledProcessBadge('0', is_priority=True),
 )
@@ -60,7 +62,7 @@ _INTRO_BADGES = (
 
 class StoryStage2(StoryStage):
     stage_name = 'Stage 2: 2003'
-    victory_time_ms = 7 * ONE_MINUTE
+    victory_time_ms = _VICTORY_TIME_MINUTES * ONE_MINUTE
     intro_sections = _INTRO_SECTIONS
     intro_badges = _INTRO_BADGES
 

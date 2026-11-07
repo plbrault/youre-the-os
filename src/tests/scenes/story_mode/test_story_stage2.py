@@ -56,16 +56,16 @@ class TestStoryStage2:
 
         return stage
 
-    def test_check_victory_returns_false_before_six_minutes(self, stage):
-        _advance_uptime_to(stage, 6 * ONE_MINUTE - 1)
+    def test_check_victory_returns_false_before_seven_minutes(self, stage):
+        _advance_uptime_to(stage, 7 * ONE_MINUTE - 1)
         assert not stage.check_victory()
 
-    def test_check_victory_returns_true_at_six_minutes(self, stage):
-        _advance_uptime_to(stage, 6 * ONE_MINUTE)
+    def test_check_victory_returns_true_at_seven_minutes(self, stage):
+        _advance_uptime_to(stage, 7 * ONE_MINUTE)
         assert stage.check_victory()
 
-    def test_check_victory_returns_true_after_six_minutes(self, stage):
-        _advance_uptime_to(stage, 6 * ONE_MINUTE + 1)
+    def test_check_victory_returns_true_after_seven_minutes(self, stage):
+        _advance_uptime_to(stage, 7 * ONE_MINUTE + 1)
         assert stage.check_victory()
 
     def test_check_defeat_returns_false_when_no_process_terminated(self, ready_stage):
@@ -121,9 +121,9 @@ class TestStoryStage2:
 
         assert stage.modal.stage_name == 'Stage 2: 2003'
 
-    def test_on_start_shows_intro_dialog_with_six_minute_timer_badge(self, stage):
+    def test_on_start_shows_intro_dialog_with_seven_minute_timer_badge(self, stage):
         stage.on_start()
 
         assert isinstance(stage.modal, StageIntroDialog)
         timer_badges = [b for b in stage.modal.badges if isinstance(b, TimerBadge)]
-        assert timer_badges == [TimerBadge(6)]
+        assert timer_badges == [TimerBadge(7)]
