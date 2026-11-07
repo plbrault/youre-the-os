@@ -13,15 +13,16 @@ _STAGE_CONFIG = StageConfig(
     force_new_priority_process_at_times_ms=[300],
     min_processes_at_times_ms=[
         (250, 5),
-        (ONE_MINUTE, 8),
-        (2 * ONE_MINUTE, 10),
-        (4 * ONE_MINUTE, 12),
-        (5 * ONE_MINUTE, 14)
+        (ONE_MINUTE, 6),
+        (2 * ONE_MINUTE, 8),
+        (4 * ONE_MINUTE, 10),
+        (5 * ONE_MINUTE, 12),
+        (6 * ONE_MINUTE, 14)
     ],
     max_processes=14,
     max_processes_terminated_by_user=5,
-    num_ram_rows=4,
-    max_pages_per_process=6,
+    num_ram_rows=3,
+    max_pages_per_process=5,
     swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['High'],
     parallel_swaps=2,
     new_process_probability=0.01,
@@ -59,7 +60,7 @@ _INTRO_BADGES = (
 
 class StoryStage2(StoryStage):
     stage_name = 'Stage 2: 2003'
-    victory_time_ms = 6 * ONE_MINUTE
+    victory_time_ms = 7 * ONE_MINUTE
     intro_sections = _INTRO_SECTIONS
     intro_badges = _INTRO_BADGES
 
