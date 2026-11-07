@@ -60,7 +60,7 @@ class StoryStage1(Stage):
 
     def on_start(self):
         self.show_modal(StageIntroDialog(
-            'Stage 1: 1998',
+            self.name,
             _INTRO_SECTIONS,
             badges=(
                 TimerBadge(6),
