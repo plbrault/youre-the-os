@@ -40,8 +40,7 @@ class StoryStage(Stage):
     defeat conditions, calling super().check_defeat() to preserve the base
     user ragequit check, which returns `(True, 'Too many user ragequits.')`.
     Stage-specific conditions must themselves return a tuple `(True, reason)`
-    so that the reason is displayed in the defeat dialog (see `StoryStage1`
-    for an example).
+    so that the reason is displayed in the defeat dialog.
     """
     stage_name: str = ''
     victory_time_ms: int = 0
