@@ -49,7 +49,6 @@ class TimeVictoryCondition(VictoryCondition):
 
 
 class MaxTerminatedProcessVictoryCondition(VictoryCondition):
-
     ragequit_defeat_reason = 'Too many user ragequits.'
     priority_intro_item = 'Do not let the user kill a priority process'
 
