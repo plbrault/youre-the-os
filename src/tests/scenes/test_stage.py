@@ -15,7 +15,7 @@ from config.stage_config import StageConfig
 from scene_objects.game_over_dialog import GameOverDialog
 from scene_objects.hotkey_dialog import HotkeyDialog
 from scene_objects.in_game_menu_dialog import InGameMenuDialog
-from scene_objects.process import Process
+from scene_objects.process import Process, ProcessState
 from scenes.stage import Stage
 from scenes.stage import StageState
 from scenes.stage import StateEvent
@@ -1203,3 +1203,220 @@ class TestInGameMenu:
 
         assert stage.active_modal is in_game_menu
         assert scene_manager.get_top_context() is in_game_menu
+
+
+class TestStageConfigValidation:
+    """Tests for the validation that the stage config can never occupy every page slot."""
+
+    @pytest.fixture
+    def stage_factory(self, scene_manager):
+        def create_stage(stage_config):
+            stage = Stage('Test Stage', stage_config)
+            stage.scene_manager = scene_manager
+            return stage
+        return create_stage
+
+    def test_setup_accepts_default_config(self, stage_factory):
+        # The default config allows up to 42 * 4 = 168 pages at the same
+        # time (42 page holders counting lingering processes), and there
+        # are 16 * 11 = 176 page slots, so at least one slot always
+        # remains free for page swaps
+        stage = stage_factory(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()
+
+    def test_setup_rejects_config_that_could_occupy_every_page_slot(self, stage_factory):
+        # The default CPU has 4 threads, so the bound accounts for
+        # min(22 + 4, 42) = 26 page holders, each with up to 8 pages:
+        # 26 * 8 = 208 pages, which is more than the 176 page slots
+        stage = stage_factory(StageConfig(
+            max_processes=22,
+            max_pages_per_process=8,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 208 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_rejects_config_with_a_lingering_process_overflowing_the_page_slots(
+            self, stage_factory):
+        # 25 * 7 = 175 pages fits, but just one lingering process holding
+        # its pages (min(25 + 4, 42) = 29 page holders in total) can fill
+        # every page slot: 29 * 7 = 203 pages
+        stage = stage_factory(StageConfig(
+            max_processes=25,
+            max_pages_per_process=7,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 203 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_accepts_config_leaving_exactly_one_page_slot_free(self, stage_factory):
+        # The default CPU has 4 threads, so min(21 + 4, 42) = 25 page
+        # holders, each of which can hold up to 7 pages: 25 * 7 = 175
+        # pages at the same time, and 176 page slots, so exactly one
+        # slot always remains free for page swaps
+        stage = stage_factory(StageConfig(
+            max_processes=21,
+            max_pages_per_process=7,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()
+
+    def test_setup_rejects_config_generating_more_pages_than_page_slots(self, stage_factory):
+        # 42 * 5 = 210 pages at the same time, but only 176 page slots
+        stage = stage_factory(StageConfig(
+            max_pages_per_process=5,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 210 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_rejects_config_when_more_threads_overflow_the_page_slots(
+            self, stage_factory):
+        # The same config as the exact one-slot-free boundary test except
+        # for the CPU: 8 threads instead of 4 makes the bound
+        # min(21 + 8, 42) = 29 page holders, and 29 * 7 = 203 pages,
+        # which is more than the 176 page slots
+        stage = stage_factory(StageConfig(
+            cpu_config=CpuConfig(num_cores=8),
+            max_processes=21,
+            max_pages_per_process=7,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 203 pages at the same time, '
+            'but there are only 176 page slots; at least one slot '
+            'must remain free for page swaps.')
+
+    def test_setup_ignores_min_processes_thresholds_when_bounding_processes(
+            self, stage_factory):
+        # Every process creation branch is bounded by max_processes, so the
+        # min processes threshold of 42 can never allow more than
+        # 2 * 5 = 10 pages at the same time, and there are 176 page slots
+        stage = stage_factory(StageConfig(
+            max_processes=2,
+            max_pages_per_process=5,
+            min_processes_at_times_ms=[(0, 42)],
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()
+
+    def test_setup_rejects_config_allowing_more_processes_than_process_slots(
+            self, stage_factory):
+        # 60 processes, but there are only 42 process slots
+        stage = stage_factory(StageConfig(
+            max_processes=60,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config allows 60 processes at the same time, '
+            'but there are only 42 process slots.')
+
+
+class TestProcessCreationHardLimit:
+    """Tests for the hard process creation limit counting lingering processes."""
+
+    @pytest.fixture
+    def auto_cpu_script(self):
+        # Automation script that moves every newly created process to a CPU
+        return compile(
+            "def scheduler(events):\n"
+            "    return [\n"
+            "        {'type': 'process', 'pid': event.pid}\n"
+            "        for event in events if event.etype == 'PROC_NEW'\n"
+            "    ]\n",
+            'test_script.py',
+            'exec'
+        )
+
+    @pytest.fixture
+    def saturated_stage(self, scene_manager, monkeypatch, auto_cpu_script):
+        # Random is forced to its minimum, so each running process terminates
+        # gracefully after one second (graceful termination roll of 1 over 100)
+        monkeypatch.setattr(Random, 'get_number', lambda self_random, min, max: min)
+
+        stage_config = StageConfig(
+            num_processes_at_startup=42,
+            new_process_probability=1.0,
+            io_probability=0,
+            graceful_termination_probability=0.01)
+        stage = Stage('Test Stage', stage_config, script=auto_cpu_script)
+        stage.scene_manager = scene_manager
+        stage.setup()
+
+        # Spawn all 42 startup processes
+        for time in range(50, 2101, 50):
+            stage.update(time, [])
+
+        # Processes 1 to 4 terminate gracefully and linger on their CPUs,
+        # holding both a thread and their pages
+        for time in range(2150, 3501, 50):
+            stage.update(time, [])
+
+        processes = [child for child in stage.process_manager.children
+                     if isinstance(child, Process)]
+        assert len(processes) == 42
+        assert len([
+            child for child in stage.process_manager.children
+            if isinstance(child, Process) and child.state == ProcessState.ENDED
+        ]) == 4
+        stats = stage.process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 38
+        return stage
+
+    def test_process_creation_refused_when_lingering_processes_fill_the_grid(
+            self, saturated_stage):
+        stage = saturated_stage
+
+        # Keep stepping: no new process may spawn while alive + lingering = 42
+        for time in range(3551, 4251, 50):
+            stage.update(time, [])
+
+        stats = stage.process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 38
+
+    def test_process_creation_resumes_when_a_lingering_process_is_cleared(
+            self, saturated_stage):
+        stage = saturated_stage
+
+        corpse = next(child for child in stage.process_manager.children
+                      if isinstance(child, Process) and child.state == ProcessState.ENDED)
+        position = (corpse.view.x + corpse.view.width / 2,
+                    corpse.view.y + corpse.view.height / 2)
+        stage.update(3525, [PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, {'position': position})])
+
+        for time in range(3551, 4251, 50):
+            stage.update(time, [])
+
+        stats = stage.process_manager.get_current_stats()
+        assert stats['alive_process_count'] == 39

@@ -109,6 +109,13 @@ class CpuManager(SceneObject):
         }
 
     @property
+    def lingering_process_count(self):
+        return len([
+            cpu for cpu in self._cpu_list
+                if cpu.process is not None and cpu.process.state == ProcessState.ENDED
+        ])
+
+    @property
     def view_vars(self):
         physical_core_rectangles = []
         for physical_core in self._physical_cores:
