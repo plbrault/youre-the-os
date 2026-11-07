@@ -1,11 +1,8 @@
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
-from scenes.story_mode.story_stage import StoryStage
-from scene_objects.process import ProcessType
-from scene_objects.stage_intro_dialog import (
-    KilledProcessBadge, Section, TimerBadge,
-)
+from scenes.story_mode.story_stage import StoryStage, SurvivalVictoryCondition
+from scene_objects.stage_intro_dialog import Section
 
 _STAGE_CONFIG = StageConfig(
     cpu_config=CpuConfig(num_cores=1, num_threads_per_core=2, penalty_ms=1000),
@@ -37,7 +34,12 @@ _STAGE_CONFIG = StageConfig(
     time_ms_to_show_auto_sort_checkbox=float('inf'),
 )
 
-_VICTORY_TIME_MINUTES = 7
+_VICTORY_CONDITIONS = (
+    SurvivalVictoryCondition(
+        minutes=7,
+        max_terminated_process=_STAGE_CONFIG.max_processes_terminated_by_user,
+        max_terminated_priority_process=0),
+)
 
 _INTRO_SECTIONS = [
     Section('Desktop PC', (
@@ -46,31 +48,13 @@ _INTRO_SECTIONS = [
         '7200 RPM IDE HDD',
         'Ethernet 10/100 Mbps',
     )),
-    Section('Victory Conditions', (
-        f'Survive {_VICTORY_TIME_MINUTES} minutes with less than '
-        f'{_STAGE_CONFIG.max_processes_terminated_by_user} user ragequits',
-        'Do not let the user kill the priority process',
-    )),
 ]
-
-_INTRO_BADGES = (
-    TimerBadge(_VICTORY_TIME_MINUTES),
-    KilledProcessBadge(f'<{_STAGE_CONFIG.max_processes_terminated_by_user}'),
-    KilledProcessBadge('0', is_priority=True),
-)
 
 
 class StoryStage2(StoryStage):
     stage_name = 'Stage 2: 2003'
-    victory_time_ms = _VICTORY_TIME_MINUTES * ONE_MINUTE
+    victory_conditions = _VICTORY_CONDITIONS
     intro_sections = _INTRO_SECTIONS
-    intro_badges = _INTRO_BADGES
 
     def __init__(self):
         super().__init__(_STAGE_CONFIG)
-
-    def check_defeat(self) -> bool | tuple[bool, str]:
-        if any(p.type == ProcessType.PRIORITY
-               for p in self.process_manager.user_terminated_processes):
-            return (True, 'The user killed the priority process.')
-        return super().check_defeat()

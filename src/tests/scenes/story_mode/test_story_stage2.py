@@ -87,7 +87,7 @@ class TestStoryStage2:
             if slot.process is not None and slot.process.type == ProcessType.PRIORITY
         )
         process_manager.terminate_process(priority_process, True)
-        assert ready_stage.check_defeat() == (True, 'The user killed the priority process.')
+        assert ready_stage.check_defeat() == (True, 'The user killed a priority process.')
 
     def test_on_victory_shows_victory_dialog(self, stage):
         assert stage.modal is None
@@ -104,10 +104,10 @@ class TestStoryStage2:
     def test_on_defeat_shows_defeat_dialog_with_reason(self, stage):
         assert stage.modal is None
 
-        stage.on_defeat('The user killed the priority process.')
+        stage.on_defeat('The user killed a priority process.')
 
         assert isinstance(stage.modal, StoryStageDefeatDialog)
-        assert stage.modal.reason == 'The user killed the priority process.'
+        assert stage.modal.reason == 'The user killed a priority process.'
         assert stage.modal.stage_name == 'Stage 2: 2003'
         assert stage.modal.score == 0
         assert stage.modal.uptime == '0:00:00'
