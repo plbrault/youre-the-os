@@ -101,7 +101,7 @@ class TestInGameMenuDialog:
         assert dialog.hotkeys_button in dialog.children
         assert dialog.close_menu_button in dialog.children
 
-    def test_update_forwards_events_to_buttons(self):
+    def test_update_forwards_player_inputs_to_buttons(self):
         dialog, _, main_menu_calls, _ = _make_dialog()
         center = (
             dialog.main_menu_button.view.x + dialog.main_menu_button.view.width / 2,

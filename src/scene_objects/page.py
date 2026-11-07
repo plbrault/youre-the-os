@@ -159,7 +159,7 @@ class Page(SceneObject):
             else:
                 self.request_swap(shift_down)
 
-    def _handle_events(self, player_inputs):
+    def _handle_player_inputs(self, player_inputs):
         for player_input in player_inputs:
             if player_input.type == PlayerInputType.MOUSE_MOTION:
                 self._mouse_dragged_on = (
@@ -186,7 +186,7 @@ class Page(SceneObject):
                     self._on_click(True, player_input.get_property('shift'))
 
     def update(self, current_time, player_inputs):
-        self._handle_events(player_inputs)
+        self._handle_player_inputs(player_inputs)
         self._update_swap(current_time)
         if self.in_use and self.on_disk:
             self._display_blink_color = int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1

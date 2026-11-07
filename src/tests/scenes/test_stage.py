@@ -1086,7 +1086,7 @@ class TestStageGameMonitorEvents:
             'exec'
         )
 
-    def test_update_without_script_drains_events_emitted_before_the_frame(
+    def test_update_without_script_drains_notifications_emitted_before_the_frame(
             self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
         game_monitor.clear_notifications()
@@ -1097,7 +1097,7 @@ class TestStageGameMonitorEvents:
 
         assert [n.pid for n in game_monitor.get_notifications() if n.etype == 'PROC_NEW'] == [1]
 
-    def test_update_without_script_retains_only_current_frame_events(
+    def test_update_without_script_retains_only_current_frame_notifications(
             self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
         game_monitor.clear_notifications()
@@ -1116,7 +1116,7 @@ class TestStageGameMonitorEvents:
         assert notifications_after_30_seconds == 1
         assert notifications_after_60_seconds == 1
 
-    def test_reset_clears_events_of_previous_session(self, stage_custom_config, stage_config):
+    def test_reset_clears_notifications_of_previous_session(self, stage_custom_config, stage_config):
         stage = stage_custom_config(stage_config)
         game_monitor.clear_notifications()
 
@@ -1129,7 +1129,7 @@ class TestStageGameMonitorEvents:
 
         assert len(game_monitor.get_notifications()) == 0
 
-    def test_update_with_script_delivers_each_event_once(self, scene_manager, stage_config, script):
+    def test_update_with_script_delivers_each_notification_once(self, scene_manager, stage_config, script):
         stage = Stage('Test Stage', stage_config, script=script)
         stage.scene_manager = scene_manager
         game_monitor.clear_notifications()

@@ -26,7 +26,7 @@ class TestIoQueue:
         io_queue.update(11000, [])
         assert io_queue.io_event_count == 2
 
-    def test_event_arrives_after_max_time(self, io_queue):
+    def test_io_event_arrives_after_max_time(self, io_queue):
         arrival_callback_called = []
 
         io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
@@ -35,7 +35,7 @@ class TestIoQueue:
         assert io_queue.io_event_count == 1
         assert arrival_callback_called == [1]
 
-    def test_event_not_does_arrives_before_max_time(self, io_queue, monkeypatch):
+    def test_io_event_not_does_arrives_before_max_time(self, io_queue, monkeypatch):
         arrival_callback_called = []
 
         # Force random to NOT trigger the probabilistic io event
@@ -47,7 +47,7 @@ class TestIoQueue:
         assert io_queue.io_event_count == 0
         assert arrival_callback_called == []
 
-    def test_multiple_events_processed_in_order(self, io_queue, monkeypatch):
+    def test_multiple_io_events_processed_in_order(self, io_queue, monkeypatch):
         arrival_callback_called = []
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -63,7 +63,7 @@ class TestIoQueue:
         assert io_queue.io_event_count == 2
         assert arrival_callback_called == [1, 2]
 
-    def test_probabilistic_event_arrives(self, io_queue, monkeypatch):
+    def test_probabilistic_io_event_arrives(self, io_queue, monkeypatch):
         arrival_callback_called = []
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -78,7 +78,7 @@ class TestIoQueue:
         assert io_queue.io_event_count == 2
         assert arrival_callback_called == [1, 2]
 
-    def test_no_event_before_min_waiting_time(self, io_queue, monkeypatch):
+    def test_no_io_event_before_min_waiting_time(self, io_queue, monkeypatch):
         arrival_callback_called = []
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -112,14 +112,14 @@ class TestIoQueue:
         assert io_queue.io_event_count == 0
         assert io_queue.wasted_action_count == 1
 
-    def test_blink_color_false_when_no_events(self, io_queue):
+    def test_blink_color_false_when_no_io_events(self, io_queue):
         io_queue.update(0, [])
         assert io_queue.display_blink_color == False
 
         io_queue.update(1000, [])
         assert io_queue.display_blink_color == False
 
-    def test_blink_color_toggles_when_events_present(self, io_queue, monkeypatch):
+    def test_blink_color_toggles_when_io_events_present(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         io_queue.wait_for_io_event(0, lambda: None, lambda: None)
@@ -152,7 +152,7 @@ class TestIoQueue:
         io_queue.handle_player_action()
         assert delivery_callback_called == [1, 2, 3]
 
-    def test_event_arrives_when_max_time_elapsed_regardless_of_probability(self, io_queue, monkeypatch):
+    def test_io_event_arrives_when_max_time_elapsed_regardless_of_probability(self, io_queue, monkeypatch):
         arrival_callback_called = []
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
@@ -163,7 +163,7 @@ class TestIoQueue:
         assert io_queue.io_event_count == 1
         assert arrival_callback_called == [1]
 
-    def test_probabilistic_event_fires_between_min_and_max_time(self, io_queue, monkeypatch):
+    def test_probabilistic_io_event_fires_between_min_and_max_time(self, io_queue, monkeypatch):
         """
         Test that probabilistic io notifications can fire after min_waiting_time_ms
         but before max_waiting_time_ms has elapsed.
@@ -183,7 +183,7 @@ class TestIoQueue:
         assert io_queue.io_event_count == 1
         assert arrival_callback_called == [1]
 
-    def test_event_arrival_via_max_time_emits_io_queue_event(self, io_queue, monkeypatch):
+    def test_io_event_arrival_via_max_time_emits_io_queue_notification(self, io_queue, monkeypatch):
         """Test that IO_QUEUE event is emitted when event arrives via max waiting time."""
         import game_monitor
 
@@ -200,7 +200,7 @@ class TestIoQueue:
         assert len(io_queue_notifications) == 1
         assert io_queue_notifications[0].io_count == 1
 
-    def test_wasted_action_count_does_not_increment_when_events_pending(self, io_queue, monkeypatch):
+    def test_wasted_action_count_does_not_increment_when_io_events_pending(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
         io_queue.wait_for_io_event(0, lambda: None, lambda: None)

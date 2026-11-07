@@ -23,7 +23,7 @@ class TestProcess:
         )
 
     @pytest.fixture
-    def spy_apply_event(self, monkeypatch):
+    def spy_apply_state_event(self, monkeypatch):
         """Fixture to spy on apply_state_transition calls."""
         calls = []
         original = Process.apply_state_transition
@@ -98,18 +98,18 @@ class TestProcess:
         process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
         assert process.type == ProcessType.PRIORITY
 
-    def test_state_events(self, stage, stage_config, process_config, spy_apply_event):
+    def test_state_events(self, stage, stage_config, process_config, spy_apply_state_event):
         process = Process(1, stage, process_config)
 
         assert process.state == ProcessState.IDLE
 
         process.use_cpu()
         assert process.state == ProcessState.RUNNING
-        assert StateEvent.ASSIGN_TO_CPU in spy_apply_event
+        assert StateEvent.ASSIGN_TO_CPU in spy_apply_state_event
 
         process.yield_cpu()
         assert process.state == ProcessState.IDLE
-        assert StateEvent.REMOVE_FROM_CPU in spy_apply_event
+        assert StateEvent.REMOVE_FROM_CPU in spy_apply_state_event
 
     def test_starvation_when_idle(self, stage, process_config):
         process = Process(1, stage, process_config)
@@ -118,7 +118,7 @@ class TestProcess:
             process.update(i * process.time_between_starvation_levels, [])
             assert process.starvation_level == i + 1
 
-    def test_max_starvation(self, stage, process_config, spy_apply_event):
+    def test_max_starvation(self, stage, process_config, spy_apply_state_event):
         process = Process(1, stage, process_config)
 
         for i in range(0, LAST_ALIVE_STARVATION_LEVEL):
@@ -126,12 +126,12 @@ class TestProcess:
 
         assert process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         process.update(DEAD_STARVATION_LEVEL * process.time_between_starvation_levels, [])
 
         assert process.starvation_level == DEAD_STARVATION_LEVEL
         assert process.state == ProcessState.ENDED
-        assert StateEvent.TERMINATE_FROM_STARVATION in spy_apply_event
+        assert StateEvent.TERMINATE_FROM_STARVATION in spy_apply_state_event
 
     def test_starvation_with_custom_time_between_starvation_levels(self, stage, process_custom_config):
         default_config = process_custom_config()
@@ -316,7 +316,7 @@ class TestProcess:
         process.update(current_time, [])
         assert process.starvation_level == 0
 
-    def test_graceful_termination(self, stage_custom_config, monkeypatch, spy_apply_event):
+    def test_graceful_termination(self, stage_custom_config, monkeypatch, spy_apply_state_event):
         stage_config = StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=14,
@@ -338,12 +338,12 @@ class TestProcess:
         process = Process(1, stage, process_config)
         process.use_cpu()
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         process.update(1000, [])
 
         assert process.state == ProcessState.ENDED
         assert process.starvation_level == 0
-        assert StateEvent.TERMINATE_GRACEFULLY in spy_apply_event
+        assert StateEvent.TERMINATE_GRACEFULLY in spy_apply_state_event
 
     def test_use_cpu_min_page_creation(self, stage, monkeypatch, process_config):
         # Make sure that the minimum number of pages will be created
@@ -498,7 +498,7 @@ class TestProcess:
         for i in range(0, process_config.max_pages):
             assert stage.page_manager.get_page(1, i).in_use == False
 
-    def test_set_page_to_swap_while_running(self, stage, monkeypatch, process_config, spy_apply_event):
+    def test_set_page_to_swap_while_running(self, stage, monkeypatch, process_config, spy_apply_state_event):
         # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
@@ -511,13 +511,13 @@ class TestProcess:
         stage.page_manager.update(1000, [])
         assert stage.page_manager.get_page(1, 0).on_disk == True
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         process.update(0, [])
 
         assert process.is_blocked == True
         assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
-        assert StateEvent.PAGE_FAULT in spy_apply_event
+        assert StateEvent.PAGE_FAULT in spy_apply_state_event
 
     def test_set_page_to_swap_before_running(self, stage, monkeypatch, process_config):
         # Should cause the creation of the maximum number of pages when the process is run
@@ -541,7 +541,7 @@ class TestProcess:
         assert process.state == ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
 
-    def test_remove_page_from_swap_while_running(self, stage, monkeypatch, process_config, spy_apply_event):
+    def test_remove_page_from_swap_while_running(self, stage, monkeypatch, process_config, spy_apply_state_event):
         # Should cause the creation of the maximum number of pages when the process is run
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
@@ -554,9 +554,9 @@ class TestProcess:
         stage.page_manager.update(1000, [])
         process.update(0, [])
         assert process.is_blocked == True
-        assert StateEvent.PAGE_FAULT in spy_apply_event
+        assert StateEvent.PAGE_FAULT in spy_apply_state_event
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         stage.page_manager.get_page(1, 0).request_swap()
         stage.page_manager.update(1001, [])
         stage.page_manager.update(2000, [])
@@ -565,7 +565,7 @@ class TestProcess:
         assert process.is_blocked == False
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
         assert process.is_waiting_for_io == False
-        assert StateEvent.PAGE_AVAILABLE in spy_apply_event
+        assert StateEvent.PAGE_AVAILABLE in spy_apply_state_event
 
     def test_yield_cpu_while_waiting_for_page(self, stage, monkeypatch, process_config):
         # Should cause the creation of the maximum number of pages when the process is run
@@ -662,7 +662,7 @@ class TestProcess:
             for i in range(0, 5):
                 stage.page_manager.get_page(1, i)
 
-    def test_process_blocks_for_io_event(self, stage_custom_config, monkeypatch, process_custom_config, spy_apply_event):
+    def test_process_blocks_for_io_event(self, stage_custom_config, monkeypatch, process_custom_config, spy_apply_state_event):
         config = process_custom_config(
             io_probability=0.1,
             graceful_termination_probability=0
@@ -685,13 +685,13 @@ class TestProcess:
         process.update(0, [])
         assert process.is_waiting_for_io == False
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         process.update(ONE_SECOND, [])
 
         assert process.is_blocked == True
         assert process.is_waiting_for_io == True
         assert process.state != ProcessState.BLOCKED_ON_CPU_PAGE_FAULT
-        assert StateEvent.REQUEST_IO in spy_apply_event
+        assert StateEvent.REQUEST_IO in spy_apply_state_event
 
     def test_process_continues_when_no_io_event(self, stage_custom_config, monkeypatch, process_custom_config):
         config = process_custom_config(
@@ -762,7 +762,7 @@ class TestProcess:
         process.update(20000, [])
         assert process.starvation_level == 1
 
-    def test_starvation_resumes_when_io_event_arrives(self, stage_custom_config, monkeypatch, process_custom_config, spy_apply_event):
+    def test_starvation_resumes_when_io_event_arrives(self, stage_custom_config, monkeypatch, process_custom_config, spy_apply_state_event):
         config = process_custom_config(
             io_probability=0.1,
             graceful_termination_probability=0,
@@ -801,15 +801,15 @@ class TestProcess:
         process.update(20000, [])
         assert process.starvation_level == 1
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         stage.process_manager.io_queue.update(21000, [])
         assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
-        assert StateEvent.IO_AVAILABLE in spy_apply_event
+        assert StateEvent.IO_AVAILABLE in spy_apply_state_event
 
         process.update(31000, [])
         assert process.starvation_level >= 1
 
-    def test_starvation_resets_when_io_event_is_delivered(self, stage_custom_config, monkeypatch, process_custom_config, spy_apply_event):
+    def test_starvation_resets_when_io_event_is_delivered(self, stage_custom_config, monkeypatch, process_custom_config, spy_apply_state_event):
         config = process_custom_config(
             io_probability=0.1,
             graceful_termination_probability=0
@@ -852,7 +852,7 @@ class TestProcess:
         # When I/O event arrives, starvation level stays the same but timer resets
         assert process.starvation_level == 1
 
-        spy_apply_event.clear()
+        spy_apply_state_event.clear()
         stage.process_manager.io_queue.handle_player_action()
 
         assert process.is_waiting_for_io == False
@@ -860,7 +860,7 @@ class TestProcess:
         # But it takes time for the happiness check to kick in
         # For now, just verify it's not waiting for I/O anymore
         assert process.has_cpu == True
-        assert StateEvent.IO_DELIVERED in spy_apply_event
+        assert StateEvent.IO_DELIVERED in spy_apply_state_event
 
     def test_io_event_at_last_alive_starvation_level(self, stage_custom_config, monkeypatch, process_custom_config):
         # Test that a process at LAST_ALIVE_STARVATION_LEVEL can still request I/O
@@ -1593,7 +1593,7 @@ class TestStateEvents(TestProcess):
         process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
         assert process.state == ProcessState.ENDED
 
-    def test_idle_invalid_events(self, stage, process_config):
+    def test_idle_invalid_state_events(self, stage, process_config):
         """Test that invalid events from IDLE are silently ignored."""
         process = Process(1, stage, process_config)
         assert process.state == ProcessState.IDLE
@@ -1638,7 +1638,7 @@ class TestStateEvents(TestProcess):
         process.apply_state_transition(StateEvent.TERMINATE_GRACEFULLY)
         assert process.state == ProcessState.ENDED
 
-    def test_running_invalid_events(self, stage, process_config):
+    def test_running_invalid_state_events(self, stage, process_config):
         """Test that invalid events from RUNNING are silently ignored."""
         process = Process(1, stage, process_config)
         process.use_cpu()
@@ -1670,7 +1670,7 @@ class TestStateEvents(TestProcess):
         process.apply_state_transition(StateEvent.REMOVE_FROM_CPU)
         assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
 
-    def test_blocked_on_cpu_io_requested_invalid_events(self, stage, process_config):
+    def test_blocked_on_cpu_io_requested_invalid_state_events(self, stage, process_config):
         """Test that invalid events from BLOCKED_ON_CPU_IO_REQUESTED are silently ignored."""
         process = Process(1, stage, process_config)
         process.use_cpu()
@@ -1788,7 +1788,7 @@ class TestStateEvents(TestProcess):
         process.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
         assert process.state == ProcessState.ENDED
 
-    def test_ended_state_no_events(self, stage, process_config):
+    def test_ended_state_ignores_all_state_events(self, stage, process_config):
         """Test that ENDED state ignores all events."""
         process = Process(1, stage, process_config)
         # Bring process to ENDED state by starving it to death
