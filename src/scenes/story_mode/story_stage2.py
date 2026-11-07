@@ -1,13 +1,11 @@
-from scenes.stage import Stage
 from config.stage_config import StageConfig
 from config.cpu_config import CpuConfig
 from constants import ONE_MINUTE, SWAP_DELAY_NAMES_TO_MS
+from scenes.story_mode.story_stage import StoryStage
 from scene_objects.process import ProcessType
 from scene_objects.stage_intro_dialog import (
-    KilledProcessBadge, Section, StageIntroDialog, TimerBadge,
+    KilledProcessBadge, Section, TimerBadge,
 )
-from scene_objects.story_stage_defeat_dialog import StoryStageDefeatDialog
-from scene_objects.story_stage_victory_dialog import StoryStageVictoryDialog
 
 _stage_config = StageConfig(
     cpu_config=CpuConfig(num_cores=1, num_threads_per_core=2),
@@ -52,26 +50,21 @@ _INTRO_SECTIONS = [
     )),
 ]
 
+_INTRO_BADGES = (
+    TimerBadge(6),
+    KilledProcessBadge(f'<{_stage_config.max_processes_terminated_by_user}'),
+    KilledProcessBadge('0', is_priority=True),
+)
 
-class StoryStage2(Stage):
+
+class StoryStage2(StoryStage):
+    stage_name = 'Stage 2: 2003'
+    victory_time_ms = 6 * ONE_MINUTE
+    intro_sections = _INTRO_SECTIONS
+    intro_badges = _INTRO_BADGES
 
     def __init__(self):
-        super().__init__('Stage 2: 2003', _stage_config)
-
-    def on_start(self):
-        self.show_modal(StageIntroDialog(
-            self.name,
-            _INTRO_SECTIONS,
-            badges=(
-                TimerBadge(6),
-                KilledProcessBadge(
-                    f'<{_stage_config.max_processes_terminated_by_user}'),
-                KilledProcessBadge('0', is_priority=True),
-            ),
-        ))
-
-    def check_victory(self) -> bool:
-        return self.uptime_manager.uptime_ms >= 6 * ONE_MINUTE
+        super().__init__(_stage_config)
 
     def check_defeat(self) -> bool | tuple[bool, str]:
         if any(p.type == ProcessType.PRIORITY
@@ -80,27 +73,3 @@ class StoryStage2(Stage):
         if super().check_defeat():
             return (True, 'Too many user ragequits.')
         return False
-
-    def on_victory(self):
-        self.show_modal(StoryStageVictoryDialog(
-            uptime=self._uptime_manager.uptime_text,
-            stage_name=self.name,
-            score=self._score_manager.score,
-            next_stage_fn=self._go_to_next_stage,
-            main_menu_fn=self._return_to_main_menu,
-            standalone=self._standalone,
-        ))
-
-    def _go_to_next_stage(self):
-        pass
-
-    def on_defeat(self, reason: str | None = None):
-        self.show_modal(StoryStageDefeatDialog(
-            uptime=self._uptime_manager.uptime_text,
-            stage_name=self.name,
-            score=self._score_manager.score,
-            reason=reason,
-            restart_stage_fn=self.reset,
-            main_menu_fn=self._return_to_main_menu,
-            standalone=self._standalone,
-        ))
