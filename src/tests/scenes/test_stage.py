@@ -1135,3 +1135,90 @@ class TestStageGameMonitorEvents:
         stage.update(200, [])
 
         assert stage.process_manager.get_process(1).has_cpu == True
+
+
+class TestStageConfigValidation:
+    """Tests for the validation that the stage config can never overflow the page slots."""
+
+    @pytest.fixture
+    def stage_factory(self, scene_manager):
+        def create_stage(stage_config):
+            stage = Stage('Test Stage', stage_config)
+            stage.scene_manager = scene_manager
+            return stage
+        return create_stage
+
+    def test_setup_accepts_default_config(self, stage_factory):
+        # The default config allows up to 42 * 4 = 168 pages at the same
+        # time, and there are 16 * 11 = 176 page slots
+        stage = stage_factory(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()
+
+    def test_setup_accepts_config_generating_exactly_the_number_of_page_slots(self, stage_factory):
+        # 22 * 8 = 176 pages at the same time, and exactly 176 page slots
+        stage = stage_factory(StageConfig(
+            max_processes=22,
+            max_pages_per_process=8,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()
+
+    def test_setup_rejects_config_generating_more_pages_than_page_slots(self, stage_factory):
+        # 42 * 5 = 210 pages at the same time, but only 176 page slots
+        stage = stage_factory(StageConfig(
+            max_pages_per_process=5,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 210 pages at the same time, '
+            'but there are only 176 page slots.')
+
+    def test_setup_rejects_config_when_min_processes_thresholds_can_overflow_page_slots(
+            self, stage_factory):
+        # max_processes * max_pages_per_process = 2 * 5 = 10 pages, but the
+        # min processes threshold of 42 allows 42 * 5 = 210 pages, while there
+        # are only 176 page slots
+        stage = stage_factory(StageConfig(
+            max_processes=2,
+            max_pages_per_process=5,
+            min_processes_at_times_ms=[(0, 42)],
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        with pytest.raises(ValueError) as exc_info:
+            stage.setup()
+
+        assert str(exc_info.value) == (
+            'Stage config can generate up to 210 pages at the same time, '
+            'but there are only 176 page slots.')
+
+    def test_setup_accepts_min_processes_thresholds_within_page_capacity(self, stage_factory):
+        # The min processes threshold of 20 allows 20 * 5 = 100 pages at the
+        # same time, and there are 176 page slots
+        stage = stage_factory(StageConfig(
+            max_processes=2,
+            max_pages_per_process=5,
+            min_processes_at_times_ms=[(0, 20)],
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()
+
+    def test_setup_ignores_processes_beyond_the_process_slot_grid(self, stage_factory):
+        # Only 42 processes can exist at the same time despite max_processes
+        # being 60, so 42 * 4 = 168 pages at the same time, and 176 page slots
+        stage = stage_factory(StageConfig(
+            max_processes=60,
+            max_pages_per_process=4,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
+        stage.setup()

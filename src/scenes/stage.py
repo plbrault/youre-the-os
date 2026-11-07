@@ -2,7 +2,7 @@ import sys
 from enum import Enum, auto
 from os.path import dirname, abspath
 
-from constants import ONE_SECOND
+from constants import MAX_PROCESSES, ONE_SECOND
 import game_monitor
 from engine.scene import Scene
 from scene_objects.button import Button
@@ -85,6 +85,7 @@ class Stage(Scene):
         super().__init__('stage')
 
     def setup(self):
+        self._validate_config()
         game_monitor.clear_events()
 
         self._scene_objects = []
@@ -296,6 +297,29 @@ class Stage(Scene):
             self._script_callback = script_globals['scheduler']
         except KeyError:
             pass
+
+    def _validate_config(self):
+        """
+        Validates that the stage config can never generate more pages at the same time
+        than the total number of page slots (RAM and swap combined) during the game.
+        Processes are capped by both the config and the process slot grid, and pages
+        are freed when their process ends.
+        :raises ValueError: If the config can overflow the page slots.
+        """
+        max_concurrent_processes = min(
+            MAX_PROCESSES,
+            max(
+                [self._config.max_processes]
+                + [threshold.min_processes
+                   for threshold in self._config.min_processes_at_times_ms]
+            ),
+        )
+        max_concurrent_pages = max_concurrent_processes * self._config.max_pages_per_process
+        total_page_slots = PageManager.get_num_cols() * PageManager.get_total_rows()
+        if max_concurrent_pages > total_page_slots:
+            raise ValueError(
+                f'Stage config can generate up to {max_concurrent_pages} pages '
+                f'at the same time, but there are only {total_page_slots} page slots.')
 
     def apply_state_transition(self, event: StateEvent):
         transitions = self._state_transitions.get(self._state, {})
