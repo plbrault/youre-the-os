@@ -12,9 +12,9 @@ from scene_objects.story_stage_victory_dialog import StoryStageVictoryDialog
 _stage_config = StageConfig(
     cpu_config=CpuConfig(num_cores=1, num_threads_per_core=2),
     num_processes_at_startup=5,
-    force_new_priority_process_at_times_ms=[100, 4 * ONE_MINUTE],
+    force_new_priority_process_at_times_ms=[300],
     min_processes_at_times_ms=[
-        (100, 6),
+        (250, 5),
         (ONE_MINUTE, 8),
         (2 * ONE_MINUTE, 10),
         (4 * ONE_MINUTE, 12),
@@ -48,7 +48,7 @@ _INTRO_SECTIONS = [
     Section('Victory Conditions', (
         f'Survive 6 minutes with less than '
         f'{_stage_config.max_processes_terminated_by_user} user ragequits',
-        'Do not let the user kill a priority process',
+        'Do not let the user kill the priority process',
     )),
 ]
 
