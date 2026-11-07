@@ -35,8 +35,8 @@ class Scene(GameObject):
         return self._scene_id
 
     @property
-    def modal(self) -> Optional[Modal]:
-        """Get the modal at the top of the active modal stack, if any."""
+    def active_modal(self) -> Optional[Modal]:
+        """Get the active modal, if any."""
         return self._modals[-1] if self._modals else None
 
     @abstractmethod
@@ -64,9 +64,10 @@ class Scene(GameObject):
         Called every frame with the current time and a list of events.
         """
 
-    def show_modal(self, modal : Modal):
-        """Show a modal on top of the scene's modal stack."""
-        top_modal = self.modal
+    def open_modal(self, modal : Modal):
+        """Open a modal on the scene. It becomes the active modal; a previously
+        active modal, if any, stays underneath."""
+        top_modal = self.active_modal
         modal.scene = self
         modal.view.set_xy(
             (self.screen.get_width() - modal.view.width) / 2,
@@ -82,7 +83,7 @@ class Scene(GameObject):
                 self.scene_manager.push_context(modal)
 
     def close_modal(self):
-        """Close the modal at the top of the active modal stack, if any."""
+        """Close the active modal, if any."""
         if not self._modals:
             return
         modal = self._modals[-1]

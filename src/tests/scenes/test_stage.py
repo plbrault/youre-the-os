@@ -667,9 +667,9 @@ class TestStageHooks:
         stage.scene_manager = scene_manager
         stage.setup()
 
-        assert stage.modal is None
+        assert stage.active_modal is None
         stage.on_victory()
-        assert stage.modal is None
+        assert stage.active_modal is None
 
     def test_on_defeat_default_shows_game_over_dialog(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
@@ -680,9 +680,9 @@ class TestStageHooks:
             graceful_termination_probability=0,
         ))
 
-        assert stage.modal is None
+        assert stage.active_modal is None
         stage.on_defeat()
-        assert isinstance(stage.modal, GameOverDialog)
+        assert isinstance(stage.active_modal, GameOverDialog)
 
     def test_reset_resets_state_to_starting(self, scene_manager):
         stage = MockStage(
@@ -927,11 +927,11 @@ class TestStage:
             graceful_termination_probability=0,
         ))
 
-        stage.show_modal(StubModal())
+        stage.open_modal(StubModal())
 
         stage.reset()
 
-        assert stage.modal is None
+        assert stage.active_modal is None
 
     def test_reset_routes_events_to_scene_objects(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
@@ -942,7 +942,7 @@ class TestStage:
             graceful_termination_probability=0,
         ))
 
-        stage.show_modal(StubModal())
+        stage.open_modal(StubModal())
         stage.reset()
 
         update_received = False
@@ -1169,20 +1169,20 @@ class TestInGameMenu:
     def test_opening_in_game_menu_shows_menu_dialog(self, stage):
         stage.update(0, [self._key_up_event('escape')])
 
-        assert isinstance(stage.modal, InGameMenuDialog)
+        assert isinstance(stage.active_modal, InGameMenuDialog)
 
     def test_hotkeys_button_shows_hotkey_dialog_on_top_of_menu(self, stage):
         stage.update(0, [self._key_up_event('escape')])
-        in_game_menu = stage.modal
+        in_game_menu = stage.active_modal
         stage.update(0, [self._click_on_event(in_game_menu.hotkeys_button)])
 
-        assert isinstance(stage.modal, HotkeyDialog)
+        assert isinstance(stage.active_modal, HotkeyDialog)
 
     def test_closing_hotkey_dialog_returns_to_menu(self, stage):
         stage.update(0, [self._key_up_event('escape')])
-        in_game_menu = stage.modal
+        in_game_menu = stage.active_modal
         stage.update(0, [self._click_on_event(in_game_menu.hotkeys_button)])
-        hotkey_dialog = stage.modal
+        hotkey_dialog = stage.active_modal
         stage.update(0, [self._click_on_event(hotkey_dialog.close_button)])
 
-        assert stage.modal is in_game_menu
+        assert stage.active_modal is in_game_menu

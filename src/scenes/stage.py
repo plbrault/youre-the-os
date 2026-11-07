@@ -226,7 +226,7 @@ class Stage(Scene):
         :param reason: Optional string describing the reason for the defeat, as provided
                        by check_defeat. May be None. Not used by the default implementation.
         """
-        self.show_modal(GameOverDialog(
+        self.open_modal(GameOverDialog(
             uptime=self._uptime_manager.uptime_text,
             stage_name=self.name,
             score=self._score_manager.score,
@@ -235,11 +235,11 @@ class Stage(Scene):
             standalone=self._standalone))
 
     def _open_in_game_menu(self):
-        self.show_modal(InGameMenuDialog(
+        self.open_modal(InGameMenuDialog(
             self.reset, self._return_to_main_menu, self._show_hotkey_dialog))
 
     def _show_hotkey_dialog(self):
-        self.show_modal(HotkeyDialog())
+        self.open_modal(HotkeyDialog())
 
     def _return_to_main_menu(self):
         self.scene_manager.start_scene('main_menu')

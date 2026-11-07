@@ -90,40 +90,40 @@ class TestStoryStage1:
         assert ready_stage.check_defeat() == (True, 'The user killed a priority process.')
 
     def test_on_victory_shows_victory_dialog(self, stage):
-        assert stage.modal is None
+        assert stage.active_modal is None
 
         stage.on_victory()
 
-        assert isinstance(stage.modal, StoryStageVictoryDialog)
-        assert stage.modal.stage_name == 'Stage 1: 1998'
-        assert stage.modal.score == 0
-        assert stage.modal.uptime == '0:00:00'
-        assert stage.modal.primary_button.text == 'Next Stage'
-        assert stage.modal.main_menu_button.text == 'Main Menu'
+        assert isinstance(stage.active_modal, StoryStageVictoryDialog)
+        assert stage.active_modal.stage_name == 'Stage 1: 1998'
+        assert stage.active_modal.score == 0
+        assert stage.active_modal.uptime == '0:00:00'
+        assert stage.active_modal.primary_button.text == 'Next Stage'
+        assert stage.active_modal.main_menu_button.text == 'Main Menu'
 
     def test_on_defeat_shows_defeat_dialog_with_reason(self, stage):
-        assert stage.modal is None
+        assert stage.active_modal is None
 
         stage.on_defeat('The user killed a priority process.')
 
-        assert isinstance(stage.modal, StoryStageDefeatDialog)
-        assert stage.modal.reason == 'The user killed a priority process.'
-        assert stage.modal.stage_name == 'Stage 1: 1998'
-        assert stage.modal.score == 0
-        assert stage.modal.uptime == '0:00:00'
-        assert stage.modal.primary_button.text == 'Try Again'
-        assert stage.modal.main_menu_button.text == 'Main Menu'
+        assert isinstance(stage.active_modal, StoryStageDefeatDialog)
+        assert stage.active_modal.reason == 'The user killed a priority process.'
+        assert stage.active_modal.stage_name == 'Stage 1: 1998'
+        assert stage.active_modal.score == 0
+        assert stage.active_modal.uptime == '0:00:00'
+        assert stage.active_modal.primary_button.text == 'Try Again'
+        assert stage.active_modal.main_menu_button.text == 'Main Menu'
 
     def test_on_victory_in_standalone_mode_shows_actual_stage_name(self, stage):
         stage.standalone = True
 
         stage.on_victory()
 
-        assert stage.modal.stage_name == 'Stage 1: 1998'
+        assert stage.active_modal.stage_name == 'Stage 1: 1998'
 
     def test_on_start_shows_intro_dialog_with_six_minute_timer_badge(self, stage):
         stage.on_start()
 
-        assert isinstance(stage.modal, StageIntroDialog)
-        timer_badges = [b for b in stage.modal.badges if isinstance(b, TimerBadge)]
+        assert isinstance(stage.active_modal, StageIntroDialog)
+        timer_badges = [b for b in stage.active_modal.badges if isinstance(b, TimerBadge)]
         assert timer_badges == [TimerBadge(6)]
