@@ -1260,11 +1260,11 @@ class TestStageConfigValidation:
             'but there are only 176 page slots; at least one slot '
             'must remain free for page swaps.')
 
-    def test_setup_rejects_config_when_min_processes_thresholds_can_overflow_page_slots(
+    def test_setup_ignores_min_processes_thresholds_when_bounding_processes(
             self, stage_factory):
-        # max_processes * max_pages_per_process = 2 * 5 = 10 pages, but the
-        # min processes threshold of 42 allows 42 * 5 = 210 pages, while there
-        # are only 176 page slots
+        # Every process creation branch is bounded by max_processes, so the
+        # min processes threshold of 42 can never allow more than
+        # 2 * 5 = 10 pages at the same time, and there are 176 page slots
         stage = stage_factory(StageConfig(
             max_processes=2,
             max_pages_per_process=5,
@@ -1272,34 +1272,19 @@ class TestStageConfigValidation:
             num_processes_at_startup=0,
             new_process_probability=0))
 
+        stage.setup()
+
+    def test_setup_rejects_config_allowing_more_processes_than_process_slots(
+            self, stage_factory):
+        # 60 processes, but there are only 42 process slots
+        stage = stage_factory(StageConfig(
+            max_processes=60,
+            num_processes_at_startup=0,
+            new_process_probability=0))
+
         with pytest.raises(ValueError) as exc_info:
             stage.setup()
 
         assert str(exc_info.value) == (
-            'Stage config can generate up to 210 pages at the same time, '
-            'but there are only 176 page slots; at least one slot '
-            'must remain free for page swaps.')
-
-    def test_setup_accepts_min_processes_thresholds_within_page_capacity(self, stage_factory):
-        # The min processes threshold of 20 allows 20 * 5 = 100 pages at the
-        # same time, and there are 176 page slots
-        stage = stage_factory(StageConfig(
-            max_processes=2,
-            max_pages_per_process=5,
-            min_processes_at_times_ms=[(0, 20)],
-            num_processes_at_startup=0,
-            new_process_probability=0))
-
-        stage.setup()
-
-    def test_setup_ignores_processes_beyond_the_process_slot_grid(self, stage_factory):
-        # Only 42 processes can exist at the same time despite max_processes
-        # being 60, so 42 * 4 = 168 pages at the same time, and 176 page
-        # slots, so at least one slot always remains free for page swaps
-        stage = stage_factory(StageConfig(
-            max_processes=60,
-            max_pages_per_process=4,
-            num_processes_at_startup=0,
-            new_process_probability=0))
-
-        stage.setup()
+            'Stage config allows 60 processes at the same time, '
+            'but there are only 42 process slots.')
