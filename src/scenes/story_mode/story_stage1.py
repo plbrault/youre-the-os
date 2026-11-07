@@ -7,7 +7,7 @@ from scene_objects.stage_intro_dialog import (
     KilledProcessBadge, Section, TimerBadge,
 )
 
-_stage_config = StageConfig(
+_STAGE_CONFIG = StageConfig(
     cpu_config=CpuConfig(num_cores=1),
     num_processes_at_startup=3,
     force_new_priority_process_at_times_ms=[100],
@@ -45,14 +45,14 @@ _INTRO_SECTIONS = [
     )),
     Section('Victory Conditions', (
         f'Survive 6 minutes with less than '
-        f'{_stage_config.max_processes_terminated_by_user} user ragequits',
+        f'{_STAGE_CONFIG.max_processes_terminated_by_user} user ragequits',
         'Do not let the user kill the priority process',
     )),
 ]
 
 _INTRO_BADGES = (
     TimerBadge(6),
-    KilledProcessBadge(f'<{_stage_config.max_processes_terminated_by_user}'),
+    KilledProcessBadge(f'<{_STAGE_CONFIG.max_processes_terminated_by_user}'),
     KilledProcessBadge('0', is_priority=True),
 )
 
@@ -64,7 +64,7 @@ class StoryStage1(StoryStage):
     intro_badges = _INTRO_BADGES
 
     def __init__(self):
-        super().__init__(_stage_config)
+        super().__init__(_STAGE_CONFIG)
 
     def check_defeat(self) -> bool | tuple[bool, str]:
         if any(p.type == ProcessType.PRIORITY

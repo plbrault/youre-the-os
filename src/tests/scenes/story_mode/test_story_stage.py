@@ -9,7 +9,7 @@ from scene_objects.stage_intro_dialog import (
 from scenes.story_mode.story_stage import StoryStage
 
 
-_stage_config = StageConfig(
+_STAGE_CONFIG = StageConfig(
     cpu_config=CpuConfig(num_cores=1),
     max_processes_terminated_by_user=4,
 )
@@ -30,7 +30,7 @@ class SampleStoryStage(StoryStage):
     intro_badges = _INTRO_BADGES
 
     def __init__(self):
-        super().__init__(_stage_config)
+        super().__init__(_STAGE_CONFIG)
 
 
 def _advance_uptime_to(stage, uptime_ms):

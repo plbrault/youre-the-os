@@ -6,6 +6,41 @@ from scene_objects.story_stage_victory_dialog import StoryStageVictoryDialog
 
 
 class StoryStage(Stage):
+    """
+    Base class for the stages of the game's story mode.
+
+    A story stage is implemented by subclassing StoryStage and declaring
+    its class attributes, then calling the parent constructor with its own
+    stage config:
+
+        class StoryStage3(StoryStage):
+            stage_name = 'Stage 3: 2010'
+            victory_time_ms = 6 * ONE_MINUTE
+            intro_sections = _INTRO_SECTIONS
+            intro_badges = _INTRO_BADGES
+
+            def __init__(self):
+                super().__init__(_STAGE_CONFIG)
+
+    The intro attributes are tuples of `scene_objects.stage_intro_dialog.Section`
+    and `scene_objects.stage_intro_dialog.Badge` objects. The config passed to
+    the parent constructor is a `config.stage_config.StageConfig`. All are
+    typically declared as module-level constants named `_INTRO_SECTIONS`,
+    `_INTRO_BADGES` and `_STAGE_CONFIG`.
+
+    The base class provides:
+    * `check_victory`: a time-based victory condition, met when the stage
+      uptime reaches `victory_time_ms`
+    * `on_start`: a `scene_objects.stage_intro_dialog.StageIntroDialog`
+      built from `intro_sections` and `intro_badges`, with a new instance
+      created at each start or reset
+    * `on_victory` / `on_defeat`: the story mode victory / defeat dialogs
+
+    A subclass typically also overrides `check_defeat` to add stage-specific
+    defeat conditions on top of the base user ragequit check.
+    When it detects a defeat, the override must return a tuple `(True, reason)`
+    so that the reason is displayed in the defeat dialog.
+    """
     stage_name: str = ''
     victory_time_ms: int = 0
     intro_sections: tuple[Section, ...] = ()
