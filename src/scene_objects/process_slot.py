@@ -20,5 +20,5 @@ class ProcessSlot(SceneObject):
     def process(self, process):
         self._process = process
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         pass

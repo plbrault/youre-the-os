@@ -3,7 +3,7 @@ import re
 
 from constants import MAX_PROCESSES, ONE_SECOND
 import game_monitor
-from engine.game_event_type import GameEventType
+from engine.player_input_type import PlayerInputType
 from engine.scene_object import SceneObject
 from engine.random import randint
 from factories.process_factory import ProcessFactory
@@ -329,20 +329,20 @@ class ProcessManager(SceneObject):
                 'active_process_count_by_starvation_level'
             ],
             'blocked_active_process_count': cpu_manager_stats['blocked_active_process_count'],
-            'io_event_count': self._io_queue.event_count,
+            'io_event_count': self._io_queue.io_event_count,
             'io_wasted_action_count': self._io_queue.wasted_action_count,
             'gracefully_terminated_process_count': self._gracefully_terminated_process_count,
             'user_terminated_process_count': self._user_terminated_process_count,
         }
 
-    def _handle_events(self, events):
-        for event in events:
-            if event.type == GameEventType.KEY_UP:
-                if event.get_property('key') in _NUM_KEYS:
-                    logical_id = int(re.search(r'\d', event.get_property('key')).group())
+    def _handle_player_inputs(self, player_inputs):
+        for player_input in player_inputs:
+            if player_input.type == PlayerInputType.KEY_UP:
+                if player_input.get_property('key') in _NUM_KEYS:
+                    logical_id = int(re.search(r'\d', player_input.get_property('key')).group())
                     if logical_id == 0:
                         logical_id = 10
-                    if event.get_property('shift'):
+                    if player_input.get_property('shift'):
                         logical_id += 10
 
                     cpu = self._cpu_manager.get_cpu_by_logical_id(logical_id)
@@ -413,9 +413,9 @@ class ProcessManager(SceneObject):
         if self._sort_in_progress or self._auto_sort_enabled:
             self._continue_sorting()
 
-    def _update_children(self, current_time, events):
+    def _update_children(self, current_time, player_inputs):
         for scene_object in self.children:
-            scene_object.update(current_time, events)
+            scene_object.update(current_time, player_inputs)
             if (
                 isinstance(scene_object, Process)
                 and scene_object.state == ProcessState.ENDED
@@ -423,14 +423,14 @@ class ProcessManager(SceneObject):
             ):
                 self.children.remove(scene_object)
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         if self._stage.stage_completed:
             return
 
         self._current_time = current_time
 
-        self._handle_events(events)
+        self._handle_player_inputs(player_inputs)
         self._handle_process_creation(current_time)
         self._handle_timed_powerups(current_time)
         self._handle_sorting()
-        self._update_children(current_time, events)
+        self._update_children(current_time, player_inputs)

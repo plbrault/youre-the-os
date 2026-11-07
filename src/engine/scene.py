@@ -14,7 +14,6 @@ class Scene(GameObject):
         super().__init__()
         self._scene_id = scene_id
         self._is_started = False
-        self._scene_objects = []
         self._modals = []
         self._scene_manager = None
 
@@ -58,10 +57,10 @@ class Scene(GameObject):
             self.scene_manager.reset_current_context_time()
 
     @abstractmethod
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         """Override to implement the update logic of the scene.
 
-        Called every frame with the current time and a list of events.
+        Called every frame with the current time and a list of player inputs.
         """
 
     def open_modal(self, modal : Modal):
@@ -73,7 +72,7 @@ class Scene(GameObject):
             (self.screen.get_width() - modal.view.width) / 2,
             (self.screen.get_height() - modal.view.height) / 2
         )
-        self._scene_objects.append(modal)
+        self._children.append(modal)
         self._modals.append(modal)
         if self.scene_manager is not None:
             top_context = self.scene_manager.get_top_context()
@@ -91,14 +90,14 @@ class Scene(GameObject):
             top_context = self.scene_manager.get_top_context()
             if top_context == modal:
                 self.scene_manager.pop_context()
-        self._scene_objects.remove(modal)
+        self._children.remove(modal)
         modal.scene = None
         self._modals.pop()
 
     def render(self):
         self.screen.fill(self.background_color)
 
-        for scene_object in list(self._scene_objects):
+        for scene_object in list(self._children):
             scene_object.render(self.screen)
 
         pygame.display.flip()

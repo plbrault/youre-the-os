@@ -7,7 +7,6 @@ class SceneObject(GameObject):
         super().__init__()
         self._view = view
         self._visible = True
-        self._children = []
 
     @property
     def view(self):
@@ -19,10 +18,6 @@ class SceneObject(GameObject):
         return {}
 
     @property
-    def children(self):
-        return self._children
-
-    @property
     def visible(self):
         return self._visible
 
@@ -30,9 +25,9 @@ class SceneObject(GameObject):
     def visible(self, value: bool):
         self._visible = value
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         for child in self._children:
-            child.update(current_time, events)
+            child.update(current_time, player_inputs)
 
     def render(self, surface):
         if self.visible:

@@ -3,8 +3,8 @@ from typing import Union
 
 import pygame
 
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from engine.scene import Scene
 from engine.scene_manager import SceneManager
 from engine.window_config import WindowConfig
@@ -61,82 +61,88 @@ class GameManager():
     def start_scene(self, scene: Union[Scene, str]):
         self._scene_manager.start_scene(scene, pygame.time.get_ticks())
 
-    def _get_events(self):
+    def _get_player_inputs(self):
         # pylint: disable=too-many-branches
-        events = []
-        mouse_motion_event = None
+        player_inputs = []
+        mouse_motion_player_input = None
 
-        def mouse_event_added():
+        def mouse_player_input_added():
             return any(
-                event.type in (
-                    GameEventType.MOUSE_LEFT_CLICK,
-                    GameEventType.MOUSE_RIGHT_CLICK,
-                    GameEventType.MOUSE_MOTION
+                player_input.type in (
+                    PlayerInputType.MOUSE_LEFT_CLICK,
+                    PlayerInputType.MOUSE_RIGHT_CLICK,
+                    PlayerInputType.MOUSE_MOTION
                 )
-                for event in events
+                for player_input in player_inputs
             )
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                events.append(GameEvent(GameEventType.QUIT, {}))
-            elif event.type == pygame.KEYDOWN:
-                if pygame.key.name(event.key).endswith('shift'):
+        for pygame_event in pygame.event.get():
+            if pygame_event.type == pygame.QUIT:
+                player_inputs.append(PlayerInput(PlayerInputType.QUIT, {}))
+            elif pygame_event.type == pygame.KEYDOWN:
+                if pygame.key.name(pygame_event.key).endswith('shift'):
                     self._shift_down = True
-            elif event.type == pygame.KEYUP:
-                if pygame.key.name(event.key).endswith('shift'):
+            elif pygame_event.type == pygame.KEYUP:
+                if pygame.key.name(pygame_event.key).endswith('shift'):
                     self._shift_down = False
-                events.append(
-                    GameEvent(
-                        GameEventType.KEY_UP, {
+                player_inputs.append(
+                    PlayerInput(
+                        PlayerInputType.KEY_UP, {
                             'key': pygame.key.name(
-                                event.key), 'shift': self._shift_down}))
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == _LEFT_MOUSE_BUTTON:
+                                pygame_event.key), 'shift': self._shift_down}))
+            elif (pygame_event.type == pygame.MOUSEBUTTONDOWN
+                  and pygame_event.button == _LEFT_MOUSE_BUTTON):
                 self._mouse_left_down = True
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == _RIGHT_MOUSE_BUTTON:
+            elif (pygame_event.type == pygame.MOUSEBUTTONDOWN
+                  and pygame_event.button == _RIGHT_MOUSE_BUTTON):
                 self._mouse_right_down = True
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == _LEFT_MOUSE_BUTTON:
+            elif (pygame_event.type == pygame.MOUSEBUTTONUP
+                  and pygame_event.button == _LEFT_MOUSE_BUTTON):
                 self._mouse_left_down = False
-                if mouse_event_added() and mouse_motion_event:
-                    events.remove(mouse_motion_event)
-                    mouse_motion_event = None
-                if not mouse_event_added():
-                    events.append(
-                        GameEvent(
-                            GameEventType.MOUSE_LEFT_CLICK, {
-                                'position': event.pos, 'shift': self._shift_down }))
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == _RIGHT_MOUSE_BUTTON:
+                if mouse_player_input_added() and mouse_motion_player_input:
+                    player_inputs.remove(mouse_motion_player_input)
+                    mouse_motion_player_input = None
+                if not mouse_player_input_added():
+                    player_inputs.append(
+                        PlayerInput(
+                            PlayerInputType.MOUSE_LEFT_CLICK, {
+                                'position': pygame_event.pos,
+                                'shift': self._shift_down }))
+            elif (pygame_event.type == pygame.MOUSEBUTTONUP
+                  and pygame_event.button == _RIGHT_MOUSE_BUTTON):
                 self._mouse_right_down = False
-                if mouse_event_added() and mouse_motion_event:
-                    events.remove(mouse_motion_event)
-                    mouse_motion_event = None
-                if not mouse_event_added():
-                    events.append(
-                        GameEvent(
-                            GameEventType.MOUSE_RIGHT_CLICK, {
-                                'position': event.pos, 'shift': self._shift_down }))
-            elif event.type == pygame.MOUSEMOTION and not mouse_event_added():
-                game_event = GameEvent(GameEventType.MOUSE_MOTION,
-                                  {'position': event.pos,
+                if mouse_player_input_added() and mouse_motion_player_input:
+                    player_inputs.remove(mouse_motion_player_input)
+                    mouse_motion_player_input = None
+                if not mouse_player_input_added():
+                    player_inputs.append(
+                        PlayerInput(
+                            PlayerInputType.MOUSE_RIGHT_CLICK, {
+                                'position': pygame_event.pos,
+                                'shift': self._shift_down }))
+            elif pygame_event.type == pygame.MOUSEMOTION and not mouse_player_input_added():
+                player_input = PlayerInput(PlayerInputType.MOUSE_MOTION,
+                                  {'position': pygame_event.pos,
                                    'left_button_down': self._mouse_left_down,
                                    'right_button_down': self._mouse_right_down,
                                    'shift': self._shift_down})
-                events.append(game_event)
-                mouse_motion_event = game_event
-        return events
+                player_inputs.append(player_input)
+                mouse_motion_player_input = player_input
+        return player_inputs
 
-    async def _main_loop(self, ignore_events=False):
+    async def _main_loop(self, ignore_player_inputs=False):
         clock = pygame.time.Clock()
 
         while True:
-            events = self._get_events()
-            for event in events:
-                if event.type == GameEventType.QUIT:
+            player_inputs = self._get_player_inputs()
+            for player_input in player_inputs:
+                if player_input.type == PlayerInputType.QUIT:
                     return
 
-            if ignore_events:
-                events = []
+            if ignore_player_inputs:
+                player_inputs = []
 
-            self._scene_manager.update(pygame.time.get_ticks(), events)
+            self._scene_manager.update(pygame.time.get_ticks(), player_inputs)
 
             self._scene_manager.current_scene.render()
 
@@ -144,11 +150,11 @@ class GameManager():
 
             await asyncio.sleep(0)
 
-    async def play(self, ignore_events=False):
+    async def play(self, ignore_player_inputs=False):
         self._init_pygame()
         self._init_screen()
         if self.startup_scene is None:
             raise ValueError('Property `startup_scene` needs to be set.')
         self.start_scene(self.startup_scene)
 
-        await self._main_loop(ignore_events)
+        await self._main_loop(ignore_player_inputs)

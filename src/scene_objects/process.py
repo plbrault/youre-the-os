@@ -9,7 +9,7 @@ from constants import (
 import game_monitor
 from engine.drawable import Drawable
 from engine.scene_object import SceneObject
-from engine.game_event_type import GameEventType
+from engine.player_input_type import PlayerInputType
 from engine.random import randint
 from scene_objects.views.process_view import ProcessView
 
@@ -235,10 +235,10 @@ class Process(SceneObject):
         return ((self._view.target_x is not None or self._view.target_y is not None)
             and (self._view.target_x != self._view.x or self._view.target_y != self._view.y))
 
-    def apply_state_transition(self, event: StateEvent):
+    def apply_state_transition(self, state_event: StateEvent):
         if (self._state in self._state_transitions
-                and event in Process._state_transitions[self._state]):
-            new_state = self._state_transitions[self._state][event]
+                and state_event in Process._state_transitions[self._state]):
+            new_state = self._state_transitions[self._state][state_event]
             if new_state != self._state:
                 self._state = new_state
                 self._last_state_change_time = self._last_update_time
@@ -349,30 +349,30 @@ class Process(SceneObject):
     def _on_right_click(self):
         self.toggle(to_e_core=True)
 
-    def _check_if_clicked_on(self, player_action):
+    def _check_if_clicked_on(self, player_input):
         if (
-            player_action.type == GameEventType.MOUSE_LEFT_CLICK
+            player_input.type == PlayerInputType.MOUSE_LEFT_CLICK
             or (
-                player_action.type == GameEventType.MOUSE_MOTION
-                and player_action.get_property('left_button_down')
+                player_input.type == PlayerInputType.MOUSE_MOTION
+                and player_input.get_property('left_button_down')
             )
         ):
-            if self._view.collides(*player_action.get_property('position')):
+            if self._view.collides(*player_input.get_property('position')):
                 self._on_left_click()
         elif (
-            player_action.type == GameEventType.MOUSE_RIGHT_CLICK
+            player_input.type == PlayerInputType.MOUSE_RIGHT_CLICK
             or (
-                player_action.type == GameEventType.MOUSE_MOTION
-                and player_action.get_property('right_button_down')
+                player_input.type == PlayerInputType.MOUSE_MOTION
+                and player_input.get_property('right_button_down')
             )
         ):
-            if self._view.collides(*player_action.get_property('position')):
+            if self._view.collides(*player_input.get_property('position')):
                 self._on_right_click()
 
-    def _handle_player_actions(self, player_actions):
+    def _handle_player_inputs(self, player_inputs):
         if not self.is_in_motion:
-            for player_action in player_actions:
-                self._check_if_clicked_on(player_action)
+            for player_input in player_inputs:
+                self._check_if_clicked_on(player_input)
 
     def _handle_pages(self):
         page_fault = any(
@@ -416,7 +416,7 @@ class Process(SceneObject):
                 self.apply_state_transition(StateEvent.REQUEST_IO)
                 self._is_on_io_cooldown = True
 
-                self._process_manager.io_queue.wait_for_event(
+                self._process_manager.io_queue.wait_for_io_event(
                     self._last_update_time,
                     self._on_io_event_available,
                     self._on_io_event_delivered
@@ -452,9 +452,9 @@ class Process(SceneObject):
         else:
             self._display_blink_color = False
 
-    def update(self, current_time, player_actions):  # pylint: disable=arguments-renamed
+    def update(self, current_time, player_inputs):
         self._last_update_time = current_time
-        self._handle_player_actions(player_actions)
+        self._handle_player_inputs(player_inputs)
         self._handle_pages()
 
         if current_time >= self._last_periodic_update_time + ONE_SECOND:

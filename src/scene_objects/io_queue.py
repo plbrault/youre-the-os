@@ -2,12 +2,12 @@ from collections import deque
 
 import game_monitor
 from engine.scene_object import SceneObject
-from engine.game_event_type import GameEventType
+from engine.player_input_type import PlayerInputType
 from engine.random import randint
 from scene_objects.views.io_queue_view import IoQueueView
 
 _BLINKING_INTERVAL_MS = 333
-_EVENT_PROBABILITY_DENOMINATOR = 3
+_IO_EVENT_PROBABILITY_DENOMINATOR = 3
 
 class _IoEventWaiter:
     def __init__(self, current_time, on_arrival_callback, on_delivery_callback):
@@ -34,23 +34,23 @@ class IoQueue(SceneObject):
         self._max_waiting_time_ms = max_waiting_time_ms
 
         self._subscriber_queue = deque([])
-        self._event_count = 0
+        self._io_event_count = 0
         self._wasted_action_count = 0
         self._current_time = 0
-        self._last_event_check_time = 0
+        self._last_io_event_check_time = 0
 
         self._display_blink_color = False
 
         super().__init__(IoQueueView(self))
 
-    def wait_for_event(self, current_time, on_arrival_callback, on_delivery_callback):
+    def wait_for_io_event(self, current_time, on_arrival_callback, on_delivery_callback):
         self._subscriber_queue.append(
             _IoEventWaiter(current_time, on_arrival_callback, on_delivery_callback)
         )
 
     @property
-    def event_count(self):
-        return self._event_count
+    def io_event_count(self):
+        return self._io_event_count
 
     @property
     def wasted_action_count(self):
@@ -61,70 +61,73 @@ class IoQueue(SceneObject):
         return self._display_blink_color
 
     def handle_player_action(self):
-        if self.event_count == 0:
+        if self.io_event_count == 0:
             self._wasted_action_count += 1
             return
-        while self.event_count > 0:
-            self._event_count -= 1
+        while self.io_event_count > 0:
+            self._io_event_count -= 1
             waiter = self._subscriber_queue.popleft()
             waiter.on_delivery_callback()
-        game_monitor.notify_io_event_count(self.event_count)
+        game_monitor.notify_io_event_count(self.io_event_count)
 
-    def _check_if_clicked_on(self, event):
-        if event.type == GameEventType.MOUSE_LEFT_CLICK:
-            return self._view.collides(*event.get_property('position'))
+    def _check_if_clicked_on(self, player_input):
+        if player_input.type == PlayerInputType.MOUSE_LEFT_CLICK:
+            return self._view.collides(*player_input.get_property('position'))
         return False
 
     def _handle_max_time_elapsed(self, current_time):
-        if self._event_count >= len(self._subscriber_queue):
+        if self._io_event_count >= len(self._subscriber_queue):
             return
 
-        waiter = self._subscriber_queue[self._event_count]
+        waiter = self._subscriber_queue[self._io_event_count]
         if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
-            self._last_event_check_time = current_time
+            self._last_io_event_check_time = current_time
             waiter.on_arrival_callback()
-            self._event_count += 1
-            game_monitor.notify_io_event_count(self._event_count)
+            self._io_event_count += 1
+            game_monitor.notify_io_event_count(self._io_event_count)
 
-    def _handle_probabilistic_events(self, current_time):
-        if current_time < self._last_event_check_time + self._min_waiting_time_ms:
+    def _handle_probabilistic_io_events(self, current_time):
+        if current_time < self._last_io_event_check_time + self._min_waiting_time_ms:
             return
-        if self._event_count >= len(self._subscriber_queue):
+        if self._io_event_count >= len(self._subscriber_queue):
             return
 
-        waiter = self._subscriber_queue[self._event_count]
+        waiter = self._subscriber_queue[self._io_event_count]
         if current_time >= waiter.waiting_since + self._max_waiting_time_ms:
             return
 
-        self._last_event_check_time = current_time
+        self._last_io_event_check_time = current_time
 
-        if randint(1, _EVENT_PROBABILITY_DENOMINATOR) != 1:
+        if randint(1, _IO_EVENT_PROBABILITY_DENOMINATOR) != 1:
             return
 
-        new_event_count = randint(self._event_count + 1, len(self._subscriber_queue))
-        for i in range(self._event_count, new_event_count):
+        new_io_event_count = randint(self._io_event_count + 1, len(self._subscriber_queue))
+        for i in range(self._io_event_count, new_io_event_count):
             self._subscriber_queue[i].on_arrival_callback()
-        self._event_count = new_event_count
-        game_monitor.notify_io_event_count(self._event_count)
+        self._io_event_count = new_io_event_count
+        game_monitor.notify_io_event_count(self._io_event_count)
 
     def _update_blink_color(self, current_time):
-        self._display_blink_color = (
-            int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1 if self._event_count > 0 else False
-        )
+        if self._io_event_count > 0:
+            self._display_blink_color = (
+                int(current_time / _BLINKING_INTERVAL_MS) % 2 == 1
+            )
+        else:
+            self._display_blink_color = False
 
-    def update(self, current_time, player_actions): # pylint: disable=arguments-renamed
+    def update(self, current_time, player_inputs):
         self._current_time = current_time
 
-        for player_action in player_actions:
+        for player_input in player_inputs:
             if (
-                self._check_if_clicked_on(player_action)
+                self._check_if_clicked_on(player_input)
                 or (
-                    player_action.type == GameEventType.KEY_UP
-                    and player_action.get_property('key') == 'space'
+                    player_input.type == PlayerInputType.KEY_UP
+                    and player_input.get_property('key') == 'space'
                 )
             ):
                 self.handle_player_action()
 
         self._handle_max_time_elapsed(current_time)
-        self._handle_probabilistic_events(current_time)
+        self._handle_probabilistic_io_events(current_time)
         self._update_blink_color(current_time)

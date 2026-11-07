@@ -1,7 +1,7 @@
 import pytest
 
-from engine.game_event import GameEvent
-from engine.game_event_type import GameEventType
+from engine.player_input import PlayerInput
+from engine.player_input_type import PlayerInputType
 from scene_objects.in_game_menu_dialog import InGameMenuDialog
 
 
@@ -34,7 +34,7 @@ def _click(button):
         button.view.x + button.view.width / 2,
         button.view.y + button.view.height / 2,
     )
-    button.update(0, [GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': center})])
+    button.update(0, [PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, {'position': center})])
 
 
 class TestInGameMenuDialog:
@@ -101,12 +101,12 @@ class TestInGameMenuDialog:
         assert dialog.hotkeys_button in dialog.children
         assert dialog.close_menu_button in dialog.children
 
-    def test_update_forwards_events_to_buttons(self):
+    def test_update_forwards_player_inputs_to_buttons(self):
         dialog, _, main_menu_calls, _ = _make_dialog()
         center = (
             dialog.main_menu_button.view.x + dialog.main_menu_button.view.width / 2,
             dialog.main_menu_button.view.y + dialog.main_menu_button.view.height / 2,
         )
-        dialog.update(0, [GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': center})])
+        dialog.update(0, [PlayerInput(PlayerInputType.MOUSE_LEFT_CLICK, {'position': center})])
 
         assert main_menu_calls == [True]

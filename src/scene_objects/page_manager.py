@@ -212,6 +212,6 @@ class PageManager(SceneObject):
                 else:
                     break
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         self._handle_swap_queues(current_time)
-        super().update(current_time, events)
+        super().update(current_time, player_inputs)

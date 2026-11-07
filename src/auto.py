@@ -102,7 +102,7 @@ async def main():
     game_manager.register_scene(stage_scene)
     game_manager.startup_scene = stage_scene
 
-    await game_manager.play(ignore_events=True)
+    await game_manager.play(ignore_player_inputs=True)
 
 if __name__ == '__main__':
     asyncio.run(main())

@@ -43,13 +43,13 @@ class SortButton(Button):
     def blinking_hidden(self):
         return self._blinking_hidden
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         self._current_time = current_time
         if not self.visible:
-            events = []
+            player_inputs = []
         elif self._blinking:
             visible_duration = current_time - self._became_visible_at
             new_blinking_hidden = bool(int(visible_duration / _BLINKING_INTERVAL_MS) % 2 == 1)
             if new_blinking_hidden != self._blinking_hidden:
                 self._blinking_hidden = new_blinking_hidden
-        super().update(current_time, events)
+        super().update(current_time, player_inputs)

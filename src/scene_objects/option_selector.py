@@ -66,6 +66,6 @@ class OptionSelector(SceneObject):
         else:
             self.selected_option_id += 1
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         for child in self._children:
-            child.update(current_time, events)
+            child.update(current_time, player_inputs)

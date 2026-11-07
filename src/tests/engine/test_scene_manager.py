@@ -10,18 +10,18 @@ class StubGameObject(GameObject):
     def __init__(self):
         super().__init__()
         self.update_times = []
-        self.update_events_list = []
+        self.update_player_inputs_list = []
         self.reset_call_count = 0
 
-    def update(self, current_time, events):
+    def update(self, current_time, player_inputs):
         self.update_times.append(current_time)
-        self.update_events_list.append(events)
+        self.update_player_inputs_list.append(player_inputs)
 
     def reset(self):
         """Reset stub for testing scene switching."""
         self.reset_call_count += 1
         self.update_times = []
-        self.update_events_list = []
+        self.update_player_inputs_list = []
 
 
 class TestSceneManagerLocalTime:
@@ -174,9 +174,9 @@ class TestSceneManagerUpdateBehavior:
         assert scene.update_times == [0]
         assert modal.update_times == []
 
-        def scene_update_with_push(current_time, events):
+        def scene_update_with_push(current_time, player_inputs):
             scene.update_times.append(current_time)
-            scene.update_events_list.append(events)
+            scene.update_player_inputs_list.append(player_inputs)
             # Only push once
             if not modal.update_times:
                 scene_manager.push_context(modal)
@@ -207,9 +207,9 @@ class TestSceneManagerUpdateBehavior:
         assert scene.update_times == []
         assert modal.update_times == [1000]
 
-        def modal_update_with_pop(current_time, events):
+        def modal_update_with_pop(current_time, player_inputs):
             modal.update_times.append(current_time)
-            modal.update_events_list.append(events)
+            modal.update_player_inputs_list.append(player_inputs)
             scene_manager.pop_context()
 
         original_modal_update = modal.update
@@ -228,7 +228,7 @@ class TestSceneManagerUpdateBehavior:
         assert scene.update_times == [1000]
 
     def test_scene_switch_during_update_triggers_second_update(self, scene_manager):
-        """When start_scene is called during update, the new scene should get a second update with empty events."""
+        """When start_scene is called during update, the new scene should get a second update with empty player_inputs."""
         scene1 = StubGameObject()
         scene2 = StubGameObject()
 
@@ -238,9 +238,9 @@ class TestSceneManagerUpdateBehavior:
         assert scene1.update_times == [0]
         assert scene2.update_times == []
 
-        def scene1_update_with_switch(current_time, events):
+        def scene1_update_with_switch(current_time, player_inputs):
             scene1.update_times.append(current_time)
-            scene1.update_events_list.append(events)
+            scene1.update_player_inputs_list.append(player_inputs)
             scene_manager.start_scene(scene2, None)
 
         original_update = scene1.update
@@ -250,10 +250,10 @@ class TestSceneManagerUpdateBehavior:
 
         scene1.update = original_update
 
-        # scene1 was updated with the original events
+        # scene1 was updated with the original player_inputs
         assert scene1.update_times == [0, 1000]
-        assert scene1.update_events_list == [[], ['event1', 'event2']]
+        assert scene1.update_player_inputs_list == [[], ['event1', 'event2']]
 
-        # scene2 was updated with empty events after the scene switch
+        # scene2 was updated with empty player_inputs after the scene switch
         assert scene2.update_times == [0]
-        assert scene2.update_events_list == [[]]
+        assert scene2.update_player_inputs_list == [[]]
