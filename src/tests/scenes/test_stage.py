@@ -1145,14 +1145,16 @@ class TestInGameMenu:
     """Tests for the in-game menu modal and its Hotkeys button."""
 
     @pytest.fixture
-    def stage(self, stage_custom_config):
-        return stage_custom_config(StageConfig(
+    def stage(self, stage_custom_config, scene_manager):
+        stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
             num_processes_at_startup=4,
             new_process_probability=0,
             io_probability=0,
             graceful_termination_probability=0,
         ))
+        scene_manager.start_scene(stage, 0)
+        return stage
 
     @staticmethod
     def _key_up_event(key):
@@ -1166,23 +1168,29 @@ class TestInGameMenu:
         )
         return GameEvent(GameEventType.MOUSE_LEFT_CLICK, {'position': center})
 
-    def test_opening_in_game_menu_shows_menu_dialog(self, stage):
-        stage.update(0, [self._key_up_event('escape')])
+    def test_opening_in_game_menu_opens_menu_dialog_and_pushes_its_context(
+            self, stage, scene_manager):
+        scene_manager.update(0, [self._key_up_event('escape')])
 
         assert isinstance(stage.active_modal, InGameMenuDialog)
+        assert scene_manager.get_top_context() is stage.active_modal
 
-    def test_hotkeys_button_shows_hotkey_dialog_on_top_of_menu(self, stage):
-        stage.update(0, [self._key_up_event('escape')])
+    def test_hotkeys_button_opens_hotkey_dialog_on_top_of_menu(
+            self, stage, scene_manager):
+        scene_manager.update(0, [self._key_up_event('escape')])
         in_game_menu = stage.active_modal
-        stage.update(0, [self._click_on_event(in_game_menu.hotkeys_button)])
+        scene_manager.update(33, [self._click_on_event(in_game_menu.hotkeys_button)])
 
         assert isinstance(stage.active_modal, HotkeyDialog)
+        assert scene_manager.get_top_context() is stage.active_modal
 
-    def test_closing_hotkey_dialog_returns_to_menu(self, stage):
-        stage.update(0, [self._key_up_event('escape')])
+    def test_closing_hotkey_dialog_returns_to_menu(
+            self, stage, scene_manager):
+        scene_manager.update(0, [self._key_up_event('escape')])
         in_game_menu = stage.active_modal
-        stage.update(0, [self._click_on_event(in_game_menu.hotkeys_button)])
+        scene_manager.update(33, [self._click_on_event(in_game_menu.hotkeys_button)])
         hotkey_dialog = stage.active_modal
-        stage.update(0, [self._click_on_event(hotkey_dialog.close_button)])
+        scene_manager.update(66, [self._click_on_event(hotkey_dialog.close_button)])
 
         assert stage.active_modal is in_game_menu
+        assert scene_manager.get_top_context() is in_game_menu

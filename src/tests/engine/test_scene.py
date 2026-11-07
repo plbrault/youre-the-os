@@ -78,6 +78,17 @@ class TestSceneModalLifecycle:
 
         assert scene.active_modal is modal
 
+    def test_open_modal_pushes_modal_as_top_context(self, scene, modal):
+        scene.open_modal(modal)
+
+        assert scene.scene_manager.get_top_context() is modal
+
+    def test_close_modal_restores_scene_as_top_context(self, scene, modal):
+        scene.open_modal(modal)
+        scene.close_modal()
+
+        assert scene.scene_manager.get_top_context() is scene
+
     def test_active_modal_none_when_no_modal(self, scene):
         assert scene.active_modal is None
 
@@ -114,12 +125,22 @@ class TestSceneModalLifecycle:
 
         assert scene.active_modal is second_modal
 
+    def test_opening_second_modal_makes_it_top_context(self, scene, modal):
+        scene.open_modal(modal)
+
+        second_modal = StubModal()
+        scene.open_modal(second_modal)
+
+        top_context = scene.scene_manager.get_top_context()
+        assert top_context is second_modal
+
     def test_closing_active_modal_reveals_underlying_modal(self, scene, modal):
         scene.open_modal(modal)
         scene.open_modal(StubModal())
         scene.close_modal()
 
         assert scene.active_modal is modal
+        assert scene.scene_manager.get_top_context() is modal
 
     def test_active_modal_close_reveals_underlying_modal(self, scene, modal):
         scene.open_modal(modal)
@@ -128,6 +149,7 @@ class TestSceneModalLifecycle:
         top_modal.close()
 
         assert scene.active_modal is modal
+        assert scene.scene_manager.get_top_context() is modal
 
     def test_close_modal_without_modal_does_not_crash(self, scene):
         scene.close_modal()
