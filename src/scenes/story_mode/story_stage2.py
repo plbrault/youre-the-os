@@ -70,6 +70,4 @@ class StoryStage2(StoryStage):
         if any(p.type == ProcessType.PRIORITY
                for p in self.process_manager.user_terminated_processes):
             return (True, 'The user killed the priority process.')
-        if super().check_defeat():
-            return (True, 'Too many user ragequits.')
-        return False
+        return super().check_defeat()

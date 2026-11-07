@@ -37,9 +37,11 @@ class StoryStage(Stage):
     * `on_victory` / `on_defeat`: the story mode victory / defeat dialogs
 
     A subclass typically also overrides `check_defeat` to add stage-specific
-    defeat conditions on top of the base user ragequit check.
-    When it detects a defeat, the override must return a tuple `(True, reason)`
-    so that the reason is displayed in the defeat dialog.
+    defeat conditions, calling super().check_defeat() to preserve the base
+    user ragequit check, which returns `(True, 'Too many user ragequits.')`.
+    Stage-specific conditions must themselves return a tuple `(True, reason)`
+    so that the reason is displayed in the defeat dialog (see `StoryStage1`
+    for an example).
     """
     stage_name: str = ''
     victory_time_ms: int = 0
@@ -51,6 +53,11 @@ class StoryStage(Stage):
 
     def check_victory(self) -> bool:
         return self.uptime_manager.uptime_ms >= self.victory_time_ms
+
+    def check_defeat(self) -> bool | tuple[bool, str]:
+        if super().check_defeat():
+            return (True, 'Too many user ragequits.')
+        return False
 
     def on_start(self):
         self.show_modal(StageIntroDialog(
