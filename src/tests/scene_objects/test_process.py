@@ -1578,6 +1578,134 @@ class TestProcess:
         # After termination, state should be ENDED
         assert process.state == ProcessState.ENDED
 
+    def test_starvation_death_unsubscribes_on_cpu_io_waiter(
+            self, stage_custom_config, monkeypatch, process_custom_config):
+        """A process starved to death while I/O is available must release its I/O event."""
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+        process.update(1000, [])
+
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+
+        stage.process_manager.io_queue.update(7000, [])
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+        assert stage.process_manager.io_queue.io_event_count == 1
+
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(7000 + i * process.time_between_starvation_levels, [])
+
+        assert process.state == ProcessState.ENDED
+        assert process.starvation_level == DEAD_STARVATION_LEVEL
+
+        assert stage.process_manager.io_queue.io_event_count == 0
+
+        stage.process_manager.io_queue.handle_player_action()
+        assert stage.process_manager.io_queue.io_event_count == 0
+        assert stage.process_manager.io_queue.wasted_action_count == 1
+
+    def test_starvation_death_unsubscribes_off_cpu_io_waiter(
+            self, stage_custom_config, monkeypatch, process_custom_config):
+        """Same as above for a process removed from the CPU while waiting for I/O."""
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, config)
+        process.use_cpu()
+        process.update(1000, [])
+
+        assert process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+
+        process.yield_cpu()
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED
+
+        stage.process_manager.io_queue.update(7000, [])
+        assert process.state == ProcessState.BLOCKED_OFF_CPU_IO_AVAILABLE
+        assert stage.process_manager.io_queue.io_event_count == 1
+
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            process.update(7000 + i * process.time_between_starvation_levels, [])
+
+        assert process.state == ProcessState.ENDED
+        assert process.starvation_level == DEAD_STARVATION_LEVEL
+
+        assert stage.process_manager.io_queue.io_event_count == 0
+
+    def test_starvation_death_does_not_prevent_delivery_to_other_blockers(
+            self, stage_custom_config, monkeypatch, process_custom_config):
+        """Blocking processes that are still alive must still get their I/O events delivered."""
+        config = process_custom_config(
+            io_probability=0.1,
+            graceful_termination_probability=0
+        )
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=14,
+            num_ram_rows=8,
+            new_process_probability=0,
+            io_probability=0.1,
+            graceful_termination_probability=0
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        starved_process = Process(1, stage, config)
+        blocked_process = Process(2, stage, config)
+
+        starved_process.use_cpu()
+        starved_process.update(1000, [])
+        blocked_process.use_cpu()
+        blocked_process.update(1000, [])
+
+        assert starved_process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+        assert blocked_process.state == ProcessState.BLOCKED_ON_CPU_IO_REQUESTED
+
+        stage.process_manager.io_queue.update(7000, [])
+        stage.process_manager.io_queue.update(7001, [])
+
+        assert starved_process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+        assert blocked_process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+        assert stage.process_manager.io_queue.io_event_count == 2
+
+        for i in range(1, DEAD_STARVATION_LEVEL + 1):
+            starved_process.update(
+                7000 + i * starved_process.time_between_starvation_levels, [])
+
+        assert starved_process.state == ProcessState.ENDED
+        assert blocked_process.state == ProcessState.BLOCKED_ON_CPU_IO_AVAILABLE
+
+        stage.process_manager.io_queue.handle_player_action()
+
+        assert stage.process_manager.io_queue.io_event_count == 0
+        assert stage.process_manager.io_queue.wasted_action_count == 0
+        assert blocked_process.state == ProcessState.RUNNING
+
 
 class TestProcessPageCreationOverLimit:
     """Tests for page creation being skipped when no page slot is free."""

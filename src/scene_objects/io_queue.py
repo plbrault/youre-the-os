@@ -49,9 +49,21 @@ class IoQueue(SceneObject):
         super().__init__(IoQueueView(self))
 
     def wait_for_io_event(self, current_time, on_arrival_callback, on_delivery_callback):
-        self._subscriber_queue.append(
-            _IoEventWaiter(current_time, on_arrival_callback, on_delivery_callback)
-        )
+        waiter = _IoEventWaiter(current_time, on_arrival_callback, on_delivery_callback)
+        self._subscriber_queue.append(waiter)
+        return waiter
+
+    def cancel_waiter(self, waiter):
+        try:
+            waiter_index = self._subscriber_queue.index(waiter)
+        except ValueError:
+            return
+        self._subscriber_queue.remove(waiter)
+        if waiter_index < self._io_event_count:
+            self._io_event_count -= 1
+            game_monitor.notify_io_event_count(self.io_event_count)
+        if self.io_event_count == 0:
+            self._io_events_available_since = None
 
     @property
     def io_event_count(self):

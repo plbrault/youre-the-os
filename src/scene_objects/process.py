@@ -96,6 +96,7 @@ class Process(SceneObject):
 
         self._cpu = None
         self._is_on_io_cooldown = False
+        self._io_waiter = None
         self._starvation_level = 1
 
         self._last_update_time = current_time
@@ -311,14 +312,12 @@ class Process(SceneObject):
                         break
 
     def _on_io_event_available(self):
-        if self._state != ProcessState.ENDED:
-            self._last_starvation_level_change_time = self._last_update_time
-            self.apply_state_transition(StateEvent.IO_AVAILABLE)
+        self._last_starvation_level_change_time = self._last_update_time
+        self.apply_state_transition(StateEvent.IO_AVAILABLE)
 
     def _on_io_event_delivered(self):
-        if self._state != ProcessState.ENDED:
-            self.apply_state_transition(StateEvent.IO_DELIVERED)
-            game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
+        self.apply_state_transition(StateEvent.IO_DELIVERED)
+        game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):
@@ -326,8 +325,13 @@ class Process(SceneObject):
             self._starvation_level = 0
             game_monitor.notify_process_terminated(self._pid)
 
+    def _cancel_io_waiter(self):
+        self._process_manager.io_queue.cancel_waiter(self._io_waiter)
+        self._io_waiter = None
+
     def _terminate_from_starvation(self):
         if self._process_manager.terminate_process(self, True):
+            self._cancel_io_waiter()
             self.apply_state_transition(StateEvent.TERMINATE_FROM_STARVATION)
             self._starvation_level = DEAD_STARVATION_LEVEL
             for page in self._pages:
@@ -416,7 +420,7 @@ class Process(SceneObject):
                 self.apply_state_transition(StateEvent.REQUEST_IO)
                 self._is_on_io_cooldown = True
 
-                self._process_manager.io_queue.wait_for_io_event(
+                self._io_waiter = self._process_manager.io_queue.wait_for_io_event(
                     self._last_update_time,
                     self._on_io_event_available,
                     self._on_io_event_delivered

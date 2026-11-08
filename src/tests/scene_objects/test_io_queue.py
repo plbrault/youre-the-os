@@ -301,3 +301,120 @@ class TestIoQueue:
         io_queue.update(91000, [])
 
         assert io_queue.should_display_tooltip == False
+
+    def test_cancel_waiter_removes_waiter_before_event_arrival(self, io_queue, monkeypatch):
+        """A canceled waiter must not have its I/O event arrive."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        arrival_callback_called = []
+        waiter = io_queue.wait_for_io_event(
+            0, lambda: arrival_callback_called.append(1), lambda: None)
+
+        io_queue.cancel_waiter(waiter)
+        io_queue.update(6000, [])
+
+        assert io_queue.io_event_count == 0
+        assert arrival_callback_called == []
+
+    def test_cancel_waiter_keeps_queue_ordering_consistent(self, io_queue, monkeypatch):
+        """After canceling an unarrived waiter, remaining waiters still arrive in order."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        arrivals = []
+        first_waiter = io_queue.wait_for_io_event(
+            0, lambda: arrivals.append('first'), lambda: None)
+        io_queue.cancel_waiter(first_waiter)
+        io_queue.wait_for_io_event(0, lambda: arrivals.append('second'), lambda: None)
+
+        io_queue.update(6000, [])
+
+        assert io_queue.io_event_count == 1
+        assert arrivals == ['second']
+
+    def test_cancel_waiter_on_arrived_waiter_decrements_io_event_count(
+            self, io_queue, monkeypatch):
+        """Canceling a waiter whose event already arrived must drop the pending event."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        waiter = io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(6000, [])
+        assert io_queue.io_event_count == 1
+
+        import game_monitor
+
+        game_monitor.clear_notifications()
+        io_queue.cancel_waiter(waiter)
+
+        assert io_queue.io_event_count == 0
+        notifications = game_monitor.get_notifications()
+        io_queue_notifications = [e for e in notifications if e.etype == 'IO_QUEUE']
+        assert len(io_queue_notifications) == 1
+        assert io_queue_notifications[0].io_count == 0
+
+    def test_cancel_waiter_on_arrived_waiter_clears_tooltip_trigger(
+            self, io_queue, monkeypatch):
+        """Once the last pending event is canceled, the I/O events tooltip must not trigger."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        waiter = io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(1000, [])
+        io_queue.update(31000, [])
+        assert io_queue.should_display_tooltip == True
+
+        io_queue.cancel_waiter(waiter)
+
+        assert io_queue.io_event_count == 0
+        assert io_queue.should_display_tooltip == False
+
+    def test_click_after_canceled_arrived_waiter_is_recorded_as_wasted(
+            self, io_queue, monkeypatch):
+        """After the canceled waiter removed the phantom event, a click is a wasteful action."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        waiter = io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(6000, [])
+        io_queue.cancel_waiter(waiter)
+
+        io_queue.handle_player_action()
+
+        assert io_queue.io_event_count == 0
+        assert io_queue.wasted_action_count == 1
+
+    def test_delivery_after_cancellation_serves_remaining_waiters(
+            self, io_queue, monkeypatch):
+        """Canceling an arrived waiter must not prevent other events from being delivered."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        deliveries = []
+        canceled_waiter = io_queue.wait_for_io_event(
+            0, lambda: None, lambda: deliveries.append('canceled'))
+        io_queue.wait_for_io_event(
+            0, lambda: None, lambda: deliveries.append('remaining'))
+
+        io_queue.update(6000, [])
+        io_queue.update(11000, [])
+        assert io_queue.io_event_count == 2
+
+        io_queue.cancel_waiter(canceled_waiter)
+        assert io_queue.io_event_count == 1
+
+        io_queue.handle_player_action()
+
+        assert io_queue.io_event_count == 0
+        assert deliveries == ['remaining']
+
+    def test_cancel_waiter_is_no_op_for_unknown_token(self, io_queue, monkeypatch):
+        """Canceling a token that was never subscribed must silently do nothing."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(6000, [])
+        assert io_queue.io_event_count == 1
+
+        import game_monitor
+
+        game_monitor.clear_notifications()
+        io_queue.cancel_waiter(object())
+
+        assert io_queue.io_event_count == 1
+        assert game_monitor.get_notifications() == []
