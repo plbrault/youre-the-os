@@ -13,6 +13,7 @@ from scene_objects.label import Label
 from scene_objects.page_manager import PageManager
 from scene_objects.process_manager import ProcessManager
 from scene_objects.score_manager import ScoreManager
+from scene_objects.tooltip import Tooltip, TooltipAlignment
 from scene_objects.uptime_manager import UptimeManager
 from config.stage_config import StageConfig
 
@@ -33,6 +34,9 @@ class StateEvent(Enum):
     DEFEAT_DETECTED = auto()
     PROCESSES_SETTLED = auto()
     DELAY_ELAPSED = auto()
+
+
+_IO_EVENTS_TOOLTIP_TEXT = 'Click here when it blinks to unblock processes!'
 
 
 class Stage(Scene):
@@ -82,6 +86,8 @@ class Stage(Scene):
         self._name_label = None
 
         self._open_in_game_menu_button = None
+
+        self._io_events_tooltip = None
 
         super().__init__('stage')
 
@@ -134,6 +140,15 @@ class Stage(Scene):
             self._open_in_game_menu_button.view.set_xy(
                 self.screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
             self._children.append(self._open_in_game_menu_button)
+
+        io_queue = self._process_manager.io_queue
+        self._io_events_tooltip = Tooltip(
+            io_queue.view,
+            _IO_EVENTS_TOOLTIP_TEXT,
+            condition=lambda: io_queue.should_display_tooltip,
+            alignment=TooltipAlignment.RIGHT
+        )
+        self._children.append(self._io_events_tooltip)
 
         self._prepare_automation_script()
 

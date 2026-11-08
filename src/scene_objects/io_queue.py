@@ -1,6 +1,7 @@
 from collections import deque
 
 import game_monitor
+from constants import ONE_SECOND
 from engine.scene_object import SceneObject
 from engine.player_input_type import PlayerInputType
 from engine.random import randint
@@ -8,6 +9,7 @@ from scene_objects.views.io_queue_view import IoQueueView
 
 _BLINKING_INTERVAL_MS = 333
 _IO_EVENT_PROBABILITY_DENOMINATOR = 3
+_IO_EVENTS_TOOLTIP_DELAY_MS = 30 * ONE_SECOND
 
 class _IoEventWaiter:
     def __init__(self, current_time, on_arrival_callback, on_delivery_callback):
@@ -41,6 +43,9 @@ class IoQueue(SceneObject):
 
         self._display_blink_color = False
 
+        self._io_events_available_since = None
+        self._tooltip_was_displayed = False
+
         super().__init__(IoQueueView(self))
 
     def wait_for_io_event(self, current_time, on_arrival_callback, on_delivery_callback):
@@ -60,6 +65,15 @@ class IoQueue(SceneObject):
     def display_blink_color(self):
         return self._display_blink_color
 
+    @property
+    def should_display_tooltip(self):
+        return (
+            self._io_events_available_since is not None
+            and not self._tooltip_was_displayed
+            and self._current_time
+                >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
+        )
+
     def handle_player_action(self):
         if self.io_event_count == 0:
             self._wasted_action_count += 1
@@ -68,6 +82,13 @@ class IoQueue(SceneObject):
             self._io_event_count -= 1
             waiter = self._subscriber_queue.popleft()
             waiter.on_delivery_callback()
+        if (
+            self._io_events_available_since is not None
+            and self._current_time
+                >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
+        ):
+            self._tooltip_was_displayed = True
+        self._io_events_available_since = None
         game_monitor.notify_io_event_count(self.io_event_count)
 
     def _check_if_clicked_on(self, player_input):
@@ -115,6 +136,10 @@ class IoQueue(SceneObject):
         else:
             self._display_blink_color = False
 
+    def _update_io_events_available_since(self, current_time):
+        if self._io_event_count > 0 and self._io_events_available_since is None:
+            self._io_events_available_since = current_time
+
     def update(self, current_time, player_inputs):
         self._current_time = current_time
 
@@ -131,3 +156,4 @@ class IoQueue(SceneObject):
         self._handle_max_time_elapsed(current_time)
         self._handle_probabilistic_io_events(current_time)
         self._update_blink_color(current_time)
+        self._update_io_events_available_since(current_time)

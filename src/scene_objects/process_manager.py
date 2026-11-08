@@ -11,9 +11,9 @@ from scene_objects.checkbox import Checkbox
 from scene_objects.cpu_manager import CpuManager
 from scene_objects.io_queue import IoQueue
 from scene_objects.process import Process, ProcessState, ProcessType
-from scene_objects.views.process_manager_view import ProcessManagerView
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
+from scene_objects.views.process_manager_view import ProcessManagerView
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(10)))
