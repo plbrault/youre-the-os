@@ -759,12 +759,6 @@ class TestPageManagerTooltips:
         other_page.request_swap()
         page_manager.update(5200, [])
 
-        page_manager.update(5100, [])
-        other_page = page_manager.create_page(3, 0)
-        assert other_page.on_disk
-        other_page.request_swap()
-        page_manager.update(5200, [])
-
         page_manager.update(10199, [])
         assert page_manager.should_display_free_ram_tooltip == False
 
@@ -817,11 +811,3 @@ class TestPageManagerTooltips:
         page_manager.update(60000, [])
         assert page_manager.should_display_swap_pages_tooltip == False
         assert page_manager.should_display_free_ram_tooltip == False
-        assert page_manager.pages_on_disk_zone_view is None
-
-    def test_pages_on_disk_zone_view_geometry(self, stage, page_manager):
-        zone_view = page_manager.pages_on_disk_zone_view
-        assert zone_view.x == 589
-        assert zone_view.y == 236
-        assert zone_view.width == 651
-        assert zone_view.height == 365

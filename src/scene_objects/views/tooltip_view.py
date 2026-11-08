@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from typing import Optional
 
 import pygame
 
@@ -57,13 +58,18 @@ def _wrap_text(text, font, max_width):
 
 class TooltipView(Drawable):
 
-    def __init__(self, tooltip, anchor_view: Drawable, text: str, *,
+    def __init__(self, tooltip, anchor_view: Optional[Drawable], text: str, *,
                  alignment: TooltipAlignment = TooltipAlignment.BELOW,
-                 arrow: bool = True):
+                 has_arrow: bool = True,
+                 position: Optional[tuple[int, int]] = None):
+        if (anchor_view is None) == (position is None):
+            raise ValueError(
+                'Exactly one of anchor_view or position must be provided.')
         self._tooltip = tooltip
         self._anchor_view = anchor_view
         self._alignment = alignment
-        self._arrow = arrow
+        self._has_arrow = has_arrow
+        self._position = position
         self._line_surfaces = [
             FONT_PRIMARY_LARGE.render(line, False, Color.BLACK)
             for line in _wrap_text(text, FONT_PRIMARY_LARGE, _MAX_TEXT_WIDTH)
@@ -77,7 +83,7 @@ class TooltipView(Drawable):
             (self.width * scale, self.height * scale), pygame.SRCALPHA)
         fill_color = (*Color.CREAM, _MAX_BACKGROUND_ALPHA)
         border_color = (*Color.DARK_YELLOW, _MAX_BACKGROUND_ALPHA)
-        if not self._arrow:
+        if not self._has_arrow:
             body = pygame.Rect(
                 0, 0, self.width * scale, self.height * scale)
         elif self._alignment == TooltipAlignment.RIGHT:
@@ -97,7 +103,7 @@ class TooltipView(Drawable):
         pygame.draw.rect(
             panel, border_color, body, scale,
             border_radius=_BORDER_RADIUS * scale)
-        if self._arrow:
+        if self._has_arrow:
             self._draw_arrow(panel, body, fill_color, border_color, scale)
         bubble = pygame.transform.smoothscale(
             panel, (self.width, self.height))
@@ -112,7 +118,9 @@ class TooltipView(Drawable):
 
     @property
     def x(self) -> int:
-        if self._alignment == TooltipAlignment.RIGHT:
+        if self._position is not None:
+            x = self._position[0] - self.width // 2
+        elif self._alignment == TooltipAlignment.RIGHT:
             x = self._anchor_view.x + self._anchor_view.width + _MARGIN
         else:
             x = self._anchor_view.x + (self._anchor_view.width - self.width) // 2
@@ -120,7 +128,9 @@ class TooltipView(Drawable):
 
     @property
     def y(self) -> int:
-        if self._alignment == TooltipAlignment.RIGHT:
+        if self._position is not None:
+            y = self._position[1]
+        elif self._alignment == TooltipAlignment.RIGHT:
             y = (
                 self._anchor_view.y + self._anchor_view.height // 2
                 - _ARROW_TOP_OFFSET
@@ -137,7 +147,7 @@ class TooltipView(Drawable):
         )
         arrow_width = (
             _ARROW_PROTRUSION
-            if self._arrow and self._alignment == TooltipAlignment.RIGHT
+            if self._has_arrow and self._alignment == TooltipAlignment.RIGHT
             else 0
         )
         return max_line_width + 2 * _PADDING + arrow_width
@@ -146,7 +156,7 @@ class TooltipView(Drawable):
     def height(self) -> int:
         arrow_height = (
             _ARROW_PROTRUSION
-            if self._arrow and self._alignment != TooltipAlignment.RIGHT
+            if self._has_arrow and self._alignment != TooltipAlignment.RIGHT
             else 0
         )
         return (

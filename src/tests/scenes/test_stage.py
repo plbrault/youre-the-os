@@ -936,7 +936,7 @@ class TestStage:
         stage.update(5500, [])
         assert free_ram_tooltip.visible == False
 
-    def test_pages_on_disk_tooltips_absent_when_no_swap_rows(
+    def test_pages_on_disk_tooltips_never_shown_when_no_swap_rows(
             self, stage_custom_config):
         stage = stage_custom_config(StageConfig(
             cpu_config=CpuConfig(num_cores=4),
@@ -945,15 +945,18 @@ class TestStage:
             num_ram_rows=MAX_RAM_ROWS,
         ))
 
-        tooltip_texts = [
-            child.text for child in stage.children if isinstance(child, Tooltip)]
-        assert 'Click here when it blinks to unblock processes!' in tooltip_texts
-        assert (
+        tooltips = {
+            child.text: child for child in stage.children
+            if isinstance(child, Tooltip)}
+
+        stage.update(60000, [])
+        assert 'Click here when it blinks to unblock processes!' in tooltips
+        assert tooltips[
             'Click on pages to swap them between RAM and disk. '
-                'Blinking pages need to be in RAM!') not in tooltip_texts
-        assert (
-            'Free room in the RAM by sending unused (grey) pages to the disk.'
-        ) not in tooltip_texts
+            'Blinking pages need to be in RAM!'].visible == False
+        assert tooltips[
+            'Free room in the RAM by sending unused (grey) pages '
+            'to the disk.'].visible == False
 
     def test_stage_completed_initially_false(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(

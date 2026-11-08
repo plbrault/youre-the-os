@@ -3,7 +3,7 @@ from typing import Optional
 
 from constants import MAX_RAM_ROWS, PAGES_PER_ROW, ONE_SECOND
 from engine.scene_object import SceneObject
-from scene_objects.views.page_manager_view import PageManagerView, PagesOnDiskZoneView
+from scene_objects.views.page_manager_view import PageManagerView
 from scene_objects.page import Page, PageMouseDragAction
 from scene_objects.page_slot import PageSlot
 from factories.page_factory import PageFactory
@@ -28,8 +28,6 @@ class PageManager(SceneObject):
 
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
-        self._pages_on_disk_zone = None
-        self._pages_on_disk_zone_view = None
 
         self._current_time = 0
         self._in_use_on_disk_pages_since = None
@@ -47,14 +45,6 @@ class PageManager(SceneObject):
             'pages_in_ram_label_xy': self._pages_in_ram_label_xy,
             'pages_on_disk_label_xy': self._pages_on_disk_label_xy,
         }
-
-    @property
-    def pages_on_disk_zone(self):
-        return self._pages_on_disk_zone
-
-    @property
-    def pages_on_disk_zone_view(self):
-        return self._pages_on_disk_zone_view
 
     @property
     def should_display_swap_pages_tooltip(self):
@@ -129,16 +119,6 @@ class PageManager(SceneObject):
                     disk_slot.view.set_xy(x, y)
                     self._disk_slots.append(disk_slot)
             self.children.extend(self._disk_slots)
-
-            first_slot = self._disk_slots[0]
-            last_slot = self._disk_slots[-1]
-            self._pages_on_disk_zone = (
-                first_slot.view.x,
-                first_slot.view.y,
-                last_slot.view.x + last_slot.view.width - first_slot.view.x,
-                last_slot.view.y + last_slot.view.height - first_slot.view.y,
-            )
-            self._pages_on_disk_zone_view = PagesOnDiskZoneView(self)
 
     def create_page(self, pid, idx, is_priority: bool = False):
         page = self._page_factory.create_page(pid, idx, is_priority)
