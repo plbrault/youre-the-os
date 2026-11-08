@@ -67,7 +67,7 @@ class TooltipView(Drawable):
         super().__init__()
 
     @property
-    def x(self):
+    def x(self) -> int:
         if self._alignment == TooltipAlignment.RIGHT:
             x = self._anchor_view.x + self._anchor_view.width + _MARGIN
         else:
@@ -75,7 +75,7 @@ class TooltipView(Drawable):
         return max(_MARGIN, min(x, WINDOW_WIDTH - _MARGIN - self.width))
 
     @property
-    def y(self):
+    def y(self) -> int:
         if self._alignment == TooltipAlignment.RIGHT:
             y = (
                 self._anchor_view.y + self._anchor_view.height // 2
@@ -86,7 +86,7 @@ class TooltipView(Drawable):
         return max(_MARGIN, min(y, WINDOW_HEIGHT - _MARGIN - self.height))
 
     @property
-    def width(self):
+    def width(self) -> int:
         max_line_width = max(
             (surface.get_width() for surface in self._line_surfaces),
             default=0
@@ -97,14 +97,14 @@ class TooltipView(Drawable):
         return max_line_width + 2 * _PADDING + arrow_width
 
     @property
-    def height(self):
+    def height(self) -> int:
         arrow_height = 0 if self._alignment == TooltipAlignment.RIGHT else _ARROW_PROTRUSION
         return (
             len(self._line_surfaces) * FONT_PRIMARY_XXLARGE.get_linesize()
             + 2 * _PADDING + arrow_height
         )
 
-    def draw(self, surface):
+    def draw(self, surface) -> None:
         opacity = self._tooltip.opacity
         if opacity <= 0:
             return
@@ -129,7 +129,7 @@ class TooltipView(Drawable):
             )
         surface.blit(panel, (self.x, self.y))
 
-    def _draw_arrow(self, panel, body, fill_color, border_color):
+    def _draw_arrow(self, panel, body, fill_color, border_color) -> None:
         if self._alignment == TooltipAlignment.RIGHT:
             center = body.y + _ARROW_TOP_OFFSET
             tip = (0, center)
@@ -153,7 +153,7 @@ class TooltipView(Drawable):
         pygame.draw.line(panel, border_color, tip, first_base_corner)
         pygame.draw.line(panel, border_color, tip, second_base_corner)
 
-    def _into_body(self, corner, body):
+    def _into_body(self, corner, body) -> tuple[int, int]:
         if self._alignment == TooltipAlignment.RIGHT:
             return (body.x + 2, corner[1])
         return (corner[0], body.y + 2)

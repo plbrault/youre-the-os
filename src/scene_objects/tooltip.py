@@ -23,11 +23,11 @@ class Tooltip(SceneObject):
         self.visible = False
 
     @property
-    def text(self):
+    def text(self) -> str:
         return self._text
 
     @property
-    def opacity(self):
+    def opacity(self) -> float:
         if self._fade_direction is None:
             return 0
         duration = (
