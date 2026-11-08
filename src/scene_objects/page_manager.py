@@ -190,12 +190,12 @@ class PageManager(SceneObject):
             return
 
         if cancel_whole_row:
-            slots_on_same_row = [
+            slots_on_row = [
                 slot
                 for slot in (self._ram_slots + self._disk_slots)
-                if (slot.view.y == page.view.y and slot != page)
+                if (slot.view.y == page.view.y)
             ]
-            for slot in slots_on_same_row:
+            for slot in slots_on_row:
                 if slot.has_page:
                     self.cancel_page_swap(slot.page)
         else:
