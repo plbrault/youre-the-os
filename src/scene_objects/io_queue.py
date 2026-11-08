@@ -44,7 +44,7 @@ class IoQueue(SceneObject):
         self._display_blink_color = False
 
         self._io_events_available_since = None
-        self._tooltip_was_displayed = False
+        self._tooltip_was_acknowledged = False
 
         super().__init__(IoQueueView(self))
 
@@ -69,7 +69,7 @@ class IoQueue(SceneObject):
     def should_display_tooltip(self):
         return (
             self._io_events_available_since is not None
-            and not self._tooltip_was_displayed
+            and not self._tooltip_was_acknowledged
             and self._current_time
                 >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
         )
@@ -87,7 +87,7 @@ class IoQueue(SceneObject):
             and self._current_time
                 >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
         ):
-            self._tooltip_was_displayed = True
+            self._tooltip_was_acknowledged = True
         self._io_events_available_since = None
         game_monitor.notify_io_event_count(self.io_event_count)
 

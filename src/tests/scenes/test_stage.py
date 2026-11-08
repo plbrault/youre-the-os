@@ -3,7 +3,8 @@ import pytest
 import pygame
 
 import game_monitor
-from constants import DEAD_STARVATION_LEVEL, ONE_SECOND, FRAMERATE
+from constants import (
+    DEAD_STARVATION_LEVEL, MAX_RAM_ROWS, ONE_SECOND, FRAMERATE)
 from engine.player_input import PlayerInput
 from engine.player_input_type import PlayerInputType
 from engine.game_manager import GameManager
@@ -15,6 +16,7 @@ from config.stage_config import StageConfig
 from scene_objects.game_over_dialog import GameOverDialog
 from scene_objects.hotkey_dialog import HotkeyDialog
 from scene_objects.in_game_menu_dialog import InGameMenuDialog
+from scene_objects.page_manager import PageManager
 from scene_objects.process import Process, ProcessState
 from scene_objects.tooltip import Tooltip
 from scenes.stage import Stage
@@ -807,10 +809,17 @@ class TestStage:
         ))
 
         tooltip = next(
-            child for child in stage.children if isinstance(child, Tooltip))
+            child for child in stage.children
+            if isinstance(child, Tooltip)
+                and child.text ==
+                    'Click here when it blinks to unblock processes!')
 
         assert tooltip.text == 'Click here when it blinks to unblock processes!'
-        assert stage.children[-1] is tooltip
+        assert [child.text for child in stage.children[-3:]] == [
+            'Click here when it blinks to unblock processes!',
+            'Click on pages to swap them between RAM and disk. '
+                'Blinking pages need to be in RAM!',
+            'Free room in the RAM by sending unused (grey) pages to the disk.']
 
     def test_io_events_tooltip_shows_after_30_seconds_of_blinking(
             self, stage_custom_config, monkeypatch):
@@ -846,6 +855,108 @@ class TestStage:
         stage.update(31500, [])
         assert tooltip.visible == False
         assert tooltip.opacity == 0
+
+    def test_pages_on_disk_tooltips_shown_after_10_seconds_of_blinking(
+            self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+        ))
+        page_manager = stage.page_manager
+
+        # The default config reserves 8 of the 11 rows for the RAM.
+        num_ram_pages = PageManager.get_num_cols() * 8
+        for idx in range(num_ram_pages):
+            page_manager.create_page(1, idx)
+        page = page_manager.create_page(2, 0)
+        assert page.on_disk
+        page.in_use = True
+
+        swap_pages_tooltip = next(
+            child for child in stage.children
+            if isinstance(child, Tooltip)
+                and child.text == (
+                    'Click on pages to swap them between RAM and disk. '
+                    'Blinking pages need to be in RAM!'))
+        assert swap_pages_tooltip.visible == False
+
+        stage.update(0, [])
+        stage.update(9999, [])
+        assert swap_pages_tooltip.visible == False
+
+        stage.update(10000, [])
+        assert swap_pages_tooltip.visible == True
+
+        stage.update(10125, [])
+        assert swap_pages_tooltip.opacity == 0.5
+
+        page.request_swap()
+        stage.update(10500, [])
+        assert swap_pages_tooltip.visible == True
+
+        stage.update(10800, [])
+        assert swap_pages_tooltip.visible == False
+
+    def test_free_ram_tooltip_shown_when_swap_blocked_by_full_ram(
+            self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+        ))
+        page_manager = stage.page_manager
+
+        # The default config reserves 8 of the 11 rows for the RAM.
+        num_ram_pages = PageManager.get_num_cols() * 8
+        ram_pages = [
+            page_manager.create_page(1, idx) for idx in range(num_ram_pages)]
+        page = page_manager.create_page(2, 0)
+        assert page.on_disk
+        page.request_swap()
+
+        free_ram_tooltip = next(
+            child for child in stage.children
+            if isinstance(child, Tooltip)
+                and child.text ==
+                    'Free room in the RAM by sending unused (grey) pages to the disk.')
+        assert free_ram_tooltip.visible == False
+
+        stage.update(0, [])
+        stage.update(4999, [])
+        assert free_ram_tooltip.visible == False
+
+        stage.update(5000, [])
+        assert free_ram_tooltip.visible == True
+
+        ram_pages[0].request_swap()
+        stage.update(5250, [])
+        assert free_ram_tooltip.visible == True
+
+        stage.update(5500, [])
+        assert free_ram_tooltip.visible == False
+
+    def test_pages_on_disk_tooltips_never_shown_when_no_swap_rows(
+            self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            num_ram_rows=MAX_RAM_ROWS,
+        ))
+
+        tooltips = {
+            child.text: child for child in stage.children
+            if isinstance(child, Tooltip)}
+
+        stage.update(60000, [])
+        assert 'Click here when it blinks to unblock processes!' in tooltips
+        assert tooltips[
+            'Click on pages to swap them between RAM and disk. '
+            'Blinking pages need to be in RAM!'].visible == False
+        assert tooltips[
+            'Free room in the RAM by sending unused (grey) pages '
+            'to the disk.'].visible == False
 
     def test_stage_completed_initially_false(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(

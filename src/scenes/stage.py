@@ -37,6 +37,10 @@ class StateEvent(Enum):
 
 
 _IO_EVENTS_TOOLTIP_TEXT = 'Click here when it blinks to unblock processes!'
+_SWAP_PAGES_TOOLTIP_TEXT = (
+    'Click on pages to swap them between RAM and disk. '
+    'Blinking pages need to be in RAM!')
+_FREE_RAM_TOOLTIP_TEXT = 'Free room in the RAM by sending unused (grey) pages to the disk.'
 
 
 class Stage(Scene):
@@ -88,6 +92,8 @@ class Stage(Scene):
         self._open_in_game_menu_button = None
 
         self._io_events_tooltip = None
+        self._swap_pages_tooltip = None
+        self._free_ram_tooltip = None
 
         super().__init__('stage')
 
@@ -141,6 +147,12 @@ class Stage(Scene):
                 self.screen.get_width() - self._open_in_game_menu_button.view.width - 10, 10)
             self._children.append(self._open_in_game_menu_button)
 
+        page_panel_center_x = (
+            self._process_manager.view.width
+            + self._page_manager.view.width // 2)
+        terminated_processes_label_y = self._process_manager.view_vars[
+            'terminated_processes_label_y']
+
         io_queue = self._process_manager.io_queue
         self._io_events_tooltip = Tooltip(
             io_queue.view,
@@ -149,6 +161,26 @@ class Stage(Scene):
             alignment=TooltipAlignment.RIGHT
         )
         self._children.append(self._io_events_tooltip)
+
+        self._swap_pages_tooltip = Tooltip(
+            None,
+            _SWAP_PAGES_TOOLTIP_TEXT,
+            condition=lambda: self._page_manager
+                .should_display_swap_pages_tooltip,
+            position=(page_panel_center_x, terminated_processes_label_y),
+            has_arrow=False
+        )
+        self._children.append(self._swap_pages_tooltip)
+
+        self._free_ram_tooltip = Tooltip(
+            None,
+            _FREE_RAM_TOOLTIP_TEXT,
+            condition=lambda: self._page_manager
+                .should_display_free_ram_tooltip,
+            position=(page_panel_center_x, terminated_processes_label_y),
+            has_arrow=False
+        )
+        self._children.append(self._free_ram_tooltip)
 
         self._prepare_automation_script()
 

@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Optional
 
 from engine.drawable import Drawable
 from engine.player_input import PlayerInput
@@ -10,10 +10,14 @@ _FADE_OUT_DURATION_MS = 250
 
 
 class Tooltip(SceneObject):
-    def __init__(self, anchor_view: Drawable, text: str, *,
+    def __init__(self, anchor_view: Optional[Drawable], text: str, *,
                  condition: Callable[[], bool],
-                 alignment: TooltipAlignment = TooltipAlignment.BELOW):
-        super().__init__(TooltipView(self, anchor_view, text, alignment=alignment))
+                 alignment: TooltipAlignment = TooltipAlignment.BELOW,
+                 has_arrow: bool = True,
+                 position: Optional[tuple[int, int]] = None):
+        super().__init__(TooltipView(
+            self, anchor_view, text, alignment=alignment,
+            has_arrow=has_arrow, position=position))
         self._condition = condition
         self._text = text
         self._current_time = 0

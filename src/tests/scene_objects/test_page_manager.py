@@ -1,6 +1,6 @@
 import pytest
 
-from constants import PAGES_PER_ROW
+from constants import MAX_RAM_ROWS, PAGES_PER_ROW
 from scene_objects.page import Page
 from scene_objects.page_slot import PageSlot
 from scene_objects.page_manager import PageManager
@@ -592,3 +592,222 @@ class TestPageManager:
         assert not other_disk_page.on_disk
         assert not other_disk_page.swap_requested
         assert not other_disk_page.swap_in_progress
+
+
+class TestPageManagerTooltips:
+    @pytest.fixture
+    def stage_config(self):
+        return StageConfig(
+            cpu_config = CpuConfig(num_cores=4),
+            num_ram_rows=1
+        )
+
+    @pytest.fixture
+    def stage(self, stage_custom_config, stage_config):
+        return stage_custom_config(stage_config)
+
+    @pytest.fixture
+    def page_manager(self, stage):
+        return stage.page_manager
+
+    @pytest.fixture
+    def full_ram(self, page_manager):
+        return [
+            page_manager.create_page(1, idx) for idx in range(PAGES_PER_ROW)]
+
+    def test_initial_state(self, page_manager):
+        assert page_manager.should_display_swap_pages_tooltip == False
+        assert page_manager.should_display_free_ram_tooltip == False
+
+    def test_swap_pages_tooltip_displayed_after_10_seconds_of_blinking(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        assert page.on_disk
+        page.in_use = True
+
+        page_manager.update(0, [])
+        page_manager.update(9999, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page_manager.update(10000, [])
+        assert page_manager.should_display_swap_pages_tooltip == True
+
+    def test_swap_pages_tooltip_timer_resets_when_no_blinking_page_remains(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page.in_use = True
+
+        page_manager.update(0, [])
+        page_manager.update(9000, [])
+        page.in_use = False
+        page_manager.update(9500, [])
+        page.in_use = True
+
+        page_manager.update(10000, [])
+        page_manager.update(19999, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page_manager.update(20000, [])
+        assert page_manager.should_display_swap_pages_tooltip == True
+
+    def test_swap_pages_tooltip_excludes_pages_with_requested_swap(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page_manager.delete_page(full_ram[0])
+        page.in_use = True
+
+        page_manager.update(0, [])
+        page_manager.update(9000, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page.request_swap()
+        page_manager.update(10001, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page_manager.update(20000, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+    def test_swap_pages_tooltip_suppressed_while_swap_in_is_blocked(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        blocked_page = page_manager.create_page(2, 1)
+        page.in_use = True
+        blocked_page.request_swap()
+
+        page_manager.update(0, [])
+        page_manager.update(11000, [])
+        assert page_manager.should_display_free_ram_tooltip == True
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page_manager.delete_page(full_ram[0])
+        page_manager.update(11200, [])
+        assert page_manager.should_display_free_ram_tooltip == False
+        assert page_manager.should_display_swap_pages_tooltip == True
+
+    def test_swap_pages_tooltip_acknowledged_by_swap_request_after_10_seconds(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page_manager.delete_page(full_ram[0])
+        page.in_use = True
+
+        page_manager.update(0, [])
+        page_manager.update(10000, [])
+        assert page_manager.should_display_swap_pages_tooltip == True
+
+        page.request_swap()
+
+        page_manager.update(10001, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page_manager.update(11000, [])
+        other_page = page_manager.create_page(3, 0)
+        assert other_page.on_disk
+        other_page.in_use = True
+        page_manager.update(21000, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+    def test_swap_pages_tooltip_not_acknowledged_by_early_swap_request(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page_manager.delete_page(full_ram[0])
+        page.in_use = True
+
+        page_manager.update(0, [])
+        page_manager.update(9000, [])
+        page.request_swap()
+        page_manager.update(9200, [])
+
+        other_page = page_manager.create_page(3, 0)
+        assert other_page.on_disk
+        other_page.in_use = True
+
+        page_manager.update(9500, [])
+        page_manager.update(19499, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+
+        page_manager.update(19500, [])
+        assert page_manager.should_display_swap_pages_tooltip == True
+
+    def test_free_ram_tooltip_displayed_after_5_seconds_of_blockage(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        assert page.on_disk
+        page.request_swap()
+
+        page_manager.update(0, [])
+        page_manager.update(4999, [])
+        assert page_manager.should_display_free_ram_tooltip == False
+
+        page_manager.update(5000, [])
+        assert page_manager.should_display_free_ram_tooltip == True
+
+    def test_free_ram_tooltip_timer_resets_when_ram_frees_up(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page.request_swap()
+        page_manager.update(0, [])
+        page_manager.update(4500, [])
+        page_manager.delete_page(full_ram[0])
+        page_manager.update(5000, [])
+
+        # The freed slot allows the queued swap-in to start, so there is no
+        # blockage anymore. Rebuilding it requires a new blinking disk page
+        # and a new request while the RAM is full again.
+        page_manager.update(5100, [])
+        other_page = page_manager.create_page(3, 0)
+        assert other_page.on_disk
+        other_page.request_swap()
+        page_manager.update(5200, [])
+
+        page_manager.update(10199, [])
+        assert page_manager.should_display_free_ram_tooltip == False
+
+        page_manager.update(10200, [])
+        assert page_manager.should_display_free_ram_tooltip == True
+
+    def test_free_ram_tooltip_not_displayed_when_swap_is_only_in_progress(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page_manager.delete_page(full_ram[0])
+        page.request_swap()
+
+        page_manager.update(0, [])
+        assert page.swap_in_progress
+
+        page_manager.update(5000, [])
+        assert page_manager.should_display_free_ram_tooltip == False
+
+    def test_free_ram_tooltip_acknowledged_by_swap_out_request_after_5_seconds(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page.request_swap()
+        page_manager.update(0, [])
+        page_manager.update(5000, [])
+        assert page_manager.should_display_free_ram_tooltip == True
+
+        full_ram[0].request_swap()
+
+        page_manager.update(5001, [])
+        assert page_manager.should_display_free_ram_tooltip == False
+
+    def test_free_ram_tooltip_not_acknowledged_by_early_swap_out_request(
+            self, page_manager, full_ram):
+        page = page_manager.create_page(2, 0)
+        page.request_swap()
+        page_manager.update(0, [])
+        page_manager.update(4000, [])
+        full_ram[0].request_swap()
+
+        page_manager.update(5000, [])
+        assert page_manager.should_display_free_ram_tooltip == True
+
+    def test_tooltips_never_displayed_without_disk_rows(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config = CpuConfig(num_cores=4),
+            num_ram_rows=MAX_RAM_ROWS
+        ))
+        page_manager = stage.page_manager
+
+        page_manager.update(60000, [])
+        assert page_manager.should_display_swap_pages_tooltip == False
+        assert page_manager.should_display_free_ram_tooltip == False

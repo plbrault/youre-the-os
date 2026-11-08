@@ -14,6 +14,9 @@ from scene_objects.process import Process, ProcessState, ProcessType
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
 from scene_objects.views.process_manager_view import ProcessManagerView
+from scene_objects.views.process_view import ProcessView
+from ui.color import Color
+from ui.fonts import FONT_PRIMARY_LARGE
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 _NUM_KEYS = list(map(str, range(10))) + list(map(lambda i: f'[{str(i)}]', range(10)))
@@ -59,6 +62,12 @@ class ProcessManager(SceneObject):
         self._sort_in_progress = False
         self._last_sort_time = 0
         self._current_time = 0
+
+        terminated_processes_text_height = FONT_PRIMARY_LARGE.render(
+            'User Ragequits (0 / 10) :', False, Color.WHITE).get_height()
+        self._terminated_processes_label_y = (
+            WINDOW_HEIGHT - ProcessView.height
+            - terminated_processes_text_height - 30)
 
         self._new_process_probability_numerator = int(
             self._stage_config.new_process_probability * 100)
@@ -144,6 +153,7 @@ class ProcessManager(SceneObject):
     def view_vars(self):
         return {
             'page_manager_view_width': self._stage.page_manager.view.width,
+            'terminated_processes_label_y': self._terminated_processes_label_y,
         }
 
     @property

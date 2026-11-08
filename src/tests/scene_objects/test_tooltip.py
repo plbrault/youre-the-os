@@ -296,3 +296,50 @@ class TestTooltipView:
         assert surface.get_at((view.x + 2, corner_y))[:3] == (38, 34, 11)
         assert surface.get_at((view.x + 3, corner_y))[:3] == (86, 77, 24)
         assert surface.get_at((view.x + 4, corner_y))[:3] == (98, 88, 28)
+
+    def test_arrowless_tooltip_matches_arrowed_position_and_width(
+            self, anchor_view):
+        arrowed = Tooltip(
+            anchor_view, 'Tooltip text', condition=lambda: True).view
+        arrowless = Tooltip(
+            anchor_view, 'Tooltip text', condition=lambda: True,
+            has_arrow=False).view
+
+        assert arrowless.x == arrowed.x
+        assert arrowless.y == arrowed.y
+        assert arrowless.width == arrowed.width
+        assert arrowless.height == arrowed.height - 14
+
+    def test_draw_renders_rectangular_panel_without_arrow(
+            self, surface, anchor_view):
+        tooltip = Tooltip(
+            anchor_view, 'Tooltip text', condition=lambda: True, has_arrow=False)
+        tooltip.update(0, [])
+        tooltip.update(250, [])
+        tooltip.view.draw(surface)
+        view = tooltip.view
+
+        center = view.x + view.width // 2
+        assert surface.get_at((center - 15, view.y + 5))[:3] == (180, 180, 159)
+        assert surface.get_at((center, view.y + 5))[:3] == (180, 180, 159)
+        assert surface.get_at(
+            (center, view.y + view.height - 5))[:3] == (180, 180, 159)
+
+    def test_position_centers_bubble_horizontally_at_given_point(
+            self, anchor_view):
+        view = Tooltip(
+            None, 'Tooltip text', condition=lambda: True,
+            position=(700, 500)).view
+
+        assert view.x + view.width // 2 == 700
+        assert view.y == 500
+
+    def test_position_is_mutually_exclusive_with_anchor_view(self, anchor_view):
+        with pytest.raises(ValueError):
+            Tooltip(
+                anchor_view, 'Tooltip text', condition=lambda: True,
+                position=(700, 500))
+
+        with pytest.raises(ValueError):
+            Tooltip(
+                None, 'Tooltip text', condition=lambda: True)

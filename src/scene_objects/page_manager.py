@@ -1,12 +1,15 @@
 from collections import OrderedDict
 from typing import Optional
 
-from constants import MAX_RAM_ROWS, PAGES_PER_ROW
+from constants import MAX_RAM_ROWS, PAGES_PER_ROW, ONE_SECOND
 from engine.scene_object import SceneObject
 from scene_objects.views.page_manager_view import PageManagerView
 from scene_objects.page import Page, PageMouseDragAction
 from scene_objects.page_slot import PageSlot
 from factories.page_factory import PageFactory
+
+_SWAP_PAGES_TOOLTIP_DELAY_MS = 10 * ONE_SECOND
+_FREE_RAM_TOOLTIP_DELAY_MS = 5 * ONE_SECOND
 
 class PageManager(SceneObject):
     _TOTAL_ROWS = MAX_RAM_ROWS
@@ -26,6 +29,12 @@ class PageManager(SceneObject):
         self._pages_in_ram_label_xy = (0, 0)
         self._pages_on_disk_label_xy = None
 
+        self._current_time = 0
+        self._in_use_on_disk_pages_since = None
+        self._swap_in_blockage_since = None
+        self._swap_pages_tooltip_acknowledged = False
+        self._free_ram_tooltip_acknowledged = False
+
         self._current_mouse_drag_action: Optional[PageMouseDragAction] = None
 
         super().__init__(PageManagerView(self))
@@ -36,6 +45,26 @@ class PageManager(SceneObject):
             'pages_in_ram_label_xy': self._pages_in_ram_label_xy,
             'pages_on_disk_label_xy': self._pages_on_disk_label_xy,
         }
+
+    @property
+    def should_display_swap_pages_tooltip(self):
+        return (
+            not self._has_swap_in_blockage()
+            and self._in_use_on_disk_pages_since is not None
+            and not self._swap_pages_tooltip_acknowledged
+            and self._current_time
+                >= self._in_use_on_disk_pages_since
+                    + _SWAP_PAGES_TOOLTIP_DELAY_MS
+        )
+
+    @property
+    def should_display_free_ram_tooltip(self):
+        return (
+            self._swap_in_blockage_since is not None
+            and not self._free_ram_tooltip_acknowledged
+            and self._current_time
+                >= self._swap_in_blockage_since + _FREE_RAM_TOOLTIP_DELAY_MS
+        )
 
     @classmethod
     def get_total_rows(cls):
@@ -117,6 +146,22 @@ class PageManager(SceneObject):
     def swap_page(self, page : Page, swap_whole_row : bool = False):
         if page.swap_requested:
             return
+
+        if (
+            page.on_disk
+            and self._in_use_on_disk_pages_since is not None
+            and self._current_time
+                >= self._in_use_on_disk_pages_since
+                    + _SWAP_PAGES_TOOLTIP_DELAY_MS
+        ):
+            self._swap_pages_tooltip_acknowledged = True
+        if (
+            page.in_ram
+            and self._swap_in_blockage_since is not None
+            and self._current_time
+                >= self._swap_in_blockage_since + _FREE_RAM_TOOLTIP_DELAY_MS
+        ):
+            self._free_ram_tooltip_acknowledged = True
 
         source_slots = self._disk_slots if page.on_disk else self._ram_slots
         swap_queue = self._swap_in_queue if page.on_disk else self._swap_out_queue
@@ -212,6 +257,30 @@ class PageManager(SceneObject):
                 else:
                     break
 
+    def _has_in_use_on_disk_pages(self):
+        return any(
+            page.in_use and page.on_disk and not page.swap_requested
+            for page in self._pages.values())
+
+    def _has_swap_in_blockage(self):
+        return bool(self._swap_in_queue) and all(
+            slot.has_page for slot in self._ram_slots)
+
+    def _update_tooltip_conditions(self):
+        has_in_use_on_disk_pages = self._has_in_use_on_disk_pages()
+        if has_in_use_on_disk_pages and self._in_use_on_disk_pages_since is None:
+            self._in_use_on_disk_pages_since = self._current_time
+        elif not has_in_use_on_disk_pages:
+            self._in_use_on_disk_pages_since = None
+
+        has_swap_in_blockage = self._has_swap_in_blockage()
+        if has_swap_in_blockage and self._swap_in_blockage_since is None:
+            self._swap_in_blockage_since = self._current_time
+        elif not has_swap_in_blockage:
+            self._swap_in_blockage_since = None
+
     def update(self, current_time, player_inputs):
+        self._current_time = current_time
         self._handle_swap_queues(current_time)
+        self._update_tooltip_conditions()
         super().update(current_time, player_inputs)
