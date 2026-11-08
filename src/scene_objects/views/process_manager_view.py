@@ -1,7 +1,6 @@
 from engine.drawable import Drawable
 from ui.color import Color
 from ui.fonts import FONT_PRIMARY_LARGE
-from scene_objects.views.process_view import ProcessView
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 
@@ -12,7 +11,6 @@ class ProcessManagerView(Drawable):
 
         self._idle_processes_text_surface = FONT_PRIMARY_LARGE.render(
             'Idle Processes :', False, Color.WHITE)
-        self._process_view_height = ProcessView.height
 
     @property
     def width(self):
@@ -31,6 +29,4 @@ class ProcessManagerView(Drawable):
         surface.blit(self._idle_processes_text_surface, (50, 120))
         surface.blit(terminated_processes_text_surface, (
             50,
-            WINDOW_HEIGHT - self._process_view_height -
-            terminated_processes_text_surface.get_height() - 30
-        ))
+            self._process_manager.view_vars['terminated_processes_label_y']))
