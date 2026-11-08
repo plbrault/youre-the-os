@@ -2,7 +2,7 @@ import pygame
 import pytest
 
 from engine.drawable import Drawable
-from scene_objects.tooltip import Tooltip
+from scene_objects.tooltip import Tooltip, TooltipAlignment
 from ui.color import Color
 from window_size import WINDOW_SIZE, WINDOW_WIDTH
 
@@ -192,7 +192,7 @@ class TestTooltipView:
             self, anchor_view):
         tooltip = Tooltip(
             anchor_view, 'Tooltip text',
-            condition=lambda: True, alignment='right')
+            condition=lambda: True, alignment=TooltipAlignment.RIGHT)
         view = tooltip.view
 
         assert view.x == anchor_view.x + anchor_view.width + 3
@@ -203,7 +203,7 @@ class TestTooltipView:
             anchor_view, 'Tooltip text', condition=lambda: True).view
         right = Tooltip(
             anchor_view, 'Tooltip text',
-            condition=lambda: True, alignment='right').view
+            condition=lambda: True, alignment=TooltipAlignment.RIGHT).view
 
         assert right.width == below.width + 14
 
@@ -212,7 +212,7 @@ class TestTooltipView:
             anchor_view, 'Tooltip text', condition=lambda: True).view
         right = Tooltip(
             anchor_view, 'Tooltip text',
-            condition=lambda: True, alignment='right').view
+            condition=lambda: True, alignment=TooltipAlignment.RIGHT).view
 
         assert below.height == right.height + 14
 
@@ -221,7 +221,7 @@ class TestTooltipView:
         anchor_view.set_xy(1200, 0)
         view = Tooltip(
             anchor_view, 'a' * 100,
-            condition=lambda: True, alignment='right').view
+            condition=lambda: True, alignment=TooltipAlignment.RIGHT).view
 
         assert view.x >= 3
         assert view.x + view.width <= WINDOW_WIDTH - 3
@@ -269,7 +269,7 @@ class TestTooltipView:
             self, surface, anchor_view):
         tooltip = Tooltip(
             anchor_view, 'Tooltip text',
-            condition=lambda: True, alignment='right')
+            condition=lambda: True, alignment=TooltipAlignment.RIGHT)
         tooltip.update(0, [])
         tooltip.update(250, [])
         tooltip.view.draw(surface)

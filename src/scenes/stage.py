@@ -13,7 +13,7 @@ from scene_objects.label import Label
 from scene_objects.page_manager import PageManager
 from scene_objects.process_manager import ProcessManager
 from scene_objects.score_manager import ScoreManager
-from scene_objects.tooltip import Tooltip
+from scene_objects.tooltip import Tooltip, TooltipAlignment
 from scene_objects.uptime_manager import UptimeManager
 from config.stage_config import StageConfig
 
@@ -146,7 +146,7 @@ class Stage(Scene):
             io_queue.view,
             _IO_EVENTS_TOOLTIP_TEXT,
             condition=lambda: io_queue.should_display_tooltip,
-            alignment='right'
+            alignment=TooltipAlignment.RIGHT
         )
         self._children.append(self._io_events_tooltip)
 

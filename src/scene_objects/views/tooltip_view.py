@@ -1,3 +1,5 @@
+from enum import Enum, auto
+
 import pygame
 
 from engine.drawable import Drawable
@@ -13,6 +15,11 @@ _BORDER_RADIUS = 4
 _ARROW_PROTRUSION = 14
 _ARROW_HALF_BASE = 9
 _ARROW_TOP_OFFSET = 20
+
+
+class TooltipAlignment(Enum):
+    BELOW = auto()
+    RIGHT = auto()
 
 
 def _split_long_word(word, font, max_width):
@@ -48,7 +55,8 @@ def _wrap_text(text, font, max_width):
 
 class TooltipView(Drawable):
 
-    def __init__(self, tooltip, anchor_view, text, *, alignment='below'):
+    def __init__(self, tooltip, anchor_view: Drawable, text: str, *,
+                 alignment: TooltipAlignment = TooltipAlignment.BELOW):
         self._tooltip = tooltip
         self._anchor_view = anchor_view
         self._alignment = alignment
@@ -60,7 +68,7 @@ class TooltipView(Drawable):
 
     @property
     def x(self):
-        if self._alignment == 'right':
+        if self._alignment == TooltipAlignment.RIGHT:
             x = self._anchor_view.x + self._anchor_view.width + _MARGIN
         else:
             x = self._anchor_view.x + (self._anchor_view.width - self.width) // 2
@@ -68,7 +76,7 @@ class TooltipView(Drawable):
 
     @property
     def y(self):
-        if self._alignment == 'right':
+        if self._alignment == TooltipAlignment.RIGHT:
             y = (
                 self._anchor_view.y + self._anchor_view.height // 2
                 - _ARROW_TOP_OFFSET
@@ -84,13 +92,13 @@ class TooltipView(Drawable):
             default=0
         )
         arrow_width = (
-            _ARROW_PROTRUSION if self._alignment == 'right' else 0
+            _ARROW_PROTRUSION if self._alignment == TooltipAlignment.RIGHT else 0
         )
         return max_line_width + 2 * _PADDING + arrow_width
 
     @property
     def height(self):
-        arrow_height = 0 if self._alignment == 'right' else _ARROW_PROTRUSION
+        arrow_height = 0 if self._alignment == TooltipAlignment.RIGHT else _ARROW_PROTRUSION
         return (
             len(self._line_surfaces) * FONT_PRIMARY_XXLARGE.get_linesize()
             + 2 * _PADDING + arrow_height
@@ -104,7 +112,7 @@ class TooltipView(Drawable):
         fill_color = (*Color.CREAM, alpha)
         border_color = (*Color.DARK_YELLOW, alpha)
         panel = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        if self._alignment == 'right':
+        if self._alignment == TooltipAlignment.RIGHT:
             body = pygame.Rect(
                 _ARROW_PROTRUSION, 0, self.width - _ARROW_PROTRUSION, self.height)
         else:
@@ -122,7 +130,7 @@ class TooltipView(Drawable):
         surface.blit(panel, (self.x, self.y))
 
     def _draw_arrow(self, panel, body, fill_color, border_color):
-        if self._alignment == 'right':
+        if self._alignment == TooltipAlignment.RIGHT:
             center = body.y + _ARROW_TOP_OFFSET
             tip = (0, center)
             first_base_corner = (body.x, center - _ARROW_HALF_BASE)
@@ -146,6 +154,6 @@ class TooltipView(Drawable):
         pygame.draw.line(panel, border_color, tip, second_base_corner)
 
     def _into_body(self, corner, body):
-        if self._alignment == 'right':
+        if self._alignment == TooltipAlignment.RIGHT:
             return (body.x + 2, corner[1])
         return (corner[0], body.y + 2)

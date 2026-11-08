@@ -1,13 +1,18 @@
+from typing import Callable
+
+from engine.drawable import Drawable
+from engine.player_input import PlayerInput
 from engine.scene_object import SceneObject
-from scene_objects.views.tooltip_view import TooltipView
+from scene_objects.views.tooltip_view import TooltipAlignment, TooltipView
 
 _FADE_IN_DURATION_MS = 250
 _FADE_OUT_DURATION_MS = 250
 
 
 class Tooltip(SceneObject):
-
-    def __init__(self, anchor_view, text, *, condition, alignment='below'):
+    def __init__(self, anchor_view: Drawable, text: str, *,
+                 condition: Callable[[], bool],
+                 alignment: TooltipAlignment = TooltipAlignment.BELOW):
         super().__init__(TooltipView(self, anchor_view, text, alignment=alignment))
         self._condition = condition
         self._text = text
@@ -40,7 +45,7 @@ class Tooltip(SceneObject):
             )
         return self._fade_start_opacity * (1 - progress)
 
-    def update(self, current_time, player_inputs):
+    def update(self, current_time: int, player_inputs: list[PlayerInput]):
         self._current_time = current_time
         if self._condition():
             if self._fade_direction != 1:
