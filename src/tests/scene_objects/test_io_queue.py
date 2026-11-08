@@ -217,3 +217,87 @@ class TestIoQueue:
         assert io_queue.wasted_action_count == 2
         io_queue.handle_player_action()
         assert io_queue.wasted_action_count == 3
+
+    def test_tooltip_condition_false_initially(self, io_queue):
+        io_queue.update(0, [])
+        assert io_queue.should_display_tooltip == False
+
+    def test_tooltip_condition_false_when_not_blinking(self, io_queue):
+        io_queue.update(30000, [])
+        assert io_queue.should_display_tooltip == False
+
+    def test_tooltip_condition_false_before_30_seconds_of_blinking(
+            self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+
+        io_queue.update(1000, [])
+        io_queue.update(30999, [])
+
+        assert io_queue.should_display_tooltip == False
+
+    def test_tooltip_condition_true_after_30_seconds_of_blinking(
+            self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+
+        io_queue.update(1000, [])
+        io_queue.update(31000, [])
+
+        assert io_queue.should_display_tooltip == True
+
+    def test_tooltip_condition_stays_true_while_blinking_continues(
+            self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+
+        io_queue.update(1000, [])
+        io_queue.update(31000, [])
+        io_queue.update(31033, [])
+
+        assert io_queue.should_display_tooltip == True
+
+    def test_tooltip_condition_false_after_player_action(
+            self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+
+        io_queue.update(1000, [])
+        io_queue.update(31000, [])
+        io_queue.handle_player_action()
+
+        assert io_queue.should_display_tooltip == False
+
+    def test_tooltip_condition_true_again_after_clicking_before_threshold(
+            self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(1000, [])
+        io_queue.handle_player_action()
+
+        io_queue.wait_for_io_event(1000, lambda: None, lambda: None)
+        io_queue.update(31000, [])
+        io_queue.update(61000, [])
+
+        assert io_queue.should_display_tooltip == True
+
+    def test_tooltip_condition_never_true_again_after_being_displayed_once(
+            self, io_queue, monkeypatch):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(1000, [])
+        io_queue.update(31000, [])
+        assert io_queue.should_display_tooltip == True
+        io_queue.handle_player_action()
+
+        io_queue.wait_for_io_event(31000, lambda: None, lambda: None)
+        io_queue.update(61000, [])
+        io_queue.update(91000, [])
+
+        assert io_queue.should_display_tooltip == False

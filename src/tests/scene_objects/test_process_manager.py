@@ -12,6 +12,7 @@ from scene_objects.process import Process, ProcessState, ProcessType
 from scene_objects.process_manager import ProcessManager
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
+from scene_objects.tooltip import Tooltip
 from scenes.stage import Stage
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
@@ -48,6 +49,31 @@ class TestProcessManager:
         assert isinstance(process_manager.io_queue, IoQueue)
 
         assert process_manager.user_terminated_process_count == 0
+
+    def test_io_events_tooltip_wiring(self, stage, monkeypatch):
+        process_manager = stage.process_manager
+        tooltip = next(
+            child for child in process_manager.children
+            if isinstance(child, Tooltip))
+
+        assert tooltip.text == 'Click here to unblock processes'
+        assert tooltip.visible == False
+
+        io_queue = process_manager.io_queue
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(1000, [])
+        monkeypatch.setattr(Random, 'get_number', Random.get_number)
+
+        process_manager.update(30999, [])
+        assert tooltip.visible == False
+
+        process_manager.update(31000, [])
+        assert tooltip.visible == True
+
+        io_queue.handle_player_action()
+        process_manager.update(31033, [])
+        assert tooltip.visible == False
 
     def test_initial_process_creation(self, stage, stage_config):
         process_manager = stage.process_manager
