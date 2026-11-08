@@ -17,6 +17,8 @@
 * Code in a way that is consistent with existing code.
 * Follow the rules defined by `.pylintrc`. Run the linter using the command `pipenv run pylint` to make sure that all rules are followed.
 * Your code should be self-explanatory, so do not add comments, unless a solution appears to be "hackish" or otherwise "weird". In such cases, discuss your solution with the user first.
+    * Use Python type hints to document the types of function arguments and return values.
+    * Your function arguments should use enums and dataclasses over string values and dictionaries. 
 * Docstrings are allowed if similar functions or classes in the same file also have docstrings.
 
 ## Testing
