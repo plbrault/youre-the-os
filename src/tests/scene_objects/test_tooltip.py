@@ -278,7 +278,7 @@ class TestTooltipView:
         assert surface.get_at(
             (view.x + 2, view.y + 20))[:3] == (180, 180, 159)
         assert surface.get_at(
-            (view.x + 2, view.y + view.height // 2))[:3] == Color.BLACK
+            (view.x + 2, view.y + view.height))[:3] == Color.BLACK
 
     def test_draw_antialiases_arrow_edge_and_body_corners(
             self, surface, tooltip, view):
