@@ -315,10 +315,12 @@ class Process(SceneObject):
             self._last_starvation_level_change_time = self._last_update_time
             self.apply_state_transition(StateEvent.IO_AVAILABLE)
 
-    def _on_io_event_delivered(self):
-        if self._state != ProcessState.ENDED:
-            self.apply_state_transition(StateEvent.IO_DELIVERED)
-            game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
+    def _on_io_event_delivered(self) -> bool:
+        if self._state == ProcessState.ENDED:
+            return False
+        self.apply_state_transition(StateEvent.IO_DELIVERED)
+        game_monitor.notify_process_wait_io(self.pid, self.is_waiting_for_io)
+        return True
 
     def _terminate_gracefully(self):
         if self._process_manager.terminate_process(self, False):

@@ -17,19 +17,19 @@ class TestIoQueue:
     def test_wait_for_io_event_registers_waiter(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         io_queue.update(6000, [])
         assert io_queue.io_event_count == 1
 
-        io_queue.wait_for_io_event(6000, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(6000, lambda: None, lambda: True)
         io_queue.update(11000, [])
         assert io_queue.io_event_count == 2
 
     def test_io_event_arrives_after_max_time(self, io_queue):
         arrival_callback_called = []
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
 
         io_queue.update(6000, [])
         assert io_queue.io_event_count == 1
@@ -41,7 +41,7 @@ class TestIoQueue:
         # Force random to NOT trigger the probabilistic io event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
 
         io_queue.update(4000, [])
         assert io_queue.io_event_count == 0
@@ -52,8 +52,8 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(2), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(2), lambda: True)
 
         io_queue.update(6000, [])
         assert io_queue.io_event_count == 1
@@ -68,8 +68,8 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(2), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(2), lambda: True)
 
         io_queue.update(6000, [])
         assert io_queue.io_event_count == 1
@@ -83,7 +83,7 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
 
         io_queue.update(500, [])
         assert io_queue.io_event_count == 0
@@ -94,8 +94,8 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(1))
-        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(2))
+        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(1) or True)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(2) or True)
 
         io_queue.update(6000, [])
         io_queue.update(11000, [])
@@ -122,7 +122,7 @@ class TestIoQueue:
     def test_blink_color_toggles_when_io_events_present(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         io_queue.update(6000, [])
         assert io_queue.io_event_count == 1
@@ -141,9 +141,9 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(1))
-        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(2))
-        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(3))
+        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(1) or True)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(2) or True)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: delivery_callback_called.append(3) or True)
 
         io_queue.update(6000, [])
         io_queue.update(11000, [])
@@ -157,7 +157,7 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
 
         io_queue.update(6000, [])
         assert io_queue.io_event_count == 1
@@ -173,7 +173,7 @@ class TestIoQueue:
         # Force random to always trigger the probabilistic io event
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: None)
+        io_queue.wait_for_io_event(0, lambda: arrival_callback_called.append(1), lambda: True)
 
         # Update at 2500ms - this is after min_time (1000ms) but before max_time (5000ms)
         # The probabilistic io event should fire here
@@ -189,7 +189,7 @@ class TestIoQueue:
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         game_monitor.clear_notifications()
 
@@ -203,7 +203,7 @@ class TestIoQueue:
     def test_wasted_action_count_does_not_increment_when_io_events_pending(self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
         io_queue.update(6000, [])
 
         assert io_queue.io_event_count == 1
@@ -230,7 +230,7 @@ class TestIoQueue:
             self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         io_queue.update(1000, [])
         io_queue.update(30999, [])
@@ -241,7 +241,7 @@ class TestIoQueue:
             self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         io_queue.update(1000, [])
         io_queue.update(31000, [])
@@ -252,7 +252,7 @@ class TestIoQueue:
             self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         io_queue.update(1000, [])
         io_queue.update(31000, [])
@@ -264,7 +264,7 @@ class TestIoQueue:
             self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
 
         io_queue.update(1000, [])
         io_queue.update(31000, [])
@@ -276,11 +276,11 @@ class TestIoQueue:
             self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
         io_queue.update(1000, [])
         io_queue.handle_player_action()
 
-        io_queue.wait_for_io_event(1000, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(1000, lambda: None, lambda: True)
         io_queue.update(31000, [])
         io_queue.update(61000, [])
 
@@ -290,14 +290,47 @@ class TestIoQueue:
             self, io_queue, monkeypatch):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
         io_queue.update(1000, [])
         io_queue.update(31000, [])
         assert io_queue.should_display_tooltip == True
         io_queue.handle_player_action()
 
-        io_queue.wait_for_io_event(31000, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(31000, lambda: None, lambda: True)
         io_queue.update(61000, [])
         io_queue.update(91000, [])
 
         assert io_queue.should_display_tooltip == False
+
+    def test_delivery_refusal_discards_event(self, io_queue, monkeypatch):
+        """A subscriber refusing delivery abandons its event, which is discarded."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        io_queue.wait_for_io_event(0, lambda: None, lambda: False)
+        io_queue.update(6000, [])
+        assert io_queue.io_event_count == 1
+
+        io_queue.handle_player_action()
+
+        assert io_queue.io_event_count == 0
+        assert io_queue.wasted_action_count == 0
+
+    def test_refused_delivery_does_not_block_delivery_to_other_subscribers(
+            self, io_queue, monkeypatch):
+        """Subscribers refusing delivery are skipped and later events are still delivered."""
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        deliveries = []
+        io_queue.wait_for_io_event(0, lambda: None, lambda: False)
+        io_queue.wait_for_io_event(
+            0, lambda: None, lambda: deliveries.append(1) or True)
+
+        io_queue.update(6000, [])
+        io_queue.update(11000, [])
+        assert io_queue.io_event_count == 2
+
+        io_queue.handle_player_action()
+
+        assert io_queue.io_event_count == 0
+        assert deliveries == [1]
+        assert io_queue.wasted_action_count == 0

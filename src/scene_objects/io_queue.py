@@ -1,4 +1,5 @@
 from collections import deque
+from typing import Callable
 
 import game_monitor
 from constants import ONE_SECOND
@@ -12,21 +13,23 @@ _IO_EVENT_PROBABILITY_DENOMINATOR = 3
 _IO_EVENTS_TOOLTIP_DELAY_MS = 30 * ONE_SECOND
 
 class _IoEventWaiter:
-    def __init__(self, current_time, on_arrival_callback, on_delivery_callback):
+    def __init__(self, current_time: int,
+                 on_arrival_callback: Callable[[], None],
+                 on_delivery_callback: Callable[[], bool]):
         self._waiting_since = current_time
         self._on_arrival_callback = on_arrival_callback
         self._on_delivery_callback = on_delivery_callback
 
     @property
-    def waiting_since(self):
+    def waiting_since(self) -> int:
         return self._waiting_since
 
     @property
-    def on_arrival_callback(self):
+    def on_arrival_callback(self) -> Callable[[], None]:
         return self._on_arrival_callback
 
     @property
-    def on_delivery_callback(self):
+    def on_delivery_callback(self) -> Callable[[], bool]:
         return self._on_delivery_callback
 
 class IoQueue(SceneObject):
@@ -48,10 +51,11 @@ class IoQueue(SceneObject):
 
         super().__init__(IoQueueView(self))
 
-    def wait_for_io_event(self, current_time, on_arrival_callback, on_delivery_callback):
-        self._subscriber_queue.append(
-            _IoEventWaiter(current_time, on_arrival_callback, on_delivery_callback)
-        )
+    def wait_for_io_event(self, current_time: int,
+                          on_arrival_callback: Callable[[], None],
+                          on_delivery_callback: Callable[[], bool]) -> None:
+        waiter = _IoEventWaiter(current_time, on_arrival_callback, on_delivery_callback)
+        self._subscriber_queue.append(waiter)
 
     @property
     def io_event_count(self):
@@ -74,14 +78,16 @@ class IoQueue(SceneObject):
                 >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
         )
 
-    def handle_player_action(self):
+    def handle_player_action(self) -> None:
         if self.io_event_count == 0:
             self._wasted_action_count += 1
             return
         while self.io_event_count > 0:
             self._io_event_count -= 1
             waiter = self._subscriber_queue.popleft()
-            waiter.on_delivery_callback()
+            if not waiter.on_delivery_callback():
+                # A terminated subscriber abandons its event; the event is discarded.
+                continue
         if (
             self._io_events_available_since is not None
             and self._current_time

@@ -834,7 +834,7 @@ class TestStage:
 
         io_queue = stage.process_manager.io_queue
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
         io_queue.update(1000, [])
         monkeypatch.setattr(Random, 'get_number', Random.get_number)
 

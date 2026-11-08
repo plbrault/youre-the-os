@@ -27,7 +27,7 @@ class TestIoQueueView:
         assert surface.get_at((1, 1))[:3] == Color.WHITE
 
     def test_draw_renders_queue_with_pending_io_events(self, surface, io_queue, view):
-        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: True)
         io_queue.update(6000, [])
         view.draw(surface)
 
