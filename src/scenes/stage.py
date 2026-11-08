@@ -36,7 +36,7 @@ class StateEvent(Enum):
     DELAY_ELAPSED = auto()
 
 
-_IO_EVENTS_TOOLTIP_TEXT = 'Click here to unblock processes'
+_IO_EVENTS_TOOLTIP_TEXT = 'Click here when it blinks to unblock processes!'
 
 
 class Stage(Scene):

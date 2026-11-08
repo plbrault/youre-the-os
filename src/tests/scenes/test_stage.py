@@ -809,7 +809,7 @@ class TestStage:
         tooltip = next(
             child for child in stage.children if isinstance(child, Tooltip))
 
-        assert tooltip.text == 'Click here to unblock processes'
+        assert tooltip.text == 'Click here when it blinks to unblock processes!'
         assert stage.children[-1] is tooltip
 
     def test_io_events_tooltip_shows_after_30_seconds_of_blinking(
