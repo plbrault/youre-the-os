@@ -43,7 +43,7 @@ class IoQueue(SceneObject):
 
         self._display_blink_color = False
 
-        self._blinking_since = None
+        self._io_events_available_since = None
         self._tooltip_was_displayed = False
 
         super().__init__(IoQueueView(self))
@@ -68,10 +68,10 @@ class IoQueue(SceneObject):
     @property
     def should_display_tooltip(self):
         return (
-            self._blinking_since is not None
+            self._io_events_available_since is not None
             and not self._tooltip_was_displayed
             and self._current_time
-                >= self._blinking_since + _IO_EVENTS_TOOLTIP_DELAY_MS
+                >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
         )
 
     def handle_player_action(self):
@@ -83,12 +83,12 @@ class IoQueue(SceneObject):
             waiter = self._subscriber_queue.popleft()
             waiter.on_delivery_callback()
         if (
-            self._blinking_since is not None
+            self._io_events_available_since is not None
             and self._current_time
-                >= self._blinking_since + _IO_EVENTS_TOOLTIP_DELAY_MS
+                >= self._io_events_available_since + _IO_EVENTS_TOOLTIP_DELAY_MS
         ):
             self._tooltip_was_displayed = True
-        self._blinking_since = None
+        self._io_events_available_since = None
         game_monitor.notify_io_event_count(self.io_event_count)
 
     def _check_if_clicked_on(self, player_input):
@@ -136,9 +136,9 @@ class IoQueue(SceneObject):
         else:
             self._display_blink_color = False
 
-    def _update_blinking_since(self, current_time):
-        if self._io_event_count > 0 and self._blinking_since is None:
-            self._blinking_since = current_time
+    def _update_io_events_available_since(self, current_time):
+        if self._io_event_count > 0 and self._io_events_available_since is None:
+            self._io_events_available_since = current_time
 
     def update(self, current_time, player_inputs):
         self._current_time = current_time
@@ -156,4 +156,4 @@ class IoQueue(SceneObject):
         self._handle_max_time_elapsed(current_time)
         self._handle_probabilistic_io_events(current_time)
         self._update_blink_color(current_time)
-        self._update_blinking_since(current_time)
+        self._update_io_events_available_since(current_time)
