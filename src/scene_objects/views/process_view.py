@@ -91,7 +91,11 @@ class ProcessView(Drawable):
             ))
         elif (
             self._process.starvation_level == LAST_ALIVE_STARVATION_LEVEL
-            and self._process.state != self._process.ProcessState.RUNNING
+            and self._process.state not in (
+                self._process.ProcessState.RUNNING,
+                self._process.ProcessState.BLOCKED_ON_CPU_IO_REQUESTED,
+                self._process.ProcessState.BLOCKED_OFF_CPU_IO_REQUESTED,
+            )
         ):
             progress_bar_width = (
                 self._process.time_to_termination
