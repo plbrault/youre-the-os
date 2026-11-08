@@ -819,7 +819,7 @@ class TestStage:
             'Click here when it blinks to unblock processes!',
             'Click on pages to swap them between RAM and disk. '
                 'Blinking pages need to be in RAM!',
-            'Free room in the RAM by sending unused pages to the disk.']
+            'Free room in the RAM by sending unused (grey) pages to the disk.']
 
     def test_io_events_tooltip_shows_after_30_seconds_of_blinking(
             self, stage_custom_config, monkeypatch):
@@ -919,7 +919,7 @@ class TestStage:
             child for child in stage.children
             if isinstance(child, Tooltip)
                 and child.text ==
-                    'Free room in the RAM by sending unused pages to the disk.')
+                    'Free room in the RAM by sending unused (grey) pages to the disk.')
         assert free_ram_tooltip.visible == False
 
         stage.update(0, [])
@@ -952,7 +952,7 @@ class TestStage:
             'Click on pages to swap them between RAM and disk. '
                 'Blinking pages need to be in RAM!') not in tooltip_texts
         assert (
-            'Free room in the RAM by sending unused pages to the disk.'
+            'Free room in the RAM by sending unused (grey) pages to the disk.'
         ) not in tooltip_texts
 
     def test_stage_completed_initially_false(self, stage_custom_config):
