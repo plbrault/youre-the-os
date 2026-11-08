@@ -16,6 +16,7 @@ from scene_objects.game_over_dialog import GameOverDialog
 from scene_objects.hotkey_dialog import HotkeyDialog
 from scene_objects.in_game_menu_dialog import InGameMenuDialog
 from scene_objects.process import Process, ProcessState
+from scene_objects.tooltip import Tooltip
 from scenes.stage import Stage
 from scenes.stage import StageState
 from scenes.stage import StateEvent
@@ -797,6 +798,54 @@ class TestStage:
         assert stage.process_manager is not None
         assert stage.page_manager is not None
         assert stage.uptime_manager is not None
+
+    def test_io_events_tooltip_in_front_layer(self, stage_custom_config):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+        ))
+
+        tooltip = next(
+            child for child in stage.children if isinstance(child, Tooltip))
+
+        assert tooltip.text == 'Click here to unblock processes'
+        assert stage.children[-1] is tooltip
+
+    def test_io_events_tooltip_shows_after_30_seconds_of_blinking(
+            self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+        ))
+        tooltip = next(
+            child for child in stage.children if isinstance(child, Tooltip))
+        assert tooltip.visible == False
+
+        io_queue = stage.process_manager.io_queue
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        io_queue.wait_for_io_event(0, lambda: None, lambda: None)
+        io_queue.update(1000, [])
+        monkeypatch.setattr(Random, 'get_number', Random.get_number)
+
+        stage.update(30999, [])
+        assert tooltip.visible == False
+
+        stage.update(31000, [])
+        assert tooltip.visible == True
+
+        io_queue.handle_player_action()
+
+        stage.update(31250, [])
+        assert tooltip.visible == True
+
+        stage.update(31375, [])
+        assert tooltip.opacity == 0.5
+
+        stage.update(31500, [])
+        assert tooltip.visible == False
+        assert tooltip.opacity == 0
 
     def test_stage_completed_initially_false(self, stage_custom_config):
         stage = stage_custom_config(StageConfig(

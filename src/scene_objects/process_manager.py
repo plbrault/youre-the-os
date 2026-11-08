@@ -13,7 +13,6 @@ from scene_objects.io_queue import IoQueue
 from scene_objects.process import Process, ProcessState, ProcessType
 from scene_objects.process_slot import ProcessSlot
 from scene_objects.sort_button import SortButton
-from scene_objects.tooltip import Tooltip
 from scene_objects.views.process_manager_view import ProcessManagerView
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
@@ -24,8 +23,6 @@ _NUM_PROCESS_SLOT_COLUMNS = 7
 
 _MIN_SORT_COOLDOWN_MS = 100
 _AUTO_SORT_CHECKBOX_ANIMATION_SPEED = 30
-
-_IO_EVENTS_TOOLTIP_TEXT = 'Click here to unblock processes'
 
 def _is_sorted(process_list: [Process]):
     if len(process_list) <= 1:
@@ -104,13 +101,6 @@ class ProcessManager(SceneObject):
         io_queue = self._io_queue
         io_queue.view.set_xy(50, 10)
         self.children.append(io_queue)
-
-        self.children.append(Tooltip(
-            io_queue.view,
-            _IO_EVENTS_TOOLTIP_TEXT,
-            condition=lambda: io_queue.should_display_tooltip,
-            alignment='right'
-        ))
 
         for row in range(_NUM_PROCESS_SLOT_ROWS):
             for column in range(_NUM_PROCESS_SLOT_COLUMNS):

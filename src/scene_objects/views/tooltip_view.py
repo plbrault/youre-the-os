@@ -2,16 +2,17 @@ import pygame
 
 from engine.drawable import Drawable
 from ui.color import Color
-from ui.fonts import FONT_PRIMARY_MEDIUM
+from ui.fonts import FONT_PRIMARY_XXLARGE
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 _MARGIN = 3
-_PADDING = 6
-_MAX_TEXT_WIDTH = 250
+_PADDING = 10
+_MAX_TEXT_WIDTH = 400
 _MAX_BACKGROUND_ALPHA = 180
 _BORDER_RADIUS = 4
-_ARROW_PROTRUSION = 10
-_ARROW_HALF_BASE = 6
+_ARROW_PROTRUSION = 14
+_ARROW_HALF_BASE = 9
+_ARROW_TOP_OFFSET = 20
 
 
 def _split_long_word(word, font, max_width):
@@ -52,8 +53,8 @@ class TooltipView(Drawable):
         self._anchor_view = anchor_view
         self._alignment = alignment
         self._line_surfaces = [
-            FONT_PRIMARY_MEDIUM.render(line, False, Color.BLACK)
-            for line in _wrap_text(text, FONT_PRIMARY_MEDIUM, _MAX_TEXT_WIDTH)
+            FONT_PRIMARY_XXLARGE.render(line, False, Color.BLACK)
+            for line in _wrap_text(text, FONT_PRIMARY_XXLARGE, _MAX_TEXT_WIDTH)
         ]
         super().__init__()
 
@@ -68,7 +69,10 @@ class TooltipView(Drawable):
     @property
     def y(self):
         if self._alignment == 'right':
-            y = self._anchor_view.y + (self._anchor_view.height - self.height) // 2
+            y = (
+                self._anchor_view.y + self._anchor_view.height // 2
+                - _ARROW_TOP_OFFSET
+            )
         else:
             y = self._anchor_view.y + self._anchor_view.height + _MARGIN
         return max(_MARGIN, min(y, WINDOW_HEIGHT - _MARGIN - self.height))
@@ -88,7 +92,7 @@ class TooltipView(Drawable):
     def height(self):
         arrow_height = 0 if self._alignment == 'right' else _ARROW_PROTRUSION
         return (
-            len(self._line_surfaces) * FONT_PRIMARY_MEDIUM.get_linesize()
+            len(self._line_surfaces) * FONT_PRIMARY_XXLARGE.get_linesize()
             + 2 * _PADDING + arrow_height
         )
 
@@ -109,7 +113,7 @@ class TooltipView(Drawable):
         pygame.draw.rect(panel, fill_color, body, 0, border_radius=_BORDER_RADIUS)
         pygame.draw.rect(panel, border_color, body, 1, border_radius=_BORDER_RADIUS)
         self._draw_arrow(panel, body, fill_color, border_color)
-        line_height = FONT_PRIMARY_MEDIUM.get_linesize()
+        line_height = FONT_PRIMARY_XXLARGE.get_linesize()
         for i, line_surface in enumerate(self._line_surfaces):
             panel.blit(
                 line_surface,
@@ -119,7 +123,7 @@ class TooltipView(Drawable):
 
     def _draw_arrow(self, panel, body, fill_color, border_color):
         if self._alignment == 'right':
-            center = body.centery
+            center = body.y + _ARROW_TOP_OFFSET
             tip = (0, center)
             first_base_corner = (body.x, center - _ARROW_HALF_BASE)
             second_base_corner = (body.x, center + _ARROW_HALF_BASE)

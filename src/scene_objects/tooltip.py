@@ -2,6 +2,7 @@ from engine.scene_object import SceneObject
 from scene_objects.views.tooltip_view import TooltipView
 
 _FADE_IN_DURATION_MS = 250
+_FADE_OUT_DURATION_MS = 250
 
 
 class Tooltip(SceneObject):
@@ -11,7 +12,9 @@ class Tooltip(SceneObject):
         self._condition = condition
         self._text = text
         self._current_time = 0
-        self._visible_since = None
+        self._fade_direction = None
+        self._fade_start_time = 0
+        self._fade_start_opacity = 0
         self.visible = False
 
     @property
@@ -20,20 +23,37 @@ class Tooltip(SceneObject):
 
     @property
     def opacity(self):
-        if self._visible_since is None:
+        if self._fade_direction is None:
             return 0
-        return min(
-            1,
-            (self._current_time - self._visible_since) / _FADE_IN_DURATION_MS
+        duration = (
+            _FADE_IN_DURATION_MS if self._fade_direction > 0
+            else _FADE_OUT_DURATION_MS
         )
+        progress = min(
+            1,
+            (self._current_time - self._fade_start_time) / duration
+        )
+        if self._fade_direction > 0:
+            return (
+                self._fade_start_opacity
+                + (1 - self._fade_start_opacity) * progress
+            )
+        return self._fade_start_opacity * (1 - progress)
 
     def update(self, current_time, player_inputs):
         self._current_time = current_time
         if self._condition():
-            if self._visible_since is None:
-                self._visible_since = current_time
-            self.visible = True
+            if self._fade_direction != 1:
+                self._start_fade(1, current_time)
+        elif self.opacity > 0:
+            if self._fade_direction != -1:
+                self._start_fade(-1, current_time)
         else:
-            self._visible_since = None
-            self.visible = False
+            self._fade_direction = None
+        self.visible = self._fade_direction == 1 or self.opacity > 0
         super().update(current_time, player_inputs)
+
+    def _start_fade(self, direction, current_time):
+        self._fade_start_opacity = self.opacity
+        self._fade_direction = direction
+        self._fade_start_time = current_time

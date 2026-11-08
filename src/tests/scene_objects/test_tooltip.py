@@ -63,15 +63,57 @@ class TestTooltip:
         tooltip.update(400, [])
         assert tooltip.opacity == 1
 
-    def test_hides_when_condition_becomes_false(self, condition_state, tooltip):
+    def test_fades_out_when_condition_becomes_false(self, condition_state, tooltip):
+        condition_state['should_display'] = True
+        tooltip.update(0, [])
+        tooltip.update(250, [])
+        condition_state['should_display'] = False
+
+        tooltip.update(1000, [])
+        assert tooltip.visible == True
+        assert tooltip.opacity == 1
+
+        tooltip.update(1125, [])
+        assert tooltip.visible == True
+        assert tooltip.opacity == 0.5
+
+        tooltip.update(1250, [])
+        assert tooltip.visible == False
+        assert tooltip.opacity == 0
+
+    def test_fades_out_from_partial_opacity(self, condition_state, tooltip):
         condition_state['should_display'] = True
         tooltip.update(0, [])
         condition_state['should_display'] = False
 
-        tooltip.update(1000, [])
+        tooltip.update(125, [])
+        assert tooltip.opacity == 0.5
 
+        tooltip.update(250, [])
+        assert tooltip.opacity == 0.25
+
+        tooltip.update(375, [])
         assert tooltip.visible == False
         assert tooltip.opacity == 0
+
+    def test_interrupted_fade_out_fades_back_in(self, condition_state, tooltip):
+        condition_state['should_display'] = True
+        tooltip.update(0, [])
+        tooltip.update(250, [])
+        condition_state['should_display'] = False
+        tooltip.update(1000, [])
+        tooltip.update(1125, [])
+        assert tooltip.opacity == 0.5
+        condition_state['should_display'] = True
+
+        tooltip.update(1125, [])
+        assert tooltip.opacity == 0.5
+
+        tooltip.update(1250, [])
+        assert tooltip.opacity == 0.75
+
+        tooltip.update(1375, [])
+        assert tooltip.opacity == 1
 
     def test_fades_in_again_after_being_hidden(self, condition_state, tooltip):
         condition_state['should_display'] = True
@@ -137,14 +179,16 @@ class TestTooltipView:
 
     def test_width_wraps_long_text_to_maximum(self, anchor_view):
         view = Tooltip(anchor_view, 'a' * 100, condition=lambda: True).view
-        assert view.width <= 250 + 2 * 6
+        assert view.width <= 400 + 2 * 10
 
     def test_default_alignment_positions_below_and_centered_on_anchor(
-            self, view, anchor_view):
+            self, anchor_view):
+        view = Tooltip(anchor_view, 'Tip', condition=lambda: True).view
+
         assert view.y == anchor_view.y + anchor_view.height + 3
         assert anchor_view.x + anchor_view.width // 2 == view.x + view.width // 2
 
-    def test_right_alignment_positions_beside_and_centered_on_anchor(
+    def test_right_alignment_positions_arrow_near_top_pointing_at_anchor(
             self, anchor_view):
         tooltip = Tooltip(
             anchor_view, 'Tooltip text',
@@ -152,7 +196,7 @@ class TestTooltipView:
         view = tooltip.view
 
         assert view.x == anchor_view.x + anchor_view.width + 3
-        assert view.y == anchor_view.y + (anchor_view.height - view.height) // 2
+        assert view.y == anchor_view.y + anchor_view.height // 2 - 20
 
     def test_right_alignment_arrow_extends_width(self, anchor_view):
         below = Tooltip(
@@ -161,7 +205,7 @@ class TestTooltipView:
             anchor_view, 'Tooltip text',
             condition=lambda: True, alignment='right').view
 
-        assert right.width == below.width + 10
+        assert right.width == below.width + 14
 
     def test_below_alignment_arrow_extends_height(self, anchor_view):
         below = Tooltip(
@@ -170,7 +214,7 @@ class TestTooltipView:
             anchor_view, 'Tooltip text',
             condition=lambda: True, alignment='right').view
 
-        assert below.height == right.height + 10
+        assert below.height == right.height + 14
 
     def test_position_clamped_to_screen_boundaries(self):
         anchor_view = StubAnchorView()
@@ -232,4 +276,6 @@ class TestTooltipView:
         view = tooltip.view
 
         assert surface.get_at(
-            (view.x + 2, view.y + view.height // 2))[:3] == (180, 180, 159)
+            (view.x + 2, view.y + 20))[:3] == (180, 180, 159)
+        assert surface.get_at(
+            (view.x + 2, view.y + view.height // 2))[:3] == Color.BLACK
