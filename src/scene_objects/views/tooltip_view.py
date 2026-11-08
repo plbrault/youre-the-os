@@ -4,7 +4,7 @@ import pygame
 
 from engine.drawable import Drawable
 from ui.color import Color
-from ui.fonts import FONT_PRIMARY_XXLARGE
+from ui.fonts import FONT_PRIMARY_XLARGE
 from window_size import WINDOW_WIDTH, WINDOW_HEIGHT
 
 _MARGIN = 3
@@ -63,8 +63,8 @@ class TooltipView(Drawable):
         self._anchor_view = anchor_view
         self._alignment = alignment
         self._line_surfaces = [
-            FONT_PRIMARY_XXLARGE.render(line, False, Color.BLACK)
-            for line in _wrap_text(text, FONT_PRIMARY_XXLARGE, _MAX_TEXT_WIDTH)
+            FONT_PRIMARY_XLARGE.render(line, False, Color.BLACK)
+            for line in _wrap_text(text, FONT_PRIMARY_XLARGE, _MAX_TEXT_WIDTH)
         ]
         super().__init__()
         self._bubble_sprite = self._create_bubble_sprite()
@@ -95,7 +95,7 @@ class TooltipView(Drawable):
         self._draw_arrow(panel, body, fill_color, border_color, scale)
         bubble = pygame.transform.smoothscale(
             panel, (self.width, self.height))
-        line_height = FONT_PRIMARY_XXLARGE.get_linesize()
+        line_height = FONT_PRIMARY_XLARGE.get_linesize()
         for i, line_surface in enumerate(self._line_surfaces):
             bubble.blit(
                 line_surface,
@@ -138,7 +138,7 @@ class TooltipView(Drawable):
     def height(self) -> int:
         arrow_height = 0 if self._alignment == TooltipAlignment.RIGHT else _ARROW_PROTRUSION
         return (
-            len(self._line_surfaces) * FONT_PRIMARY_XXLARGE.get_linesize()
+            len(self._line_surfaces) * FONT_PRIMARY_XLARGE.get_linesize()
             + 2 * _PADDING + arrow_height
         )
 
