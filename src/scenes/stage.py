@@ -163,7 +163,8 @@ class Stage(Scene):
                 _SWAP_PAGES_TOOLTIP_TEXT,
                 condition=lambda: self._page_manager
                     .should_display_swap_pages_tooltip,
-                alignment=TooltipAlignment.BELOW
+                alignment=TooltipAlignment.BELOW,
+                arrow=False
             )
             self._children.append(self._swap_pages_tooltip)
 
@@ -172,7 +173,8 @@ class Stage(Scene):
                 _FREE_RAM_TOOLTIP_TEXT,
                 condition=lambda: self._page_manager
                     .should_display_free_ram_tooltip,
-                alignment=TooltipAlignment.BELOW
+                alignment=TooltipAlignment.BELOW,
+                arrow=False
             )
             self._children.append(self._free_ram_tooltip)
 

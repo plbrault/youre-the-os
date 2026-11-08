@@ -58,10 +58,12 @@ def _wrap_text(text, font, max_width):
 class TooltipView(Drawable):
 
     def __init__(self, tooltip, anchor_view: Drawable, text: str, *,
-                 alignment: TooltipAlignment = TooltipAlignment.BELOW):
+                 alignment: TooltipAlignment = TooltipAlignment.BELOW,
+                 arrow: bool = True):
         self._tooltip = tooltip
         self._anchor_view = anchor_view
         self._alignment = alignment
+        self._arrow = arrow
         self._line_surfaces = [
             FONT_PRIMARY_LARGE.render(line, False, Color.BLACK)
             for line in _wrap_text(text, FONT_PRIMARY_LARGE, _MAX_TEXT_WIDTH)
@@ -75,7 +77,10 @@ class TooltipView(Drawable):
             (self.width * scale, self.height * scale), pygame.SRCALPHA)
         fill_color = (*Color.CREAM, _MAX_BACKGROUND_ALPHA)
         border_color = (*Color.DARK_YELLOW, _MAX_BACKGROUND_ALPHA)
-        if self._alignment == TooltipAlignment.RIGHT:
+        if not self._arrow:
+            body = pygame.Rect(
+                0, 0, self.width * scale, self.height * scale)
+        elif self._alignment == TooltipAlignment.RIGHT:
             body = pygame.Rect(
                 _ARROW_PROTRUSION * scale, 0,
                 (self.width - _ARROW_PROTRUSION) * scale,
@@ -92,7 +97,8 @@ class TooltipView(Drawable):
         pygame.draw.rect(
             panel, border_color, body, scale,
             border_radius=_BORDER_RADIUS * scale)
-        self._draw_arrow(panel, body, fill_color, border_color, scale)
+        if self._arrow:
+            self._draw_arrow(panel, body, fill_color, border_color, scale)
         bubble = pygame.transform.smoothscale(
             panel, (self.width, self.height))
         line_height = FONT_PRIMARY_LARGE.get_linesize()
@@ -130,13 +136,19 @@ class TooltipView(Drawable):
             default=0
         )
         arrow_width = (
-            _ARROW_PROTRUSION if self._alignment == TooltipAlignment.RIGHT else 0
+            _ARROW_PROTRUSION
+            if self._arrow and self._alignment == TooltipAlignment.RIGHT
+            else 0
         )
         return max_line_width + 2 * _PADDING + arrow_width
 
     @property
     def height(self) -> int:
-        arrow_height = 0 if self._alignment == TooltipAlignment.RIGHT else _ARROW_PROTRUSION
+        arrow_height = (
+            _ARROW_PROTRUSION
+            if self._arrow and self._alignment != TooltipAlignment.RIGHT
+            else 0
+        )
         return (
             len(self._line_surfaces) * FONT_PRIMARY_LARGE.get_linesize()
             + 2 * _PADDING + arrow_height

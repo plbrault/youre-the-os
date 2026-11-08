@@ -12,8 +12,10 @@ _FADE_OUT_DURATION_MS = 250
 class Tooltip(SceneObject):
     def __init__(self, anchor_view: Drawable, text: str, *,
                  condition: Callable[[], bool],
-                 alignment: TooltipAlignment = TooltipAlignment.BELOW):
-        super().__init__(TooltipView(self, anchor_view, text, alignment=alignment))
+                 alignment: TooltipAlignment = TooltipAlignment.BELOW,
+                 arrow: bool = True):
+        super().__init__(TooltipView(
+            self, anchor_view, text, alignment=alignment, arrow=arrow))
         self._condition = condition
         self._text = text
         self._current_time = 0
