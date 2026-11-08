@@ -28,3 +28,28 @@ class PageManagerView(Drawable):
         if self._page_manager.view_vars['pages_on_disk_label_xy'] is not None:
             surface.blit(self._pages_on_disk_space_text_surface,
                          self._page_manager.view_vars['pages_on_disk_label_xy'])
+
+
+class PagesOnDiskZoneView(Drawable):
+    def __init__(self, page_manager):
+        self._page_manager = page_manager
+        super().__init__()
+
+    @property
+    def x(self):
+        return self._page_manager.pages_on_disk_zone[0]
+
+    @property
+    def y(self):
+        return self._page_manager.pages_on_disk_zone[1]
+
+    @property
+    def width(self):
+        return self._page_manager.pages_on_disk_zone[2]
+
+    @property
+    def height(self):
+        return self._page_manager.pages_on_disk_zone[3]
+
+    def draw(self, surface):
+        pass
