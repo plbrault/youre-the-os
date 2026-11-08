@@ -16,6 +16,8 @@ _ARROW_PROTRUSION = 14
 _ARROW_HALF_BASE = 9
 _ARROW_TOP_OFFSET = 20
 
+_RENDER_SCALE = 4
+
 
 class TooltipAlignment(Enum):
     BELOW = auto()
@@ -65,6 +67,42 @@ class TooltipView(Drawable):
             for line in _wrap_text(text, FONT_PRIMARY_XXLARGE, _MAX_TEXT_WIDTH)
         ]
         super().__init__()
+        self._bubble_sprite = self._create_bubble_sprite()
+
+    def _create_bubble_sprite(self):
+        scale = _RENDER_SCALE
+        panel = pygame.Surface(
+            (self.width * scale, self.height * scale), pygame.SRCALPHA)
+        fill_color = (*Color.CREAM, _MAX_BACKGROUND_ALPHA)
+        border_color = (*Color.DARK_YELLOW, _MAX_BACKGROUND_ALPHA)
+        if self._alignment == TooltipAlignment.RIGHT:
+            body = pygame.Rect(
+                _ARROW_PROTRUSION * scale, 0,
+                (self.width - _ARROW_PROTRUSION) * scale,
+                self.height * scale
+            )
+        else:
+            body = pygame.Rect(
+                0, _ARROW_PROTRUSION * scale,
+                self.width * scale,
+                (self.height - _ARROW_PROTRUSION) * scale
+            )
+        pygame.draw.rect(
+            panel, fill_color, body, 0, border_radius=_BORDER_RADIUS * scale)
+        pygame.draw.rect(
+            panel, border_color, body, scale,
+            border_radius=_BORDER_RADIUS * scale)
+        self._draw_arrow(panel, body, fill_color, border_color, scale)
+        bubble = pygame.transform.smoothscale(
+            panel, (self.width, self.height))
+        line_height = FONT_PRIMARY_XXLARGE.get_linesize()
+        for i, line_surface in enumerate(self._line_surfaces):
+            bubble.blit(
+                line_surface,
+                (body.x // scale + _PADDING,
+                 body.y // scale + _PADDING + i * line_height)
+            )
+        return bubble
 
     @property
     def x(self) -> int:
@@ -108,52 +146,39 @@ class TooltipView(Drawable):
         opacity = self._tooltip.opacity
         if opacity <= 0:
             return
-        alpha = round(opacity * _MAX_BACKGROUND_ALPHA)
-        fill_color = (*Color.CREAM, alpha)
-        border_color = (*Color.DARK_YELLOW, alpha)
-        panel = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-        if self._alignment == TooltipAlignment.RIGHT:
-            body = pygame.Rect(
-                _ARROW_PROTRUSION, 0, self.width - _ARROW_PROTRUSION, self.height)
-        else:
-            body = pygame.Rect(
-                0, _ARROW_PROTRUSION, self.width, self.height - _ARROW_PROTRUSION)
-        pygame.draw.rect(panel, fill_color, body, 0, border_radius=_BORDER_RADIUS)
-        pygame.draw.rect(panel, border_color, body, 1, border_radius=_BORDER_RADIUS)
-        self._draw_arrow(panel, body, fill_color, border_color)
-        line_height = FONT_PRIMARY_XXLARGE.get_linesize()
-        for i, line_surface in enumerate(self._line_surfaces):
-            panel.blit(
-                line_surface,
-                (body.x + _PADDING, body.y + _PADDING + i * line_height)
-            )
-        surface.blit(panel, (self.x, self.y))
+        self._bubble_sprite.set_alpha(round(opacity * 255))
+        surface.blit(self._bubble_sprite, (self.x, self.y))
 
-    def _draw_arrow(self, panel, body, fill_color, border_color) -> None:
+    def _draw_arrow(
+            self, panel, body, fill_color, border_color, scale) -> None:
         if self._alignment == TooltipAlignment.RIGHT:
-            center = body.y + _ARROW_TOP_OFFSET
+            center = body.y + _ARROW_TOP_OFFSET * scale
             tip = (0, center)
-            first_base_corner = (body.x, center - _ARROW_HALF_BASE)
-            second_base_corner = (body.x, center + _ARROW_HALF_BASE)
+            first_base_corner = (body.x, center - _ARROW_HALF_BASE * scale)
+            second_base_corner = (body.x, center + _ARROW_HALF_BASE * scale)
             mouth = pygame.Rect(
-                body.x, center - _ARROW_HALF_BASE, 3, 2 * _ARROW_HALF_BASE)
+                body.x, center - _ARROW_HALF_BASE * scale,
+                3 * scale, 2 * _ARROW_HALF_BASE * scale)
         else:
             center = body.centerx
             tip = (center, 0)
-            first_base_corner = (center - _ARROW_HALF_BASE, body.y)
-            second_base_corner = (center + _ARROW_HALF_BASE, body.y)
+            first_base_corner = (
+                center - _ARROW_HALF_BASE * scale, body.y)
+            second_base_corner = (
+                center + _ARROW_HALF_BASE * scale, body.y)
             mouth = pygame.Rect(
-                center - _ARROW_HALF_BASE, body.y, 2 * _ARROW_HALF_BASE, 3)
+                center - _ARROW_HALF_BASE * scale, body.y,
+                2 * _ARROW_HALF_BASE * scale, 3 * scale)
         pygame.draw.polygon(panel, fill_color, [
             tip,
-            self._into_body(first_base_corner, body),
-            self._into_body(second_base_corner, body),
+            self._into_body(first_base_corner, body, scale),
+            self._into_body(second_base_corner, body, scale),
         ])
         pygame.draw.rect(panel, fill_color, mouth)
-        pygame.draw.line(panel, border_color, tip, first_base_corner)
-        pygame.draw.line(panel, border_color, tip, second_base_corner)
+        pygame.draw.line(panel, border_color, tip, first_base_corner, scale)
+        pygame.draw.line(panel, border_color, tip, second_base_corner, scale)
 
-    def _into_body(self, corner, body) -> tuple[int, int]:
+    def _into_body(self, corner, body, scale) -> tuple[int, int]:
         if self._alignment == TooltipAlignment.RIGHT:
-            return (body.x + 2, corner[1])
-        return (corner[0], body.y + 2)
+            return (body.x + 2 * scale, corner[1])
+        return (corner[0], body.y + 2 * scale)
