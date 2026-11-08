@@ -1,15 +1,23 @@
 
 name: pygbag_build
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
 
 
 jobs:
   build-pygbag:
     name: Build for Emscripten pygbag runtime
     runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      !github.event.release.prerelease
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.release.tag_name }}
     - uses: actions/setup-python@v5
       with:
         python-version: "3.14"
