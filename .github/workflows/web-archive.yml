@@ -1,0 +1,34 @@
+name: web_archive
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build-web-archive:
+    name: Attach web.zip archive to release
+    runs-on: ubuntu-latest
+    concurrency:
+      group: web-archive
+      cancel-in-progress: false
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.release.tag_name }}
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.14"
+    - name: Install dependencies
+      run: |
+        pip install pipenv==2026.10.5
+        pipenv sync --dev
+    - name: Build archive
+      run: pipenv run web archive
+    - name: Attach archive to release
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.release.tag_name }}
+        files: src/build/web.zip
