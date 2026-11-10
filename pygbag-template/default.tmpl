@@ -176,18 +176,23 @@ config = {
     <link rel="icon" type="image/png" href="favicon.png" sizes="16x16">
 
     <style>
-        #status {
+        #transfer {
+            position: fixed;
+
+            /* pygbag-template: center the transfer box in the viewport (default.tmpl
+               leaves it in page flow at the top) */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #loadmsg {
             display: inline-block;
             vertical-align: top;
             margin-top: 20px;
             margin-left: 30px;
             font-weight: bold;
             color: rgb(120, 120, 120);
-        }
-
-        #progress {
-            height: 20px;
-            width: 300px;
         }
 
         #infobox {
@@ -199,8 +204,8 @@ config = {
             top: 50%;
             transform: translate(-50%, -50%);
 
-            background: green;
-            color: blue;
+            color: #fff;
+            background: none;
             font-weight: bold;
             padding: 12px 24px;
  /*           display: none; */
@@ -285,10 +290,7 @@ config = {
 
     <div id="transfer" align=center>
 <!--        <div class="spinner" id='spinner'></div> -->
-        <div class="emscripten" id="status">Downloading...</div>
-        <div class="emscripten">
-            <progress value="0" max="100" id="progress"></progress>
-        </div>
+        <div class="emscripten" id="loadmsg">Loading...</div>
     </div>
 
 
