@@ -162,21 +162,6 @@ config = {
     fb_height : "{{cookiecutter.height}}"
 }
 
-function show_infobox() {
-    infobox.style.display = "block";
-
-    // Measure box
-    const w = infobox.offsetWidth;
-    const h = infobox.offsetHeight;
-
-    // Center in viewport
-    const left = (window.innerWidth - w) / 2;
-    const top = (window.innerHeight - h) / 2;
-
-    infobox.style.left = left + "px";
-    infobox.style.top = top + "px";
-}
-
 </script>
 
     <title>{{cookiecutter.title}}</title>
@@ -206,7 +191,14 @@ function show_infobox() {
         }
 
         #infobox {
-            position: fixed; /* center relative to viewport */
+            position: fixed;
+
+            /* pygbag-template: CSS centering replaces default.tmpl's JS measurement,
+               which ran too late and showed the box at the top-left on first paint */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+
             background: green;
             color: blue;
             font-weight: bold;
@@ -390,8 +382,6 @@ frameborder="1"
         transfer.hidden = debug_hidden
         info.hidden = debug_hidden
         box.hidden =  debug_hidden
-
-        show_infobox()
     }
 
     function custom_prerun(){
