@@ -10,7 +10,7 @@ pygame-ce = "*"
 pylint = "*"
 autopep8 = "*"
 pytest = "*"
-pygbag = "*"
+pygbag = "==0.9.3"
 
 [requires]
 python_version = "3.14"
