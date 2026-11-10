@@ -1,4 +1,6 @@
 import asyncio
+import platform
+import sys
 from typing import Union
 
 import pygame
@@ -50,6 +52,10 @@ class GameManager():
         if self.window_config is None:
             raise ValueError('Property `window_config` needs to be set.')
         self._screen = pygame.display.set_mode(self.window_config.size)
+        if sys.platform == 'emscripten':
+            # pygbag computes the canvas display size before pygame resizes the
+            # canvas, distorting the aspect ratio. Ask it to size it again.
+            platform.window.window_resize()
         icon = pygame.image.load(self.window_config.icon_path)
         pygame.display.set_caption(self.window_config.title)
         pygame.display.set_icon(icon)
