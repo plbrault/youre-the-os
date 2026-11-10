@@ -1,11 +1,11 @@
-<html lang="en-us"><script src="https://pygame-web.github.io/archives/0.9/pythons.js" type=module id=site data-LINES=57 data-CONSOLE=25 data-python=python3.12 data-os=vtx,fs,snd,gui async defer>#<!--
+<html lang="en-us"><script src="https://plbrault.github.io/youre-the-os-pygbag-cdn/0.9.3/pythons.js" type=module id="site" data-python="python3.12" data-LINES=42 data-COLUMNS=132 data-os="vtx,snd,gui" async defer>#<!--
 
 print("""
 Loading You're the OS! from src.apk
-    Pygbag Version : 0.9.2
-    Template Version : 0.9.0
+    Pygbag Version : 0.9.3
+    Template Version : 0.9.3
     Python  : 3.12
-    CDN URL : https://pygame-web.github.io/archives/0.9/
+    CDN URL : https://plbrault.github.io/youre-the-os-pygbag-cdn/0.9.3/
     Screen  : 1280x720
     Title   : You're the OS!
     Folder  : src
@@ -14,77 +14,20 @@ Loading You're the OS! from src.apk
 
 """)
 
-
-# screen pixels (real, hardware)
-WIDTH=1024  # 1280
-HEIGHT=600  # 720
-
-# reference/idealized screen pixels
-REFX = 1980
-REFY = 1080
-
-def u(real, ref, v):
-    if abs(v)<0.9999999:
-        result = int( (float(real)/100.0) * (v*1000))
-        if v<0:
-            return real-result
-        return result
-    return int( (real/ref) * v )
-
-def ux(*argv):
-    global WIDTH, REFX
-    acc = 0
-    for v in argv:
-        acc += u(WIDTH, REFX, v)
-    return acc
-
-def uy(*argv):
-    global HEIGHT, REFY
-    acc = 0
-    for v in argv:
-        acc += u(HEIGHT, REFY, v)
-    return acc
-
-
-
+import sys
+import asyncio
+import platform
+import json
+from pathlib import Path
 
 # do not rename
 async def custom_site():
-
-    import sys
-    import asyncio
-    import platform
-    import json
-    from pathlib import Path
-
-
-
     import embed
-
-
-    platform.document.body.style.background = "#7f7f7f"
-
-    import pygame
-
-    def compose():
-        pygame.display.update()
-        window.chromakey(None, *screen.get_colorkey(), 40)
-
-    pygame.init()
-    pygame.font.init()
-
-    screen = pygame.display.set_mode([ux(.100),uy(.100)], pygame.SRCALPHA, 32)
-    screen.set_colorkey( (0,0,0,0), pygame.RLEACCEL )
-    screen.fill( (0,0,0,0) )
-
-    compose()
+    platform.document.body.style.background = "#000"
 
     platform.window.transfer.hidden = true
     platform.window.canvas.style.visibility = "visible"
 
-
-
-    apk = "src.apk"
 
     bundle = "src"
 
@@ -93,101 +36,69 @@ async def custom_site():
     appdir.mkdir()
 
 
-    # mount apk
+    # unpack filesystem from compressed archive into work dir
+    if platform.window.location.host.find('.itch.zone')>0:
+        import zipfile
+        async with platform.fopen("src.apk", "rb") as archive:
+            with zipfile.ZipFile(archive) as zip_ref:
+                zip_ref.extractall(appdir.as_posix())
+    else:
+        import tarfile
+        async with platform.fopen("src.tar.gz", "rb") as archive:
+            tar = tarfile.open(fileobj=archive, mode="r:gz")
+            tar.extractall(path=appdir.as_posix(), filter='tar')
+            tar.close()
 
-    cfg = {
-        "io": "url",
-        "type":"mount",
-        "mount" : {
-            "point" : appdir.as_posix(),
-            "path" : "/",
-        },
-        "path" : f"/ => {appdir.as_posix()}",
-    }
-
-
-    track = platform.window.MM.prepare(apk, json.dumps(cfg))
-
-    marginx = ux(.020) # 20%
-    marginy = uy(.045) # 45%
-
-
-    def pg_bar(pos):
-        nonlocal marginx, marginy
-        # resolution of progress bar, recalculate since it may not be know yet.
-        total = track.len or 10  # avoid div0
-        slot = ux(.060)/ total # 60%
-
-        pygame.draw.rect(screen,(10,10,10),( marginx-ux(10), marginy-uy(10), (total*slot)+ux(20), uy(110) ) )
-        pygame.draw.rect(screen,(0,255,0), ( marginx, marginy, track.pos*slot, uy(90)) )
-
-    # wait until zip mount + overlayfs is complete
-    while not track.ready:
-        pg_bar(track.pos)
-        compose()
-        await asyncio.sleep(.1)
-
-    # fill it up in case it was cached and instant download
-    pg_bar(track.len)
-    compose()
-
-
-    # preloader will change dir and prepend it to sys.path
+    # preloader will change to work dir and prepend it to sys.path
     platform.run_main(PyConfig, loaderhome= appdir / "assets", loadermain=None)
 
 
-    # wait preloading complete
-    # that includes images and wasm compilation of bundled modules
+    # wait preloading complete : that includes images and wasm compilation of bundled modules
     while embed.counter()<0:
         await asyncio.sleep(.1)
 
     main = appdir / "assets" / "main.py"
 
-    # start async top level machinery and add a console.
-    await TopLevel_async_handler.start_toplevel(platform.shell, console=window.python.config.debug)
+    # TODO: test for window.webkitAudioContext and block aio loop until gesture if accessing media manager play
+    # before a gesture is recorded ( touch or click )
 
-    # now that apk is mounted we have access to font cache
-    # but we need to fill __file__ that is not yet set
-    __import__(__name__).__file__ = str(main)
-
-
-    # now make a prompt
-    fnt = pygame.sysfont.SysFont("freesans",  uy(80) )
-
-    def ui_callback(pkg, error=None):
-        nonlocal fnt
-        if error:
-            prompt = fnt.render(f"{error}", True, "black")
-        else:
-            prompt = fnt.render(f"Setting [{pkg}] up", True, "black")
-        pg_bar(track.len)
-        screen.blit(prompt, ( marginx+ ux(80), marginy - uy(10) ) )
-        compose()
-
-    # test/wait if user media interaction required
+    # test/wait user media interaction
     if not platform.window.MM.UME:
 
+        # now that apk is mounted we have access to font cache
+        # but we need to fill __file__ that is not yet set
+        __import__(__name__).__file__ = main
+
         # now make a prompt
-        fnt = pygame.sysfont.SysFont("freesans",  uy(80) )
-        prompt = fnt.render("Ready to start !", True, "blue")
-        pg_bar(track.len)
-        screen.blit(prompt, ( marginx+ ux(80), marginy - uy(10) ) )
-        compose()
-        print("""
-        * Waiting for media user engagement : please click/touch page *
-    """)
+        msg  = "Ready to start ! Please click/touch page"
+        platform.window.infobox.innerText = msg
+        print("\n"*4, f"    * Waiting for media user engagement. {msg} *" , "\n"*4)
+
         while not platform.window.MM.UME:
             await asyncio.sleep(.1)
 
-    # cleanup
-    screen.fill( (0,0,0,0) )
-    pygame.display.flip()
+    # start async top level machinery if not started and add a console in any case if requested.
+    await TopLevel_async_handler.start_toplevel(platform.shell, console=window.python.config.debug)
 
-    await shell.runpy(main, callback=ui_callback)
+    # now that apk is mounted we have access to font cache
+    # but we need to fill __file__/__name__ that are not yet set
+    __import__(__name__).__file__ = main
 
 
+    def ui_callback(pkg):
+        platform.window.infobox.innerText = f"installing {pkg}"
 
-import asyncio
+    await shell.source(main, callback=ui_callback)
+
+    # if you don't reach that step
+    # your main.py has an infinite sync loop somewhere !
+
+    platform.window.infobox.style.display = "none"
+    platform.window.config.gui_divider = 1
+    platform.window.window_resize()
+    print("default.tmpl: done")
+
+    shell.interactive()
 
 asyncio.run( custom_site() )
 
@@ -230,6 +141,7 @@ asyncio.run( custom_site() )
 
 
 
+// pygbag-template: derived from pygbag 0.9.3 default.tmpl; re-port when bumping pygbag.
 // this dict is available under PyConfig.config from __main__
 
 config = {
@@ -237,13 +149,17 @@ config = {
     _sdl2 : "canvas",
     user_canvas : 0,
     user_canvas_managed : 0,
+    gui_divider : 2,
     ume_block : 0,
     can_close : 0,
     archive : "src",
-    gui_debug : 3,
-    cdn : "https://pygame-web.github.io/archives/0.9/",
+    gui_debug : 2,
+    cdn : "https://plbrault.github.io/youre-the-os-pygbag-cdn/0.9.3/",
     autorun : 0,
-    PYBUILD : "3.12"
+    PYBUILD : "3.12",
+    fb_ar   :  1.77,
+    fb_width : "1280",
+    fb_height : "720"
 }
 
 </script>
@@ -256,29 +172,32 @@ config = {
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes"/>
 
-    <link rel="prefetch" href="https://pygame-web.github.io/archives/0.9/pythonrc.py">
-    <link rel="prefetch" href="https://pygame-web.github.io/archives/0.9/vt/xterm.js">
-    <link rel="prefetch" href="https://pygame-web.github.io/archives/0.9/vt/xterm-addon-image.js">
-    <link rel="prefetch" href="https://pygame-web.github.io/archives/0.9/vt/xterm-addon-image.js">
-
 
     <link rel="icon" type="image/png" href="favicon.png" sizes="16x16">
 
     <style>
-        #status {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 20px;
-            margin-left: 30px;
+        #transfer {
+            /* pygbag-template: hidden entirely; the infobox already displays the
+               loading message, and this box duplicated it at the same spot */
+            display: none;
+        }
+
+        #infobox {
+            position: fixed;
+
+            /* pygbag-template: CSS centering replaces default.tmpl's JS measurement,
+               which ran too late and showed the box at the top-left on first paint */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+
+            color: #fff;
+            background: none;
             font-weight: bold;
-            color: rgb(120, 120, 120);
+            padding: 12px 24px;
+ /*           display: none; */
+            z-index: 999999;
         }
-
-        #progress {
-            height: 20px;
-            width: 300px;
-        }
-
         div.emscripten { text-align: center; }
         div.emscripten_border { border: 1px solid black; }
         div.thick_border { border: 4px solid black; }
@@ -306,7 +225,7 @@ config = {
             font-family: arial;
             margin: 0;
             padding: none;
-            background-color:powderblue;
+            background-color:#000;
         }
 
         .topright{
@@ -328,20 +247,27 @@ config = {
         }
 
         .trinfo{
-           position:relative;
-           right:0px;
+           position: relative;
+           right: 0px;
            border: 1px solid black;
         }
 
         .framed{
-           position:relative;
-           top:150px;
-           right:10px;
+           position: relative;
+           top: 150px;
+           right: 10px;
            border: 1px solid black;
         }
     </style>
 
-    <script src="https://pygame-web.github.io/archives/0.9//browserfs.min.js"></script>
+    <script>
+/*
+        if (navigator.serviceWorker)
+            navigator.serviceWorker.register("https://plbrault.github.io/youre-the-os-pygbag-cdn/0.9.3/pygbag0.9.3.js")
+        else
+            console.warn("Service workers not supported")
+*/
+    </script>
 
 </head>
 
@@ -349,18 +275,26 @@ config = {
 
     <div id="transfer" align=center>
 <!--        <div class="spinner" id='spinner'></div> -->
-        <div class="emscripten" id="status">Downloading...</div>
-        <div class="emscripten">
-            <progress value="0" max="100" id="progress"></progress>
-        </div>
+        <div class="emscripten" id="loadmsg">Loading...</div>
     </div>
 
 
+
+
+<!-- pygbag-template: sized to the game window instead of the 1x1 placeholder used by default.tmpl -->
     <canvas class="emscripten" id="canvas"
-width="1px"
-height="1px"
+width="1280px"
+height="720px"
     oncontextmenu="event.preventDefault()" tabindex=1>
     </canvas>
+
+    <canvas class="emscripten" id="canvas3d"
+width="1280px"
+height="720px"
+    oncontextmenu="event.preventDefault()" tabindex=1 hidden>
+    </canvas>
+
+    <div id="infobox">Loading, please wait ...</div>
 
     <div id=html></div>
 
@@ -402,7 +336,7 @@ frameborder="1"
                 mozallowfullscreen="true"
                 sandbox="allow-same-origin allow-top-navigation allow-scripts allow-pointer-lock"
                 allow="autoplay; fullscreen *; geolocation; microphone; camera; midi; monetization; xr-spatial-tracking; gamepad; gyroscope; accelerometer; xr; cross-origin-isolated"
-                src="https://pygame-web.github.io/archives/0.9/empty.html"
+                src="https://plbrault.github.io/youre-the-os-pygbag-cdn/0.9.3/empty.html"
                 scrolling="yes">
             </iframe>
         </div>
@@ -421,6 +355,10 @@ frameborder="1"
 
     <script type="application/javascript">
 
+    globalThis.__canvas_resized = (self, ecw, ech) => {
+        console.warn("TODO: panda3d canvas monitor", self, ecw, ech)
+    }
+
     async function custom_onload(debug_hidden) {
         // this is called before anything python is loaded
         // make your js customization here
@@ -431,7 +369,6 @@ frameborder="1"
         transfer.hidden = debug_hidden
         info.hidden = debug_hidden
         box.hidden =  debug_hidden
-
     }
 
     function custom_prerun(){
@@ -443,14 +380,6 @@ frameborder="1"
     function custom_postrun(){
         // python main and no VFS filesystem yet.
         console.log(__FILE__, "custom_postrun")
-
-        // prevent ff horizontal scroll
-        window.addEventListener("keydown", function(e) {
-            if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
-                if (!python.config.debug)
-                    e.preventDefault();
-            }
-        }, false);
 
     }
 
