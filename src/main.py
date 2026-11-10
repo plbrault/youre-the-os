@@ -1,6 +1,9 @@
 import asyncio
 from os import path
 
+# pygbag requires a top-level import of pygame
+import pygame # pylint: disable=unused-import
+
 from engine.game_manager import GameManager
 from engine.window_config import WindowConfig
 from game_info import TITLE
