@@ -18,6 +18,7 @@ command = [
     '--app_name', 'youre_the_os',
     '--ume_block', '0',
     '--title', "You're the OS!",
+    '--template', 'pygbag-template/default.tmpl',
 ]
 
 if mode == BUILD:
