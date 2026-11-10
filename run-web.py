@@ -16,7 +16,7 @@ if len(sys.argv) > 1:
         mode = ARCHIVE
 
 
-def cdn_url() -> str:
+def get_pygbag_cdn_url() -> str:
     pipfile = Path(__file__).parent / 'Pipfile'
     with open(pipfile, 'rb') as file:
         packages = tomllib.load(file)['dev-packages']
@@ -35,7 +35,7 @@ command = [
     '--ume_block', '0',
     '--title', "You're the OS!",
     '--template', 'pygbag-template/default.tmpl',
-    '--cdn', cdn_url(),
+    '--cdn', get_pygbag_cdn_url(),
 ]
 
 if mode == BUILD:
