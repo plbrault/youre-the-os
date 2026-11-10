@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-web-archive:
-    name: Attach web.zip archive to release
+    name: Attach versioned web archive to release
     runs-on: ubuntu-latest
     concurrency:
       group: web-archive
@@ -26,9 +26,12 @@ jobs:
         pipenv sync --dev
     - name: Build archive
       run: pipenv run web archive
+    - name: Rename archive
+      if: github.event_name == 'release'
+      run: mv src/build/web.zip "src/build/youre-the-os-${{ github.event.release.tag_name }}-web.zip"
     - name: Attach archive to release
       if: github.event_name == 'release'
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.event.release.tag_name }}
-        files: src/build/web.zip
+        files: src/build/youre-the-os-${{ github.event.release.tag_name }}-web.zip
