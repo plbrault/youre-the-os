@@ -177,22 +177,9 @@ config = {
 
     <style>
         #transfer {
-            position: fixed;
-
-            /* pygbag-template: center the transfer box in the viewport (default.tmpl
-               leaves it in page flow at the top) */
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        #loadmsg {
-            display: inline-block;
-            vertical-align: top;
-            margin-top: 20px;
-            margin-left: 30px;
-            font-weight: bold;
-            color: rgb(120, 120, 120);
+            /* pygbag-template: hidden entirely; the infobox already displays the
+               loading message, and this box duplicated it at the same spot */
+            display: none;
         }
 
         #infobox {
