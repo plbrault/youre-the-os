@@ -19,6 +19,7 @@ command = [
     '--ume_block', '0',
     '--title', "You're the OS!",
     '--template', 'pygbag-template/default.tmpl',
+    '--cdn', 'https://plbrault.github.io/youre-the-os-pygbag-cdn/0.9.3/',
 ]
 
 if mode == BUILD:
