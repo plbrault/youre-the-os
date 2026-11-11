@@ -62,14 +62,14 @@ class CustomSettingsDialog(Modal):
             int(default_config.new_process_probability * 100)) + ' %'
         self.children.append(self.new_process_probability_selector)
 
-        self.priority_process_probability_selector = OptionSelector(
+        self.high_priority_process_probability_selector = OptionSelector(
             ['0 %', '1 %', '2 %']
             +
             [str(i) + ' %' for i in range(5, 105, 5)]
         )
-        self.priority_process_probability_selector.selected_option = str(
-            int(default_config.priority_process_probability * 100)) + ' %'
-        self.children.append(self.priority_process_probability_selector)
+        self.high_priority_process_probability_selector.selected_option = str(
+            int(default_config.high_priority_process_probability * 100)) + ' %'
+        self.children.append(self.high_priority_process_probability_selector)
 
         self.io_probability_selector = OptionSelector(
             ['0 %', '1 %']
@@ -97,7 +97,7 @@ class CustomSettingsDialog(Modal):
         self.swap_delay_selector.view.min_width = selector_width
         self.parallel_swap_selector.view.min_width = selector_width
         self.io_probability_selector.view.min_width = selector_width
-        self.priority_process_probability_selector.view.min_width = selector_width
+        self.high_priority_process_probability_selector.view.min_width = selector_width
         self.graceful_termination_selector.view.min_width = selector_width
 
         self.start_button = Button('Start', start_fn)
@@ -118,10 +118,10 @@ class CustomSettingsDialog(Modal):
             new_process_probability = (
                 self.new_process_probability_selector.selected_option_id * 0.05
             ),
-            priority_process_probability = (
+            high_priority_process_probability = (
                 [0, 0.01, 0.02]
                 + [i / 100 for i in range(5, 105, 5)]
-            )[self.priority_process_probability_selector.selected_option_id],
+            )[self.high_priority_process_probability_selector.selected_option_id],
             io_probability = (
                 [0, 0.01]
                 + [i / 100 for i in range(5, 105, 5)]
@@ -132,7 +132,7 @@ class CustomSettingsDialog(Modal):
             config = replace(
                 config,
                 graceful_termination_probability = 0,
-                priority_process_graceful_termination_probability = 0
+                high_priority_process_graceful_termination_probability = 0
             )
 
         return config

@@ -7,7 +7,7 @@ _CROWN_ICON_SIZE = 12
 _icon = pygame.image.load(path.join('assets', 'crown_emoji.png'))
 _crown = pygame.transform.scale(_icon, (_CROWN_ICON_SIZE, _CROWN_ICON_SIZE))
 
-class PriorityPageView(PageView):
+class HighPriorityPageView(PageView):
     def draw(self, surface):
         super().draw(surface)
         surface.blit(

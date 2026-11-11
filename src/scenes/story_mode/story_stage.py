@@ -50,25 +50,25 @@ class TimeVictoryCondition(VictoryCondition):
 
 class MaxTerminatedProcessVictoryCondition(VictoryCondition):
     ragequit_defeat_reason = 'Too many user ragequits.'
-    priority_intro_item = 'Do not let the user kill a priority process'
+    high_priority_intro_item = 'Do not let the user kill a high-priority process'
 
     def __init__(self, max_terminated_process: int,
-                 max_terminated_priority_process: int | float = float('inf')):
+                 max_terminated_high_priority_process: int | float = float('inf')):
         self.max_terminated_process = max_terminated_process
-        self.max_terminated_priority_process = max_terminated_priority_process
+        self.max_terminated_high_priority_process = max_terminated_high_priority_process
 
     @property
-    def priority_defeat_reason(self) -> str:
-        if self.max_terminated_priority_process == 0:
-            return 'The user killed a priority process.'
-        return 'The user killed too many priority processes.'
+    def high_priority_defeat_reason(self) -> str:
+        if self.max_terminated_high_priority_process == 0:
+            return 'The user killed a high-priority process.'
+        return 'The user killed too many high-priority processes.'
 
     def check_defeat(self, stage) -> str | None:
         terminated_processes = stage.process_manager.user_terminated_processes
-        priority_count = sum(1 for process in terminated_processes
-                             if process.type == ProcessType.PRIORITY)
-        if priority_count > self.max_terminated_priority_process:
-            return self.priority_defeat_reason
+        high_priority_count = sum(1 for process in terminated_processes
+                             if process.type == ProcessType.HIGH_PRIORITY)
+        if high_priority_count > self.max_terminated_high_priority_process:
+            return self.high_priority_defeat_reason
         if (
             stage.process_manager.user_terminated_process_count
             >= self.max_terminated_process
@@ -79,18 +79,18 @@ class MaxTerminatedProcessVictoryCondition(VictoryCondition):
     @property
     def intro_items(self) -> tuple[str, ...]:
         items = [f'less than {self.max_terminated_process} user ragequits']
-        if self.max_terminated_priority_process == 0:
-            items.append(self.priority_intro_item)
+        if self.max_terminated_high_priority_process == 0:
+            items.append(self.high_priority_intro_item)
         return tuple(items)
 
     @property
     def badges(self) -> tuple[Badge, ...]:
         badges = [KilledProcessBadge(f'<{self.max_terminated_process}')]
-        if self.max_terminated_priority_process == 0:
-            badges.append(KilledProcessBadge('0', is_priority=True))
-        elif self.max_terminated_priority_process < float('inf'):
+        if self.max_terminated_high_priority_process == 0:
+            badges.append(KilledProcessBadge('0', is_high_priority=True))
+        elif self.max_terminated_high_priority_process < float('inf'):
             badges.append(KilledProcessBadge(
-                f'<{self.max_terminated_priority_process + 1}', is_priority=True))
+                f'<{self.max_terminated_high_priority_process + 1}', is_high_priority=True))
         return tuple(badges)
 
 
@@ -100,14 +100,14 @@ class SurvivalVictoryCondition(VictoryCondition):
     into a single condition, rendering the combined intro item that the
     'Victory Conditions' section displays for both together. Items beyond
     this combined item are mirrored from the latter condition, so the
-    displayed priority rule always matches its limits and badges.
+    displayed high-priority rule always matches its limits and badges.
     """
 
     def __init__(self, minutes: int, max_terminated_process: int,
-                 max_terminated_priority_process: int | float = float('inf')):
+                 max_terminated_high_priority_process: int | float = float('inf')):
         self._time_condition = TimeVictoryCondition(minutes)
         self._max_condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process, max_terminated_priority_process)
+            max_terminated_process, max_terminated_high_priority_process)
 
     def check_victory(self, stage) -> bool:
         return self._time_condition.check_victory(stage)
@@ -119,8 +119,8 @@ class SurvivalVictoryCondition(VictoryCondition):
     def intro_items(self) -> tuple[str, ...]:
         time_item = self._time_condition.intro_items[0]
         ragequit_item = self._max_condition.intro_items[0]
-        priority_items = self._max_condition.intro_items[1:]
-        return (f'{time_item} with {ragequit_item}', *priority_items)
+        high_priority_items = self._max_condition.intro_items[1:]
+        return (f'{time_item} with {ragequit_item}', *high_priority_items)
 
     @property
     def badges(self) -> tuple[Badge, ...]:

@@ -9,7 +9,8 @@ from scene_objects.page_slot import PageSlot
 from scene_objects.page_manager import PageManager
 from scene_objects.process import Process, ProcessState, StateEvent, ProcessType
 from scene_objects.views.page_view import PageView
-from scene_objects.views.priority_page_view import PriorityPageView
+from scene_objects.views.high_priority_page_view import HighPriorityPageView
+from scene_objects.views.low_priority_page_view import LowPriorityPageView
 from config.cpu_config import CpuConfig
 from config.stage_config import StageConfig
 from factories.process_factory import ProcessFactory
@@ -95,9 +96,13 @@ class TestProcess:
         process = Process(1, stage, process_config, process_type=ProcessType.STANDARD)
         assert process.type == ProcessType.STANDARD
 
-    def test_type_is_priority_when_specified(self, stage, process_config):
-        process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
-        assert process.type == ProcessType.PRIORITY
+    def test_type_is_high_priority_when_specified(self, stage, process_config):
+        process = Process(1, stage, process_config, process_type=ProcessType.HIGH_PRIORITY)
+        assert process.type == ProcessType.HIGH_PRIORITY
+
+    def test_type_is_low_priority_when_specified(self, stage, process_config):
+        process = Process(1, stage, process_config, process_type=ProcessType.LOW_PRIORITY)
+        assert process.type == ProcessType.LOW_PRIORITY
 
     def test_state_events(self, stage, stage_config, process_config, spy_apply_state_event):
         process = Process(1, stage, process_config)
@@ -424,14 +429,14 @@ class TestProcess:
             with pytest.raises(KeyError):
                 stage.page_manager.get_page(1, i)
 
-    def test_use_cpu_creates_crowned_pages_for_priority_process(self, stage, monkeypatch, process_config):
+    def test_use_cpu_creates_crowned_pages_for_high_priority_process(self, stage, monkeypatch, process_config):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
 
-        process = Process(1, stage, process_config, process_type=ProcessType.PRIORITY)
+        process = Process(1, stage, process_config, process_type=ProcessType.HIGH_PRIORITY)
         process.use_cpu()
 
         page = stage.page_manager.get_page(1, 0)
-        assert isinstance(page.view, PriorityPageView)
+        assert isinstance(page.view, HighPriorityPageView)
 
     def test_use_cpu_creates_uncrowned_pages_for_standard_process(self, stage, monkeypatch, process_config):
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -441,7 +446,35 @@ class TestProcess:
 
         page = stage.page_manager.get_page(1, 0)
         assert isinstance(page.view, PageView)
-        assert not isinstance(page.view, PriorityPageView)
+        assert not isinstance(page.view, HighPriorityPageView)
+        assert not isinstance(page.view, LowPriorityPageView)
+
+    def test_use_cpu_creates_pawned_pages_for_low_priority_process(self, stage, monkeypatch, process_config):
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process = Process(1, stage, process_config, process_type=ProcessType.LOW_PRIORITY)
+        process.use_cpu()
+
+        page = stage.page_manager.get_page(1, 0)
+        assert isinstance(page.view, LowPriorityPageView)
+
+    def test_low_priority_process_starves_twice_as_slow_as_standard_process(self, stage_custom_config):
+        stage_config = StageConfig(
+            cpu_config=CpuConfig(num_cores=1),
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            io_probability=0,
+            graceful_termination_probability=0,
+        )
+        stage = stage_custom_config(stage_config)
+        factory = ProcessFactory(stage, stage_config)
+        standard_process = factory.create_standard_process(1)
+        low_priority_process = factory.create_low_priority_process(2)
+
+        assert standard_process.time_between_starvation_levels == 10000
+        assert low_priority_process.time_between_starvation_levels == 20000
 
     def test_max_pages_per_process_honored(self, stage_custom_config, monkeypatch):
         stage_config = StageConfig(

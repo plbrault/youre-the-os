@@ -24,7 +24,7 @@ class TestProcessManager:
             num_processes_at_startup=14,
             max_processes=42,
             new_process_probability=0.05,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
         )
 
     @pytest.fixture
@@ -722,7 +722,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000],
@@ -734,14 +734,14 @@ class TestProcessManager:
         assert len(alive_processes) == 1
         assert process_manager.get_process(1).time_between_starvation_levels == 10000
 
-    def test_forced_priority_process_created_at_scheduled_time(self, ready_process_manager_custom_config):
+    def test_forced_high_priority_process_created_at_scheduled_time(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
-            force_new_priority_process_at_times_ms=[10000],
+            force_new_high_priority_process_at_times_ms=[10000],
         ))
 
         process_manager.update(10000, [])
@@ -750,25 +750,25 @@ class TestProcessManager:
         assert len(alive_processes) == 1
         assert process_manager.get_process(1).time_between_starvation_levels == 6000
 
-    def test_forced_priority_process_has_priority_type(self, ready_process_manager_custom_config):
+    def test_forced_high_priority_process_has_priority_type(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
-            force_new_priority_process_at_times_ms=[10000],
+            force_new_high_priority_process_at_times_ms=[10000],
         ))
 
         process_manager.update(10000, [])
 
-        assert process_manager.get_process(1).type == ProcessType.PRIORITY
+        assert process_manager.get_process(1).type == ProcessType.HIGH_PRIORITY
 
     def test_forced_standard_process_has_standard_type(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000],
@@ -782,7 +782,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[20000],
@@ -797,7 +797,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000],
@@ -817,7 +817,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000, 20000],
@@ -837,11 +837,11 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[20000],
-            force_new_priority_process_at_times_ms=[10000],
+            force_new_high_priority_process_at_times_ms=[10000],
         ))
 
         process_manager.update(10000, [])
@@ -861,7 +861,7 @@ class TestProcessManager:
             num_processes_at_startup=1,
             max_processes=1,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000],
@@ -879,11 +879,11 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000],
-            force_new_priority_process_at_times_ms=[10000],
+            force_new_high_priority_process_at_times_ms=[10000],
         ))
 
         process_manager.update(10000, [])
@@ -902,10 +902,10 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=2,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
-            force_new_priority_process_at_times_ms=[0],
+            force_new_high_priority_process_at_times_ms=[0],
         ))
 
         alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
@@ -917,7 +917,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=1,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             force_new_standard_process_at_times_ms=[2000],
@@ -939,15 +939,15 @@ class TestProcessManager:
         alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
         assert len(alive_processes) == 2
 
-    def test_priority_process_uses_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
+    def test_high_priority_process_uses_high_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
-            priority_process_io_probability=1,
-            force_new_priority_process_at_times_ms=[10000],
+            high_priority_process_io_probability=1,
+            force_new_high_priority_process_at_times_ms=[10000],
         ))
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -962,14 +962,14 @@ class TestProcessManager:
         process.update(11000, [])
         assert process.is_waiting_for_io
 
-    def test_standard_process_uses_io_probability_not_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
+    def test_standard_process_uses_io_probability_not_high_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
-            priority_process_io_probability=1,
+            high_priority_process_io_probability=1,
             force_new_standard_process_at_times_ms=[10000],
         ))
 
@@ -984,15 +984,15 @@ class TestProcessManager:
         process.update(11000, [])
         assert not process.is_waiting_for_io
 
-    def test_priority_process_uses_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
+    def test_high_priority_process_uses_high_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
-            priority_process_graceful_termination_probability=1,
+            high_priority_process_graceful_termination_probability=1,
             io_probability=0,
-            force_new_priority_process_at_times_ms=[10000],
+            force_new_high_priority_process_at_times_ms=[10000],
         ))
 
         monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
@@ -1006,13 +1006,13 @@ class TestProcessManager:
         process.update(11000, [])
         assert process.has_ended_gracefully
 
-    def test_standard_process_uses_graceful_termination_probability_not_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
+    def test_standard_process_uses_graceful_termination_probability_not_high_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
-            priority_process_graceful_termination_probability=1,
+            high_priority_process_graceful_termination_probability=1,
             io_probability=0,
             force_new_standard_process_at_times_ms=[10000],
         ))
@@ -1028,11 +1028,159 @@ class TestProcessManager:
         process.update(11000, [])
         assert not process.has_ended_gracefully
 
+    def test_forced_low_priority_process_created_at_scheduled_time(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_low_priority_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        alive_processes = [slot.process for slot in process_manager.process_slots if slot.process is not None]
+        assert len(alive_processes) == 1
+        assert process_manager.get_process(1).time_between_starvation_levels == 20000
+
+    def test_forced_low_priority_process_has_low_priority_type(self, ready_process_manager_custom_config):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            force_new_low_priority_process_at_times_ms=[10000],
+        ))
+
+        process_manager.update(10000, [])
+
+        assert process_manager.get_process(1).type == ProcessType.LOW_PRIORITY
+
+    def test_low_priority_process_uses_low_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            low_priority_process_io_probability=1,
+            force_new_low_priority_process_at_times_ms=[10000],
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process_manager.update(10000, [])
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+        process.update(10000, [])
+        assert not process.is_waiting_for_io
+
+        process.update(11000, [])
+        assert process.is_waiting_for_io
+
+    def test_standard_process_uses_io_probability_not_low_priority_process_io_probability(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            graceful_termination_probability=0,
+            io_probability=0,
+            low_priority_process_io_probability=1,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process_manager.update(10000, [])
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+        process.update(10000, [])
+
+        process.update(11000, [])
+        assert not process.is_waiting_for_io
+
+    def test_low_priority_process_uses_low_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            graceful_termination_probability=0,
+            low_priority_process_graceful_termination_probability=1,
+            io_probability=0,
+            force_new_low_priority_process_at_times_ms=[10000],
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process_manager.update(10000, [])
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+        process.update(10000, [])
+
+        process.update(11000, [])
+        assert process.has_ended_gracefully
+
+    def test_standard_process_uses_graceful_termination_probability_not_low_priority_process_graceful_termination_probability(self, ready_process_manager_custom_config, monkeypatch):
+        process_manager, _ = ready_process_manager_custom_config(StageConfig(
+            num_processes_at_startup=0,
+            new_process_probability=0,
+            high_priority_process_probability=0,
+            low_priority_process_probability=0,
+            graceful_termination_probability=0,
+            low_priority_process_graceful_termination_probability=1,
+            io_probability=0,
+            force_new_standard_process_at_times_ms=[10000],
+        ))
+
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+
+        process_manager.update(10000, [])
+
+        process = process_manager.get_process(1)
+        process.use_cpu()
+        process.update(10000, [])
+
+        process.update(11000, [])
+        assert not process.has_ended_gracefully
+
+    def test_random_process_roll_high_priority_takes_precedence_over_low_priority(self, stage_custom_config, monkeypatch):
+        stage = stage_custom_config(StageConfig(
+            cpu_config=CpuConfig(num_cores=4),
+            num_processes_at_startup=2,
+            new_process_probability=0,
+            high_priority_process_probability=0.5,
+            low_priority_process_probability=1,
+            graceful_termination_probability=0,
+            io_probability=0,
+        ))
+        process_manager = stage.process_manager
+
+        # Cause the high priority roll to succeed: 1 <= 50
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: min)
+        process_manager.update(50, [])
+        assert process_manager.get_process(1).type == ProcessType.HIGH_PRIORITY
+
+        # Cause the high priority roll to fail: 100 > 50.
+        # The low priority roll is then performed and succeeds: 100 <= 100
+        monkeypatch.setattr(Random, 'get_number', lambda self, min, max: max)
+        process_manager.update(100, [])
+        assert process_manager.get_process(2).type == ProcessType.LOW_PRIORITY
+
     def test_min_processes_created_when_below_minimum(self, ready_process_manager_custom_config):
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(0, 5)],
@@ -1050,7 +1198,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(10000, 5)],
@@ -1065,7 +1213,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(0, 0), (10000, 5)],
@@ -1103,7 +1251,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=10,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(0, 5)],
@@ -1117,7 +1265,7 @@ class TestProcessManager:
             num_processes_at_startup=0,
             max_processes=3,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(0, 10)],
@@ -1135,7 +1283,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(10000, 5)],
@@ -1164,7 +1312,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(0, 5)],
@@ -1182,7 +1330,7 @@ class TestProcessManager:
         process_manager, _ = ready_process_manager_custom_config(StageConfig(
             num_processes_at_startup=0,
             new_process_probability=0,
-            priority_process_probability=0,
+            high_priority_process_probability=0,
             graceful_termination_probability=0,
             io_probability=0,
             min_processes_at_times_ms=[(10000, 5), (0, 0)],

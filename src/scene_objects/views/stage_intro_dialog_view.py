@@ -55,7 +55,7 @@ class StageIntroDialogView(ModalView):
         surface = pygame.Surface((_BADGE_SIZE, _BADGE_SIZE))
         surface.fill(Color.DARK_GREY)
         surface.blit(_skull, (0, 2))
-        if badge.is_priority:
+        if badge.is_high_priority:
             surface.blit(_crown, (2, 34))
         if badge.text.startswith('<'):
             digits = badge.text[1:]

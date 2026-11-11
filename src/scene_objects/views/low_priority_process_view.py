@@ -3,9 +3,9 @@ import pygame
 
 from scene_objects.views.process_view import ProcessView
 
-_icon = pygame.image.load(path.join('assets', 'crown_emoji.png'))
+_icon = pygame.image.load(path.join('assets', 'pawn_emoji.png'))
 
-class PriorityProcessView(ProcessView):
+class LowPriorityProcessView(ProcessView):
     def draw(self, surface):
         super().draw(surface)
         surface.blit(_icon, (self._x + 2, self._y + 34))

@@ -21,16 +21,20 @@ class StageConfig:
     swap_delay_ms: int = 100
     parallel_swaps: int = 1
     new_process_probability: float = 0.05
-    priority_process_probability: float = 0.01
+    high_priority_process_probability: float = 0.01
+    low_priority_process_probability: float = 0
     force_new_standard_process_at_times_ms: list[int] = field(default_factory=list)
-    force_new_priority_process_at_times_ms: list[int] = field(default_factory=list)
+    force_new_high_priority_process_at_times_ms: list[int] = field(default_factory=list)
+    force_new_low_priority_process_at_times_ms: list[int] = field(default_factory=list)
     min_processes_at_times_ms: list[MinProcessThreshold] = field(default_factory=list)
     io_probability: float = 0.01
-    priority_process_io_probability: float | None = None
+    high_priority_process_io_probability: float | None = None
+    low_priority_process_io_probability: float | None = None
     io_min_waiting_time_ms: int = 1000
     io_max_waiting_time_ms: int = 5000
     graceful_termination_probability: float = 0.01
-    priority_process_graceful_termination_probability: float | None = None
+    high_priority_process_graceful_termination_probability: float | None = None
+    low_priority_process_graceful_termination_probability: float | None = None
     time_ms_to_show_sort_button: int = 6 * ONE_MINUTE
     time_ms_to_show_auto_sort_checkbox: int = 12 * ONE_MINUTE
 
@@ -38,9 +42,15 @@ class StageConfig:
         object.__setattr__(
             self, 'min_processes_at_times_ms',
             [MinProcessThreshold(t, c) for t, c in self.min_processes_at_times_ms])
-        if self.priority_process_io_probability is None:
-            object.__setattr__(self, 'priority_process_io_probability', self.io_probability)
-        if self.priority_process_graceful_termination_probability is None:
+        if self.high_priority_process_io_probability is None:
+            object.__setattr__(self, 'high_priority_process_io_probability', self.io_probability)
+        if self.high_priority_process_graceful_termination_probability is None:
             object.__setattr__(
-                self, 'priority_process_graceful_termination_probability',
+                self, 'high_priority_process_graceful_termination_probability',
+                self.graceful_termination_probability)
+        if self.low_priority_process_io_probability is None:
+            object.__setattr__(self, 'low_priority_process_io_probability', self.io_probability)
+        if self.low_priority_process_graceful_termination_probability is None:
+            object.__setattr__(
+                self, 'low_priority_process_graceful_termination_probability',
                 self.graceful_termination_probability)

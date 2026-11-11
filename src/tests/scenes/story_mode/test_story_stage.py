@@ -22,7 +22,7 @@ _STAGE_CONFIG = StageConfig(
     cpu_config=CpuConfig(num_cores=1),
     num_processes_at_startup=4,
     max_processes_terminated_by_user=4,
-    priority_process_probability=0,
+    high_priority_process_probability=0,
 )
 
 _INTRO_SECTIONS = (Section('Desktop PC', ('Single-Core CPU',)),)
@@ -30,17 +30,17 @@ _VICTORY_CONDITIONS = (
     SurvivalVictoryCondition(
         minutes=3,
         max_terminated_process=4,
-        max_terminated_priority_process=0),
+        max_terminated_high_priority_process=0),
 )
 
 _INTRO_ITEMS = (
     'Survive 3 minutes with less than 4 user ragequits',
-    'Do not let the user kill a priority process',
+    'Do not let the user kill a high-priority process',
 )
 _INTRO_BADGES = (
     TimerBadge(3),
     KilledProcessBadge('<4'),
-    KilledProcessBadge('0', is_priority=True),
+    KilledProcessBadge('0', is_high_priority=True),
 )
 
 
@@ -147,65 +147,65 @@ class TestMaxTerminatedProcessVictoryCondition:
         ])
         assert condition.check_defeat(stub) == 'Too many user ragequits.'
 
-    def test_check_defeat_returns_priority_reason_when_priority_process_terminated(self):
+    def test_check_defeat_returns_priority_reason_when_high_priority_process_terminated(self):
         condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process=2, max_terminated_priority_process=0)
+            max_terminated_process=2, max_terminated_high_priority_process=0)
         stub = StubStage(user_terminated_processes=[
-            StubProcess(ProcessType.PRIORITY),
+            StubProcess(ProcessType.HIGH_PRIORITY),
         ])
-        assert condition.check_defeat(stub) == 'The user killed a priority process.'
+        assert condition.check_defeat(stub) == 'The user killed a high-priority process.'
 
-    def test_check_defeat_returns_too_many_priority_reason_when_kills_allowed(self):
+    def test_check_defeat_returns_too_many_high_priority_reason_when_kills_allowed(self):
         condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process=100, max_terminated_priority_process=1)
+            max_terminated_process=100, max_terminated_high_priority_process=1)
         stub = StubStage(user_terminated_processes=[
-            StubProcess(ProcessType.PRIORITY),
-            StubProcess(ProcessType.PRIORITY),
+            StubProcess(ProcessType.HIGH_PRIORITY),
+            StubProcess(ProcessType.HIGH_PRIORITY),
         ])
-        assert condition.check_defeat(stub) == 'The user killed too many priority processes.'
+        assert condition.check_defeat(stub) == 'The user killed too many high-priority processes.'
 
-    def test_check_defeat_allows_priority_process_by_default(self):
+    def test_check_defeat_allows_high_priority_process_by_default(self):
         condition = MaxTerminatedProcessVictoryCondition(100)
         stub = StubStage(user_terminated_processes=[
-            StubProcess(ProcessType.PRIORITY),
+            StubProcess(ProcessType.HIGH_PRIORITY),
         ])
         assert condition.check_defeat(stub) is None
 
     def test_intro_items(self):
         condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process=2, max_terminated_priority_process=0)
+            max_terminated_process=2, max_terminated_high_priority_process=0)
         assert condition.intro_items == (
             'less than 2 user ragequits',
-            'Do not let the user kill a priority process',
+            'Do not let the user kill a high-priority process',
         )
 
-    def test_intro_items_have_no_priority_line_by_default(self):
+    def test_intro_items_have_no_high_priority_line_by_default(self):
         condition = MaxTerminatedProcessVictoryCondition(2)
         assert condition.intro_items == ('less than 2 user ragequits',)
 
-    def test_intro_items_omits_priority_line_when_allowed(self):
+    def test_intro_items_omits_high_priority_line_when_allowed(self):
         condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process=2, max_terminated_priority_process=1)
+            max_terminated_process=2, max_terminated_high_priority_process=1)
         assert condition.intro_items == ('less than 2 user ragequits',)
 
     def test_badges(self):
         condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process=2, max_terminated_priority_process=0)
+            max_terminated_process=2, max_terminated_high_priority_process=0)
         assert condition.badges == (
             KilledProcessBadge('<2'),
-            KilledProcessBadge('0', is_priority=True),
+            KilledProcessBadge('0', is_high_priority=True),
         )
 
-    def test_badges_have_no_priority_badge_by_default(self):
+    def test_badges_have_no_high_priority_badge_by_default(self):
         condition = MaxTerminatedProcessVictoryCondition(2)
         assert condition.badges == (KilledProcessBadge('<2'),)
 
-    def test_badges_with_nonzero_priority_limit(self):
+    def test_badges_with_nonzero_high_priority_limit(self):
         condition = MaxTerminatedProcessVictoryCondition(
-            max_terminated_process=2, max_terminated_priority_process=1)
+            max_terminated_process=2, max_terminated_high_priority_process=1)
         assert condition.badges == (
             KilledProcessBadge('<2'),
-            KilledProcessBadge('<2', is_priority=True),
+            KilledProcessBadge('<2', is_high_priority=True),
         )
 
 
@@ -219,14 +219,14 @@ class TestSurvivalVictoryCondition:
         stub = StubStage(3 * ONE_MINUTE)
         assert condition.check_victory(stub)
 
-    def test_check_defeat_priority_reason_takes_precedence(self):
+    def test_check_defeat_high_priority_reason_takes_precedence(self):
         condition = SurvivalVictoryCondition(
-            minutes=3, max_terminated_process=1, max_terminated_priority_process=0)
+            minutes=3, max_terminated_process=1, max_terminated_high_priority_process=0)
         stub = StubStage(user_terminated_processes=[
-            StubProcess(ProcessType.PRIORITY),
+            StubProcess(ProcessType.HIGH_PRIORITY),
             StubProcess(ProcessType.STANDARD),
         ])
-        assert condition.check_defeat(stub) == 'The user killed a priority process.'
+        assert condition.check_defeat(stub) == 'The user killed a high-priority process.'
 
     def test_check_defeat_ragequit_reason(self):
         condition = SurvivalVictoryCondition(minutes=3, max_terminated_process=1)
@@ -237,28 +237,28 @@ class TestSurvivalVictoryCondition:
 
     def test_intro_items(self):
         condition = SurvivalVictoryCondition(
-            minutes=6, max_terminated_process=5, max_terminated_priority_process=0)
+            minutes=6, max_terminated_process=5, max_terminated_high_priority_process=0)
         assert condition.intro_items == (
             'Survive 6 minutes with less than 5 user ragequits',
-            'Do not let the user kill a priority process',
+            'Do not let the user kill a high-priority process',
         )
 
-    def test_intro_items_omit_priority_line_when_kills_allowed(self):
+    def test_intro_items_omit_high_priority_line_when_kills_allowed(self):
         condition = SurvivalVictoryCondition(
             minutes=3,
             max_terminated_process=100,
-            max_terminated_priority_process=1)
+            max_terminated_high_priority_process=1)
         assert condition.intro_items == (
             'Survive 3 minutes with less than 100 user ragequits',
         )
 
     def test_badges(self):
         condition = SurvivalVictoryCondition(
-            minutes=6, max_terminated_process=5, max_terminated_priority_process=0)
+            minutes=6, max_terminated_process=5, max_terminated_high_priority_process=0)
         assert condition.badges == (
             TimerBadge(6),
             KilledProcessBadge('<5'),
-            KilledProcessBadge('0', is_priority=True),
+            KilledProcessBadge('0', is_high_priority=True),
         )
 
 

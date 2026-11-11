@@ -39,7 +39,8 @@ class StateEvent(Enum):
 
 class ProcessType(Enum):
     STANDARD = auto()
-    PRIORITY = auto()
+    HIGH_PRIORITY = auto()
+    LOW_PRIORITY = auto()
 
 class Process(SceneObject):
     ProcessState = ProcessState
@@ -268,8 +269,7 @@ class Process(SceneObject):
                         )
                     )
                     for i in range(num_pages):
-                        page = self._page_manager.create_page(
-                            self._pid, i, self.type == ProcessType.PRIORITY)
+                        page = self._page_manager.create_page(self._pid, i, self.type)
                         if page is None:
                             break
                         self._pages.append(page)
@@ -430,7 +430,7 @@ class Process(SceneObject):
                 and randint(1, _NEW_PAGE_PROBABILITY_DENOMINATOR) == 1
             ):
                 new_page = self._page_manager.create_page(
-                    self._pid, len(self._pages), self.type == ProcessType.PRIORITY)
+                    self._pid, len(self._pages), self.type)
                 if new_page is not None:
                     self._pages.append(new_page)
                     new_page.in_use = True
