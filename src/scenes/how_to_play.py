@@ -67,8 +67,8 @@ _parts = [
     ),
     HowToPlayPart(
         [
-            'Some processes have a crown emoji. These are priority processes.', # pylint: disable=line-too-long
-            'Priority processes require more CPU time. When idle, they go through starvation levels faster than normal processes.' # pylint: disable=line-too-long
+            'Some processes have a crown emoji. These are high-priority processes.', # pylint: disable=line-too-long
+            'High-priority processes require more CPU time. When idle, they go through starvation levels faster than normal processes.' # pylint: disable=line-too-long
         ],
         [
             pygame.image.load(path.join('assets', 'how_to_play_6_0.png')),

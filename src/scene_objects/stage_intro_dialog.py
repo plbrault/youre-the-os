@@ -15,7 +15,7 @@ class Section:
 @dataclass(frozen=True)
 class KilledProcessBadge:
     text: str
-    is_priority: bool = False
+    is_high_priority: bool = False
 
 
 @dataclass(frozen=True)

@@ -25,8 +25,8 @@ class CustomSettingsDialogView(ModalView):
             'Parallel Swaps', True, Color.WHITE)
         self._new_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
             'New Process Probability', True, Color.WHITE)
-        self._priority_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
-            'Priority Process Probability', True, Color.WHITE)
+        self._high_priority_process_probability_label_text = FONT_SECONDARY_MEDIUM.render(
+            'High-Priority Process Probability', True, Color.WHITE)
         self._io_probability_label_text = FONT_SECONDARY_MEDIUM.render(
             'I/O Probability', True, Color.WHITE)
         self._graceful_termination_label_text = FONT_SECONDARY_MEDIUM.render(
@@ -50,8 +50,8 @@ class CustomSettingsDialogView(ModalView):
             right_edge - dialog.parallel_swap_selector.view.width)
         dialog.new_process_probability_selector.view.x = (
             right_edge - dialog.new_process_probability_selector.view.width)
-        dialog.priority_process_probability_selector.view.x = (
-            right_edge - dialog.priority_process_probability_selector.view.width)
+        dialog.high_priority_process_probability_selector.view.x = (
+            right_edge - dialog.high_priority_process_probability_selector.view.width)
         dialog.io_probability_selector.view.x = (
             right_edge - dialog.io_probability_selector.view.width)
         dialog.graceful_termination_selector.view.x = (
@@ -81,9 +81,9 @@ class CustomSettingsDialogView(ModalView):
         dialog.new_process_probability_selector.view.y = (
             self.new_process_probability_y
             + (label_h - dialog.new_process_probability_selector.view.height) / 2)
-        dialog.priority_process_probability_selector.view.y = (
-            self.priority_process_probability_y
-            + (label_h - dialog.priority_process_probability_selector.view.height) / 2)
+        dialog.high_priority_process_probability_selector.view.y = (
+            self.high_priority_process_probability_y
+            + (label_h - dialog.high_priority_process_probability_selector.view.height) / 2)
         dialog.io_probability_selector.view.y = (
             self.io_probability_y + (label_h - dialog.io_probability_selector.view.height) / 2)
         dialog.graceful_termination_selector.view.y = (
@@ -94,7 +94,7 @@ class CustomSettingsDialogView(ModalView):
 
     @property
     def width(self):
-        return 580
+        return 640
 
     @property
     def height(self):
@@ -133,12 +133,13 @@ class CustomSettingsDialogView(ModalView):
         return self.parallel_swap_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
-    def priority_process_probability_y(self):
+    def high_priority_process_probability_y(self):
         return self.new_process_probability_y + self.label_height + _OPTION_VERTICAL_SPACING
 
     @property
     def io_probability_y(self):
-        return self.priority_process_probability_y + self.label_height + _OPTION_VERTICAL_SPACING
+        return (self.high_priority_process_probability_y
+                + self.label_height + _OPTION_VERTICAL_SPACING)
 
     @property
     def graceful_termination_y(self):
@@ -160,8 +161,8 @@ class CustomSettingsDialogView(ModalView):
                      (self.x + 20, self.parallel_swap_y))
         surface.blit(self._new_process_probability_label_text,
                      (self.x + 20, self.new_process_probability_y))
-        surface.blit(self._priority_process_probability_label_text,
-                     (self.x + 20, self.priority_process_probability_y))
+        surface.blit(self._high_priority_process_probability_label_text,
+                     (self.x + 20, self.high_priority_process_probability_y))
         surface.blit(self._io_probability_label_text,
                      (self.x + 20, self.io_probability_y))
         surface.blit(self._graceful_termination_label_text,

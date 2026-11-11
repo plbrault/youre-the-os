@@ -100,8 +100,10 @@ class ProcessManager(SceneObject):
         self._forced_process_creation = sorted(
             [(time_ms, ProcessType.STANDARD)
              for time_ms in self._stage_config.force_new_standard_process_at_times_ms]
-            + [(time_ms, ProcessType.PRIORITY)
-               for time_ms in self._stage_config.force_new_priority_process_at_times_ms],
+            + [(time_ms, ProcessType.HIGH_PRIORITY)
+               for time_ms in self._stage_config.force_new_high_priority_process_at_times_ms]
+            + [(time_ms, ProcessType.LOW_PRIORITY)
+               for time_ms in self._stage_config.force_new_low_priority_process_at_times_ms],
             key=lambda x: x[0])
 
         self._min_processes_at_times_ms = sorted(
@@ -224,8 +226,12 @@ class ProcessManager(SceneObject):
                 process = self._process_factory.create_random_process(
                     pid, current_time=self._current_time
                 )
-            elif process_type == ProcessType.PRIORITY:
-                process = self._process_factory.create_priority_process(
+            elif process_type == ProcessType.HIGH_PRIORITY:
+                process = self._process_factory.create_high_priority_process(
+                    pid, self._current_time
+                )
+            elif process_type == ProcessType.LOW_PRIORITY:
+                process = self._process_factory.create_low_priority_process(
                     pid, self._current_time
                 )
             else:

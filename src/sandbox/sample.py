@@ -16,7 +16,7 @@ config = StageConfig(
     swap_delay_ms=100,
     parallel_swaps=1,
     new_process_probability=0.05,
-    priority_process_probability=0.01,
+    high_priority_process_probability=0.01,
     io_probability=0.01,
 )
 

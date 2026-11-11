@@ -18,7 +18,7 @@ _easy_difficulty = DifficultyLevel(
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Low'],
         parallel_swaps=1,
         new_process_probability=0.05,
-        priority_process_probability=0.01,
+        high_priority_process_probability=0.01,
         io_probability=0.01,
     )
 )
@@ -37,7 +37,7 @@ _hard_difficulty = DifficultyLevel(
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Medium'],
         parallel_swaps=4,
         new_process_probability=0.1,
-        priority_process_probability=0.05,
+        high_priority_process_probability=0.05,
         io_probability=0.1,
     )
 )
@@ -51,7 +51,7 @@ _harder_difficulty = DifficultyLevel(
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['High'],
         parallel_swaps=8,
         new_process_probability=0.2,
-        priority_process_probability=0.1,
+        high_priority_process_probability=0.1,
         io_probability=0.2,
     )
 )
@@ -65,7 +65,7 @@ _insane_difficulty = DifficultyLevel(
         swap_delay_ms=SWAP_DELAY_NAMES_TO_MS['Higher'],
         parallel_swaps=16,
         new_process_probability=1,
-        priority_process_probability=0.1,
+        high_priority_process_probability=0.1,
         io_probability=0.3,
     )
 )

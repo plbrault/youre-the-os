@@ -80,14 +80,14 @@ class TestStoryStage1:
         process_manager.terminate_process(standard_process, True)
         assert not ready_stage.check_defeat()
 
-    def test_check_defeat_returns_true_when_priority_process_terminated(self, ready_stage):
+    def test_check_defeat_returns_true_when_high_priority_process_terminated(self, ready_stage):
         process_manager = ready_stage.process_manager
-        priority_process = next(
+        high_priority_process = next(
             slot.process for slot in process_manager.process_slots
-            if slot.process is not None and slot.process.type == ProcessType.PRIORITY
+            if slot.process is not None and slot.process.type == ProcessType.HIGH_PRIORITY
         )
-        process_manager.terminate_process(priority_process, True)
-        assert ready_stage.check_defeat() == (True, 'The user killed a priority process.')
+        process_manager.terminate_process(high_priority_process, True)
+        assert ready_stage.check_defeat() == (True, 'The user killed a high-priority process.')
 
     def test_on_victory_shows_victory_dialog(self, stage):
         assert stage.active_modal is None
@@ -104,10 +104,10 @@ class TestStoryStage1:
     def test_on_defeat_shows_defeat_dialog_with_reason(self, stage):
         assert stage.active_modal is None
 
-        stage.on_defeat('The user killed a priority process.')
+        stage.on_defeat('The user killed a high-priority process.')
 
         assert isinstance(stage.active_modal, StoryStageDefeatDialog)
-        assert stage.active_modal.reason == 'The user killed a priority process.'
+        assert stage.active_modal.reason == 'The user killed a high-priority process.'
         assert stage.active_modal.stage_name == 'Stage 1: 1998'
         assert stage.active_modal.score == 0
         assert stage.active_modal.uptime == '0:00:00'
